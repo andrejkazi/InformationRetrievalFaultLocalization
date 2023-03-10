@@ -1,0 +1,8 @@
+{
+	"CONFIGURATION":{
+		"CONFIGURATION_1_10":{2:2}, 
+		"CONFIGURATION_1_7":{1:2}, 
+		"all":{1:2, 2:2, 3:4, 4:4}, 
+		"CONFIGURATION_1_9":{3:4, 4:4}
+	}
+}

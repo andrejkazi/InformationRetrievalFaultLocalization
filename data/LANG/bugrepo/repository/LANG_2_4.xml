@@ -1,0 +1,850 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="418" opendate="2008-03-24 19:24:50" fixdate="2008-03-25 07:36:02" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc incorrect for StringUtils.endsWithIgnoreCase</summary>
+			<description>The javadoc for StringUtils.endsWithIgnoreCase() shows an example that appears incorrect.  It currently looks like the following:
+    StringUtils.endsWithIgnoreCase("def", "ABCDEF") = false
+I believe that should return true.
+It also appears that the examples in the javadoc have the parameters backwards, as the signature shows the second parameter as the "suffix", yet the suffix in the examples is the first parameter.  The following sample I think would be more correct:
+    StringUtils.endsWithIgnoreCase("ABCDEF", "def") = true
+</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtilsStartsEndsWithTest.java</file>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="421" opendate="2008-04-02 15:42:39" fixdate="2008-04-02 16:07:57" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava(String) escapes &amp;apos;/&amp;apos; characters</summary>
+			<description>Commons Lang 2.4 StringEscapeUtils.escapeJava(String) now escapes &amp;amp;apos;/&amp;amp;apos; characters, which is not a valid "escapable" character in Java strings.  I haven&amp;amp;apos;t tried the other Java escape/unescape methods to see if they have a similar problem, or that only Java "escapable" characters are escaped by escapeJava(String).
+This bug may have appeared as an unintended side-effect of the fix for LANG-363.
+Also the javadoc for escapeJava is now a little off, in that &amp;amp;apos;/&amp;amp;apos; should now be included in the sentence describing the differences between Java and Javascript strings, with respect to escaping rules.
+The following is a JUnit3 test demonstrating the bug.
+import junit.framework.TestCase;
+import org.apache.commons.lang.StringEscapeUtils;
+public class StringEscapeUtilsTest extends TestCase {
+    public void testEscapeJavaWithSlash() 
+{
+        final String input = "String with a slash (/) in it";
+        
+        final String expected = input;
+        final String actual   = StringEscapeUtils.escapeJava( input );
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes &amp;amp;apos;/&amp;amp;apos; characters,
+         * which are not a valid character to escape in a Java string.  
+         */
+        assertEquals( expected, actual );
+    }
+}
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">423</link>
+			<link type="Duplicate" description="is duplicated by">473</link>
+			<link type="Reference" description="is related to">437</link>
+		</links>
+	</bug>
+	<bug id="423" opendate="2008-04-11 15:36:18" fixdate="2008-04-11 17:53:14" resolution="Duplicate">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava() behavior changed; backslash escapes &amp;apos;/&amp;apos; characters</summary>
+			<description>StringEscapeUtils.escapeJava(String str) escapes forward-slash ("/") characters.  Prior to 2.4, this was not the case.  This is caused by the patch in LANG-363, which changed the behavior of StringEscapeUtils.escapeJavaScript(String str) to escape forward-slashes for compatibliity with IE.  The change was implemented in code common to both methods; StringEscapeUtils.escapeJavaStyleString() .
+This side-effect change to StringEscapeUtils.escapeJava() is a problem in my project.  I don&amp;amp;apos;t see any reason why it is necessary to escape forward-slashes in escapeJava(), so I suggest the behavior be changed so that escapeJavaScript() escapes forward-slashes, but escapeJava() does not.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="419" opendate="2008-03-26 17:05:47" fixdate="2008-05-11 05:18:15" resolution="Fixed">
+		<buginformation>
+			<summary>WordUtils.abbreviate bug when lower is greater than str.length</summary>
+			<description>In WordUtils.abbreviate, upper is adjusted to the length of the string, then to lower.
+But lower is never adjusted to the length of the string, so if lower is greater than str.lengt(), upper will be too...
+Then, str.substring(0, upper) throw a StringIndexOutOfBoundsException
+The fix is to adjust lower to the length of the string</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.WordUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.WordUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="459" opendate="2008-09-15 16:09:36" fixdate="2008-09-16 16:36:51" resolution="Fixed">
+		<buginformation>
+			<summary>Issue in HashCodeBuilder which only shows up under high load multi-threaded usage.</summary>
+			<description>We found we were having problems with HashCodeBuilder under multi-threaded high load.
+I narrowed this down to the following attached test case.
+When I dug into the code, I found the problem was solved by commenting out the isRegistered method (though this would break the infinite loop problem).
+( I did a lot of other digging that I wont bore you with).
+So instead I replaced the HashSet with an ArrayList and just added the object, rather than the toIdentityHashCodeInteger(object)
+This results in about 5 lines of change.  
+My suspicion is that System.identityHashCode does not return unique values (it is after all a hashcode method).  The code assumes it will return a unique value and this causes the problem at high loads.
+The downside is a List vs. a Set, but I believe this is necessary.
+I&amp;amp;apos;d like to submit this fix and have it verified (and perhaps improved).  I am convinced it is a necessary fix which we have seen show up under high loads.
+Kindest regards, 
+Andrew.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.HashCodeBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="460" opendate="2008-09-17 08:27:57" fixdate="2008-09-17 23:27:39" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong, interchanged parameters in Dokumentation of StringUtils.startsWith[IgnoreCase](String, String)</summary>
+			<description>The parameters in the examples of the JavaDoc of StringUtils.startsWithIgnoreCase(String, String) and StringUtils.startsWith(String, String) are interchanged.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">679</link>
+		</links>
+	</bug>
+	<bug id="440" opendate="2008-06-02 20:47:48" fixdate="2008-11-05 17:01:09" resolution="Fixed">
+		<buginformation>
+			<summary>DateUtils.round doesn&amp;apos;t work correct for Calendar.AM_PM</summary>
+			<description>The provided JUnit-tests test with wrong expected values
+original DateUtilsTest.java
+
+dateAmPm1 = dateTimeParser.parse("February 3, 2002 01:10:00.000");
+dateAmPm2 = dateTimeParser.parse("February 3, 2002 11:10:00.000");
+dateAmPm3 = dateTimeParser.parse("February 3, 2002 13:10:00.000");
+dateAmPm4 = dateTimeParser.parse("February 3, 2002 19:10:00.000");
+
+assertEquals("truncate ampm-1 failed",
+                dateTimeParser.parse("February 3, 2002 00:00:00.000"),
+                DateUtils.round(dateAmPm1, Calendar.AM_PM));
+        assertEquals("truncate ampm-2 failed",
+                dateTimeParser.parse("February 4, 2002 00:00:00.000"),
+                DateUtils.round(dateAmPm2, Calendar.AM_PM));
+        assertEquals("truncate ampm-3 failed",
+                dateTimeParser.parse("February 3, 2002 12:00:00.000"),
+                DateUtils.round(dateAmPm3, Calendar.AM_PM));
+        assertEquals("truncate ampm-4 failed",
+                dateTimeParser.parse("February 4, 2002 12:00:00.000"),
+                DateUtils.round(dateAmPm4, Calendar.AM_PM));
+
+
+but expected values must be
+
+
+dateTimeParser.parse("February 3, 2002 00:00:00.000");
+dateTimeParser.parse("February 3, 2002 12:00:00.000");
+dateTimeParser.parse("February 3, 2002 12:00:00.000");
+dateTimeParser.parse("February 4, 2002 00:00:00.000");
+
+
+Also in the junit-comment the word &amp;amp;apos;truncate&amp;amp;apos; must be replaced with &amp;amp;apos;round&amp;amp;apos;</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.TimeTestSuite.java</file>
+			<file type="M">org.apache.commons.lang.time.DateUtils.java</file>
+			<file type="M">org.apache.commons.lang.time.DateUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="dependent" description="is depended upon by">434</link>
+		</links>
+	</bug>
+	<bug id="464" opendate="2008-10-01 20:54:42" fixdate="2008-11-06 20:29:33" resolution="Duplicate">
+		<buginformation>
+			<summary>EqualsBuilder doesn&amp;apos;t compile in 2.4 source code release</summary>
+			<description>Line 381 of org.apache.commons.lang.EqualsBuilder fails to compile because the compareTo call requires a BigDecimal rather than an object.
+376 public EqualsBuilder append(Object lhs, Object rhs) {
+...
+379         if (!lhsClass.isArray()) {
+380             if (lhs instanceof java.math.BigDecimal) 
+{
+381                 isEquals = (((java.math.BigDecimal)lhs).compareTo(rhs) == 0);
+382             }
+ else {
+I&amp;amp;apos;m using Sun&amp;amp;apos;s JDK 1.6.0_07 in Eclipse, not sure if this is a JDK version issue or not.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">468</link>
+		</links>
+	</bug>
+	<bug id="468" opendate="2008-11-05 15:58:22" fixdate="2008-11-06 20:36:54" resolution="Fixed">
+		<buginformation>
+			<summary>JDK 1.5 build/runtime failure on LANG-393 (EqualsBuilder)</summary>
+			<description>See LANG-393</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">464</link>
+			<link type="Reference" description="relates to">393</link>
+		</links>
+	</bug>
+	<bug id="477" opendate="2009-01-09 10:05:53" fixdate="2009-01-09 22:08:19" resolution="Fixed">
+		<buginformation>
+			<summary>ExtendedMessageFormat: OutOfMemory with custom format registry and a pattern containing single quotes</summary>
+			<description>When using ExtendedMessageFormat with a custom format registry and a pattern conatining single quotes, an OutOfMemoryError will occur.
+Example that will cause error:
+ExtendedMessageFormatTest.java
+
+
+private static Map&amp;lt;String, Object&amp;gt; formatRegistry = new HashMap&amp;lt;String, Object&amp;gt;();    
+    static {
+        formatRegistry.put(DummyFormatFactory.DUMMY_FORMAT, new DummyFormatFactory());
+    }
+    
+    public static void main(String[] args) {
+        ExtendedMessageFormat mf = new ExtendedMessageFormat("it&amp;amp;apos;&amp;amp;apos;s a {dummy} &amp;amp;apos;test&amp;amp;apos;!", formatRegistry);
+        String formattedPattern = mf.format(new String[] {"great"});
+        System.out.println(formattedPattern);
+    }
+}
+
+
+
+The following change starting at line 421 on the 2.4 release seems to fix the problem:
+ExtendedMessageFormat.java
+
+CURRENT (Broken):
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+WORKING:
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        next(pos);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormatTest.java</file>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">509</link>
+		</links>
+	</bug>
+	<bug id="480" opendate="2009-01-20 17:36:44" fixdate="2009-03-01 20:55:06" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeHtml incorrectly converts unicode characters above U+00FFFF into 2 characters</summary>
+			<description>Characters that are represented as a 2 characters internaly by java are incorrectly converted by the function. The following test displays the problem quite nicely:
+import org.apache.commons.lang.*;
+public class J2 {
+    public static void main(String[] args) throws Exception {
+        // this is the utf8 representation of the character:
+        // COUNTING ROD UNIT DIGIT THREE
+        // in unicode
+        // codepoint: U+1D362
+        byte[] data = new byte[] 
+{ (byte)0xF0, (byte)0x9D, (byte)0x8D, (byte)0xA2 }
+;
+        //output is: &amp;amp;#55348;&amp;amp;#57186;
+        // should be: &amp;amp;#119650;
+        System.out.println("&amp;amp;apos;" + StringEscapeUtils.escapeHtml(new String(data, "UTF8")) + "&amp;amp;apos;");
+    }
+}
+Should be very quick to fix, feel free to drop me an email if you want a patch.</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.Entities.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="509" opendate="2009-06-08 06:57:58" fixdate="2009-06-09 19:13:40" resolution="Duplicate">
+		<buginformation>
+			<summary>OutOfMemory Error caused by ExtendedMessageFormat</summary>
+			<description>It is possible to let ExtendedMessageFormat cause an OutOfMemory Error (Java heap space) - no matter how large you define the memory, because the code produces an endless loop that extends a StringBuffer ad infinitum.
+Code to reproduce:
+instantiate an ExtendedMessageFormat object using the constructor 
+public ExtendedMessageFormat(String pattern, Locale locale, Map registry) 
+locale and registry (not null) don&amp;amp;apos;t matter actually, but pattern as String looks like this:
+{{The field &amp;amp;apos;&amp;amp;apos;
+{0}
+&amp;amp;apos;&amp;amp;apos; must be completed}}
+notice the doubled single quotes.
+The constructor then executes applyPattern(pattern)
+In applyPattern, line 158 (that is inside the loop over the pattern length)  appendQuotedString(pattern, pos, stripCustom, true); is called, it is the last statement for that case in the loop. 
+In  appendQuotedString, line 422 the quote character gets appended to the return StringBuffer, then return. The problem in fact is, that the pointer (ParsePosition pos) isn&amp;amp;apos;t updated and after return the procedure will check the same character again and again and again. 
+Primitive workaround: no use of single quotes in messages as input of ExtendedMessageFormat.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormatTest.java</file>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">477</link>
+		</links>
+	</bug>
+	<bug id="535" opendate="2009-09-22 19:53:54" fixdate="2009-10-15 07:31:51" resolution="Fixed">
+		<buginformation>
+			<summary>ClassUtils.getShortClassName() will not work with an array;  it seems to add a semicolon to the end.</summary>
+			<description>A semicolon is introduced into the class name at the end for all arrays...
+String sArray[] = new String[2];
+sArray[0] = "mark";
+sArray[1] = "is cool";
+String simpleString = "chris";
+assertEquals("String", ClassUtils.getShortClassName(simpleString, null));
+assertEquals("String;", ClassUtils.getShortClassName(sArray, null));</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.ClassUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.ClassUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="432" opendate="2008-04-25 16:02:31" fixdate="2009-10-22 05:47:05" resolution="Fixed">
+		<buginformation>
+			<summary>Fix case-insensitive string handling</summary>
+			<description>String.to*Case() is locale-sensitive, this is usually not intended for case-insensitive comparisions. Please see Common Bug #3 for details.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtilsEqualsIndexOfTest.java</file>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang.SystemUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="467" opendate="2008-10-27 09:53:57" fixdate="2009-11-14 10:10:43" resolution="Fixed">
+		<buginformation>
+			<summary>EqualsBuilder and HashCodeBuilder treat java.math.BigDecimal inconsistantly and break general contract of hashCode</summary>
+			<description>A POJO with a BigDecimal field and equals() and hashCode() methods implemented using EqualsBuilder and HashCodeBuilder breaks the general contract of Object.hashCode();
+EqualsBuilder treats BigDecimal specially by comparing it using BigDecimal.compareTo() == 0 rather than BigDecimal.equals()
+Using BigDecimal.compareTo() ignores the scale of the BigDecimal()
+However the append(Object o) method of HashCodeBuilder uses BigDecimal.hashCode() in the case that o is a BigDecimal, which takes the scale into account when generating the hashCode.
+The following test case shows the problem!
+TestApacheCommonsLangHashCodeBuilder.java
+
+// package declaration and imports not shown
+public class TestApacheCommonsLangHashCodeBuilder extends TestCase {
+    
+    public void testHashCode() {
+        MyPojo myPojo1 = new MyPojo(new String("foo"), new BigDecimal("10.2"));
+        MyPojo myPojo2 = new MyPojo(new String("foo"), new BigDecimal("10.20"));
+        
+        // equals method ignores the scale of the big decimal
+        // so this test passes
+        assertTrue(myPojo1.equals(myPojo2));
+        
+        // however in the case the equals returns true the
+        // hashCode must be the same according to the contract
+        // TEST FAILS AT THIS LINE
+        assertEquals(myPojo1.hashCode(), myPojo2.hashCode());
+    }
+    
+    private class MyPojo {
+        private String name;
+        private BigDecimal value;
+        
+        public MyPojo(String name, BigDecimal value) {
+            this.name = name;
+            this.value = value;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        public BigDecimal getValue() {
+            return value;
+        }
+        /**
+         * equals method implemented using EqualsBuilder 
+         * as documented by apache commons
+         */
+        @Override public boolean equals(Object obj) {
+            if(this == obj) {
+                return true;
+            }
+            
+            if(!(obj instanceof MyPojo)) {
+                return false;
+            }
+            
+            MyPojo other = (MyPojo) obj;
+            return new EqualsBuilder()
+                .append(name, other.getName())
+                .append(value, other.getValue())
+                .isEquals();
+        }
+        
+        /**
+         * hashCode method implemented using HashCodeBuilder
+         * as documented by apache commons
+         */
+        @Override public int hashCode() {
+            HashCodeBuilder hcb = new HashCodeBuilder(17, 31);
+            return hcb
+                .append(name)
+                .append(value)
+                .toHashCode();
+        }
+    }
+}
+
+
+Note that the only reason I haven&amp;amp;apos;t provided a patch is because I could not think of one which I thought was reasonable.
+Option 1
+Always set the scale to some value and then get the hashCode()
+Example change in HashCodeBuilder.append(Object) add the following:
+
+
+else if (object instanceof BigDecimal) {
+	append(((BigDecimal) object).setScale(DEFAULT_BIGDECIMAL_SCALE, RoundingMode.DOWN).hashCode());
+}
+
+
+However what is a reasonable scale for calculating this hashCode? I cannot see a reasonanble scale to choose, that depends on the circumstance
+Option 2
+stripTrailingZeros() before calculating the hashCode()
+Example change in HashCodeBuilder.append(Object) add the following:
+
+
+else if (object instanceof BigDecimal) {
+	append(((BigDecimal) object).stripTrailingZeros().hashCode());
+}
+
+
+The performance of this method under different circumstances is not documented.
+Option 3
+Document the problem and propose that the client solves the problem.
+For example change HashCodeBuilder documentation as follows
+
+
+/*
+ * ...
+ * public class Person {
+ *   String name;
+ *   int age;
+ *   boolean smoker;
+ *   BigDecimal netWorth;
+ *   ...
+ *
+ *   public int hashCode() {
+ *     // you pick a hard-coded, randomly chosen, non-zero, odd number
+ *     // ideally different for each class
+ *     return new HashCodeBuilder(17, 37).
+ *       append(name).
+ *       append(age).
+ *       append(smoker).
+ *       // take special care when using BigDecimal as scale takes 
+ *       // is included in the hashCode calculation breaking hashCode contract
+ *       // choose a scale which is reasonable for hashCode calculation
+ *       append(netWorth == null ? null : netWorth.setScale(2)).
+ *       toHashCode();
+ *   }
+ * }
+ * ...
+ */
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilderTest.java</file>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1113</link>
+		</links>
+	</bug>
+	<bug id="552" opendate="2009-11-09 12:40:57" fixdate="2009-12-14 07:51:45" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils replaceEach - Bug or Missing Documentation </summary>
+			<description>The following Test Case for replaceEach fails with a null pointer exception.
+I have expected that all StringUtils methods are "null-friendly"
+The use case is that i will stuff Values into the replacementList of which I do not want to check whether they are null.
+I admit the use case is not perfect, because it is unclear what happens on the replace.
+I outlined three expectations in the test case, of course only one should be met.
+If it is decided that none of them should be possible, I propose to update the documentation with what happens when null is passed as replacement string
+
+
+import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+
+
+public class StringUtilsTest {
+
+	@Test
+	public void replaceEach(){
+		String original = "Hello World!";
+		String[] searchList = {"Hello", "World"};
+		String[] replacementList = {"Greetings", null};
+		String result = StringUtils.replaceEach(original, searchList, replacementList);
+		assertEquals("Greetings !", result);
+		//perhaps this is ok as well
+                //assertEquals("Greetings World!", result);
+                //or even
+		//assertEquals("Greetings null!", result);
+	}
+
+	
+}
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="538" opendate="2009-10-16 16:47:39" fixdate="2009-12-17 06:05:11" resolution="Fixed">
+		<buginformation>
+			<summary>DateFormatUtils.format does not correctly change Calendar TimeZone in certain situations</summary>
+			<description>If a Calendar object is constructed in certain ways a call to Calendar.setTimeZone does not correctly change the Calendars fields.  Calling Calenar.getTime() seems to fix this problem.  While this is probably a bug in the JDK, it would be nice if DateFormatUtils was smart enough to detect/resolve this problem.
+For example, the following unit test fails:
+
+  public void testFormat_CalendarIsoMsZulu() {
+    final String dateTime = "2009-10-16T16:42:16.000Z";
+
+    // more commonly constructed with: cal = new GregorianCalendar(2009, 9, 16, 8, 42, 16)
+    // for the unit test to work in any time zone, constructing with GMT-8 rather than default locale time zone
+    GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT-8"));
+    cal.clear();
+    cal.set(2009, 9, 16, 8, 42, 16);
+
+
+    FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("GMT"));
+    assertEquals("dateTime", dateTime, format.format(cal));
+  }
+
+
+However, this unit test passes:
+
+  public void testFormat_CalendarIsoMsZulu() {
+    final String dateTime = "2009-10-16T16:42:16.000Z";
+    GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT-8"));
+    cal.clear();
+    cal.set(2009, 9, 16, 8, 42, 16);
+    cal.getTime();
+
+    FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("GMT"));
+    assertEquals("dateTime", dateTime, format.format(cal));
+  }
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is cloned by">916</link>
+		</links>
+	</bug>
+	<bug id="530" opendate="2009-09-08 14:38:38" fixdate="2009-12-17 07:21:50" resolution="Fixed">
+		<buginformation>
+			<summary>parseDate cannot parse ISO8601 dates produced by FastDateFormat</summary>
+			<description>I cannot see why this is failing but here is my code:
+   Date parseDate(String dateStr) {
+       Date d = null;
+       if (dateStr != null &amp;amp;&amp;amp; ! "".equals(dateStr)) {
+           try {
+               // try to parse the date from ISO8601, general
+formats, and RFC-2822
+               d = DateUtils.parseDate(dateStr, new String[] 
+{
+
+DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern()
+                       }
+);
+           } catch (ParseException e) 
+{
+               // nothing to do
+               log.info("Failed to parse: " + dateStr + ":" + e, e);
+               d = null;
+           }
+       }
+       return d;
+   }
+The string I am sending in to that method was generated like this:
+String isoDateStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(date);
+The exception is:
+2009-09-03 13:29:37,644 [399355530@qtp3-2] INFO
+search.SOLRSearchService  - Failed to parse:
+2009-09-03T13:29:30+01:00:java.text.ParseException: Unable to parse
+the date: 2009-09-03T13:29:30+01:00
+java.text.ParseException: Unable to parse the date: 2009-09-03T13:29:30+01:00
+       at org.apache.commons.lang.time.DateUtils.parseDate(DateUtils.java:285)
+       at org.steeple.impl.search.SOLRSearchService.parseDate(SOLRSearchService.java:412)
+       at org.steeple.impl.search.SOLRSearchService.execute(SOLRSearchService.java:311)
+....
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">462</link>
+		</links>
+	</bug>
+	<bug id="521" opendate="2009-08-04 22:21:38" fixdate="2009-12-22 08:08:26" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.isNumber() Should Return True for Valid Number with a Trailing Decimal Place</summary>
+			<description>NumberUtils.isNumber() should return true for a valid number ending in a trailing decimal place; e.g., "2." should be considered a number because new BigDecimal("2.") works fine.  This could be done by adding the code below after line 1444, which is the if (chars[i] == &amp;amp;apos;e&amp;amp;apos; || chars[i] == &amp;amp;apos;E&amp;amp;apos;) block.
+if (chars[i] == &amp;amp;apos;.&amp;amp;apos;) {
+    if (hasDecPoint || hasExp) 
+{
+        // two decimal points or dec in exponent   
+        return false;
+    }
+    return foundDigit; // single trailing decimal point after non-exponent is ok
+}</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="575" opendate="2009-12-22 09:12:17" fixdate="2010-01-09 11:44:17" resolution="Fixed">
+		<buginformation>
+			<summary>HashCodeBuilder reflectionAppend creates unnecessary copy of excludeFields</summary>
+			<description>See http://svn.apache.org/viewvc/commons/proper/lang/trunk/src/java/org/apache/commons/lang3/builder/HashCodeBuilder.java?view=markup
+Please review the implementation for reflectionAppend (lines 174 to 202)...  Specifically, see line 182:
+
+
+List&amp;lt;String&amp;gt; excludedFieldList = excludeFields != null ? Arrays.asList(excludeFields) : Collections.&amp;lt;String&amp;gt;emptyList();
+
+
+Note that if you are in the habit of passing in a String array for excluding fields (String[] excludeFields)  which is a best practice when using Hibernate (to skip primary keys (@id) and version fields (@version) that change upon persistence)  EVERY TIME the hashCode is calculated, an ArrayList is being created  generating fodder for the garbage collector.
+I thought I might get around this by passing a Collection&amp;lt;String&amp;gt; instead of a String[], but ironically the implementation of the reflectionHashCode(Object object, Collection&amp;lt;String&amp;gt; excludeFields) (see lines 475 to 477), for example, transforms the Collection&amp;lt;String&amp;gt; into a String[] only to have it transformed internally into a temporary ArrayList&amp;lt;String&amp;gt;.
+I would expect the implementation to use and read what is submitted, whether that is a String[] or a Collection&amp;lt;String&amp;gt;.  I don&amp;amp;apos;t think it needs to create another copy just to have a convenient contains method.  Efficiency is important, especially in the event of rehashing.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.CompareToBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.EqualsBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.HashCodeBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="581" opendate="2010-01-14 07:42:29" fixdate="2010-01-15 03:28:05" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc bug in org.apache.commons.lang.StringUtils.removeEndIgnoreCase()</summary>
+			<description>the org.apache.commons.lang.StringUtils online document 
+http://commons.apache.org/lang/api-release/org/apache/commons/lang/StringUtils.html#removeEndIgnoreCase%28java.lang.String,%20java.lang.String%29
+at removeEndIgnoreCase()  description, there is one line 
+StringUtils.removeEnd("www.domain.com", ".com.")  = "www.domain.com."
+it should be 
+StringUtils.removeEnd("www.domain.com", ".com.")  = "www.domain.com"
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="481" opendate="2009-01-23 19:48:12" fixdate="2010-01-16 08:04:53" resolution="Fixed">
+		<buginformation>
+			<summary>Possible race-conditions in hashCode of the range classes</summary>
+			<description>The hashCode() methods of the range classes look very suspicious to me. The value is lazily initialized, but the calculation is done _on the cached value. With some unlucky timing a caller may get an incomplete hash.
+An unlucky sequence of Code could be something like
+T1:        if (hashCode == 0) // true
+T1:            hashCode = 17;
+T2:         if (hashCode == 0) // now false because hashCode was already set to 17
+T2:         return hashCode; // return 17
+T1:            hashCode = 37 * hashCode...........
+where T1 and T2 are different threads accessing the method in parallel and T2 gets the wrong hash "17".
+Affected classes are
+org.apache.commons.lang.math.DoubleRange
+org.apache.commons.lang.math.FloatRange
+org.apache.commons.lang.math.IntRange
+org.apache.commons.lang.math.LongRange
+org.apache.commons.lang.math.NumberRange
+org.apache.commons.lang.math.Range
+Possible fix: calculate the hash on a temporary variable and finally assign it to the member</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.Range.java</file>
+			<file type="M">org.apache.commons.lang.math.DoubleRange.java</file>
+			<file type="M">org.apache.commons.lang.math.IntRange.java</file>
+			<file type="M">org.apache.commons.lang.math.FloatRange.java</file>
+			<file type="M">org.apache.commons.lang.math.LongRange.java</file>
+			<file type="M">org.apache.commons.lang.math.NumberRange.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="584" opendate="2010-01-28 18:22:48" fixdate="2010-02-02 23:37:20" resolution="Fixed">
+		<buginformation>
+			<summary>ExceptionUtils uses mutable lock target</summary>
+			<description>ExceptionUtils uses a mutable lock target: both the methods removeCauseMethodName() and addCauseMethodName() take out a lock on CAUSE_METHOD_NAMES but then modify it.
+That doesn&amp;amp;apos;t work - locks need to be immutable.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.exception.ExceptionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">369</link>
+		</links>
+	</bug>
+	<bug id="587" opendate="2010-02-05 21:30:56" fixdate="2010-02-05 21:35:08" resolution="Fixed">
+		<buginformation>
+			<summary>ClassUtils.toClass(Object[]) throws NPE on null array element</summary>
+			<description>see summary</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ClassUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.ClassUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="473" opendate="2008-11-26 16:50:11" fixdate="2010-02-25 20:39:52" resolution="Duplicate">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava () not escaping forward slash correctly.</summary>
+			<description>We are trying to escape forward slash using StringEscapeUtils.escapeJava ()  method. The output returned by this method is no longer a valid Java String. 
+e.g. 
+String s = "a/b/c";
+System.out.println(StringEscapeUtils.escapeJava (s));
+The output returned is a\/b\/c which is not a even a valid Java String.
+This was working fine in 2.0 release of this jar.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="617" opendate="2010-04-13 15:25:28" fixdate="2010-09-17 05:12:00" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeXML() can&amp;apos;t process UTF-16 supplementary characters</summary>
+			<description>Supplementary characters in UTF-16 are those whose code points are above 0xffff, that is, require more than 1 Java char to be encoded, as explained here: http://java.sun.com/developer/technicalArticles/Intl/Supplementary/
+Currently, StringEscapeUtils.escapeXML() isn&amp;amp;apos;t aware of this coding scheme and treats each char as one character, which is not always right.
+A possible solution in class Entities would be:
+    public void escape(Writer writer, String str) throws IOException {
+        int len = str.length();
+        for (int i = 0; i &amp;lt; len; i++) {
+            int code = str.codePointAt;
+            String entityName = this.entityName(code);
+            if (entityName != null) 
+{
+                writer.write(&amp;amp;apos;&amp;amp;&amp;amp;apos;);
+                writer.write(entityName);
+                writer.write(&amp;amp;apos;;&amp;amp;apos;);
+            }
+ else if (code &amp;gt; 0x7F) 
+{
+                    writer.write("&amp;amp;#");
+                    writer.write(code);
+                    writer.write(&amp;amp;apos;;&amp;amp;apos;);
+            }
+ else 
+{
+                    writer.write((char) code);
+            }
+
+            if (code &amp;gt; 0xffff) 
+{
+                    i++;
+            }
+        }
+    }
+Besides fixing escapeXML(), this will also affect HTML escaping functions. I guess that&amp;amp;apos;s a good thing, but please remember I have only tested escapeXML().</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.NumericEntityUnescaper.java</file>
+			<file type="M">org.apache.commons.lang3.text.translate.NumericEntityEscaperTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.translate.NumericEntityEscaper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="679" opendate="2011-03-02 08:36:57" fixdate="2011-03-03 23:55:30" resolution="Duplicate">
+		<buginformation>
+			<summary>StringUtils.startsWithIgnoreCase whrong documentation</summary>
+			<description>Examples within JavaDoc misleads about parameters - according to examples the string and the prefix misplaced.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">460</link>
+		</links>
+	</bug>
+</bugrepository>

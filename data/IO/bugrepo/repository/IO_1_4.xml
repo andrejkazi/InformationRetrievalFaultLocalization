@@ -1,0 +1,397 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="163" opendate="2008-04-10 20:27:30" fixdate="2008-04-10 23:05:54" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.toURLs() uses deprecated (and bad) method of conversion to URL</summary>
+			<description>The method FileUtils.toURLs() uses the following method to convert from File to URL:
+    File.toURL();
+This method has scary warnings that it&amp;amp;apos;s a bad way to do the conversion because characters will not be escaped as required in URL strings.  In Java 1.6, this method has actually been deprecated.  All recent JDK versions recommend instead using:
+    File.toURI().toURL();
+as the URI code will properly perform the escaping.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="167" opendate="2008-04-25 12:48:02" fixdate="2008-05-30 19:13:38" resolution="Fixed">
+		<buginformation>
+			<summary>Fix case-insensitive string handling</summary>
+			<description>Case-insensitive operations are currently platform-dependent, please see Common Bug #3 for details.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOCase.java</file>
+			<file type="M">org.apache.commons.io.IOCaseTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtilsWildcardTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="180" opendate="2008-09-08 18:03:20" fixdate="2008-09-11 09:59:49" resolution="Fixed">
+		<buginformation>
+			<summary>LineIterator documentation </summary>
+			<description>In the Javadoc for rg.apache.commons.io.LineIterator (in Commons IO 1.4),
+this code snippet is incorrect:  the last instance of "iterator" should be
+"it".
+  LineIterator it = FileUtils.lineIterator(file, "UTF-8");
+   try {
+     while (it.hasNext()) 
+{
+       String line = it.nextLine();
+       /// do something with line
+     }
+   } finally 
+{
+     LineIterator.closeQuietly(iterator);
+   }</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.LineIterator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="161" opendate="2008-04-01 21:42:06" fixdate="2008-12-04 00:07:02" resolution="Fixed">
+		<buginformation>
+			<summary>FileCleaningTrackerTestCase hangs</summary>
+			<description>The following code in FileCleaningTrackerTestCase never exits, hanging the whole compilation/testing process:
+    private void waitUntilTrackCount() {
+        while (theInstance.getTrackCount() != 0) {
+            int total = 0;
+            while (theInstance.getTrackCount() != 0) 
+{
+                byte[] b = new byte[1024 * 1024];
+                b[0] = (byte) System.currentTimeMillis();
+                total = total + b[0];
+                System.gc();
+            }
+        }
+    }
+It is clear that in theory this code might loop forever, as the allocation of the byte arrays might never unleash a garbage collection complete enough to deallocate all marker objects, so to bring the track count to zero. Believe me, it&amp;amp;apos;s not only theory .</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileCleaningTrackerTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileCleaningTracker.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="202" opendate="2009-04-26 17:31:43" fixdate="2009-04-26 19:25:22" resolution="Fixed">
+		<buginformation>
+			<summary>NotFileFilter documentation is incorrect</summary>
+			<description>The documentation for NotFileFilter (http://commons.apache.org/io/api-release/index.html) incorrectly states that it, "Checks to see if both filters are true."  It looks to be the result of a hasty copy-and-paste from an old version of AndFileFilter (http://svn.apache.org/viewvc/commons/proper/io/trunk/src/java/org/apache/commons/io/filefilter/AndFileFilter.java?revision=140357&amp;amp;view=markup).  It should say something like, "Returns the logical NOT of the underlying filter&amp;amp;apos;s return value for the same arguments."
+Patch is attached.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.filefilter.NotFileFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="212" opendate="2009-08-17 21:43:36" fixdate="2009-08-17 21:44:31" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect ProxyInputStream.skip() javadoc</summary>
+			<description>The ProxyInputStream.skip() method documents the return value as "the number of bytes to skipped or -1 if the end of stream" when the underlying InputStream.skip() method returns "the actual number of bytes skipped", i.e. never -1.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ProxyInputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="231" opendate="2010-03-04 13:40:59" fixdate="2010-03-04 18:10:29" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils generate wrong exception message in isFileNewer method</summary>
+			<description>
+
+if (!reference.exists()) {
+    throw new IllegalArgumentException("The reference file &amp;amp;apos;" + file + "&amp;amp;apos; doesn&amp;amp;apos;t exist");
+}
+
+
+If second argument file does not exist isFileNewer method generates exception with message about first argument file does not exist.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="207" opendate="2009-05-18 23:24:47" fixdate="2010-03-05 01:28:02" resolution="Fixed">
+		<buginformation>
+			<summary>Race condition in forceMkdir</summary>
+			<description>If two processes or threads call forceMkdir() with the same directory there is a chance that one will throw an IOException even though a directory was correctly created (by the other process or thread). </description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="181" opendate="2008-09-08 18:04:35" fixdate="2010-08-04 23:04:55" resolution="Won&apos;t Fix">
+		<buginformation>
+			<summary>LineIterator should implement Iterable </summary>
+			<description>org.apache.commons.io.LineIterator does not implement Iterable.  This makes
+it impossible to use in certain stylized ways, such as in a new-style for
+statement.  Such use is not always desirable (it might temporarily leak a
+file descriptor, until the finalizer is called), but should be possible in
+situations where it is known to be acceptable.</description>
+			<version>1.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.LineIterator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">272</link>
+		</links>
+	</bug>
+	<bug id="216" opendate="2009-08-19 17:54:51" fixdate="2010-09-28 15:30:33" resolution="Fixed">
+		<buginformation>
+			<summary>Delete files quietly when an exception is thrown during initialization</summary>
+			<description>LockableFileWriter fails to report lock file deletion failure - it calls lockFile.delete() several times but fails to check the return code.
+N.B. IIRC, file.delete() returns false if there was no file to delete, so any fix needs to take this into account.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.output.LockableFileWriter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="168" opendate="2008-05-05 17:02:08" fixdate="2010-09-28 23:28:42" resolution="Fixed">
+		<buginformation>
+			<summary>Symbolic links (symlinks) followed when deleting directory.</summary>
+			<description>If &amp;amp;apos;dlink&amp;amp;apos; is a symbolic link to a directory &amp;amp;apos;dir&amp;amp;apos;, and FileUtils.forceDelete is called on dlink, then here is what happens:
+1) the contents of &amp;amp;apos;dir&amp;amp;apos; are emptied (the link is followed).
+2) &amp;amp;apos;dir&amp;amp;apos; continues to exist (but is empty).
+3) &amp;amp;apos;dlink&amp;amp;apos; is removed.
+The correct behavior is to simply remove &amp;amp;apos;dlink&amp;amp;apos; without following it and thus without altering the contents of &amp;amp;apos;dir&amp;amp;apos; (or &amp;amp;apos;dir&amp;amp;apos; itself).</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="217" opendate="2009-08-22 03:26:20" fixdate="2010-09-28 23:55:56" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.copyDirectoryToDirectory makes infinite loops</summary>
+			<description>When using FileUtils.copyDirectoryToDirectory, infinite loops has occurred.
+ detail 
+src directory :  D:\a
+dest directory : D:\a
+call : FileUtils.copyDirectoryToDirectory(new File("D:\a"), new File("D:\a"));
+expected result : directory D:\a\a will be created
+actual result      : D:\a\a\a\a.......   was created
+i guess FileUtils.copyDirectoryToDirectory causes of this result.
+("destDir.mkdir()" is done before "srcDir.listFiles()")
+am i calling wrong method?
+thank you.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="166" opendate="2008-04-25 09:47:57" fixdate="2010-09-29 03:45:22" resolution="Fixed">
+		<buginformation>
+			<summary>Fix URL decoding in FileUtils.toFile()</summary>
+			<description>The sequence "%2520" should decode to "%20".</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">252</link>
+			<link type="Reference" description="is related to">13</link>
+		</links>
+	</bug>
+	<bug id="246" opendate="2010-07-26 09:17:55" fixdate="2010-09-29 11:29:20" resolution="Fixed">
+		<buginformation>
+			<summary>FilenameUtils.wildcardMatch gives incorrect results</summary>
+			<description>This wildcard pattern "*?" does not match correctly. The command:
+System.out.println(FilenameUtils.wildcardMatch("aaa", "*?"));
+prints out "false", even though it matches. The wildcard mask is a bit unusal, but not incorrect. It should match any input with at least one character.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtilsWildcardTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="185" opendate="2008-11-04 16:53:17" fixdate="2010-09-29 15:49:53" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils.freeSpaceWindows blocks</summary>
+			<description>Hi,
+in my Application I have the problem that FileSystemUtils.freeSpaceWindows works properly for hours and then the function call blocks and does not return anymore. Any Ideas? Thanks.
+The stacktrace:
+-------------
+"Thread-16" daemon prio=5 tid=33 RUNNABLE
+    java.io.FileInputStream.readBytes(Native Method)
+    java.io.FileInputStream.read(Unknown Source)
+    java.io.BufferedInputStream.read1(Unknown Source)
+    java.io.BufferedInputStream.read(Unknown Source)
+    sun.nio.cs.StreamDecoder.readBytes(Unknown Source)
+    sun.nio.cs.StreamDecoder.implRead(Unknown Source)
+    sun.nio.cs.StreamDecoder.read(Unknown Source)
+    java.io.InputStreamReader.read(Unknown Source)
+    java.io.BufferedReader.fill(Unknown Source)
+    java.io.BufferedReader.readLine(Unknown Source)
+    java.io.BufferedReader.readLine(Unknown Source)
+    org.apache.commons.io.FileSystemUtils.performCommand(FileSystemUtils.java:413)
+    org.apache.commons.io.FileSystemUtils.freeSpaceWindows(FileSystemUtils.java:225)
+    org.apache.commons.io.FileSystemUtils.freeSpaceOS(FileSystemUtils.java:194)
+    org.apache.commons.io.FileSystemUtils.freeSpaceKb(FileSystemUtils.java:166)
+-------------
+Regards,
+Martin</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="190" opendate="2008-12-30 15:03:34" fixdate="2010-09-29 18:14:22" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.copyDirectory preserves destination subdirectories, rather than overwriting with the source subdirectories</summary>
+			<description>When using FileUtils.copyDirectory to copy directories with subdirectories, the source will overwrite all files that exist in the destination directory, but not the subdirectories themselves. The files inside the subdirectories will be overwritten. The only difference that I&amp;amp;apos;ve noticed thus far is that this preserves the old file dates of the subdirectories rather than using the dates from the source or the current date, if preserveFileDate is set to &amp;amp;apos;false.&amp;amp;apos;</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="248" opendate="2010-09-14 10:09:17" fixdate="2010-09-29 18:52:39" resolution="Fixed">
+		<buginformation>
+			<summary>getFullPathNoEndSeparator return empty while path is one level directory</summary>
+			<description>the getFullPathNoEndSeparator method in FilenameUtils.java (Revision 736890) 
+if filename="/" return "/" &amp;lt;&amp;lt;==right
+if filename="/abc" return empty &amp;lt;&amp;lt;==bug
+if filename="/abc/xyz" return "/abc" &amp;lt;&amp;lt;==right 
+
+
+885 	int index = indexOfLastSeparator(filename);
+886 	if (index &amp;lt; 0) {
+887 		return filename.substring(0, prefix);
+888 	}
+889 	int end = index + (includeSeparator ? 1 : 0);
+================
+                if(end==0) return "/";
+&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;&amp;gt;
+890 	return filename.substring(0, end);
+
+</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="209" opendate="2009-07-23 10:36:48" fixdate="2010-09-29 19:33:44" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils.freeSpaceKb fails to return correct size for a windows mount point</summary>
+			<description>FileSystemUtils.freeSpaceKb fails to return correct result for a NTFS mount point or junction.
+Suppose I have a NTFS partition mounted at C:\Data\partition1.
+Now assume that the free space on Partition mounted as C: is 1GB and that mounted on "C:\Data\partition1" is 2GB. A call to FileSystemUtils.freeSpaceKb("C:\Data\partition1") will return the free space on C: and not on "C:\Data\partition1".
+This is because while running the "dir /-c" with the given path, the code just retains first 2 chars i.e. for any path under "C:\blah\de\blah", "dir /-c" will be called with "C:" which will return incorrect result.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="201" opendate="2009-03-26 13:59:51" fixdate="2010-10-04 01:12:33" resolution="Fixed">
+		<buginformation>
+			<summary>CountingInputStream/CountingOutputStream only partially synchronized</summary>
+			<description>CountingInputStream is only partially synchronized.
+The count is not synchronized when it is updated in read operations, so is not guaranteed to be published correctly
+The synchronization could be removed without loss of functionality.
+Not sure it makes sense to share a stream between threads anyway, as the underlying stream is unlikely to be thread-safe.
+If only one thread reads the stream, then the count field could be made volatile.
+This would allow other threads to read the count safely.</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.CountingInputStream.java</file>
+			<file type="M">org.apache.commons.io.output.CountingOutputStream.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">214</link>
+		</links>
+	</bug>
+	<bug id="252" opendate="2010-10-14 00:40:24" fixdate="2010-10-14 00:58:08" resolution="Duplicate">
+		<buginformation>
+			<summary>NumberFormatException from FileUtils.toFile method</summary>
+			<description>Certain strings can cause the org.apache.commons.io.FileUtils.toFile(URL url) method to call Integer.parseInt with an invalid argument and thus throw a NumberFormatException:
+Exception in thread "main" java.lang.NumberFormatException: For input string: "%2"
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+	at java.lang.Integer.parseInt(Integer.java:449)
+	at org.apache.commons.io.FileUtils.toFile(FileUtils.java:476)
+One example of such a string: "both%20are%20100%20%25%20true"</description>
+			<version>1.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">166</link>
+		</links>
+	</bug>
+	<bug id="272" opendate="2011-05-11 21:13:27" fixdate="2011-05-11 22:54:40" resolution="Duplicate">
+		<buginformation>
+			<summary>LineIterator could easily support Iterable</summary>
+			<description>It could be useful to make LineIterator support Iterable&amp;lt;String&amp;gt;, which is very easy to add.</description>
+			<version>1.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.LineIterator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">181</link>
+		</links>
+	</bug>
+</bugrepository>

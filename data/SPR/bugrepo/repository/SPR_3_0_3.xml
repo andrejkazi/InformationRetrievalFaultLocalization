@@ -1,0 +1,94 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="7289" opendate="2010-06-16 01:19:49" fixdate="2010-06-23 04:30:36" resolution="Complete">
+		<buginformation>
+			<summary>StackOverflowError when converting nested Lists</summary>
+			<description>The following simple unit test demonstrates the problem:
+ConversionService service = ConversionServiceFactory.createDefaultConversionService();
+List&amp;lt;List&amp;lt;String&amp;gt;&amp;gt; list = Collections.singletonList(Collections.singletonList("Foo"));
+Assert.assertNotNull(service.convert(list, String.class));
+Most probably the problem stems from the changed method in TypeDescriptor
+public synchronized TypeDescriptor getElementTypeDescriptor() {
+	if (this.elementType == null) 
+{
+		this.elementType = forElementType(resolveElementType());
+	}
+	return this.elementType;
+}
+and the fact that forElementType returns this in this case.</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.convert.support.GenericConversionService.java</file>
+			<file type="M">org.springframework.core.convert.support.ObjectToObjectConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.CollectionToStringConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.CollectionToCollectionConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.GenericConversionServiceTests.java</file>
+			<file type="M">org.springframework.core.convert.support.MapToMapConverter.java</file>
+			<file type="M">org.springframework.core.convert.TypeDescriptor.java</file>
+			<file type="M">org.springframework.core.convert.support.ConversionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7562</link>
+		</links>
+	</bug>
+	<bug id="7562" opendate="2010-09-15 10:00:15" fixdate="2010-09-15 23:36:06" resolution="Duplicate">
+		<buginformation>
+			<summary>TypeDescriptor.forElementType() is broken for nested collections</summary>
+			<description>The start of forElementType() is defined as:
+if (getType().equals(elementType)) {
+  return this;
+}
+Unfortunately, this fails when the TypeDescriptor represents a List&amp;lt;List&amp;lt;...&amp;gt;&amp;gt;
+When calling getElementType(), the call stack will be getElementType() -&amp;gt; getElementTypeDescriptor() -&amp;gt; forElementType()
+at which point, the elementType field will still be null.
+The equality check will therefore see that List&amp;lt;null&amp;gt; == List&amp;lt;null&amp;gt;, and so the TypeDescriptor will be returned as its own element descriptor.
+This leads to a recursive definition, where the descriptor now represents a List&amp;lt;List&amp;lt;List&amp;lt;...&amp;lt;List&amp;lt;List&amp;lt;... etc.
+</description>
+			<version>3.0.3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.convert.support.GenericConversionService.java</file>
+			<file type="M">org.springframework.core.convert.support.ObjectToObjectConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.CollectionToStringConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.CollectionToCollectionConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.GenericConversionServiceTests.java</file>
+			<file type="M">org.springframework.core.convert.support.MapToMapConverter.java</file>
+			<file type="M">org.springframework.core.convert.TypeDescriptor.java</file>
+			<file type="M">org.springframework.core.convert.support.ConversionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7289</link>
+		</links>
+	</bug>
+	<bug id="8178" opendate="2011-04-02 18:45:07" fixdate="2012-03-19 04:01:28" resolution="Duplicate">
+		<buginformation>
+			<summary>Expose handler method when BindException is thrown from HandlerMethodInvoker</summary>
+			<description>When using RequestMapping annotated controller methods, you can only have have access to the handler method if you have an Errors object as one of the method arguments, and perform error handling within the method.
+This is not ideal for use cases where you want to remove boiler plate code and delegate handling of BindExceptions, but need to have access to the method that (would have been) executed. For example, we have an annotation on the controller method indicating what view the bind errors should be displayed on when a BindExcpetion occurs.
+Since the annotation is on the controller method, we&amp;amp;apos;re currently having to perform some ugly reflection in the HandlerExceptionResolver that handles the BindException in order to extract the controller method for the request from the HandlerAdapter.
+It would be preferable if we could have one of:
+
+The handler method that would have been called exposed in the BindException (or even a subclassed "HandlerMethodBindException" or the like for the case when it fails from HandlerMethodInvoker)
+Or the handler method exposed to the HandlerExceptionResolver itself (Though admittedly have no idea how this would work).
+Or a (thread-bound) accessor method on AnnotationMethodHandlerAdapter that would return the last resolved controller method.
+Or a public method in AnnotationMethodHandlerAdapter that accepts Object handler and HttpServletRequest request, and returns the Method object for the request (what we&amp;amp;apos;re currently doing, just with reflection).
+
+</description>
+			<version>3.0.3</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.format.support.FormattingConversionServiceTests.java</file>
+			<file type="M">org.springframework.format.number.NumberFormattingTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">8124</link>
+		</links>
+	</bug>
+</bugrepository>

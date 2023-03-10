@@ -1,0 +1,17 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="736" opendate="2015-07-21 07:43:46" fixdate="2015-07-21 11:13:04" resolution="Fixed">
+		<buginformation>
+			<summary>Invalid error message in PointFormatter</summary>
+			<description>It reports it&amp;amp;apos;s expecting a semicolon but actually expects a comma.</description>
+			<version>1.10.1 (Fowler SR1)</version>
+			<fixedVersion>1.10.2 (Fowler SR2), 1.11 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.geo.format.DistanceFormatterUnitTests.java</file>
+			<file type="M">org.springframework.data.geo.format.PointFormatterUnitTests.java</file>
+			<file type="M">org.springframework.data.geo.format.PointFormatter.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

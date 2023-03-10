@@ -1,0 +1,46 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="1" master="181" duplicate="272" opendate="2008-09-08 18:04:35" fixdate="2011-05-11 22:54:40" resolution="Won't Fix">
+		<buginformation>
+			<summary>LineIterator should implement Iterable  LineIterator could easily support Iterable</summary>
+			<description>org.apache.commons.io.LineIterator does not implement Iterable.  This makes
+it impossible to use in certain stylized ways, such as in a new-style for
+statement.  Such use is not always desirable (it might temporarily leak a
+file descriptor, until the finalizer is called), but should be possible in
+situations where it is known to be acceptable. It could be useful to make LineIterator support Iterable&amp;lt;String&amp;gt;, which is very easy to add.</description>
+			<version>1.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.LineIterator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">272</link>
+			<link type="Duplicate" description="duplicates">181</link>
+		</links>
+	</bug>
+	<bug id="6" master="166" duplicate="252" opendate="2008-04-25 09:47:57" fixdate="2010-10-14 00:58:08" resolution="Fixed">
+		<buginformation>
+			<summary>Fix URL decoding in FileUtils.toFile() NumberFormatException from FileUtils.toFile method</summary>
+			<description>The sequence "%2520" should decode to "%20". Certain strings can cause the org.apache.commons.io.FileUtils.toFile(URL url) method to call Integer.parseInt with an invalid argument and thus throw a NumberFormatException:
+Exception in thread "main" java.lang.NumberFormatException: For input string: "%2"
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+	at java.lang.Integer.parseInt(Integer.java:449)
+	at org.apache.commons.io.FileUtils.toFile(FileUtils.java:476)
+One example of such a string: "both%20are%20100%20%25%20true"</description>
+			<version>1.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">252</link>
+			<link type="Reference" description="is related to">13</link>
+			<link type="Duplicate" description="duplicates">166</link>
+		</links>
+	</bug>
+</bugrepository>

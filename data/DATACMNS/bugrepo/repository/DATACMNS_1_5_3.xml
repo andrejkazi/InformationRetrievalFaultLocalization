@@ -1,0 +1,124 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="343" opendate="2013-07-12 03:09:09" fixdate="2013-08-01 07:22:05" resolution="Fixed">
+		<buginformation>
+			<summary>PageableHandlerMethodArgumentResolver should replace pagination parameters not add them</summary>
+			<description>PageableHandlerMethodArgumentResolver.enhance() currently uses UriComponentsBuilder.queryParam() to add pagination parameters. In case the base URI already contains these parameters they&amp;amp;apos;ll add up eventually and produce invalid results.</description>
+			<version>1.6 M1</version>
+			<fixedVersion>1.6 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTest.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="352" opendate="2013-08-05 19:29:05" fixdate="2013-08-13 03:17:53" resolution="Fixed">
+		<buginformation>
+			<summary>SortHandlerMethodArgumentResolver and PageableHandlerMethodArgumentResolver have inconsistent property names</summary>
+			<description>In SortHandlerMethodArgumentResolver (added in 1.6), you can customize the request parameter name with method setSortParameter. However, PageableHandlerMethodArgumentResolver uses the word "property" instead of "paramater" for its request parameter properties: setPageProperty and setSizeProperty. These should be consistent. I prefer "parameter" because that reflects the fact that it&amp;amp;apos;s a request parameter, but however they&amp;amp;apos;re named it should be consistent.</description>
+			<version>1.6 RC1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableDefaultUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="353" opendate="2013-08-05 20:38:37" fixdate="2013-08-21 23:35:44" resolution="Fixed">
+		<buginformation>
+			<summary>Mandatory transitive dependency to Spring HATEOS errantly added in 1.6</summary>
+			<description>The documentation for @EnableSpringDataWebSupport says this:
+Annotation to automatically register the following beans for usage with Spring MVC.
+
+DomainClassConverter - to allow usage of domain types managed by Spring Data repositories as controller method arguments bound with PathVariable or RequestParam.
+PageableHandlerMethodArgumentResolver - to allow injection of Pageable instances into controller methods automatically created from request parameters.
+SortHandlerMethodArgumentResolver - to allow injection of Sort instances into controller methods automatically created from request parameters.
+
+If Spring HATEOAS is present on the classpath we will additionally register the following beans:
+
+PagedResourcesAssembler - for injection into web components
+PagedResourcesAssemblerArgumentResolver - for injection of
+PagedResourcesAssembler into controller methods
+
+
+However, this is not correct, and a mandatory transient dependency on Spring HATEOAS has now been added in Spring Data 1.6. Neither @EnableSpringDataWebSupport, PageableHandlerMethodArgumentResolver, nor SortHandlerMethodArgumentResolver may be used if you don&amp;amp;apos;t have Spring HATEOAS on the classpath.
+If you use @EnableSpringDataWebSupport you get a NoClassDefFoundError on application startup for org/springframework/hateoas/mvc/UriComponentsContributor. If you use the PageableHandlerMethodArgumentResolver or SortHandlerMethodArgumentResolver directly you get a compilation error for missing class org.springframework.hateoas.mvc.UriComponentsContributor. This is because PageableHandlerMethodArgumentResolver and SortHandlerMethodArgumentResolver both extend UriComponentsContributor.
+This is a MAJOR problem. Spring Data users must now include Spring HATEOAS in their application even if they aren&amp;amp;apos;t using it, and HATEOAS comes with its own significant set of transient dependencies. The HATEOAS components should be separated from PageableHandlerMethodArgumentResolver and SortHandlerMethodArgumentResolver so that they can be used without HATEOAS on the classpath.</description>
+			<version>1.6 M1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.LegacyPageableHandlerArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerUnitTests.java</file>
+			<file type="M">org.springframework.data.web.config.EnableSpringDataWebSupport.java</file>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.SortHandlerArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration.java</file>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.config.EnableSpringDataWebSupportIntegrationTests.java</file>
+			<file type="M">org.springframework.data.web.config.PageableResourcesAssemblerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.web.PagedResourcesAssembler.java</file>
+			<file type="M">org.springframework.data.web.PageableDefaultUnitTests.java</file>
+			<file type="M">org.springframework.data.web.config.SpringDataWebConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="359" opendate="2013-08-20 10:37:29" fixdate="2013-08-21 23:41:04" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect deprecation message in PageableArgumentResolver</summary>
+			<description>PageableArgumentResolver is deprecated in 1.6.RC1 to favor PageableWebHandlerArgumentResolver. However the class PageableWebHandlerArgumentResolver does not exist. I believe the new class to be used now should be PageableHandlerMethodArgumentResolver i.e. without Web after Pageable.</description>
+			<version>1.6 RC1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">304</link>
+		</links>
+	</bug>
+	<bug id="358" opendate="2013-08-19 09:05:03" fixdate="2013-08-26 12:43:44" resolution="Fixed">
+		<buginformation>
+			<summary>The current page number cannot be greater or equal to the total number of pages</summary>
+			<description>I see "The current page number cannot be greater or equal to the total number 
+of pages" exception when datastore has no data.
+Truncated Trace:
+-------------------------------------------
+java.lang.IllegalArgumentException: The current page number cannot be greater or equal to the total number of pages!
+	org.springframework.util.Assert.isTrue(Assert.java:65)
+	org.springframework.hateoas.PagedResources$PageMetadata.&amp;lt;init&amp;gt;(PagedResources.java:207)
+	org.springframework.data.web.PagedResourcesAssembler.asPageMetadata(PagedResourcesAssembler.java:162)
+	org.springframework.data.web.PagedResourcesAssembler.createResource(PagedResourcesAssembler.java:124)
+	org.springframework.data.web.PagedResourcesAssembler.toResource(PagedResourcesAssembler.java:109)</description>
+			<version>1.6 RC1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="376" opendate="2013-10-01 07:12:21" fixdate="2013-10-01 08:39:01" resolution="Fixed">
+		<buginformation>
+			<summary>Repositories cannot deal with CGLib proxied classes</summary>
+			<description>If you ask Repositories for a RepositoryInformation or PersistentEntity and pass a proxy class of a type type that is actually managed by the Repositories instance it currently returns null as the RepositoryFactoryInformation lookup fails. This is due to the lookup not actually looking up the information for the user class but the proxied one.</description>
+			<version>1.5.3</version>
+			<fixedVersion>1.6.2 (Babbage SR1), 1.7 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.RepositoriesIntegrationTests.java</file>
+			<file type="M">org.springframework.data.repository.support.Repositories.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">169</link>
+		</links>
+	</bug>
+</bugrepository>

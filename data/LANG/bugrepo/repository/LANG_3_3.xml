@@ -1,0 +1,107 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="978" opendate="2014-03-01 09:23:35" fixdate="2014-03-03 21:33:14" resolution="Fixed">
+		<buginformation>
+			<summary>Failing tests with Java 8 b128</summary>
+			<description>Gary Gregory has reported failing tests during the vote for Lang 3.3 RC1, when building with:
+
+
+java version "1.8.0"
+Java(TM) SE Runtime Environment (build 1.8.0-b128)
+Java HotSpot(TM) 64-Bit Server VM (build 25.0-b69, mixed mode)
+
+Apache Maven 3.2.1 (ea8b2b07643dbb1b84b6d16e1f08391b666bc1e9;
+2014-02-14T12:37:52-05:00)
+Maven home: C:\Java\apache-maven-3.2.1\bin\..
+Java version: 1.8.0, vendor: Oracle Corporation
+Java home: C:\Program Files\Java\jdk1.8.0\jre
+Default locale: en_US, platform encoding: Cp1252
+OS name: "windows 7", version: "6.1", arch: "amd64", family: "dos"
+
+
+
+
+FastDateFormat_ParserTest&amp;gt;FastDateParserTest.testParses:242-&amp;gt;FastDateParserTest.validateSdfFormatFdpParseEquality:219  Parse FastDateParserTest.testParses:242-&amp;gt;validateSdfFormatFdpParseEquality:219  Parse
+
+Running org.apache.commons.lang3.time.FastDateFormat_ParserTest /1/2/10/5/??/0/0/?/+0000 ja_JP_JP_#u-ca-japanese 1867 G/y/M/d/h/a/m/s/E/Z America/New_York Tests run: 29, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.491 sec &amp;lt;&amp;lt;&amp;lt; FAILURE! - in org.apache.commons.lang3.time.FastDateFormat_ParserTest testParses(org.apache.commons.lang3.time.FastDateFormat_ParserTest) Time elapsed: 1.492 sec &amp;lt;&amp;lt;&amp;lt; ERROR! java.text.ParseException: (The ja_JP_JP_#u-ca-japanese locale does not support dates before 1868 AD)
+
+
+See: http://markmail.org/message/suvorq3xrqmimnui</description>
+			<version>3.3</version>
+			<fixedVersion>3.3.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="987" opendate="2014-03-13 04:53:05" fixdate="2014-03-13 21:52:39" resolution="Fixed">
+		<buginformation>
+			<summary>DateUtils.getFragmentInDays(Date, Calendar.MONTH) returns wrong days</summary>
+			<description>Commons lang3 screwed up my system after upgraded to 3.3 last night!
+We use DateUtils.getFragmentInDays(Date, Calendar.MONTH) to extract days for later use. Basically (in 3.2), &amp;amp;apos;today&amp;amp;apos; (Mar. 13) returns 13, but, it returns 12 in 3.3!
+I compared the underlying method org.apache.commons.lang3.time.DateUtils.getFragment(Calendar, int, int) between 3.2 and 3.3:
+3.2
+
+
+        // Fragments bigger than a day require a breakdown to days
+        switch (fragment) {
+            case Calendar.YEAR:
+                result += (calendar.get(Calendar.DAY_OF_YEAR) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+            case Calendar.MONTH:
+                result += (calendar.get(Calendar.DAY_OF_MONTH) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+        }
+
+
+3.3
+
+
+        // Fragments bigger than a day require a breakdown to days
+        switch (fragment) {
+            case Calendar.YEAR:
+                result += ((calendar.get(Calendar.DAY_OF_YEAR) -1) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+            case Calendar.MONTH:
+                result += ((calendar.get(Calendar.DAY_OF_MONTH) -1) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+            default:
+                break;
+        }
+
+
+Is there ANY ANY reason for adding &amp;amp;apos;-1&amp;amp;apos; in 3.3?! Plus, do you have any unit test for this method?</description>
+			<version>3.3</version>
+			<fixedVersion>3.3.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsFragmentTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">951</link>
+		</links>
+	</bug>
+	<bug id="1269" opendate="2016-09-21 10:19:27" fixdate="2016-10-28 17:23:52" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong name or result of StringUtils::getJaroWinklerDistance</summary>
+			<description>The name of the method StringUtils::getJaroWinklerDistance is misleading.
+Currently for equal strings 1 is returned, for completely different strings 0 is returned. That is a measure of similarity, not of a distance. A distance must be 0 for equal strings. I read on the issues LANG-591 and LANG-944, that it was decided to have a similar name to StringUtils::getLevenshteinDistance, but that requires also the change of the methods result.
+Could you please (1) rename the method to StringUtils::getJaroWinklerSimilarity or (2) change the method to return 1 - currentResult?
+First option has the disadvantage to lose the similar naming of the similar methods, second option implies the risk to unnoticed introduce bugs in depending code. So I think it is preferable to use the first option.</description>
+			<version>3.3</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">21</link>
+			<link type="Supercedes" description="supercedes">9</link>
+		</links>
+	</bug>
+</bugrepository>

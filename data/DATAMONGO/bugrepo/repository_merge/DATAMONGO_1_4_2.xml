@@ -1,0 +1,53 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="5" master="934" duplicate="1190" opendate="2014-05-14 01:45:14" fixdate="2015-11-26 17:00:21" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for the bulk operations introduced in MongoDB 2.6. Please consider adding BulkWriteOperations, in particular unorderedBulkInsert</summary>
+			<description>Latest version of spring data mongodb have no support for the bulk operations introduced in MongoDB 2.6 and mongodb recommends using the new write protocols and new bulk api for bulk opertations. Please consider adding bulk write operations to mongoOperations.
+E.g. initializeUnorderedBulkOperation  which allows bulk writes that do not abort on the first error, and are potentially faster (allowing reordering &amp;amp; parallelism). 
+A naive start would be :
+class MongoTemplate {
+public BulkWriteResult  insert(List&amp;lt;Object&amp;gt; list, boolean isOrdered, String collectionName){
+        DBCollection col=mongoOperations.getCollection(colName);
+        BulkWriteOperation bulk=isOrdered?     
+              col.initializeOrderdBulkOperation():
+              col.initializeUnorderedBulkOperation();
+        MongoConverter converter= mongoOperations.getConverter();
+        for(String Object o:list)
+{
+            DBObject dbDoc=new BasicDBObject();
+            maybeEmitEvent(new BeforeConvertEvent&amp;lt;T&amp;gt;(o));
+            converter.write(element, dbDoc);
+            maybeEmitEvent(new BeforeSaveEvent&amp;lt;T&amp;gt;(o, dbDoc));
+            bulk.insert(dbDoc);                    	
+        }
+       ... // loop and emit "AfterSaveEvent"s
+        return bulk.execute(writeConcern);
+}
+This is a naive start, i&amp;amp;apos;d appreciate other people&amp;amp;apos;s view on additional design considerations:
+(1) Major issue - it&amp;amp;apos;s a problem to get the returned IDs and match them to the original objects!
+(2) should it be generalized to other bulk operations
+thanks,
+Pelit</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.9 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.BulkOperationException.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoExceptionTranslator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperations.java</file>
+			<file type="D">org.springframework.data.mongodb.util.Tuple.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperationsIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.BulkOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoActionOperation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1190</link>
+			<link type="Duplicate" description="duplicates">934</link>
+			<link type="Relate" description="is related to">665</link>
+		</links>
+	</bug>
+</bugrepository>

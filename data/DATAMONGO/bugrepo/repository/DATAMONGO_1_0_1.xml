@@ -1,0 +1,1599 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="411" opendate="2012-03-02 00:07:05" fixdate="2012-03-04 00:53:11" resolution="Fixed">
+		<buginformation>
+			<summary>Potential ClassCastExceptions in MongoPersistentEntityIndexCreator</summary>
+			<description>The Spring ApplicationEvent mechanism uses some mechanism to select event listeners based on generic types. Unfortunately it does not consider nested generic types which we use to distinguish a mapping event for MongoDB from one for Neo4j e.g. Thus the MongoPersistentEntityIndexCreator will get invoked for mapping events for other stores as well. Thus we have to double check the event types before invoking further code.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="360" opendate="2011-12-23 16:33:37" fixdate="2012-03-08 03:19:58" resolution="Fixed">
+		<buginformation>
+			<summary>java.lang.ClassCastException when placing GeospatialIndex into IndexOperations and invoking IndexOperations.getIndexInfo()</summary>
+			<description>
+
+
+
+
+
+MongoTemplate mongoTemplate = ...
+
+
+
+
+IndexOperations indexOps = mongoTemplate.indexOps(DomainModel.class);
+
+
+
+
+indexOps.ensureIndex(new GeospatialIndex("attributename"));
+
+
+
+
+indexOps.getIndexInfo();
+
+
+
+
+
+
+throws:
+
+
+
+
+
+
+Caused by: java.lang.ClassCastException: java.lang.String cannot be cast to java.lang.Integer
+
+
+
+
+	at org.springframework.data.mongodb.core.DefaultIndexOperations$4.getIndexData(DefaultIndexOperations.java:140)
+
+
+
+
+	at org.springframework.data.mongodb.core.DefaultIndexOperations$4.doInCollection(DefaultIndexOperations.java:123)
+
+
+
+
+	at org.springframework.data.mongodb.core.DefaultIndexOperations$4.doInCollection(DefaultIndexOperations.java:120)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.DefaultIndexOperations.getIndexInfo(DefaultIndexOperations.java:120)
+
+
+
+
+
+
+Offending Code: org.springframework.data.mongodb.core.DefaultIndexOperations.java:138
+
+
+
+
+
+
+
+
+
+
+
+Entry&amp;lt;Object, Integer&amp;gt; thisEntry = (Entry&amp;lt;Object, Integer&amp;gt;) entries.next();
+
+
+
+
+
+
+
+
+
+
+
+but is actually type: Entry&amp;lt;Object, String&amp;gt; with a value "2d".
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.RepositoryIndexCreationIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.IndexInfo.java</file>
+			<file type="M">org.springframework.data.mongodb.core.geo.GeoSpatialTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultIndexOperations.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="412" opendate="2012-03-04 18:54:04" fixdate="2012-03-09 02:11:43" resolution="Fixed">
+		<buginformation>
+			<summary>getUserCredentials() is called twice in AbstractMongoConfiguration::mongoDbFactory()</summary>
+			<description>During MongoDbFactory creation in mongoDbFactory(), getUserCredentials() is called twice:
+
+
+
+
+
+
+if (getUserCredentials() == null) {
+
+
+
+
+ return new SimpleMongoDbFactory(mongo(), getDatabaseName());
+
+
+
+
+} else {
+
+
+
+
+ return new SimpleMongoDbFactory(mongo(), getDatabaseName(), getUserCredentials());
+
+
+
+
+}
+
+
+
+
+
+
+It is almost not worth mentioning, but for pedantic reasons it would be better to do:
+
+
+
+
+
+
+UserCredentials userCredentials = getUserCredentials();
+
+
+
+
+if (userCredentials == null) {
+
+
+
+
+ return new SimpleMongoDbFactory(mongo(), getDatabaseName());
+
+
+
+
+} else {
+
+
+
+
+ return new SimpleMongoDbFactory(mongo(), getDatabaseName(), userCredentials);
+
+
+
+
+}
+
+
+
+
+
+
+Almost always override of getUserCredentials() would look like:
+
+
+
+
+
+
+@Override
+
+
+
+
+public UserCredentials getUserCredentials() {
+
+
+
+
+  return new UserCredentials(..., ...);
+
+
+
+
+}
+
+
+
+
+
+
+and there is no need to create UserCredentials twice, even if it only happens during startup.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.AbstractMongoConfiguration.java</file>
+			<file type="M">org.springframework.data.mongodb.core.TestMongoConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="402" opendate="2012-02-17 00:31:18" fixdate="2012-03-09 06:31:10" resolution="Fixed">
+		<buginformation>
+			<summary>Inner class not supported</summary>
+			<description>Inner class not supported in 1.0.1.GA. It works fine in 1.0.0.GA
+java.lang.IllegalArgumentException: No property null found for type class org.test.EnclosingClass$InsideClass
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:312)
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:294)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:258)
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+	at org.springframework.data.mongodb.core.convert.MappedConstructor$MappedParameter.&amp;lt;init&amp;gt;(MappedConstructor.java:125)
+	at org.springframework.data.mongodb.core.convert.MappedConstructor.&amp;lt;init&amp;gt;(MappedConstructor.java:57)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:212)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:200)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.getValueInternal(MappingMongoConverter.java:713)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter$1.doWithPersistentProperty(MappingMongoConverter.java:230)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter$1.doWithPersistentProperty(MappingMongoConverter.java:220)
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:173)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:220)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:200)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:164)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:73)
+	at org.springframework.data.mongodb.core.MongoTemplate$ReadDbObjectCallback.doWith(MongoTemplate.java:1693)
+	at org.springframework.data.mongodb.core.MongoTemplate.executeFindOneInternal(MongoTemplate.java:1405)
+	at org.springframework.data.mongodb.core.MongoTemplate.doFindOne(MongoTemplate.java:1224)
+	at org.springframework.data.mongodb.core.MongoTemplate.findOne(MongoTemplate.java:455)
+	at org.springframework.data.mongodb.core.MongoTemplate.findOne(MongoTemplate.java:450)
+	at org.test.InnerClassTest.testInnerClass(InnerClassTest.java:43)</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">134</link>
+		</links>
+	</bug>
+	<bug id="413" opendate="2012-03-09 17:21:02" fixdate="2012-03-12 04:51:50" resolution="Fixed">
+		<buginformation>
+			<summary>Using "Or" in repository query yields a ClassCastException</summary>
+			<description>This:
+    List&amp;lt;User&amp;gt; findByEmailOrAlias(String email, String alias);
+Gives:
+2012-03-09 17:19:55,057 [main] DEBUG org.springframework.data.mongodb.repository.query.MongoQueryCreator - Created query { "email" : "a@b.c" , "alias" : "abc" , "$or" : { }}
+2012-03-09 17:19:55,062 [main] DEBUG org.springframework.data.mongodb.core.MongoTemplate - find using query: { "email" : "a@b.c" , "$or" : { }} fields: null for class: class com.musicalabs.api.model.User in collection: user
+Exception in thread "main" java.lang.ClassCastException: com.mongodb.BasicDBObject cannot be cast to java.lang.Iterable
+	at org.springframework.data.mongodb.core.QueryMapper.getMappedObject(QueryMapper.java:92)
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1259)
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1248)
+	at org.springframework.data.mongodb.core.MongoTemplate.find(MongoTemplate.java:471)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery$Execution.readCollection(AbstractMongoQuery.java:125)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery$CollectionExecution.execute(AbstractMongoQuery.java:142)
+	at org.springframework.data.mongodb.repository.query.AbstractMongoQuery.execute(AbstractMongoQuery.java:88)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:302)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+	at $Proxy22.findByEmailOrAlias(Unknown Source)
+	at com.acme.Fake.main(Fake.java:23)
+While that:
+    List&amp;lt;User&amp;gt; findByEmailAndAlias(String email, String alias);
+works fine.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+			<file type="D">org.springframework.data.mongodb.core.query.OrQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="422" opendate="2012-03-27 17:55:34" fixdate="2012-04-02 04:45:15" resolution="Fixed">
+		<buginformation>
+			<summary>UUIDToBinaryConverter not compatible with mongo java driver</summary>
+			<description>UUID to Binary conversion as implemented in spring-data-mongodb converts the UUID to a string and saves it as a mongo Binary with subtype BSON.B_UUID:
+
+
+
+
+
+
+return source == null ? null : new Binary(BSON.B_UUID, source.toString().getBytes("UTF-8"));
+
+
+
+
+
+
+The java driver reads this value back in with
+
+
+
+
+
+
+org.bson.BasicBSONDecoder
+
+
+
+
+
+
+case B_UUID:
+
+
+
+
+    if ( totalLen != 16 )
+
+
+
+
+        throw new IllegalArgumentException( "bad data size subtype 3 len: " + totalLen + " != 16");
+
+
+
+
+
+
+
+
+
+    long part1 = _in.readLong();
+
+
+
+
+    long part2 = _in.readLong();
+
+
+
+
+    _callback.gotUUID(name, part1, part2);
+
+
+
+
+    return;
+
+
+
+
+}
+
+
+
+
+
+
+That obviously does not work because the java driver expects to read in 2 x 8 bytes containing the most and least significant bytes when it encounters the binary subtype BSON.B_UUID. The converter has to save UUIDs as in BasicBSONEncoder (method putUUID, arround line 266 in 2.7.1) in order for this to work.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConvertersUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversions.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConverters.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversionsUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.MongoSimpleTypes.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="425" opendate="2012-04-02 04:56:44" fixdate="2012-04-02 09:09:29" resolution="Fixed">
+		<buginformation>
+			<summary>Binding a Date to a manually defined repository query fails</summary>
+			<description>See this StackOverflow question for details.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.config.MongoNamespaceIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="423" opendate="2012-03-29 06:03:26" fixdate="2012-04-02 11:48:19" resolution="Fixed">
+		<buginformation>
+			<summary>Criteria.regex should use java.util.Pattern instead of $regex</summary>
+			<description>mongod complains about $regex in some cases.  If you try:
+
+
+
+
+
+
+DBCollection c = ...
+
+
+
+
+c.find( new BasicDBObject( "x" ,
+
+
+
+
+                new BasicDBObject("$not", new BasicDBObject("$regex", "b") ) ) );
+
+
+
+
+
+
+throws this exception:
+
+
+
+
+
+
+   com.mongodb.MongoException: can&amp;amp;apos;t use $not with $regex, use BSON regex type instead
+
+
+
+
+	at com.mongodb.MongoException.parse(MongoException.java:82)
+
+
+
+
+	at com.mongodb.DBApiLayer$MyCollection.__find(DBApiLayer.java:312)
+
+
+
+
+	at com.mongodb.DBCursor._check(DBCursor.java:369)
+
+
+
+
+	at com.mongodb.DBCursor._hasNext(DBCursor.java:504)
+
+
+
+
+	at com.mongodb.DBCursor.hasNext(DBCursor.java:529)
+
+
+
+
+
+
+while this does not:
+
+
+
+
+
+
+DBCollection c = ...
+
+
+
+
+c.find( new BasicDBObject( "x" ,
+
+
+
+
+                new BasicDBObject("$not", Pattern.compile( "b" , Pattern.CASE_INSENSITIVE ) ) ) );
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.Criteria.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.QueryTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="429" opendate="2012-04-10 02:33:09" fixdate="2012-04-14 04:41:42" resolution="Fixed">
+		<buginformation>
+			<summary>using @Query annotation, arrays are translated somewhere between query creation and mongo interpretation</summary>
+			<description>I&amp;amp;apos;m trying to pass an array for a $all query so that I can keep all my queries in the same repository interface.  I&amp;amp;apos;ve tried various things, but I keep getting 
+
+
+
+
+
+
+org.springframework.data.mongodb.UncategorizedMongoDbException: $all requires array; 
+
+
+
+
+nested exception is com.mongodb.MongoException: $all requires array
+
+
+
+
+
+
+Putting debug on both ends, Spring Data is logging:
+
+
+
+
+
+
+DEBUG [10/04/2012 09:57:38 BST - main] - Created query { "tags" : { "$all" : [ "green" , "orange"]}}
+
+
+
+
+DEBUG [10/04/2012 09:57:38 BST - main] - find using query: { "tags" : { "$all" : [ "green" , "orange"]}} fields: null for class:
+
+
+
+
+
+
+and that query when pasted into a mongo shell is correct, returning the required documents however mongo is logging:
+
+
+
+
+
+
+Tue Apr 10 10:57:39 [conn84] assertion 13050 $all requires array ns:database.collection query:{ tags: { $all: { 0: "green", 1: "orange" } } }
+
+
+
+
+
+
+Which when pasted into a mongo shell returns the above error.
+Debugging, this translation error occurs in DBObject org.springframework.data.mongodb.core.QueryMapper.getMappedObject(DBObject query, MongoPersistentEntity&amp;lt;?&amp;gt; entity)
+It looks like this needs another clause for $all, similar to that which exists for $.*or.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="459" opendate="2012-06-07 13:05:33" fixdate="2012-06-11 04:52:24" resolution="Duplicate">
+		<buginformation>
+			<summary>Using Update.set in nested arrays does not save the _class attribute</summary>
+			<description>I have a service method like that:
+
+
+
+
+
+
+	public Goal save(Goal goal) {
+
+
+
+
+		Match match = this.mongoTemplate.findAndModify(
+
+
+
+
+				query(where("goals").elemMatch(where("id").is(goal.getId()))),
+
+
+
+
+				new Update().set("goals.$", goal), Match.class);
+
+
+
+
+		return match.findGoalById(goal.getId());
+
+
+
+
+	}
+
+
+
+
+
+
+classes:
+
+
+
+
+
+
+class Match {
+
+
+
+
+     List&amp;lt;Goal&amp;gt; goals;
+
+
+
+
+}
+
+
+
+
+class Goal {
+
+
+
+
+     Player player;
+
+
+
+
+}
+
+
+
+
+abstract class Player {}
+
+
+
+
+class Forward extends Player {}
+
+
+
+
+class Defender extends Player{}
+
+
+
+
+
+
+When running the method above, the _class information for the Player object in the Goal class does not get saved in the database. This makes the saved document unloadable by Spring MongoDB.
+Doing like that however will work:
+
+
+
+
+
+
+Goal g = match.getGoal(&amp;lt;id&amp;gt;);
+
+
+
+
+g.setPlayer(&amp;lt;a player&amp;gt;);
+
+
+
+
+
+
+matchRepository.save(match);</description>
+			<version>1.0.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">392</link>
+		</links>
+	</bug>
+	<bug id="450" opendate="2012-05-11 13:41:25" fixdate="2012-06-14 03:46:19" resolution="Fixed">
+		<buginformation>
+			<summary>enabling DEBUG causes RuntimeException</summary>
+			<description>In MongoTemplate  this causes a runtime exception, when DEBUG level is enabled.
+
+
+
+
+
+
+		if (LOGGER.isDebugEnabled()) {
+
+
+
+
+			LOGGER.debug("findAndModify using query: " + query + " fields: " + fields + " sort: " + sort + " for class: "
+
+
+
+
+					+ entityClass + " and update: " + updateObj + " in collection: " + collectionName);
+
+
+
+
+		}
+
+
+
+
+
+
+Seems the toString() doesn&amp;amp;apos;t use the converters. Stack trace:
+
+
+
+
+
+
+java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class State
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:261)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:58)
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84)
+
+
+
+
+	at java.lang.String.valueOf(String.java:2826)
+
+
+
+
+	at java.lang.StringBuilder.append(StringBuilder.java:115)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFindAndModify(MongoTemplate.java:1341)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.findAndModify(MongoTemplate.java:536)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.findAndModify(MongoTemplate.java:527)
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="447" opendate="2012-05-10 08:27:15" fixdate="2012-06-14 05:06:10" resolution="Fixed">
+		<buginformation>
+			<summary>Removal of Documents fails in in debug mode for Documents with complex ids</summary>
+			<description>During the removal of Objects MongoTemplate.remove() that use complex classes as ids spring-data tries to create a string out of the idquery that is used to find the object in the Mongo Database MongoTemplate.class. Since the query contains the id object JSON.serialize() is called for it. Since JSON can only handle a limited set of classes this call fails.
+During the creation of the query spring-data even tests if it is necessary to convert the id-object into something manageable (and such a converter is required to use complex classes as ids in the first place) but the check (BeanWrapper.class:230) results in a false because the target type in this case is always Object.
+Workaround
+Never activate the debug log for MongoTemplate.
+The Exception:
+
+
+
+
+
+
+java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class myclass.ChannelId
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:261) ~[mongo-java-driver-2.7.1.jar:na]
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141) ~[mongo-java-driver-2.7.1.jar:na]
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:58) ~[mongo-java-driver-2.7.1.jar:na]
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84) ~[mongo-java-driver-2.7.1.jar:na]
+
+
+
+
+	at java.lang.String.valueOf(String.java:2902) ~[na:1.7.0_04]
+
+
+
+
+	at java.lang.StringBuilder.append(StringBuilder.java:128) ~[na:1.7.0_04]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$13.doInCollection(MongoTemplate.java:941) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$13.doInCollection(MongoTemplate.java:933) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doRemove(MongoTemplate.java:933) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.remove(MongoTemplate.java:924) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.remove(MongoTemplate.java:865) ~[spring-data-mongodb-1.0.1.RELEASE.jar:na]
+
+
+
+
+	...
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.Query.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="428" opendate="2012-04-09 10:42:02" fixdate="2012-06-19 08:54:30" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException when using outputDatabase option in map-reduce</summary>
+			<description>I have a database with a collection of documents. I am trying to do a mapreduce operation on this collection. When I select a set of mapreduce options such that the result is written to a collection in a different database from my source collection, I get a ClassCastException. Here is a snippet of my code (params is an object that contains String representations of my map, reduce, and finalize functions):
+
+
+
+
+
+
+MapReduceOptions options = MapReduceOptions.options()
+
+
+
+
+		.finalizeFunction(params.finalizeFunction)
+
+
+
+
+		.outputDatabase("mapreduceres")
+
+
+
+
+		.outputCollection(collName)
+
+
+
+
+		.outputSharded(true);
+
+
+
+
+
+
+
+
+
+MapReduceResults&amp;lt;Object&amp;gt; temp = mongoTemplate.mapReduce(params.collectionId, params.mapFunction,
+
+
+
+
+		params.reduceFunction,options,Object.class);
+
+
+
+
+
+
+Here is the exception:
+
+
+
+
+
+
+SEVERE: com.mongodb.BasicDBObject cannot be cast to java.lang.String
+
+
+
+
+java.lang.ClassCastException: com.mongodb.BasicDBObject cannot be cast to java.lang.String
+
+
+
+
+	at org.springframework.data.mongodb.core.mapreduce.MapReduceResults.&amp;lt;init&amp;gt;(MapReduceResults.java:52)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.mapReduce(MongoTemplate.java:1026)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.mapReduce(MongoTemplate.java:976)
+
+
+
+
+
+
+This is the Spring code that is throwing the exception:
+
+
+
+
+
+
+public MapReduceResults(List&amp;lt;T&amp;gt; mappedResults, DBObject rawResults) {
+
+
+
+
+	Assert.notNull(mappedResults);
+
+
+
+
+	Assert.notNull(rawResults);
+
+
+
+
+	this.mappedResults = mappedResults;
+
+
+
+
+	this.rawResults = rawResults;
+
+
+
+
+	parseTiming(rawResults);
+
+
+
+
+	parseCounts(rawResults);
+
+
+
+
+	if (rawResults.get("result") != null) {
+
+
+
+
+		this.outputCollection = (String) rawResults.get("result");   //==== here!
+
+
+
+
+	}
+
+
+
+
+
+
+I put a breakpoint here, and I can see the value of the result object. If I do NOT use a different database (i.e., comment out the .outputDatabase("mapreduceres") line above, the result object is indeed a simple string. However, if I DO use a different database (i.e., keep the .outputDatabase("mapreduceres") above), the result object looks like this:
+
+
+
+
+
+
+{ "db" : "mapreduceres" , "collection" : "myCollectionName"}
+
+
+
+
+
+
+In this case, the cast doesn&amp;amp;apos;t work.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapreduce.MapReduceResults.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="424" opendate="2012-03-29 14:03:18" fixdate="2012-06-19 08:57:01" resolution="Fixed">
+		<buginformation>
+			<summary>Declaring a list of DBRef in a domian class results in Null for each DBRef when reading from mongo database</summary>
+			<description>We have a requirement that we have to be able to define the following field in our domain class. The reason that we need to have such restriction is that this domain is used for integration with another system.
+
+
+
+
+
+
+@Field("deletions")
+
+
+
+
+private List&amp;lt;com.mongodb.DBRef&amp;gt; deletions;
+
+
+
+
+
+
+Saving of deletions collections works fine and I can verify deletions list stored properly. However, when the list is read from Mongo DB, all instance of com.mongodb.DBRef are null. I had the same issue with having define one com.mongodb.DBRef in a domain class, but I could get around with that by creating a reading converter that converts from com.mongodb.DBRef to com.mongodb.DBRef </description>
+			<version>1.0.1</version>
+			<fixedVersion>1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="462" opendate="2012-06-19 08:57:02" fixdate="2012-06-19 10:00:45" resolution="Fixed">
+		<buginformation>
+			<summary>findAll() fails with NPE - discovering the root cause</summary>
+			<description>This bug report is based on a forum thread(see Reference URL). I do not want to duplicate the original posts. Here is my response.
+Hello Oliver, 
+This morning I built spring data from source which provided a more informative error (see below). My code doesn&amp;amp;apos;t use the  @PersistenceConstructor annotation. I&amp;amp;apos;ll investigate. 
+My source is open source. It is pre-alpha at this time. You&amp;amp;apos;ll find it on github (https://github.com/kern3020/harbinger).
+Exception in thread "main" org.springframework.data.mapping.model.MappingInstantiationException: Could not instantiate bean class [java.net.URL]: No default constructor found; nested exception is java.lang.NoSuchMethodException: java.net.URL.&amp;lt;init&amp;gt;()
+	at org.springframework.data.convert.ReflectionEntityInstantiator.createInstance(ReflectionEntityInstantiator.java:63)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:230)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:210)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter$MongoDbPropertyValueProvider.getPropertyValue(MappingMongoConverter.java:953)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.getValueInternal(MappingMongoConverter.java:708)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter$1.doWithPersistentProperty(MappingMongoConverter.java:246)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter$1.doWithPersistentProperty(MappingMongoConverter.java:236)
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:183)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:236)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:210)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:174)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:170)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:73)
+	at org.springframework.data.mongodb.core.MongoTemplate$ReadDbObjectCallback.doWith(MongoTemplate.java:1700)
+	at org.springframework.data.mongodb.core.MongoTemplate.executeFindMultiInternal(MongoTemplate.java:1451)
+	at org.springframework.data.mongodb.core.MongoTemplate.findAll(MongoTemplate.java:959)
+	at org.john.app.InstituteRepository.dump(InstituteRepository.java:58)
+	at org.john.app.InstituteRepository$$FastClassByCGLIB$$7799dab9.invoke(&amp;lt;generated&amp;gt;)
+	at net.sf.cglib.proxy.MethodProxy.invoke(MethodProxy.java:191)
+	at org.springframework.aop.framework.Cglib2AopProxy$CglibMethodInvocation.invokeJoinpoint(Cglib2AopProxy.java:689)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.framework.Cglib2AopProxy$DynamicAdvisedInterceptor.intercept(Cglib2AopProxy.java:622)
+	at org.john.app.InstituteRepository$$EnhancerByCGLIB$$a998483c.dump(&amp;lt;generated&amp;gt;)
+	at org.john.app.ReaperApp.main(ReaperApp.java:49)
+Caused by: org.springframework.beans.BeanInstantiationException: Could not instantiate bean class [java.net.URL]: No default constructor found; nested exception is java.lang.NoSuchMethodException: java.net.URL.&amp;lt;init&amp;gt;()
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:107)
+	at org.springframework.data.convert.ReflectionEntityInstantiator.createInstance(ReflectionEntityInstantiator.java:60)
+	... 25 more
+Caused by: java.lang.NoSuchMethodException: java.net.URL.&amp;lt;init&amp;gt;()
+	at java.lang.Class.getConstructor0(Class.java:2723)
+	at java.lang.Class.getDeclaredConstructor(Class.java:2002)
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:104) 
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversions.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConverters.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversionsUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="454" opendate="2012-05-31 01:35:01" fixdate="2012-06-20 03:03:00" resolution="Fixed">
+		<buginformation>
+			<summary>ServerAddressPropertyEditor fails if a hostname is unresolvable </summary>
+			<description>We have a replica set with three nodes with hostnames A, B and C. ServerAddressPropertyEditor parses the replica set A,B,C and fails if one of the host name is unresolvable. That&amp;amp;apos;s not correct because the replica set configuration is treated as a seed for the MongoDB&amp;amp;apos;s driver. The driver is able discover the replica set topology even if only one node is available from the seed. 
+ServerAddressPropertyEditor should be more robust and fail only if all hostnames from the replica set seed are unresolvable. You can see such implementation below
+
+
+
+
+
+
+public class RobustServerAddressPropertyEditor extends PropertyEditorSupport{
+
+
+
+
+    private static Logger log = LoggerFactory.getLogger(RobustServerAddressPropertyEditor.class);
+
+
+
+
+
+
+
+
+
+    @Override
+
+
+
+
+    public void setAsText(String replicaSetString) {
+
+
+
+
+        String[] replicaSetStringArray = StringUtils.commaDelimitedListToStringArray(replicaSetString);
+
+
+
+
+        List&amp;lt;ServerAddress&amp;gt; serverAddresses = new ArrayList&amp;lt;ServerAddress&amp;gt;(replicaSetStringArray.length);
+
+
+
+
+
+
+
+
+
+        for (int i = 0; i &amp;lt; replicaSetStringArray.length; i++) {
+
+
+
+
+            String[] hostAndPort = StringUtils.delimitedListToStringArray(replicaSetStringArray[i], ":");
+
+
+
+
+            try {
+
+
+
+
+                ServerAddress serverAddress = new ServerAddress(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+
+
+
+
+                serverAddresses.add(serverAddress);
+
+
+
+
+            } catch (NumberFormatException e) {
+
+
+
+
+                log.warn("Could not parse MongoDB configuration port {}", hostAndPort[1]);
+
+
+
+
+            } catch (UnknownHostException e) {
+
+
+
+
+                log.warn("The IP address for host {} could not be determined", hostAndPort[0]);
+
+
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+        if(serverAddresses.isEmpty()) {
+
+
+
+
+            log.error("Cannot resolve at least one host in MongoDB replicaSet configuratuin {}", replicaSetString);
+
+
+
+
+            throw new IllegalArgumentException("Cannot resolve at least one host in MongoDB replicaSet configuratuin");
+
+
+
+
+        }
+
+
+
+
+        setValue(serverAddresses.toArray(new ServerAddress[0]));
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.data.mongodb.config.NamespaceTestSupport.java</file>
+			<file type="M">org.springframework.data.mongodb.config.ServerAddressPropertyEditor.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoNamespaceReplicaSetTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="445" opendate="2012-05-07 23:15:38" fixdate="2013-08-22 09:19:54" resolution="Fixed">
+		<buginformation>
+			<summary>GeoNear Query Doesn&amp;apos;t Work with Pageable</summary>
+			<description>I am trying to perform a geoNear query in conjunction with a point and a pageable parameter and it seems that the paging functionality doesn&amp;amp;apos;t work. Regardless of what I set the page and size parameters of the pageable to the query always returns 100 results. I have created a test case that demonstrates the issue. Please note that there are three test cases with comments. The findAll() test case demonstrates paging functionality working as expected and the other two test cases demonstrate paging functionality not working. 
+One possible clue as to what is going might be the fact that findAll() utilizes QueryUtils.applyPagination() in the SimpleMongoRepository class to specify the query skip and limit values but the same isn&amp;amp;apos;t done for the geoNear queries and so it defaults to page 0 and size 100.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.3 GA, 1.2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.NearQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.NearQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.geo.GeoResults.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="407" opendate="2012-02-24 07:21:40" fixdate="2014-01-27 11:11:45" resolution="Fixed">
+		<buginformation>
+			<summary>Collection with generics losing element type after $set update</summary>
+			<description>The example that works fine in TestThatWorks.java :
+
+inserting a new object using mongoOps
+adding a new element and then update it using mongoOps
+querying the data, printing the list, the list still contains the correct element type
+
+The example that does not work as expected in TestThatFails.java :
+
+inserting a new object using mongoOps
+adding a new element and then update it using mongoOps
+querying the data, printing the list, the list now contains LinkedHashMap instead of the original element type
+
+The difference between the 2 example lies in the parameterized nestedDomain&amp;amp;apos;s List object. Without the parameterization using generics, the list will retain the type. Using generics on the list will result in LinkedHashMap after getting updated on the nestedDomain.
+Strangely, the TestThatFails will work fine if the query is using is("bean1") which means the collection element when insertion happens instead of is("bean2"), which is the collection element when update happens.
+Please help !</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.4 RC1 (Codd), 1.3.4 (Babbage SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">807</link>
+			<link type="Relate" description="is related to">392</link>
+		</links>
+	</bug>
+	<bug id="410" opendate="2012-02-29 22:44:05" fixdate="2014-02-17 02:20:55" resolution="Fixed">
+		<buginformation>
+			<summary>Update with pushAll doesnt recognize defined Converter</summary>
+			<description>I am not being lazy, but i think this quote from the code that i attach can describe better :
+
+
+
+
+
+
+List&amp;lt;MyNested&amp;gt; someValues = Arrays.asList(new MyNested("my"), new MyNested("name"), new MyNested("is"));
+
+
+
+
+MyNested[] array = new MyNested[someValues.size()];
+
+
+
+
+this.ops.updateFirst(
+
+
+
+
+	Query.query(Criteria.where("id").is("testId")),
+
+
+
+
+	new Update().pushAll("nestedList", someValues.toArray(array)), // fails with exception
+
+
+
+
+// new Update().set("nestedList", someValues.toArray()), // this works fine !
+
+
+
+
+// new Update().set("myNested", new MyNested("my")), // this works fine !
+
+
+
+
+	COLLECTION_NAME);
+
+
+
+
+
+
+Using pushAll() will results in exception, and also i notice that the converter&amp;amp;apos;s debugging message is not displayed. And the error message seems to say that it can&amp;amp;apos;t serialize my custom class where it should be the dbObject that should be serialized.
+Here&amp;amp;apos;s the exception trace :
+
+
+
+
+
+
+Exception in thread "main" java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class kam.albert.domain.test.post.TestConverterThatFails$MyNested
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:261)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:210)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:58)
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84)
+
+
+
+
+	at java.lang.String.valueOf(Unknown Source)
+
+
+
+
+	at java.lang.StringBuilder.append(Unknown Source)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:840)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:826)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doUpdate(MongoTemplate.java:826)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.updateFirst(MongoTemplate.java:812)
+
+
+
+
+	at kam.albert.domain.test.post.TestConverterThatFails.test(TestConverterThatFails.java:50)
+
+
+
+
+	at kam.albert.domain.test.post.TestConverterThatFails.main(TestConverterThatFails.java:30)
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.3.4 (Babbage SR3), 1.4 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">354</link>
+		</links>
+	</bug>
+	<bug id="404" opendate="2012-02-20 13:36:46" fixdate="2014-02-19 11:14:49" resolution="Fixed">
+		<buginformation>
+			<summary>Removing a DBRef using pull does not work </summary>
+			<description>I&amp;amp;apos;m trying to remove a reference to an object from a document 
+
+
+
+
+
+
+Update update = new Update().pull("objects.$id", new ObjectId(objectId));
+
+
+
+
+
+
+It does not remove the reference. Using: {$pull : { "objects" : 
+{ $id : ObjectId("blah") }
+ } } works. Am i doing something wrong here?
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.4 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">855</link>
+		</links>
+	</bug>
+	<bug id="420" opendate="2012-03-22 10:09:35" fixdate="2014-07-17 12:51:47" resolution="Fixed">
+		<buginformation>
+			<summary>Extra quotes being added to @Query values and fields</summary>
+			<description>Quotes are being added to values passed into @Query annotations.
+@Query( value = "
+{ ?0 }
+", fields = "
+{ ?1 }
+" )
+someMethod( String values, String fields );
+Whatever I pass into "values" or "fields" gets wrapped in quotes when inserted into the query sent to MongoDB.
+String values = "value : &amp;amp;apos;things&amp;amp;apos;";
+  -&amp;gt; rendered as - 
+{ "value : &amp;amp;apos;things&amp;amp;apos;" }
+  -&amp;gt; This is not a valid query - the double quotes around it break it.
+String values = "field : 0";
+  -&amp;gt; rendered as - 
+{ "field : 0" }
+  -&amp;gt; This is not a valid projection - the double quotes around it break it.
+String values = "field\" : \"0";
+  -&amp;gt; rendered as - 
+{ "field" : "0" }
+  -&amp;gt; This is not a valid projection - the double quotes around zero turn it into a string so it renders as "true" instead of 0/undefined.
+Thanks.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.5.2 (Dijkstra SR2), 1.6 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">1072</link>
+		</links>
+	</bug>
+</bugrepository>

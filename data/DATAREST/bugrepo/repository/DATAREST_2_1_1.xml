@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="346" opendate="2014-07-02 04:17:43" fixdate="2014-07-08 05:06:09" resolution="Fixed">
+		<buginformation>
+			<summary>ReflectionRepositoryInvoker doesn&amp;apos;t apply conversion on invocation of an overridden delete() method</summary>
+			<description>If a repository redeclares a delete() method using the concrete identifier type the ReflectionRepositoryInvoker fails to invoke this method as it will get the raw id value handed into the invokeDelete() method.
+This is a side effect of the fix for DATAREST-335 which added explicit handling for the overridden method with the concrete identifier type but assumed the parameter would be handed in the correct type already.</description>
+			<version>2.1.1 (Dijkstra SR1)</version>
+			<fixedVersion>2.2 M1 (Evans), 2.1.2 (Dijkstra SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvokerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">335</link>
+		</links>
+	</bug>
+</bugrepository>

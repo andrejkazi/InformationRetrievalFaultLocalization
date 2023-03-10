@@ -1,0 +1,87 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="633" opendate="2008-01-18 01:47:24" fixdate="2008-01-18 02:14:08" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthenticationToken.equals does not consider null credentials</summary>
+			<description>Our single-sign-on scenarios like OpenID may not have credentials to report. Currently our RememberMeAuthenticationToken handles this issue by returning "" from getCredentials().
+AbstractAuthenticationToke.equals should deal with nulls from getCredentials()</description>
+			<version>1.0.6</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.AbstractAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="728" opendate="2008-03-20 22:14:55" fixdate="2008-03-30 20:52:20" resolution="Fixed">
+		<buginformation>
+			<summary>[patch] MessageDigestPasswordEncoder#encodePassword is platform-dependant (with fix)</summary>
+			<description>MessageDigestPasswordEncoder#encodePassword uses saltedPass.getBytes() which is highly platform-dependant (it uses the platform&amp;amp;apos;s default charset).
+Creating a new user account (with "strong" salt: accents, weird chars, etc.) on a Linux machine, moving the server to Mac OS X or Windows, and trying to access the same user account fails.
+Fix: replace:
+saltedPass.getBytes()
+with:
+saltedPass.getBytes(org.apache.commons.lang.CharEncoding.UTF_8)
+In theory, the new String(...) a couple of lines later /should/ specify an encoding too (e.g. ISO-Latin-9, AKA ISO-8859-15). But since we are dealing with a sub-set of ASCII, there is no encoding problem here.</description>
+			<version>1.0.6</version>
+			<fixedVersion>2.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.ldap.authenticator.LdapShaPasswordEncoder.java</file>
+			<file type="M">org.springframework.security.providers.encoding.MessageDigestPasswordEncoder.java</file>
+			<file type="M">org.springframework.security.providers.encoding.Md4PasswordEncoder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="697" opendate="2008-03-06 03:44:11" fixdate="2008-04-04 14:10:23" resolution="Fixed">
+		<buginformation>
+			<summary>It&amp;apos;s not possible to change ACL owner</summary>
+			<description>MutableAcl interface doesn&amp;amp;apos;t have a method to change ACL owner (although AclImpl has an appropriate implementation)</description>
+			<version>1.0.6</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.MutableAcl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="776" opendate="2008-04-15 03:46:43" fixdate="2008-04-22 02:25:15" resolution="Fixed">
+		<buginformation>
+			<summary>Http Session created for Anonymous request</summary>
+			<description>I&amp;amp;apos;m using Anonymous Authentication for the public pages on a site I&amp;amp;apos;m developing. If I go to a page that is successful an anonymous authentication token is made and the reset by the AnonymousProcessingFilter so that no HttpSession is created for that request. However, if the page I go to results in an error (like 404 or 500) an HttpSession is created with the anonymous authentication token saved within.
+I think that it is because the HttpSessionContextIntegrationFilter wraps the response so that it can try and save the context on sendError/sendRedirect calls, however the AnonymousProcessingFilter isn&amp;amp;apos;t given a chance to remove the anonymous authentication token, the result is that a session is created.</description>
+			<version>1.0.6</version>
+			<fixedVersion>2.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.context.HttpSessionContextIntegrationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">788</link>
+		</links>
+	</bug>
+	<bug id="760" opendate="2008-04-09 00:53:19" fixdate="2008-06-05 17:14:26" resolution="Fixed">
+		<buginformation>
+			<summary>JaasAuthenticationProvider should refresh the JAAS Configuration when a loginConfig URL is set</summary>
+			<description>JaasAuthenticationProvider provides a new login.config.url.X Security property when it is initialised, so that JAAS ConfigFile can retrieve the appropriate file and the loginContextNames therein.
+If a second JaasAuthenticationProvider is created and initialised after ConfigFile is initialised (for example if two Spring web applications have different loginConfig files), then the second file is not picked up and creating a LoginContext fails with:
+javax.security.auth.login.LoginException: No LoginModules configured for test2
+	at javax.security.auth.login.LoginContext.init(LoginContext.java:256)
+	at javax.security.auth.login.LoginContext.&amp;lt;init&amp;gt;(LoginContext.java:334)
+	at test.Test.testConfigureJaasCase(Test.java:27)
+	at test.Test.testConfigureJaas(Test.java:33)
+...
+The single line:
+        Configuration.getConfiguration().refresh();
+Needs to be added at the end of configureJaas() I believe. Can supply test case to reproduce and patch.
+D</description>
+			<version>1.0.6</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.jaas.JaasAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

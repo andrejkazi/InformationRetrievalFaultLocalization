@@ -1,0 +1,592 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="263" opendate="2007-04-14 14:15:37" fixdate="2007-04-17 19:54:44" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration drops attributes if a property value is a list</summary>
+			<description>When the following test is run with the following xml the second assertEquals statement fails:
+XML:
+&amp;lt;?xml version="1.0" encoding="ISO-8859-1" ?&amp;gt;
+&amp;lt;test&amp;gt;
+&amp;lt;a name="X"&amp;gt;ABC&amp;lt;/a&amp;gt;
+&amp;lt;a name="Y"&amp;gt;1,2,3&amp;lt;/a&amp;gt;
+&amp;lt;/test
+TEST:
+public void testXMLConfig() throws Exception {
+  File file = new File("/xml/xmlConfigTest.xml");
+  XMLConfiguration xmlConfig = new XMLConfiguration(file);
+  xmlConfig.load();
+  assertEquals("X",xmlConfig.getProperty("a(0)[@name]"));
+  assertEquals("Y",xmlConfig.getProperty("a(1)[@name]"));
+}</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="264" opendate="2007-04-14 14:22:27" fixdate="2007-04-21 14:35:13" resolution="Fixed">
+		<buginformation>
+			<summary>SubnodeConfiguration does not see reloads of its parent configuration</summary>
+			<description>The problem can be reproduced as follows:
+1 config = new XMLConfiguration("c:conf.xml");
+2 config.setReloadingStrategy(new FileChangedReloadingStrategy());
+3 SubnodeConfiguration parentItemConfig = config.configurationAt("parent-item");
+4 String ss2 = parentItemConfig.getString("sub-item");
+5 //Now, &amp;lt;sub-item&amp;gt; node value changes to "new_value"
+6 ss2 = parentItemConfig.getString("sub-item"); // still returns old_value</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="265" opendate="2007-04-17 00:06:51" fixdate="2007-04-22 18:59:05" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration with setAutoSave(true) doesn&amp;apos;t save if SubnodeConfiguration is changed</summary>
+			<description>config.xml file
+&amp;lt;conf&amp;gt;
+    &amp;lt;parent-item&amp;gt;
+        &amp;lt;sub-item&amp;gt;old_value&amp;lt;/sub-item&amp;gt;
+    &amp;lt;/parent-item&amp;gt;
+&amp;lt;/conf&amp;gt;
+The problem can be reproduced as follows: 
+ 1 XMLConfiguration config = new XMLConfiguration("c:conf.xml"); 
+ 2 config.setAutoSave(true) ;
+ 3 SubnodeConfiguration parentItemConfig = config.configurationAt("parent-item"); 
+ 4 parentItemConfig.setProperty("sub-item","new_value");
+ 5. System.out.println(config.getString("parent-item.sub-item");  // will print new_value
+ // if you look at the config.xml sub-item still has old_value
+ // also if you try to do 
+ 5 XMLConfiguration config2 = new XMLConfiguration("c:conf.xml");
+ 6. System.out.println(config2.getString("parent-item.sub-item");  // will print old_value</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.event.TestHierarchicalConfigurationEvents.java</file>
+			<file type="M">org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.event.AbstractTestConfigurationEvents.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="267" opendate="2007-04-23 02:20:47" fixdate="2007-04-23 09:41:03" resolution="Fixed">
+		<buginformation>
+			<summary>INIConfiguration.save() doesn&amp;apos;t save file correctly</summary>
+			<description>The PrintWriter used by save() method implemented in INIConfiguration is not flushed so that configurations maybe not saved completely.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.INIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="268" opendate="2007-05-06 19:44:31" fixdate="2007-05-08 20:58:54" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration does not fully support disabled delimiter parsing</summary>
+			<description>A call to setDelimiterParsingDisabled(true) should completely turn off the mechanism for searching for list delimiters and splitting property values.
+However XMLConfiguration.save() escapes list delimiters even in this mode. When later such a configuration file is loaded and delimiter parsing is turned off, the values of affected properties will contain the escape character.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertyConverter.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertyConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="270" opendate="2007-05-22 16:25:02" fixdate="2007-05-22 23:10:46" resolution="Fixed">
+		<buginformation>
+			<summary>INIConfiguration Does not support multi value keys</summary>
+			<description>The INIConfiguration save(Writer writer) uses PrintWriter instead of using a class like PropertiesConfiguration.PropertiesWriter.
+Because of that the method uses getString(String key) to get the keys value (which return onlt the first element of the list) and in doing so there is no support for multi value keys.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.INIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="269" opendate="2007-05-21 20:31:01" fixdate="2007-05-24 11:33:29" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration.save() generates superfluous escaping character when delimiter parsing is disabled</summary>
+			<description>PropertiesConfiguration.save() ignores the delimiter parsing disabled flag and escapes all delimiter characters it encounters. When the configuration is loaded again (with delimiter parsing disabled) the values of affected properties contain the escaping character.
+This bug is very similar to CONFIGURATION-268, but for PropertiesConfiguration.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="274" opendate="2007-05-24 20:39:24" fixdate="2007-05-24 20:43:44" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration.save() does not support escaping the escape character</summary>
+			<description>When a new property is added to a PropertiesConfiguration, it is possible to escape the escaping character for list delimiters, e.g.
+conf.addProperty("test.dirs", "C:\\Temp\\\\,D:\\Data");
+Here the Backslash after Temp must be escaped, otherwise the list delimiter won&amp;amp;apos;t be recognized. This works, but when the configuration is saved and loaded again, the backslash that escapes the escape character is dropped. The property is then treated as a single value property with an escaped list delimiter.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="279" opendate="2007-06-01 12:51:34" fixdate="2007-06-02 20:03:17" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration dysfunctional if constructed with nonexistent File</summary>
+			<description>When PropertiesConfiguration is constructed around a File that does not exist, everything seemingly goes well, but saving the configuration only results in an empty file. This differs from constructing a PropertiesConfiguration around a file name passed as String, which appropriately fails at construction-time, since it tries to load() the configuration, which fails.
+When the nonexistent configuration file is passed as File, this does not happen, since the File constructor in AbstractFileConfiguration specifically tests if the file exists before calling load() and succeeds even if it wasn&amp;amp;apos;t called. However, if load() is not called, no PropertiesConfigurationLayout is created or registered to the EventSource, and thus nothing is saved when save() is called on the PropertiesConfiguration. Calling save() actually calls getLayout(), which creates a layout and registers it, but the properties set between construction of the PropertiesConfiguration and calling save() on it are still lost.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="280" opendate="2007-06-07 21:33:35" fixdate="2007-06-10 16:11:36" resolution="Fixed">
+		<buginformation>
+			<summary>autoSave and FileChangedReloadingStrategy corrupts configuration</summary>
+			<description>First of all, sorry if this is not a bug. I may have missed some information on how to make autoSave and FileChangedReloadingStrategy work.
+When a change has been detected by the FileChangedReloadingStrategy code, a clear() followed by a load() is executed in the AbstractFileConfiguration class (around line 809 of version 1.4). The clear() method leads to a possiblySave() call which overwrites the configuration. At the end of the clear() method, the configuration file is empty and the following load() method loads this empty configuration. The possiblySave() call is invoked via the work-around (according to the comment in the code) in AbstractConfiguration (line 538).
+I&amp;amp;apos;m using the following code:
+CompositeConfiguration config = new CompositeConfiguration();
+XMLConfiguration xmlconfig = new XMLConfiguration("config.xml");
+FileChangedReloadingStrategy fcrs = new FileChangedReloadingStrategy();
+xmlconfig.setReloadingStrategy(fcrs);
+config.addConfiguration(new SystemConfiguration());
+config.addConfiguration(xmlconfig);
+xmlconfig.setAutoSave(true);
+...wait for config changes...		
+A workaround for the problem is to deactivate autoSave in the reload() method of the AbstractFileConfiguration class. After the configuration is cleared and loaded, the original autoSave is restored. See the diff below:
+806a807,808
+&amp;gt;                         boolean autoSaveBak = this.isAutoSave(); // save the current state
+&amp;gt;                         this.setAutoSave(false); // deactivate autoSave to prevent information loss
+813a816
+&amp;gt;                               this.setAutoSave(autoSaveBak); // set autoSave to previous value
+The code fragment looks like:
+--------------------------
+                    if (strategy.reloadingRequired())
+                    {
+                        if (getLogger().isInfoEnabled())
+                        {
+                            getLogger().info("Reloading configuration. URL is " + getURL());
+                        }
+                        fireEvent(EVENT_RELOAD, null, getURL(), true);
+                        setDetailEvents(false);
+                        boolean autoSaveBak = this.isAutoSave(); // save the current state
+                        this.setAutoSave(false); // deactivate autoSave to prevent information loss
+                        try
+                        {
+                            clear();
+                            load();
+                        }
+                        finally
+                        {
+                                this.setAutoSave(autoSaveBak); // set autoSave to previous value
+                            setDetailEvents(true);
+                        }
+                        fireEvent(EVENT_RELOAD, null, getURL(), false);
+                        // notify the strategy
+                        strategy.reloadingPerformed();
+                    }
+--------------------------
+I hope this is a valid fix. </description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="277" opendate="2007-05-30 13:52:55" fixdate="2007-06-12 20:06:47" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractConfiguration should handle UnsupportedOperationExceptions in Iterator.remove() gracefully</summary>
+			<description>Hi,
+In AbstractConfiguration method clear() on line 533 (see code below) a possible UnsupportedOperationException is not caught resulting in the malfunctioning of the whole method. However, the documentation of the getKeys() method itself warns about relying on the remove() method of interface Iterator. The clear() method should not propagate that exception, it should catch it and try the clearProperty(String) approach if the remove() method is not supported.
+            Iterator it = getKeys();
+            while (it.hasNext())
+            {
+                String key = (String) it.next();
+                it.remove();                                          &amp;lt;------- EVIL!
+                if (containsKey(key))
+                {
+                    // workaround for Iterators that do not remove the property on calling remove()
+                    clearProperty(key);
+                }
+
+Best regards,
+Michael</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="275" opendate="2007-05-25 17:12:43" fixdate="2007-07-09 20:36:22" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationUtils.append() doesn&amp;apos;t merge list properties</summary>
+			<description>ConfigurationUtils.append() appends the list object instead of the list elements to the target list. If the list [X, Y] is appended to the list [A, B], the result is [A, B, [X, Y]] instead of [A, B, X, Y]
+</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfigurationBasicFeatures.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="283" opendate="2007-07-02 12:38:23" fixdate="2007-07-12 20:02:18" resolution="Fixed">
+		<buginformation>
+			<summary>CombinedConfiguration doesn&amp;apos;t take escaped characters into account.</summary>
+			<description>Hi, 
+I&amp;amp;apos;ve tried to used CombinedConfiguration but it seems escaped characters are not taken into account :
+import org.apache.commons.configuration.CombinedConfiguration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import junit.framework.TestCase;
+public class TestProp extends TestCase {
+	public void testprop() throws ConfigurationException 
+{
+		// test.properties contains :
+		//    without_escape=aa,bb
+		//    with_escape=aa\,bb
+		//    with_2escapes=aa\\,bb
+		
+		String prop_filename = "c:\\tmp\\test.properties";
+		PropertiesConfiguration properties_config = new PropertiesConfiguration(prop_filename);
+		CombinedConfiguration   combined_config   = new CombinedConfiguration();
+		combined_config.addConfiguration(properties_config);
+		
+		System.out.println("Properties config");
+		System.out.println(properties_config.getString("without_escape"));
+		System.out.println(properties_config.getString("with_escape"));
+		System.out.println(properties_config.getString("with_2escapes"));
+
+		System.out.println("\nCombined config");
+		System.out.println(combined_config.getString("without_escape"));
+		System.out.println(combined_config.getString("with_escape"));
+		System.out.println(combined_config.getString("with_2escapes"));
+		
+	}
+}
+Result : 
+---------
+Properties config
+aa
+aa,bb
+aa,bb
+Combined config
+aa
+aa
+aa
+Thanks !
+Franck</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="282" opendate="2007-06-26 06:49:27" fixdate="2007-07-18 19:36:12" resolution="Fixed">
+		<buginformation>
+			<summary>NPE in HierarchicalConfiguration.fetchNodeList after redeployment</summary>
+			<description>java.lang.NullPointerException
+        at org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:721)
+        at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.fetchNodeList(AbstractHierarchicalFileConfiguration.java:338)
+        at org.apache.commons.configuration.HierarchicalConfiguration.getProperty(HierarchicalConfiguration.java:284)
+        at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.getProperty(AbstractHierarchicalFileConfiguration.java:319)
+        at org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1222)
+        at org.apache.commons.configuration.AbstractConfiguration.getBoolean(AbstractConfiguration.java:667)
+        at org.apache.commons.configuration.AbstractConfiguration.getBoolean(AbstractConfiguration.java:633)
+java.lang.NullPointerException
+        at org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:721)
+        at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.fetchNodeList(AbstractHierarchicalFileConfiguration.java:338)
+        at org.apache.commons.configuration.HierarchicalConfiguration.getProperty(HierarchicalConfiguration.java:284)
+        at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.getProperty(AbstractHierarchicalFileConfiguration.java:319)
+        at org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1222)
+        at org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1097)
+        at org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1077)</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="285" opendate="2007-07-11 12:30:33" fixdate="2007-07-21 19:09:43" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;configuration fileName="local-configuration.xml" config-optional="true" /&gt; does not report parsing errors in local-configuration.xml</summary>
+			<description>I&amp;amp;apos;m trying to build a configuration system to be shared between our Java applications.  I therefore want to have optional configurations included from the main configuration file read by DefaultConfigurationBuilder
+&amp;lt;configuration fileName="local-configuration.xml" config-optional="true" /&amp;gt;
+I have found that if the sub-configuration file is invalid the error is silently ignored.  The same without config-options="true" results in a ConfigurationException to be thrown (which wraps a ConfigurationRuntimeException which wraps the ConfigurationException which wraps the SAXException).
+I believe that the behaviour is incorrect.  The sub-configuration file should be skipped if not found, but any errors found when parsing the existing file should be logged.
+</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.TestDefaultConfigurationBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="287" opendate="2007-07-26 14:05:49" fixdate="2007-07-26 20:17:03" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration.addNodes() problem using other configuration Nodes</summary>
+			<description>Trying to use the method XMLConfiguration.addNodes() to add a tree of configuration properties to a node in other tree fails. 
+Example:
+public static void main(String ...args){            
+try
+{
+           configDestination = new XMLConfiguration("output.xml");
+           configSource = new XMLConfiguration("input.xml");
+       }
+       catch(ConfigurationException cex)
+{
+           System.out.println("File not found");
+       }
+             Collection collection = new ArrayList();
+       collection = configSource.getRoot().getChildren();
+             configDestination.addNodes("newNodes", collection);                  
+try 
+{
+           configDestination.save();
+            }
+ catch (ConfigurationException e) 
+{
+           System.out.println("Error saving");
+       }
+}
+The XML files:
+input.xml
+&amp;lt;rootNode&amp;gt;
+   &amp;lt;newNodeChild&amp;gt;
+       &amp;lt;newNodeChildChild&amp;gt;child value&amp;lt;/newNodeChildChild&amp;gt;
+       &amp;lt;newNodeChildChild&amp;gt;child value 2&amp;lt;/newNodeChildChild&amp;gt;
+       &amp;lt;newNodeChildChild&amp;gt;child value 3&amp;lt;/newNodeChildChild&amp;gt;
+   &amp;lt;/newNodeChild&amp;gt;
+&amp;lt;/rootNode&amp;gt;
+output.xml
+&amp;lt;testRootNode&amp;gt;
+   &amp;lt;test&amp;gt;TEST&amp;lt;/test&amp;gt;
+&amp;lt;/testRootNode&amp;gt;
+output.xml after running the code:
+&amp;lt;testRootNode&amp;gt;
+   &amp;lt;test&amp;gt;TEST&amp;lt;/test&amp;gt;
+   &amp;lt;newNodes/&amp;gt;
+&amp;lt;/testRootNode&amp;gt;
+Expected output.xml:
+&amp;lt;testRootNode&amp;gt;
+   &amp;lt;test&amp;gt;TEST&amp;lt;/test&amp;gt;
+   &amp;lt;newNodes&amp;gt;
+       &amp;lt;newNodeChild&amp;gt;
+           &amp;lt;newNodeChildChild&amp;gt;child value&amp;lt;/newNodeChildChild&amp;gt;
+           &amp;lt;newNodeChildChild&amp;gt;child value 2&amp;lt;/newNodeChildChild&amp;gt;
+           &amp;lt;newNodeChildChild&amp;gt;child value 3&amp;lt;/newNodeChildChild&amp;gt;
+       &amp;lt;/newNodeChild&amp;gt;
+   &amp;lt;newNodes/&amp;gt;
+&amp;lt;/testRootNode&amp;gt; 
+Apparently "the copied nodes still contain a reference to their old configuration (because you directly fetched them from the root node of the source configuration). Because of this reference they are not detected as new nodes when the destination configuration is saved, and hence not written to disk.
+I think addNodes() should reset this reference, so that the added nodes can be detected as new nodes. (But then you have to be aware that you break the source configuration because a node can only be contained in exactly one configuration.) " </description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="291" opendate="2007-08-10 01:16:39" fixdate="2007-08-11 14:52:26" resolution="Fixed">
+		<buginformation>
+			<summary>addNodes() doesn&amp;apos;t trigger auto saving</summary>
+			<description>When I add nodes the XMLConfiguration with autoSave enabled the file doen&amp;amp;apos;t change to reflect new nodes. Here is an example
+XMLConfiguration config = new XMLConfiguration("c:conf.xml"); 
+config.setAutoSave(true) ;
+ConfigurationNode childNode = new HierarchicalConfiguration.Node("ChildNodeName","ChildNodeValue");
+List nodes = new ArrayList();
+nodes.add(childNode);
+config.addNodes(null,nodes);
+config.xml didn&amp;amp;apos;t change to include child node.
+</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="272" opendate="2007-05-22 20:15:02" fixdate="2007-08-20 17:59:56" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationUtils.copy results in escaped "," characters no longer being escaped</summary>
+			<description>When using ConfigurationUtils.copy to go between configuration formats any escaped out "," characters are put into the output configuration without the escape character.  This results in a different value being returned from getString calls as it now things the property is a list.  If 4 escape characters are used instead of the expected 1 then the copy will end up with the correct value, but then the original will end up with the escape character as part of the property value.  
+Example:
+SomeLongProperty=This is a test\, it is only a test
+
+Ends up right in the copy, but not right in the original
+SomeOtherProperty=This is also a test\\\\, it is also only a test
+
+After copy:
+
+Missing "\" before ","
+SomeLongProperty=This is a test, it is only a test
+SomeOtherProperty=This is also a test\, it is also only a test
+
+</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfigurationBasicFeatures.java</file>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="294" opendate="2007-08-23 18:04:47" fixdate="2007-08-24 09:38:07" resolution="Fixed">
+		<buginformation>
+			<summary>Trying to set values in the newly added node (using XMLConfiguration) doesn&amp;apos;t work</summary>
+			<description>I&amp;amp;apos;m using XMLConfiguration to manipulate my xml configuration file. Here is what I did,
+1) Add a new node using "addNodes"
+2) Save the configuration (using save method)
+3) The new node gets added to the configuration file   &amp;lt;--- Good
+4) Now try setting a value in the just added new node using "setProperty" method.
+5) Save the configuration (using save method)
+6) The save method still writes the configuration that was in step 3        &amp;lt;------- Bug
+Looks like for some reason the save still holds the old configuration in cache that after the add nodes. If I call "reload" after each save then everything works fine. 
+Just a setProperty on its own (without addNodes) work fine. It&amp;amp;apos;s only when you try to addNodes and then do setProperty that this fails.
+I&amp;amp;apos;ve tried this with the latest nightly build (1.5), released 1.4 and 1.3 --&amp;gt; all of them fail in this situation.
+</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="295" opendate="2007-09-10 09:29:59" fixdate="2007-09-14 20:27:56" resolution="Fixed">
+		<buginformation>
+			<summary>HierarchicalConfiguration.subset(...) misses an entry with the key equal to the subset prefix.</summary>
+			<description>Having a HierarchicalConfiguration with entries alike:
+    test.sample = subset title
+    test.sample.boolean = true
+    test.sample.int = 123456
+    test.sample.text = I wish it worked!
+When performing subset("test.sample"), I get a configuration of only three entries, the "subset title" value is not present (should have an empty string key).
+The behaviour is in contradiction to Javadoc of the Configuration interface http://commons.apache.org/configuration/apidocs/org/apache/commons/configuration/Configuration.html#subset(java.lang.String)
+Seems to me, that the bug is hidden in iterating the cloned configuration, where only children of the clone are processed, but not the root itself.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="296" opendate="2007-09-22 15:03:59" fixdate="2007-09-23 16:23:14" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration and attributes on the root node</summary>
+			<description>With XMLConfiguration it is not possible to change the value of an attribute of the root element.
+New attributes on the root level can be created, e.g.:
+XMLConfiguration config = new XMLConfiguration();
+config.addProperty("[@test]", "true");
+would create a new "test" attribute of the root element. However if this configuration is saved and loaded again, a
+config.setProperty("[@test]", "false");
+only temporarily changes the value: getProperty() returns the new value, but when the configuration is saved, the old value is written.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="299" opendate="2007-10-25 19:49:42" fixdate="2007-10-25 20:02:57" resolution="Fixed">
+		<buginformation>
+			<summary>Interpolation of ${const:xxx} variables can cause a ClassCastException</summary>
+			<description>If ConstantLookup is used for resolving a variable that is of a different type than String, a ClassCastException can be thrown:
+The first access to this variable obtains the value and stores it in an internal cache. If this variable is requested again, the value is fetched from the cache and a type cast to String is performed. This will fail with a ClassCastException.</description>
+			<version>1.4</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.interpol.TestConstantLookup.java</file>
+			<file type="M">org.apache.commons.configuration.interpol.ConstantLookup.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="300" opendate="2007-11-14 18:53:06" fixdate="2008-02-17 23:22:06" resolution="Fixed">
+		<buginformation>
+			<summary>Can not create a PropertiesConfiguration if the filename contains a &amp;apos;#&amp;apos;</summary>
+			<description>It is not possible to load a properties file if there is a &amp;amp;apos;#&amp;amp;apos; in the filename.
+To reproduce:
+    public static void main(String[] args) throws Exception
+    {
+        File file = new File("myProperties #1.properties");
+        try
+        {
+            file.createNewFile();
+            
+            Configuration configuration = new PropertiesConfiguration(file);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            file.delete();
+        }
+}
+The method that drops the &amp;amp;apos;#&amp;amp;apos; is : ConfigurationUtils.fileFromURL...</description>
+			<version>1.4</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

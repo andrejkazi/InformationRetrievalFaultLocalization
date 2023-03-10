@@ -1,0 +1,182 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="61" master="3109" duplicate="3122" opendate="2015-09-18 14:19:14" fixdate="2015-10-26 22:27:19" resolution="Fixed">
+		<buginformation>
+			<summary>Concurrent/ThreadPoolTaskScheduler don&amp;apos;t work with DelegatingSecurityContextExecutor DelegatingSecurityContextScheduledExecutorService only sets SecurityContext at first run of a scheduled task - subsequent runs do not have the SecurityContext set</summary>
+			<description>We have a setup with Spring Boot with scheduling. To use method security with background jobs we want to use the DelegatingSecurityContextScheduledExecutorService like described here: http://www.petrikainulainen.net/programming/spring-framework/spring-from-the-trenches-invoking-a-secured-method-from-a-scheduled-job/ (see "Spring Security 3.2: It Is Almost Like Magic!").
+I suspect this stopped working with SEC-3031, because now DelegatingSecurityContextRunnable/Callable doesn&amp;amp;apos;t set/clear the security context if run on the same thread as they were created.
+As Concurrent/TheadPoolTaskScheduler uses a ReschedulingRunnable for the trigger mechanic (we use cron triggers), so the rescheduling is done on the pool thread. So random subsequent calls executed on the same pool thread might fail, because the SecurityContext is not set.
+Getting DelegatingSecurityContextExecutor to set the enableOnOriginalThread property on DelegatingSecurityContextRunnable to true would fix that issue. When using DelegatingSecurityContextScheduledExecutorService to set a security context for a scheduled task, it works perfectly fine for the first task execution, but subsequent executions are (re-)scheduled by the same thread which was used to execute the task for the first time - this is done in ReschedulingRunnable.run()
+Thread.currentThread() is used to set the originalThread variable in DelegatingSecurityContextRunnable - therefore DelegatingSecurityContextRunnable thinks it&amp;amp;apos;s being executed in the original thread and does skip the set security context.
+This means originalThread variable (in DelegatingSecurityContextRunnable) does contain the wrong value for all executions except the first one. Therefore all subsequent executions do fail because no security context is set ...
+
+
+
+
+
+
+@Scheduled(cron="*/30 * * * * *", zone="UTC")
+
+
+
+
+	public void myScheduledTask() {
+
+
+
+
+//call to secured method
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@Override
+
+
+
+
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+
+
+
+
+        taskRegistrar.setScheduler(taskExecutor());
+
+
+
+
+    }
+
+
+
+
+ 
+
+
+
+
+    public Executor taskExecutor() {
+
+
+
+
+        ScheduledExecutorService delegateExecutor = Executors.newSingleThreadScheduledExecutor();
+
+
+
+
+        SecurityContext schedulerContext = createSchedulerSecurityContext();
+
+
+
+
+        return new DelegatingSecurityContextScheduledExecutorService(delegateExecutor, schedulerContext);
+
+
+
+
+    }
+
+
+
+
+ 
+
+
+
+
+    private SecurityContext createSchedulerSecurityContext() {
+
+
+
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+
+
+
+ 
+
+
+
+
+        Collection&amp;lt;GrantedAuthority&amp;gt; authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+
+
+
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+
+
+
+
+                "user",
+
+
+
+
+                "user",
+
+
+
+
+                authorities
+
+
+
+
+        );
+
+
+
+
+        context.setAuthentication(authentication);
+
+
+
+
+ 
+
+
+
+
+        return context;
+
+
+
+
+    }
+
+
+
+
+
+</description>
+			<version>4.0.2</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnable.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallable.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">3122</link>
+			<link type="Relate" description="is related to">3031</link>
+			<link type="Duplicate" description="duplicates">3109</link>
+		</links>
+	</bug>
+</bugrepository>

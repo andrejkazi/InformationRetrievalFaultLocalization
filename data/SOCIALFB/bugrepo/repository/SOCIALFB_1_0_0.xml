@@ -1,0 +1,47 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SOCIALFB">
+	<bug id="33" opendate="2011-10-17 06:07:11" fixdate="2011-11-07 15:25:27" resolution="Complete">
+		<buginformation>
+			<summary>NPE when FB sends back data for likes instead of count</summary>
+			<description>Sometimes Facebook sends back a count for the number of people who have "liked" a post and sometimes they send back data containing references to those people who liked the post. Currently, PostMixin is written to assume that it will receive the count and will fail when it receives reference data. This should be written to more gracefully handle either situation.</description>
+			<version>1.0.0.RELEASE</version>
+			<fixedVersion>1.0.1.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PostMixin.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="42" opendate="2011-11-14 00:46:00" fixdate="2012-01-30 09:15:11" resolution="Complete">
+		<buginformation>
+			<summary>FacebookErrorHandler will be handle 404 Not Found Error as org.springframework.social.ResourceNotFoundException.</summary>
+			<description>as you know, org.springframework.social.facebook.api.impl.FacebookErrorHandler doesn&amp;amp;apos;t handle there 404 Not found error.
+they (404 not found error) still handle by handleUncategorizedError (DefaultResponseErrorHandler.handleError detect and make HttpClientErrorException, and FacebookErrorHandler caught all of exception &amp;amp; translate to UncategorizedApiException)
+it&amp;amp;apos;s harmful if you using spring-social-facebook on your project.
+(that&amp;amp;apos; why i catch UncategorizedApiException and check that&amp;amp;apos;s rootCause is instanceof HttpClientErrorException, and another check HttpStatus is equal to HttpStatus.NOT_FOUND (404), then finally i can do what i want.)
+and there org.springframework.social.SocialException hierarchy still there. (and i want 404 Not Found Error translate to org.springframework.social.ResourceNotFoundException. no more Uncategorized Exception)</description>
+			<version>1.0.0.RELEASE</version>
+			<fixedVersion>1.1.0.M1, 1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.FacebookErrorHandler.java</file>
+			<file type="M">org.springframework.social.facebook.api.ErrorHandlingTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="80" opendate="2012-05-08 08:49:25" fixdate="2012-05-09 10:34:15" resolution="Complete">
+		<buginformation>
+			<summary>OperationNotPermittedException thrown when an InsufficientPermissionException should have been thrown.</summary>
+			<description>Facebook has recently started improving its errors from the Graph API. This is a good thing (the existing errors left much to be desired). However, the side effect of this is that FacebookErrorHandler may now throw the wrong exception in some cases.
+One such case is when the user has not authorized an application to post to their feed and a post is attempted. An InsufficientPermissionException is expected, but instead an OperationNotPermittedException is thrown. 
+This issue addresses this specific case. A separate task will be created for reviewing Facebook&amp;amp;apos;s new errors and updating FacebookErrorHandler appropriately for all cases.</description>
+			<version>1.0.0.RELEASE</version>
+			<fixedVersion>1.1.0.M1, 1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.FacebookErrorHandler.java</file>
+			<file type="M">org.springframework.social.facebook.api.ErrorHandlingTest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

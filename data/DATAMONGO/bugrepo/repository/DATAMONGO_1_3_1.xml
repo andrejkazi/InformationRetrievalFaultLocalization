@@ -1,0 +1,211 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="753" opendate="2013-09-10 21:16:34" fixdate="2013-09-26 07:33:31" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for nested field references in group operations</summary>
+			<description> use Spring Data (1.3.0.RC1) to access our MongoDB and for some new queries I want to use the aggregation framework.
+In the mongo shell the command would be:
+db.spotreports.aggregate(
+
+{ "$unwind" : "$pd"}
+ , { "$group" : { "_id" : "$pd.PDch", "base" : {$sum : "$pd.aBL"}, "uplift" : {$sum : "$pd.up"}}})
+{
+"result" : [
+{
+"_id" : 5,
+"base" : 529133,
+"uplift" : 21516
+},
+...
+The Spring Code I use is:
+Aggregation agg = Aggregation.newAggregation(
+Aggregation.unwind("pd"),
+Aggregation.group("pd.PDch").sum("pd.aBL").as("base").sum("pd.up").as("uplift")
+);
+AggregationResults&amp;lt;SpotReportResult&amp;gt; result = mongoTemplate.aggregate(agg, resolveCollection(), SpotReportResult.class);
+I get the following error:
+java.lang.IllegalArgumentException: Invalid reference &amp;amp;apos;PDch&amp;amp;apos;!
+at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:63)
+at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:47)
+at org.springframework.data.mongodb.core.aggregation.GroupOperation.toDBObject(GroupOperation.java:284)
+at org.springframework.data.mongodb.core.aggregation.Aggregation.toDbObject(Aggregation.java:228)
+I wonder why spring want to reference &amp;amp;apos;PDch&amp;amp;apos; instead of &amp;amp;apos;pd.PDch&amp;amp;apos;?</description>
+			<version>1.3.1</version>
+			<fixedVersion>1.3.2 (Babbage SR1), 1.4 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ProjectionOperation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.UnwindOperation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.GroupOperation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.Aggregation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.TypeBasedAggregationOperationContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="761" opendate="2013-09-24 01:50:30" fixdate="2013-10-08 03:43:25" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException in SpringDataMongodbSerializer.getKeyForPath</summary>
+			<description>Hello,
+I recently upgraded from querydsl 2.9.0 to 3.2.3 and spring-data-mongodb 1.2.1.RELEASE to 1.3.1.RELEASE.
+Currently, some of my MongoDB entities have inner objects stored using maps with Long keys :
+
+
+
+
+
+
+    @Document(collection = "xxx")
+
+
+
+
+    @QueryEntity
+
+
+
+
+    public class ObjectA {
+
+
+
+
+        private Map&amp;lt;Long, ObjectB&amp;gt; objects;
+
+
+
+
+    }
+
+
+
+
+
+
+I used to query such objects using the QueryDslPredicateExecutor repository interface. For instance, I used to check whether a map key was present with : QObjectA.objectA.objects.get(objectId).isNotNull()
+With the updated versions, I now get a ClassCastException I didn&amp;amp;apos;t experience before :
+
+
+
+
+
+
+    java.lang.ClassCastException: java.lang.Long cannot be cast to java.lang.String
+
+
+
+
+        at com.mysema.query.types.PathMetadata.getName(PathMetadata.java:70)
+
+
+
+
+        at org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.getKeyForPath(SpringDataMongodbSerializer.java:66)
+
+
+
+
+
+
+Judging by the source code of PathMetadata, it looks like the correct behaviour might be to use getElement().toString() instead of getName() :
+https://github.com/mysema/querydsl/blob/master/querydsl-core/src/main/java/com/mysema/query/types/PathMetadata.java
+What do you think ?</description>
+			<version>1.3.1</version>
+			<fixedVersion>1.3.2 (Babbage SR1), 1.4 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializerUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="789" opendate="2013-10-31 00:47:07" fixdate="2013-11-06 03:20:25" resolution="Fixed">
+		<buginformation>
+			<summary>Support login via different (e.g. admin) authentication database</summary>
+			<description>MongoDB allows to have users to be defined in the &amp;amp;apos;admin&amp;amp;apos; database that have permissions in other databases. See last example in http://docs.mongodb.org/manual/tutorial/add-user-to-database/. Before MongoDB 2.4, a login was automatically checked both in the database you connected to and in the &amp;amp;apos;admin&amp;amp;apos; database. Since MongoDB 2.4, you need to explicitly mention the authentication database when logging in via the tools.
+If you connect via the Driver, you need to first connect to the &amp;amp;apos;admin&amp;amp;apos; database to authenticate, and then switch to the database of your choice.
+This option is missing from the Spring-Data-MongoDB integration module.
+
+
+
+
+
+
+    &amp;lt;mongo:mongo id="mongo" write-concern="#{T(com.mongodb.WriteConcern).ACKNOWLEDGED}"
+
+
+
+
+                 replica-set="${mongo.mongoReplicaSet}"/&amp;gt;
+
+
+
+
+    &amp;lt;mongo:db-factory id="mongoDbFactory"
+
+
+
+
+                      dbname="${mongo.mongoDatabaseName}"
+
+
+
+
+                      username="${mongo.mongoUser}"
+
+
+
+
+                      password="${mongo.mongoPass}"
+
+
+
+
+                      mongo-ref="mongo"
+
+
+
+
+
+
+
+
+
+authenticationDatabase="${mongo.authenticationDatabase}"
+
+
+
+
+/&amp;gt; &amp;lt;!-- authenticationDatabase missing --&amp;gt;
+
+
+
+
+    &amp;lt;mongo:auditing/&amp;gt;
+
+
+
+
+
+
+The use of users in the admin database was enforced by our MongoDB consultants.</description>
+			<version>1.3.1</version>
+			<fixedVersion>1.4 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.SimpleMongoDbFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.monitor.ServerInfo.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoNamespaceTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.AbstractMongoConfiguration.java</file>
+			<file type="M">org.springframework.data.mongodb.config.AbstractMongoConfigurationUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoAdmin.java</file>
+			<file type="M">org.springframework.data.mongodb.core.SimpleMongoDbFactory.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtils.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoDbFactoryParser.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtilsIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

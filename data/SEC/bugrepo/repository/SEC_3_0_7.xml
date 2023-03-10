@@ -1,0 +1,234 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1848" opendate="2011-11-01 00:33:36" fixdate="2011-11-01 06:32:52" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractLdapAuthenticator must escape username</summary>
+			<description>AbstractLdapAuthenticator.getUserDns() must escape provided username before fomatting it into userDnFormat. It should use LdapEncoder.nameEncode().</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.AbstractLdapAuthenticator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1857" opendate="2011-11-10 01:18:11" fixdate="2011-12-05 13:25:28" resolution="Fixed">
+		<buginformation>
+			<summary>ContextPropagatingRemoteInvocation does not correctly propagate the principal</summary>
+			<description>ContextPropagatingRemoteInvocation was changed so that the principal and credentials were propagated via the toString method (see https://jira.springsource.org/browse/SEC-1741), as follows: 
+principal = currentUser.getPrincipal().toString(); 
+credentials = currentUser.getCredentials().toString(); 
+However, this only works if the toString method actually returns the principals name and in the case of principal of type org.springframework.security.core.userdetails.User it returns a description of the User object, not the name.
+I suggest the solution is as follows (it works for me at least): 
+principal = currentUser.getName(); 
+credentials = currentUser.getCredentials().toString();
+Any more info required just let me know.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.remoting.rmi.ContextPropagatingRemoteInvocation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1880" opendate="2011-12-27 04:46:51" fixdate="2011-12-30 09:39:07" resolution="Complete">
+		<buginformation>
+			<summary>Mislead exception text "Use logout-url or success-handler-ref, but not both"</summary>
+			<description>In org.springframework.security.config.http.LogoutBeanDefinitionParser there is an mistake in exception message composing. 
+Instead of: "Use " + ATT_LOGOUT_URL + " or " + ATT_LOGOUT_HANDLER + ", but not both"
+Should be: "Use " + ATT_LOGOUT_SUCCESS_URL + " or " + ATT_LOGOUT_HANDLER + ", but not both"</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.LogoutBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1968" opendate="2012-05-30 10:21:06" fixdate="2012-06-27 13:53:17" resolution="Fixed">
+		<buginformation>
+			<summary>PreAuthenticatedProcessingFilter does not clear out the security context causing user to unintentionally remain authenticated</summary>
+			<description>When the pre-authenticated user is null, the previously authenticated user&amp;amp;apos;s security context remains, and as such, the previous user remains authenticated.
+It seems like the AbstractPreAuthenticatedProcessingFilter should clear out the security context in doAuthenticate if the principal is null.  I can override the getPreAuthenticatedPrincipal call to do this (if I return  null for the principal), but it seems that this is not something the user should have to manage.  And, it seems like a side-effect / hack to put something like that in a method that should just be getting the principal, and doAuthenticate itself is private.  This is dangerous because later in the chain, in AbstractSecurityInterceptor.beforeInvocation(Object object) the security context is not null, even though it should be, and so, no exception is thrown from:
+        if (SecurityContextHolder.getContext().getAuthentication() == null) 
+{
+            credentialsNotFound(messages.getMessage("AbstractSecurityInterceptor.authenticationNotFound",
+                    "An Authentication object was not found in the SecurityContext"), object, attributes);
+        }
+
+It could also possibly be argued that the security context should be cleared in AbstractPreAuthenticatedFilter.requiresAuthentication in the session invalidation on a principal change - namely in here:
+        if (invalidateSessionOnPrincipalChange) {
+            HttpSession session = request.getSession(false);
+            if (session != null) 
+{
+                logger.debug("Invalidating existing session");
+                session.invalidate();
+                request.getSession();
+            }
+        }
+I have attached a test application that demonstrates this in the simplest format I could come up with. Basically the pre-authentication occurs by grabbing a username from a request parameter, and then it displays the logged in user&amp;amp;apos;s username on the home page.
+So if I go to http://localhost:8080/security/?username=bob the application will display &amp;amp;apos;Hello bob&amp;amp;apos;.  If I hit http://localhost:8080/security/?username=jimi, it will switch to saying &amp;amp;apos;Hello jimi&amp;amp;apos;, but if I do http://localhost:8080/security/?username= it will remain at &amp;amp;apos;Hello jimi&amp;amp;apos; (or whatever the previously authenticated user was), instead of requiring authentication.
+However, if in getPreAuthenticatedPrincipal() I call SecurityContextHolder.clearContext(), then hitting http://localhost:8080/security/?username= will result in taking me to the login page which I think is the desired behavior if the user is not pre-authenticated - indicated by getPreAuthenticatedPrincipal() returning null.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1958</link>
+		</links>
+	</bug>
+	<bug id="1850" opendate="2011-11-01 09:39:54" fixdate="2012-07-18 13:16:44" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionFilter should be by default injected with the same logout handlers as LogoutFilter when using namespace config</summary>
+			<description>I have an app configured to prevent concurrent sessions:
+                &amp;lt;sec:session-management session-fixation-protection="migrateSession"&amp;gt;
+                           &amp;lt;sec:concurrency-control max-sessions="1" expired-url="/sessionExpired.do" session-registry-ref="sessionRegistry"/&amp;gt;
+                &amp;lt;/sec:session-management&amp;gt;
+Also we are using remember me functionality:
+                &amp;lt;sec:remember-me key="someKey" services-ref="rememberMeServices"  /&amp;gt;
+now with this config the logout filter is injected with both SecurityContextLogoutHandler and our TokenBasedRememberMeServices bean which implements LogoutHandler.This is the expected config and it correctly executes both handlers (where in this case, remember me cookie will be canceled by TokenBasedRememberMeServices)  ..
+However, if the user exceeds his max sessions and the ConcurrentSessionFilter logouts the user, it uses the default SecurityContextLogoutHandler which is declared inside:
+                private LogoutHandler[] handlers = new LogoutHandler[] 
+{new SecurityContextLogoutHandler()}
+;
+I think ConcurrentSessionFilter should be injected with the same logout handlers as LogoutFilter so the user will be properly logged out (i.e clearing remeber me cookie for example)...</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.1.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.LogoutBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2013" opendate="2012-07-19 13:57:39" fixdate="2012-07-19 14:16:15" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthenticationProcessingFilter is missing space in log message</summary>
+			<description>I have custom FORM_LOGIN_FILTER class (extends UsernamePasswordAuthenticationFilter). When I have (expected) SessionAuthenticationException I see the following log messages:
+2012-07-19 16:38:50,311 [btpool0-4] DEBUG FormAuthenticationFilter - Authentication request failed: org.springframework.security.web.authentication.session.SessionAuthenticationException: Only concurrent sessions for the same principal are allowed
+2012-07-19 16:38:50,311 [btpool0-4] DEBUG FormAuthenticationFilter - Updated SecurityContextHolder to contain null Authentication
+2012-07-19 16:38:50,311 [btpool0-4] DEBUG FormAuthenticationFilter - Delegating to authentication failure handlerorg.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler@5226e4c9
+As you can see "Delegating to authentication failure handlerorg.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler@5226e4c9" message has no space.
+The missing space is in the AbstractAuthenticationProcessingFilter class (see Reference URL).</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.2</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2005" opendate="2012-07-13 13:50:16" fixdate="2012-08-07 15:08:57" resolution="Fixed">
+		<buginformation>
+			<summary>SecurityContext should be persisted immediately when the response is committed</summary>
+			<description>Summary of findings
+Spring Security should persist the SecurityContext immediately if any of the following methods are invoked since they commit the response and can hand control back to the client immediately. This is similar to SEC-398.
+
+HttpServletResponse.flushBuffer()
+HttpServletResponse.getWriter().close()
+HttpServletResponse.getWriter().flush()
+HttpServletRespose.getOutputStream().close()
+HttpServletRespose.getOutputStream().flush()
+
+Original description
+During stress/loadtesting of our web application we are experiencing some severe-error issues regarding the freshness of a spring-security security context.
+The referenced forum post contains a bit more detail but here is a summary.
+A single loadtest client (during high tomcat-7/server load) can execute a "login" establishing a security context and a subsequent API call requiring a security context will fail.  The loadtest client (grinder/jython single threaded (per client)) uses a CommonsHttpInvokerRequestExecutor sending and receiving hessian content over a "typical" http request/response.
+The login request is handled by our login service bean which establishes a spring security context.  That security context is persisted in spring-security scope in a "finally" block of SecurityContextPersistenceFilter.doFilter.  
+However, the underlying components (take your pick here... tomcat-7 Connector thread, java input/output streams, etc...) have sent the http response content-length number of bytes across the wire and therefore completed the HTTP request and response pair.
+The completion of the HTTP request is realized by the loadtest client (and any client I suppose) and moves on to the next HTTP request expecting the proper cookie handling and security context to be applied to the next request.  
+This next HTTP request is accepted by the appserver and processed by spring and further spring-security before the finally block on the previous request has executed.  Therefore the spring security context is not available in this subsequent request.  
+If I place a client-side delay (100ms or so), that is typically enough time to ensure that the complete spring stack has executed and the spring security context is valid.
+We also have this semantically similar issue during "logout".  Prior to logout, we make a call to our server that requires a security context (the last API call of our loadtest workflow).  This call appears "complete" to our clients because the http reqeust/response is complete.  So we continue our loadtest workflow sending a "logout" command.  This clears the spring security context before the finally block of the previous call has executed therefore the completion of the previous request throws an exception because the session is invalid.
+Once again, if we place a 100ms delay prior to the logout, no race condition occurs and things work as expected.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepositoryTests.java</file>
+			<file type="M">org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1975" opendate="2012-06-21 04:32:07" fixdate="2012-08-09 08:17:01" resolution="Fixed">
+		<buginformation>
+			<summary>AuthenticationSimpleHttpInvokerRequestExecutor and AnonymousAuthenticationToken</summary>
+			<description>Hi,
+I am working with AuthenticationSimpleHttpInvokerRequestExecutor to add http basic authentication to HTTPInvoker requests. When using the AnonymousAuthenticationFilter to create an AnonymousAuthenticationToken the request executor will extract "anonymousUser" and some randomly generated credentials. In the backend, I have no chance to generate meaningful UserDetails for "anonymousUser".
+So wouldn&amp;amp;apos;t it be better to check in prepareConnection() if the Authentication is a UsernamePasswordAuthenticationToken, since these are anyway the only usable tokens for http basic authentication?</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.remoting.httpinvoker.AuthenticationSimpleHttpInvokerRequestExecutorTests.java</file>
+			<file type="M">org.springframework.security.remoting.httpinvoker.AuthenticationSimpleHttpInvokerRequestExecutor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2057" opendate="2012-09-19 14:58:36" fixdate="2012-10-03 12:15:05" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionFilter documentation incorrectly states it doesn&amp;apos;t rely on SecurityContextHolder, results in null to all logout handlers Authentication object</summary>
+			<description>According to the docs here:
+http://static.springsource.org/spring-security/site/docs/3.1.x/reference/springsecurity-single.html#d0e3278
+The location of the filter is:
+"2) ConcurrentSessionFilter, because it doesn&amp;amp;apos;t use any SecurityContextHolder functionality..."
+But as you can see in this line here, it is used. 
+https://github.com/SpringSource/spring-security/blob/master/web/src/main/java/org/springframework/security/web/session/ConcurrentSessionFilter.java#L133
+It never gets populated due to the location in the filter chain and the Authentication object is always null.
+</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.SecurityFilters.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2025" opendate="2012-08-05 09:10:29" fixdate="2012-10-05 16:41:30" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionSecurityContextRepository restores authentication to the new session if session is invalidated from another thread</summary>
+			<description>HttpSessionSecurityContextRepository restores authentication to the session if session is invalidated from another thread if SecurityContextPersistenceFilter execution takes significant amount of time.
+I am using Spring + JSF + DWR framework + GWT event service (ajax push). In any time there is at least one thread waiting at the server side for push events. This request is handled by SecurityContextPersistenceFilter which remembers the authentication at the moment of request&amp;amp;apos;s arriving to the server. If during the processing of this filter the session is being invalidated (by clicking logout in another tab of invalidating session by id from admin area) then HttpSessionSecurityContextRepository put the outdated authentication to the new session(which is created by JSF framework, so the session is changed during the processing of SecurityContextPersistenceFilter ).
+This easily reproducable if some processing delay is inserted to SecurityContextPersistenceFilter.
+SaveToSessionResponseWrapper should remember the initial HttpSession and check if the original session was invalidated so it won&amp;amp;apos;t set the current authentication to the new session.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2031" opendate="2012-08-13 03:14:40" fixdate="2012-10-07 10:07:54" resolution="Fixed">
+		<buginformation>
+			<summary>PreInvocationAuthorizationAdviceVoter checks in support(Class&lt;?&gt;) for super and not for child class</summary>
+			<description>The method PreInvocationAuthorizationAdviceVoter.support(Class&amp;lt;?&amp;gt; clazz) checks if clazz is a super class of MethodInvocation and not if its a subclass.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.0.8, 3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.prepost.PreInvocationAuthorizationAdviceVoter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2187" opendate="2013-06-24 08:12:30" fixdate="2013-07-05 08:36:05" resolution="Fixed">
+		<buginformation>
+			<summary>OpenIDAuthenticationFilter should encode URL parameters</summary>
+			<description>OpenIDAuthenticationFilter has the ability to propagate existing query parameters on the request through the return_to URL submitted as part of the OpenID authentication process. However, these values are not encoded as application/x-www-form-urlencoded, leading to potential ambiguities later on if these values contain reserved characters.</description>
+			<version>3.0.7</version>
+			<fixedVersion>3.2.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationFilterTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

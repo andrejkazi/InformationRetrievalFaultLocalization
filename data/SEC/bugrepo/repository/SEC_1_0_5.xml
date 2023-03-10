@@ -1,0 +1,222 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="557" opendate="2007-09-13 06:36:15" fixdate="2007-09-19 03:51:48" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in ExceptionTranslationFilter: accessDeniedHandler is null</summary>
+			<description>NullPointerException is thrown while trying to access secured content with a user which does not have a neccessary role in the Authorities set (Access Denied situation):
+java.lang.NullPointerException
+  at org.acegisecurity.ui.ExceptionTranslationFilter.handleException(ExceptionTranslationFilter.java:229)
+  at org.acegisecurity.ui.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:176)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.doFilter(AnonymousProcessingFilter.java:125)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.doFilter(RememberMeProcessingFilter.java:142)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:173)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:271)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+  at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:275)
+  at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:149)
+  at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:98)
+  at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:202)
+  ...
+Seems to be caused by accessDeniedHandler being null on that line:
+  229: accessDeniedHandler.handle(request, response, (AccessDeniedException) exception);
+Seems that for some reason default AccessDeniedHandlerImpl is not being assigned.</description>
+			<version>1.0.5</version>
+			<fixedVersion>1.0.6, 2.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.ExceptionTranslationFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="618" opendate="2007-12-06 22:31:14" fixdate="2007-12-07 03:22:46" resolution="Fixed">
+		<buginformation>
+			<summary>Authentication details object should be copied to successful Authentication before ConcurrentSessionController.checkAuthenticationAllowed is called</summary>
+			<description>If concurrent session control is used with an authentication provider which doesn&amp;amp;apos;t copy the authentication details object to the successful authentication (e.g. CasAuthenticationProvider) then the check with the concurrent session controller on whether access is allowed takes place before the copyDetails method of AbstractAuthenticationManager is called. This isn&amp;amp;apos;t a problem with classes which extend AbstractUserDetailsAuthenticationProvider, as it copies the authentication details object itself.
+The copyDetails method should probably be pulled down into ProviderManager and called before checkAuthenticationAllowed() is called. This will ensure that the details object is available even if  the provider doesn&amp;amp;apos;t set it.
+It&amp;amp;apos;s also not clear that we really need an AbstractAuthenticationManager at all, given how little there is in there.</description>
+			<version>1.0.5</version>
+			<fixedVersion>1.0.6, 2.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.ProviderManager.java</file>
+			<file type="M">org.springframework.security.AbstractAuthenticationManager.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="581" opendate="2007-10-25 01:06:33" fixdate="2008-02-15 00:12:02" resolution="Fixed">
+		<buginformation>
+			<summary>CasAuthenticationProvider does not copy the details object into Authentication</summary>
+			<description>If we want to have audit logging and check for authenticate event, with cas the user details are not copied in this first even thus we are unable to know from which ip the authenticate event is originating from (or whatever else information is carried in the details).
+The WebAuthenticationDetails in the passed authentication object is copied to the CasAuthenticationToken only after it has been published (see AbstractAuthenticationManager::authenticate(Authentication)) , thus in the AuthenticationEvent you miss the servlet request where it is originating.
+I did a workaround to do it as follows:
+public class CasAuthenticationProvider extends org.acegisecurity.providers.cas.CasAuthenticationProvider {
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException 
+{
+        CasAuthenticationToken result =  (CasAuthenticationToken)super.authenticate(authentication);
+        copyDetails(authentication, result);
+        return result;
+    }
+
+    protected void copyDetails(Authentication source, CasAuthenticationToken dest) {
+        if (dest.getDetails() == null) 
+{
+            Object details = source.getDetails();
+            dest.setDetails(details);
+        }
+    }
+}
+</description>
+			<version>1.0.5</version>
+			<fixedVersion>1.0.7, 2.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.cas.CasAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.providers.cas.CasAuthenticationProviderTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="577" opendate="2007-10-16 04:57:39" fixdate="2008-02-15 00:35:43" resolution="Fixed">
+		<buginformation>
+			<summary>Replace SWITCH_USER_GRANTED_AUTHORITY for ROLE_PREVIOUS_ADMINISTRATOR in Javadoc</summary>
+			<description>SWITCH_USER_GRANTED_AUTHORITY should be replaced in the Javadocs for ROLE_PREVIOUS_ADMINISTRATOR. The code changed long ago but the Javadoc for SwitchUserProcessingFilter has not.</description>
+			<version>1.0.5</version>
+			<fixedVersion>1.0.7, 2.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.switchuser.SwitchUserProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="572" opendate="2007-10-11 01:35:45" fixdate="2008-04-04 19:16:31" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot set ACL&amp;apos;s parent to null</summary>
+			<description>The setParent() method in AclImpl throws an exception if I try to set the parent to null. I cannot see why I shouldn&amp;amp;apos;t be able to do this. After all, the constructor allows me to set parent to null. 
+In our app we have a tree like structure of objects which are secured using Acegi&amp;amp;apos;s ACL package (the new implementation). Permissions are inherited throughout the tree. Nodes in the tree can be moved around and can become top level nodes. This is why we would like to be able to set parent to null. The work around is to use an invisible super root node for all top level nodes. We would prefer not to have to do that.</description>
+			<version>1.0.5</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">532</link>
+			<link type="Duplicate" description="is duplicated by">597</link>
+		</links>
+	</bug>
+	<bug id="597" opendate="2007-11-07 07:19:24" fixdate="2008-04-13 17:42:07" resolution="Duplicate">
+		<buginformation>
+			<summary>AclImpl.setParent() throws Exception when changing parent to null</summary>
+			<description>I think it should be possible to change the parent of a directory to null:
+Sample Scenario:
+Filebrowser that manages a directory structure (the directories are secured by acegi). Now i want to move a nested directory to Root-Level. The parent-property of the corresponding ACL has to be changed to NULL.
+Solution:
+Simply change:
+    public void setParent(Acl newParent) 
+{
+        aclAuthorizationStrategy.securityCheck(this, AclAuthorizationStrategy.CHANGE_GENERAL);
+        Assert.notNull(newParent, "New Parent required");
+        Assert.isTrue(!newParent.equals(this), "Cannot be the parent of yourself");
+        this.parentAcl = newParent;
+    }
+
+to
+    public void setParent(Acl newParent) 
+{
+        aclAuthorizationStrategy.securityCheck(this, AclAuthorizationStrategy.CHANGE_GENERAL);
+        Assert.isTrue(newParent == null || !newParent.equals(this), "Cannot be the parent of yourself");
+        this.parentAcl = newParent;
+    }
+</description>
+			<version>1.0.5</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">572</link>
+		</links>
+	</bug>
+	<bug id="525" opendate="2007-08-14 03:41:20" fixdate="2009-09-15 11:28:33" resolution="Fixed">
+		<buginformation>
+			<summary>[PATCH] Add AccessCheckerTag based on URL resource access permissions.</summary>
+			<description>I have developed a tag (AccessCheckerTag) based on URL and not in roles, which reuse objectDefinitionSource (urls + roles) and accessDecisionManager (voters) of the filterInvocationInterceptor bean, inspired in AuthorizeTag and AccessControlListTag.
+jsp looks like this:
+&amp;lt;authz:accesschecker url="/deletePerson.do"&amp;gt;
+    &amp;lt;A HREF="&amp;lt;c:out value="$
+{request.contextPath}
+" /&amp;gt;/deletePerson.do?id=&amp;lt;c:out value="$
+{person.id}
+" /&amp;gt;"&amp;gt;Del&amp;lt;/A&amp;gt;
+&amp;lt;/authz:accesschecker&amp;gt;
+I consider that this tag can be useful for some cases in which before printing the html link or button it is necessary to verify if required access is had to url resource.
+see: http://forum.springframework.org/showthread.php?t=42550</description>
+			<version>1.0.5</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTag.java</file>
+			<file type="D">org.springframework.security.web.access.WebInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagTests.java</file>
+			<file type="M">org.springframework.security.web.access.WebInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1277</link>
+		</links>
+	</bug>
+	<bug id="1277" opendate="2009-10-26 14:19:26" fixdate="2009-11-03 02:01:00" resolution="Duplicate">
+		<buginformation>
+			<summary>The authorization tag libraries are totally wrong!</summary>
+			<description>&amp;lt;security:authorize ifAllGranted="ROLE_SUPERVISOR"&amp;gt;
+&amp;lt;td&amp;gt;
+  &amp;lt;a href="del.htm?id=&amp;lt;c:out value="$
+{contact.id}"/&amp;gt;"&amp;gt;Del&amp;lt;/a&amp;gt;
+&amp;lt;/td&amp;gt;
+&amp;lt;/security:authorize&amp;gt;
+
+I think it is more reasonable to protect a resource like this
+&amp;lt;security:authorize ifAllAuthorised="del.htm"&amp;gt;
+&amp;lt;td&amp;gt;
+  &amp;lt;a href="del.htm?id=&amp;lt;c:out value="${contact.id}
+"/&amp;gt;"&amp;gt;Del&amp;lt;/a&amp;gt;
+&amp;lt;/td&amp;gt;
+&amp;lt;/security:authorize&amp;gt;
+Because the relationship between resources and roles may change in the future,
+even more,the role name may change.</description>
+			<version>1.0.5</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTag.java</file>
+			<file type="D">org.springframework.security.web.access.WebInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagTests.java</file>
+			<file type="M">org.springframework.security.web.access.WebInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">525</link>
+		</links>
+	</bug>
+</bugrepository>

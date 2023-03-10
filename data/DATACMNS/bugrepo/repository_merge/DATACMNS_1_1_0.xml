@@ -1,0 +1,55 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="1" master="117" duplicate="238" opendate="2011-12-21 07:33:22" fixdate="2013-02-12 08:42:47" resolution="Fixed">
+		<buginformation>
+			<summary>Add HandlerMethodArgumentResolver alternative to the PageableArgumentResolver Re-write PageableArgumentResolver (WebArgumentResolver) as HandlerMethodArgumentResolver</summary>
+			<description>It is recommended to re-implement WebArgumentResolver types as HandlerMethodArgumentResolver in Spring 3.1. Although a WebArgumentResolver is adapted transparently to the new contract, as the javadoc for AbstractWebArgumentResolverAdapter indicates, a HandlerMethodArgumentResolver.supportsParameter(MethodParameter) method can only be implemented by actually calling WebArgumentResolver.resolve() and checking if the return value is UNRESOLVED. If an exception occurs during that check, it isn&amp;amp;apos;t clear if the failure is because the parameter can not be supported or whether there was some other real failure. As a result the exception has to be absorbed and other resolvers given a chance instead. To align better with Spring&amp;amp;apos;s transition from WebArgumentResolver to HandlerMethodArgumentResolver (Spring 3.1) it&amp;amp;apos;s recommended to re-write existing WebArgumentResolvers.
+Now a ServletWebArgumentResolverAdapter is needed to add the Pageable argument rsolver. In Java config:
+
+
+
+
+
+
+@Override
+
+
+
+
+public void addArgumentResolvers(List&amp;lt;HandlerMethodArgumentResolver&amp;gt; argumentResolvers) {
+
+
+
+
+	argumentResolvers.add(new ServletWebArgumentResolverAdapter(new PageableArgumentResolver()));
+
+
+
+
+}
+
+
+
+
+
+
+Quoted from this ServletWebArgumentResolverAdapter javadocs:
+Note: This class is provided for backwards compatibility. However it is recommended to re-write a WebArgumentResolver as HandlerMethodArgumentResolver. For more details see javadoc of AbstractWebArgumentResolverAdapter.</description>
+			<version>1.2 RC1</version>
+			<fixedVersion>1.6 M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableDefaults.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">238</link>
+			<link type="Relate" description="relates to">330</link>
+			<link type="Duplicate" description="duplicates">117</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,526 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1031" opendate="2008-11-11 06:45:15" fixdate="2008-12-15 06:17:20" resolution="Fixed">
+		<buginformation>
+			<summary>LdapShaPasswordEncoder.isPasswordValid startOfHash off by one</summary>
+			<description>in LdapShaPasswordEncoder.isPasswordValid the startOfHash variable is initialized to prefix.length() + 1.
+This causes the first character of the hash values to be skipped in the subsequent equals invocation.
+Is there some (undocumented) reason that the first character of the hash is being skipped, or is this a bug?
+Example:
+encPass = "
+{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="
+rawPass = "pass"
+prefix = "{SHA}
+"
+startOfHash = 6 (should be 5: prefix.length())
+encodedRawPass = "U4eI71bcnBGqeO0t9tXvY1u5oQ=" (should be "nU4eI71bcnBGqeO0t9tXvY1u5oQ=")</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.ldap.authenticator.LdapShaPasswordEncoderTests.java</file>
+			<file type="M">org.springframework.security.providers.ldap.authenticator.LdapShaPasswordEncoder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1037" opendate="2008-11-25 00:25:53" fixdate="2008-12-15 06:17:20" resolution="Fixed">
+		<buginformation>
+			<summary>LdapAuthenticationProvider doesn&amp;apos;t support messageSource updates/modifications</summary>
+			<description>In order to allow localisation and personnal messages&amp;amp;apos; definition org.springframework.security.providers.ldap.LdapAuthenticationProvider should implement org.springframework.context.MessageSourceAware.
+At this time it&amp;amp;apos;s not the case, so it is impossible to modify messages and use messages&amp;amp;apos; localisation for this object (see 6.1 in spring security documentation http://static.springsource.org/spring-security/site/reference/html/supporting-infrastructure.html#localization).
+By the way this object also doesn&amp;amp;apos;t implement org.springframework.beans.factory.InitializingBean.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.providers.ldap.LdapAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1006" opendate="2008-10-05 20:36:47" fixdate="2008-12-15 10:08:48" resolution="Fixed">
+		<buginformation>
+			<summary>AccessControlListTag class Javadoc incorrect</summary>
+			<description>The class-level Javadoc for AccessControlListTag incorrectly states that there must be exactly one SidRetrievalStrategy bean on the application context. While the tag will complain if multiple such beans exist, there is no issue if no SidRetrievalStrategy implementations exist. In that event AccessControlListTag simply creates a SidRetrievalStrategyImpl instance and uses that.
+</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AccessControlListTag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1014" opendate="2008-10-16 20:55:23" fixdate="2009-04-19 17:12:12" resolution="Duplicate">
+		<buginformation>
+			<summary>minor changes for an easy NTLM / LDAP configuration</summary>
+			<description>Following changes are needed for an easy NTLM and LDAP (Active Directory) integration :
+LdapAuthenticationProvider :
+Either accept empty password (then LdapAuthenticationProvider can be used as is), or change scope to protected for the private LdapAuthenticator authenticator; : in that case we can easily override the authenticate() method to avoid password length check, without the need to use another LdapAuthenticator in the overriding class.
+Another change is needed for NTLM : AbstractLdapAuthenticator with no password check.
+PasswordComparisonAuthenticator is final and can&amp;amp;apos;t be overrided, despite the only usefull change is to comment last lines in authenticate() to remove password check.
+Because of the class name, it&amp;amp;apos;s not easy to change this...
+So may a new class extending LdapAuthenticationProvider  exists  ( with no password check) ?
+With those 2 changes, we can use NTLM to get username, use it to query LDAP and retrieve user informations (email, name, etc..) then use such informations in a custom UserDetails implementation (via a convenient UserDetailsContextMapper) without any implementation.
+Hope this can help.
+Regards.
+</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Refactoring</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1117</link>
+		</links>
+	</bug>
+	<bug id="1078" opendate="2009-01-08 19:39:49" fixdate="2009-04-26 17:04:25" resolution="Fixed">
+		<buginformation>
+			<summary>WebSphere2SpringSecurityPropagationInterceptor creates an auth token with null credentials - rejected by pre-auth provider</summary>
+			<description>WebSphere2SpringSecurityPropagationInterceptor creates a PreAuthenticatedAuthenticationToken request with the was username, and null credentials (line 55 in WebSphere2SpringSecurityPropagationInterceptor).
+Such an auth request will be rejected by corresponding provider, (PreAuthenticatedAuthenticationProvider, lines 73-80).
+I suggest to change the interceptor and follow what&amp;amp;apos;s in the WebSpherePreAuthenticatedProcessingFilter: the filter return "N/A" as the credentials, which is ok, since the pre-auth provider does not check credential values.
+Also, in order to unit test WAS stuff into the org.springframework.security.ui.preauth.websphere package, the WASSecurityHelper should be refactored into a non-static class - at least this would have prevented this bug. You will find attached a proposal for such a refactoring.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.websphere.WebSpherePreAuthenticatedAuthenticationDetailsSource.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.websphere.WebSphere2SpringSecurityPropagationInterceptor.java</file>
+			<file type="D">org.springframework.security.web.authentication.preauth.websphere.WASSecurityHelper.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.websphere.WebSpherePreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1143" opendate="2009-04-27 22:02:36" fixdate="2009-04-27 23:11:03" resolution="Fixed">
+		<buginformation>
+			<summary>Using Namespace won&amp;apos;t set sessionRegistry for form-login</summary>
+			<description>When using concurrent session using namespace like :
+&amp;lt;security:concurrent-session-control max-sessions="1" expired-url="/login-page.html" session-registry-ref="onlineManager"/&amp;gt;     
+the onlineManager is my own sessionRegistry
+I found when login it always register a new session and then remove it. I dig it found it is in AbstractProcessingFilter.java line 367:
+SessionUtils.startNewSessionIfRequired(request, migrateInvalidatedSessionAttributes, sessionRegistry);
+And the  AbstractProcessingFilter.java has 
+    public void setSessionRegistry(SessionRegistry sessionRegistry) 
+{
+        this.sessionRegistry = sessionRegistry;
+    }
+But I can&amp;amp;apos;t find any description for form-login in spring-security-2.0.4.xsd.
+I can using just bean define to solve this.But this must bei xsd problem or namespace inplement.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.FormLoginBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.util.FieldUtils.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1141" opendate="2009-04-17 03:12:02" fixdate="2009-04-28 12:47:03" resolution="Fixed">
+		<buginformation>
+			<summary>ObjectIdentityImpl has incorrect hashCode implementation</summary>
+			<description>The ObjectIdentityImpl class contains a bug in it&amp;amp;apos;s hashCode implementation. 2 objects which are equal to each other using the &amp;amp;apos;.equals()&amp;amp;apos; method do not neccesarily produce the same hashcode. Consider the following code:
+ObjectIdentityImpl oi1 = new ObjectIdentityImpl("java.lang.String", "10");
+ObjectIdentityImpl oi2 = new ObjectIdentityImpl("java.lang.String", 10);
+System.out.println(oi1.equals(oi2));					//true
+System.out.println(oi1.hashCode() == oi2.hashCode());	//false
+System.out.println(oi1.hashCode());						//25246124
+System.out.println(oi2.hashCode());						//25247673
+This is due to the use of &amp;amp;apos;this.identifier.hashCode()&amp;amp;apos; (line 146 ObjectIdentityImpl), while the equals method uses &amp;amp;apos;this.getIdentifier().toString().equals(other.getIdentifier().toString()&amp;amp;apos; (line 123 ObjectIdentityImpl)</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.acls.objectidentity.ObjectIdentityTests.java</file>
+			<file type="M">org.springframework.security.acls.objectidentity.ObjectIdentityImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1121" opendate="2009-03-16 21:50:27" fixdate="2009-04-28 13:02:09" resolution="Fixed">
+		<buginformation>
+			<summary>InMemoryResource.equals() is wrong</summary>
+			<description>Here is org.springframework.security.util.InMemoryResource.equals method code:
+  public boolean equals(Object res) {
+        if (res instanceof InMemoryResource) 
+{
+            return false;
+        }
+
+        return Arrays.equals(source, ((InMemoryResource)res).source);
+    }
+
+Obviously, this should be:
+
+  public boolean equals(Object res) {
+        if (!(res instanceof InMemoryResource)) {            return false;        }
+
+        return Arrays.equals(source, ((InMemoryResource)res).source);
+    }</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.util.InMemoryResource.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1117" opendate="2009-03-10 23:26:42" fixdate="2009-04-28 13:04:10" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to use NtlmAwareLdapAuthenticator with LdapAuthenticationProvider due to checking for null password.  </summary>
+			<description>Currently LdapAuthenticatonProvider checks for empty password in its authenticate() method (lines 225 onward). This does not allow to use NtlmAwareLdapAuthenticator as a delegate for authentication because null password will be always rejected - as is the case when using NTLM authentication - and NtlmAwareLdapAuthenticator never gets called.  
+Forum thread mentioned above confirms the same problem encountered by another user (see item 2 in the top post)
+Also a similiar problem exists with id: SEC-1014. </description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1014</link>
+		</links>
+	</bug>
+	<bug id="1070" opendate="2008-12-30 07:49:38" fixdate="2009-04-28 13:10:08" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractRetryEntryPoint always uses RetryWithHttpEntryPoint logger</summary>
+			<description>AbstractRetryEntryPoint  has a static logger defined by RetryWithHttpEntryPoint.class, instead of using a non-static getLogger(getClass()) or an abstract Log getLogger() function that would be implemented in both RetryWithHttpEntryPoint and RetryWithHttpsEntryPoint to provide the correct class for logging.
+The impact is that log messages for the RetryWithHttpsEntryPoint get logged under the RetryWithHttpEntryPoint logger.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.securechannel.AbstractRetryEntryPoint.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1084" opendate="2009-01-21 01:19:20" fixdate="2009-05-05 20:46:07" resolution="Fixed">
+		<buginformation>
+			<summary>Retain Authentication.details when authenticating in LdapAuthenticationProvider</summary>
+			<description>It seems that the LdapAuthenticationProvider looses any details set on the incomming Authentication.details property. Several other AuthenticationProviders retain these details
+Unless of course this is intentional it should be trivial to improve this with simply copying the details, thus making them available to the application. 
+Simple suggestion attached as patch.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1154</link>
+		</links>
+	</bug>
+	<bug id="1081" opendate="2009-01-17 00:09:45" fixdate="2009-05-05 20:50:49" resolution="Fixed">
+		<buginformation>
+			<summary>PersistentTokenBasedRememberMeServices int overflow</summary>
+			<description>The PersistentTokenBasedRememberMeServices always throws RememberMeAuthenticationException if  tokenValiditySeconds is 30 days or 2592000 seconds.
+Either tokenValiditySeconds needs to be a long or tokenValiditySeconds needs to multiply 1000L (getTokenValiditySeconds()*1000L).</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategyTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServicesTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1111" opendate="2009-02-24 16:55:58" fixdate="2009-05-05 20:51:17" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultLoginPageGeneratingFilter does not work with messages_ko_KR.properties</summary>
+			<description>(attachement is eclipse project and screenshot)
+I made messages_ko_KR.properties. 
+(C:\workspace\codelabor-spring-security-template\src\main\resources\org\springframework\security\messages_ko_KR.properties)
+And I try default form-login with empty username and password.
+500 Error occures like screenshot image.
+---------------------------------------------------------------------
+java.io.CharConversionException: Not an ISO 8859-1 character: 
+	at javax.servlet.ServletOutputStream.print(ServletOutputStream.java:89)
+---------------------------------------------------------------------
+I retry login with correct username and password.
+Login is sucess.
+In index.jsp page, I test messageSource like this:
+-------------------------------------------------------------------------
+WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(application);
+MessageSource messageSource = (MessageSource) context.getBean("messageSource");
+out.println(messageSource.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", null, Locale.getDefault()));
+-------------------------------------------------------------------------
+index.jsp page works, like attachement image.
+So my message_ko_KR.properties is good.
+What&amp;amp;apos;s wroing with DefaultLoginPageGeneratingFilter?
+</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.DefaultLoginPageGeneratingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.DefaultLoginPageGeneratingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1104" opendate="2009-02-09 16:09:34" fixdate="2009-05-05 21:07:47" resolution="Fixed">
+		<buginformation>
+			<summary>Server created by ApacheDSContainer is shutdown twice, causing a hang</summary>
+			<description>I have a default ApacheDS server launched for testing via &amp;lt;ldap-server/&amp;gt; element in my spring config. This is inside a webapp, and the context is loaded through a servlet context listener (if that makes any difference).
+ApacheDSContainer implements both Lifecycle and DisposableBean.  Both destroy methods get called, but neither checks the &amp;amp;apos;running&amp;amp;apos; field before trying to shut down the ApacheDS server.  The first shutdown works, but since the server is contacted over a socket, the second attempt hangs until the socket times out.
+The easy fix is to just check the &amp;amp;apos;running&amp;amp;apos; field in the stop() method and don&amp;amp;apos;t do anything if the server isn&amp;amp;apos;t running.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.server.ApacheDSContainer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1038" opendate="2008-11-25 18:55:32" fixdate="2009-05-06 01:36:55" resolution="Fixed">
+		<buginformation>
+			<summary>Error in JdbcMutableAclService with Postgres</summary>
+			<description>When I use the Spring Security&amp;amp;apos;s ACL services with a Postgres database, I am getting the following error when I call the createAcl method in the JdbcMutableAclService class  :
+Caused by: org.postgresql.util.PSQLException: ERROR: column "object_id_identity" is of type bigint but expression is of type character varying
+The problem is caused in the createObjectIdentity method by object.getIdentifier().toString() because the parameter is a string or the column is a bigint in the database. 
+To solve the problem, you must cast to long : 
+protected void createObjectIdentity(ObjectIdentity object, Sid owner) {
+  Long sidId = createOrRetrieveSidPrimaryKey(owner, true);
+  Long classId = createOrRetrieveClassPrimaryKey(object.getJavaType(), true);
+  jdbcTemplate.update(insertObjectIdentity,
+      new Object[] 
+{classId, new Long(object.getIdentifier().toString()), sidId, new Boolean(true)}
+);
+}
+There is a thread in the forum about this problem : http://forum.springframework.org/showthread.php?t=56889
+Thomas</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.acls.jdbc.AclPermissionInheritanceTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclServiceTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1199</link>
+		</links>
+	</bug>
+	<bug id="1154" opendate="2009-05-05 20:21:49" fixdate="2009-05-06 20:03:00" resolution="Duplicate">
+		<buginformation>
+			<summary>LdapAuthenticationProvider.createSuccessfulAuthentication() returned object should include authentication.getDetails() if using useAuthenticationRequestCredentials</summary>
+			<description>the createSuccessfulAuthentication(UsernamePasswordAuthenticationToken auth, UserDetails user) method from LdapAuthenticationProvider returns a new UsernamePasswordAuthenticationToken based on auth&amp;amp;apos;s password, depending on useAuthenticationRequestCredentials boolean.
+In the case this happens, shouldn&amp;amp;apos;t the returned object also include auth.getDetails()? I.e., something like:
+protected Authentication createSuccessfulAuthentication(UsernamePasswordAuthenticationToken authentication, UserDetails user)
+{
+  Object password = useAuthenticationRequestCredentials ? authentication.getCredentials() : ((Object) (user.getPassword()));
+  if (useAuthenticationRequestCredentials)
+  {
+      UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+      token.setDetails(authentication.getDetails());
+      return token;
+  }
+  return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+}
+(as part of our current project, we are building a custom authenticationProvider which extends LdapAuthenticationProvider, and we expected this behaviour. Not very sure this should be marked as bug or as an improvement, though)</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1084</link>
+		</links>
+	</bug>
+	<bug id="1156" opendate="2009-05-08 22:27:29" fixdate="2009-06-14 09:33:06" resolution="Fixed">
+		<buginformation>
+			<summary>JdbcUserDetailsManager ignores setEnableAuthorities(false)</summary>
+			<description>The methods createUser and updateUser access the authorities table, even when configured not to on the super class using setEnableAuthorities.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.provisioning.JdbcUserDetailsManager.java</file>
+			<file type="M">org.springframework.security.provisioning.JdbcUserDetailsManagerTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1187" opendate="2009-06-18 22:08:37" fixdate="2009-07-07 04:10:08" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractUserDetailsAuthenticationProvider allows login of disabled, locked or expired users</summary>
+			<description>If I look into AbstractUserDetailsAuthenticationProvider, I see the followng code:
+  try 
+{
+                user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+            }
+ catch (UsernameNotFoundException notFound) {
+                if (hideUserNotFoundExceptions) 
+{
+                    throw new BadCredentialsException(messages.getMessage(
+                            "AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+                }
+ else 
+{
+                    throw notFound;
+                }
+            }
+            Assert.notNull(user, "retrieveUser returned null - a violation of the interface contract");
+        }
+        preAuthenticationChecks.check(user);
+        try 
+{
+            additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+        }
+ catch (AuthenticationException exception) {
+            if (cacheWasUsed) 
+{
+                // There was a problem, so try again after checking
+                // we&amp;amp;apos;re using latest data (ie not from the cache)
+                cacheWasUsed = false;
+                user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+### HERE ###
+                additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+            }
+ else 
+{
+                throw exception;
+            }
+        }
+Isn&amp;amp;apos;t it necessary to execute the preAuthenticationChecks at ### HERE ### again?
+I don&amp;amp;apos;t want that disabled, locked or expired users are able to log in. </description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1145" opendate="2009-04-30 07:06:10" fixdate="2009-07-13 22:16:58" resolution="Fixed">
+		<buginformation>
+			<summary>When connecting to ldap for authentication user can login using old and new password</summary>
+			<description>Login to application
+Change windows password
+Logout of application
+Login to application using old password
+This succeeds when it should not.
+Login to application using new password. This succeeds and it should.
+Reboot application, old password still works and still shouldn&amp;amp;apos;t.
+Reboot machine, old password still works and still shouldn&amp;amp;apos;t.
+Config:
+&amp;lt;bean id="contextSource" class="org.springframework.security.ldap.DefaultSpringSecurityContextSource"&amp;gt;
+		&amp;lt;constructor-arg value="$
+{ldap.url}
+"/&amp;gt;
+		&amp;lt;property name="userDn" value="CN=svc-ldap-deliveries,OU=Service Accounts,DC=MYDC,DC=com"/&amp;gt; 
+		&amp;lt;property name="password" value="pwd"/&amp;gt; 
+		&amp;lt;property name="referral" value="follow" /&amp;gt;
+	&amp;lt;/bean&amp;gt; 
+	&amp;lt;bean id="secondLdapProvider"
+		  class="org.springframework.security.providers.ldap.LdapAuthenticationProvider"&amp;gt;
+		&amp;lt;security:custom-authentication-provider /&amp;gt; 
+		&amp;lt;constructor-arg&amp;gt; 
+			&amp;lt;bean class="org.springframework.security.providers.ldap.authenticator.BindAuthenticator"&amp;gt;
+				&amp;lt;constructor-arg ref="contextSource"/&amp;gt; 
+				&amp;lt;property name="userSearch"&amp;gt;
+					&amp;lt;bean id="userSearch" class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch"&amp;gt;
+						&amp;lt;constructor-arg index="0" value=""/&amp;gt; 
+						&amp;lt;constructor-arg index="1" value="sAMAccountName=
+{0}"/&amp;gt; 
+						&amp;lt;constructor-arg index="2" ref="contextSource" /&amp;gt; 
+					&amp;lt;/bean&amp;gt; 
+				&amp;lt;/property&amp;gt; 
+			&amp;lt;/bean&amp;gt; 
+		&amp;lt;/constructor-arg&amp;gt;
+
+	 	&amp;lt;constructor-arg&amp;gt; 		
+			&amp;lt;bean class="org.springframework.security.ldap.populator.DefaultLdapAuthoritiesPopulator"&amp;gt;
+
+				&amp;lt;constructor-arg ref="contextSource" /&amp;gt; 
+				&amp;lt;constructor-arg value="OU=DLS File Permissions" /&amp;gt;
+				&amp;lt;property name="rolePrefix" value="ROLE_"/&amp;gt; 			
+				&amp;lt;property name="convertToUpperCase" value="false"/&amp;gt; 					
+				&amp;lt;property name="groupRoleAttribute" value="cn"&amp;gt;&amp;lt;/property&amp;gt;			
+				&amp;lt;property name="groupSearchFilter" value="(member={0}
+)"/&amp;gt;
+				&amp;lt;property name="searchSubtree" value="true"&amp;gt;&amp;lt;/property&amp;gt;
+			&amp;lt;/bean&amp;gt; 
+		&amp;lt;/constructor-arg&amp;gt;
+	&amp;lt;/bean&amp;gt;
+Spring core 2.0.4 and spring ldap 1.3.0</description>
+			<version>2.0.4</version>
+			<fixedVersion>2.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.DefaultSpringSecurityContextSourceTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1077" opendate="2009-01-08 08:25:42" fixdate="2009-07-28 11:48:49" resolution="Fixed">
+		<buginformation>
+			<summary>AuthenticationProcessingFilter doesn&amp;apos;t redirect to target url in case of session-fixation "newSession".</summary>
+			<description>When session-fixation-protection="newSession" is used then AbstractProcessingFilter processing filter doesn&amp;amp;apos;t redirect to target url. It is because of saved request clearing in session (2.0.4, trunk).</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.session.DefaultAuthenticatedSessionStrategy.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.web.session.DefaultAuthenticatedSessionStrategyTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supersede" description="is superseded by">1211</link>
+		</links>
+	</bug>
+	<bug id="1458" opendate="2010-04-12 20:49:50" fixdate="2010-04-16 02:15:20" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionEventPublisher has static Log. it causes the log4j configuration to happen before Log4jConfigListener</summary>
+			<description>Although the first listener in my web.xml is the Log4jConfigListener. the log4j configuration happens before getting there.
+It happens because I also have HttpSessionEventPublisher listener that has a static Log, when the static Log is initialized it causes the log4j default configuration.
+The problem is that some loggers from the default configuration are still alive even after the Log4jConfigListener is called. 
+Changing the Log to not being static should solve the issue.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.session.HttpSessionEventPublisher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1462" opendate="2010-04-19 22:13:12" fixdate="2010-04-20 04:38:06" resolution="Fixed">
+		<buginformation>
+			<summary>SessionFixationProtectionFilter creates new session even when the requested session id is null or invalid.</summary>
+			<description>We ran into an issue where the hotspot browser on blackberry devices was not able to maintain the httpsession. We are using tomcat 6 as our web server. After investigation it was found that the tomcat is generating two Set-Cookie headers for JSESSIONID. Out of these two JSESSIONID second one is valid however the hotspot browser is picking up the wrong one (i.e. first one) and that is why it is not able to maintain the session. With further investigation it was found that the SessionFixationProtectionFilter invalidates the current session and then creates a new one if the user is authenticated during the current requests. This was causing the multiple JSESSIONID.
+Though the issue seems to be with the browser and the tomcat but the SessionFixationProtectionFilter creates new session when it is not required i.e. when the requested session id is invalid or null. So we need to add an extra condition which also checks for request.isRequestedSessionIdValid() in the already exisiting condition
+//existing code
+if(request.getSession(false) == null || request.getAttribute(FILTER_APPLIED) != null) {
+	chain.doFilter(request, response);
+	return;
+}
+//changed code 
+if(request.getSession(false) == null || request.getAttribute(FILTER_APPLIED) != null || request.isRequestedSessionIdValid() == false) {
+	chain.doFilter(request, response);
+	return;
+}
+This not only fixes the issue mentioned but also improves the performance as we are avoiding unnecessary session creation.</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

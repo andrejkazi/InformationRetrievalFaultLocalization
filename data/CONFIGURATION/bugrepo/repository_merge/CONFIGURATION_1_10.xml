@@ -1,0 +1,64 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="2" master="540" duplicate="581" opendate="2013-04-11 10:43:44" fixdate="2014-06-10 20:34:29" resolution="Fixed">
+		<buginformation>
+			<summary>SystemConfiguration copies System.getProperties() instead of directly using it since 1.8 SystemConfiguration can not get the correct system property</summary>
+			<description>In commons-configuration-1.7 the SystemConfiguration directly used the Map of System.getProperties(). Thus when changing the properties inside the SystemConfiguration, the changes were visible in the Map of System.getProperties().
+Since commons-configuration-1.8 the SystemConfiguration creates a new Map as a copy of System.getProperties() and thus changes in the SystemConfiguration Map are not visible in the System.getProperties() Map.
+In 1.7 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Map map) {
+    this.map = map;
+}
+
+
+In 1.9 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Properties props) {
+    map = convertPropertiesToMap(props);
+}
+
+
+A fix could look like this:
+
+
+public SystemConfiguration() {
+    super((Map)System.getProperties());
+}
+
+
+This breaks the functionality I expected to be able to use SystemConfiguration as a replacement API for accessing and manipulating SystemProperties. For me this is a regression.
+My workaround is currently not to use:
+
+
+new SystemConfiguration();
+
+
+but instead use:
+
+
+new MapConfiguration((Map) System.getProperties());
+
+ Currently the SystemConfiguration does not handle the scenario like below
+  System.setProperty("demoId", "demoValue");
+  SystemConfiguration sysConf = new SystemConfiguration ();
+  System.setProperties(new Properties(System.getProperties())));
+ System.setProperty("demoId", "newDemoValue");
+ String propertyFromSysConf = sysConf.getProperty("demoId")
+In the above code the value of propertyFromSysConf is demoValue but not newDemoValue, and I think the correct value should be newDemoValue</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.MapConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSystemConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">581</link>
+			<link type="Duplicate" description="is duplicated by">540</link>
+		</links>
+	</bug>
+</bugrepository>

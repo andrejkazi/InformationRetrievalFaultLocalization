@@ -1,0 +1,46 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="11598" opendate="2014-03-25 11:32:24" fixdate="2015-05-13 07:20:33" resolution="Complete">
+		<buginformation>
+			<summary>Favor more locally declared composed annotations over inherited annotations</summary>
+			<description>Background
+This issue picks up where SPR-11475 left off.
+
+Status Quo
+The implementations of AnnotatedElementUtils and (potentially) Spring&amp;amp;apos;s ASM-based annotation processing currently favor inherited annotations and inherited composed annotations over composed annotations that are declared closer to the starting class passed to getAnnotationAttributes(), getAllAnnotationAttributes(), isAnnotated(), etc.
+See the examples and related discussion in SPR-11475 for details.
+
+Deliverables
+
+ Determine which use cases require special treatment with regard to annotation inheritance.
+	
+Known cases: @Profile and @Conditional
+
+
+ Reinstate the changes originally introduced in AnnotatedElementUtils for SPR-11475 (i.e., set the searchClassHierarchy to true for all invocations of the internal process() method).
+	
+Search for SPR-11598 in source code for TODOs.
+
+
+ Introduce special handling for the known special cases determined in deliverable #1, in order to ensure proper backwards compatibility.
+
+</description>
+			<version>4.0 GA</version>
+			<fixedVersion>4.2 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.annotation.AnnotatedElementUtilsTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">11475</link>
+			<link type="Duplicate" description="is duplicated by">12661</link>
+			<link type="Relate" description="relates to">10840</link>
+			<link type="Relate" description="relates to">11511</link>
+			<link type="Relate" description="is related to">13748</link>
+			<link type="Relate" description="is related to">11595</link>
+			<link type="Relate" description="is related to">12738</link>
+			<link type="Relate" description="is related to">12749</link>
+		</links>
+	</bug>
+</bugrepository>

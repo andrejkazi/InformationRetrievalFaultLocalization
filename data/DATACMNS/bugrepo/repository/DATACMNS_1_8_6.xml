@@ -1,0 +1,18 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="565" opendate="2014-08-20 11:48:50" fixdate="2014-09-01 04:34:20" resolution="Fixed">
+		<buginformation>
+			<summary>Custom repository implementations are not picked up when using CDI</summary>
+			<description>Custom repository implementations cannot be resolved when using CDI 1.0 because BeanManager.getBeans(... does not provide any beans during AfterBeanDiscovery event.
+Solution: Shift the lookup from AfterBeanDiscovery to the the actual bean creation</description>
+			<version>1.9 RC1 (Evans)</version>
+			<fixedVersion>1.9 GA (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.cdi.CdiRepositoryBean.java</file>
+			<file type="M">org.springframework.data.repository.cdi.DummyCdiExtension.java</file>
+			<file type="M">org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

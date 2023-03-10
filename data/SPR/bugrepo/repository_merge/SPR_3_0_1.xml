@@ -1,0 +1,327 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="4" master="6871" duplicate="7040" opendate="2010-02-18 20:38:30" fixdate="2010-03-26 09:09:12" resolution="Complete">
+		<buginformation>
+			<summary>Spring MVC regression: binding to indexed properties is broken form:select 3.0.1 regression bug when binding to a map</summary>
+			<description>When you submit a form, with databinding on a command object with indexed properties, the indexed properties of the command object are not filled in.
+I think this bug is related to the correction that happened in SPR-6840.
+The characters [ and ] are not only removed from the id attrbute of the HTML elements, but also (unnessesary) from the name attribute of the HTML elements.
+You can see it happening via next example.
+When you type 10 and 20 in the input fields, the output to the console is: 
+{Belgium=null, Switzerland=null}
+while the output should have been 
+{Belgium=10, Switzerland=20}
+
+The class that acts as command object:
+--------------------------------------
+package org.example.entities;
+import java.util.LinkedHashMap;
+import java.util.Map;
+public class Continent {
+  // key = name of country
+  // Integer= number of inhabitants
+  private Map&amp;lt;String, Integer&amp;gt; countries = new LinkedHashMap&amp;lt;String, Integer&amp;gt;();
+  public Continent() 
+{
+    countries.put("Belgium", null);
+    countries.put("Switzerland", null);
+  }
+
+  public void setCountries(Map&amp;lt;String, Integer&amp;gt; countries) 
+{
+    this.countries = countries;
+  }
+
+  public Map&amp;lt;String, Integer&amp;gt; getCountries() 
+{
+    return countries;
+  }
+}
+The Controller class:
+---------------------
+package org.example.web;
+import org.example.entities.Continent;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+@Controller
+public class ContinentController {
+  @RequestMapping(value = "/continent.htm", method = RequestMethod.GET)
+  public String continentForm(Model model) 
+{
+    Continent continent = new Continent();
+    model.addAttribute(continent);
+    return "continent.jsp";
+  }
+
+  @RequestMapping(value = "/continent.htm", method = RequestMethod.POST)
+  public String continentForm(@ModelAttribute Continent continent,
+      BindingResult bindingResult) 
+{
+    System.out.println(continent.getCountries()); // Here you can see the bug
+    return "continent.jsp";
+  }
+}
+continent.jsp
+-------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;%@page contentType="text/html" pageEncoding="UTF-8" session="false"%&amp;gt;
+&amp;lt;%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%&amp;gt;
+&amp;lt;%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%&amp;gt;
+&amp;lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&amp;gt;
+&amp;lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="nl" lang="nl"&amp;gt;
+&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;Continent example&amp;lt;/title&amp;gt;
+&amp;lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+&amp;lt;form:form commandName="continent"&amp;gt;
+&amp;lt;c:forEach items="$
+{continent.countries}
+" var="entry"&amp;gt;
+&amp;lt;div&amp;gt;
+&amp;lt;form:label path="countries[$
+{entry.key}]"&amp;gt;${entry.key}
+&amp;lt;/form:label&amp;gt;	
+&amp;lt;form:input path="countries[$
+{entry.key}]" /&amp;gt;
+&amp;lt;form:errors path="countries[${entry.key}
+]" /&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;/c:forEach&amp;gt; 
+&amp;lt;div&amp;gt;&amp;lt;input type="submit" /&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/form:form&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt; I found a bug that surfaced in Spring 3.0.1. The problem is with binding a value to a map with the form select tag.
+In my JSP I have the following select tag. This will bind to a Map&amp;lt;String, String&amp;gt; field in my command object.
+&amp;lt;form:select path="questions[$
+{question.key}]" cssClass="${question.key}
+" items="$
+{question.answers}
+" itemValue="key" itemLabel="name"/&amp;gt;
+If I do a view source I can clearly see the problem.
+In Spring 3.0 I have this:
+&amp;lt;select id="questionsARTISAN_ARMOIRE_WOOD" name="questions[ARTISAN_ARMOIRE_WOOD]" class="ARTISAN_ARMOIRE_WOOD"&amp;gt;&amp;lt;option value="001" selected="selected"&amp;gt;Cherry&amp;lt;/option&amp;gt;&amp;lt;option value="002"&amp;gt;Walnut&amp;lt;/option&amp;gt;&amp;lt;/select&amp;gt;
+In Spring 3.0.1 I have this:
+&amp;lt;select id="questionsARTISAN_ARMOIRE_WOOD" name="questionsARTISAN_ARMOIRE_WOOD" class="ARTISAN_ARMOIRE_WOOD"&amp;gt;&amp;lt;option value="001" selected="selected"&amp;gt;Cherry&amp;lt;/option&amp;gt;&amp;lt;option value="002"&amp;gt;Walnut&amp;lt;/option&amp;gt;&amp;lt;/select&amp;gt;
+Notice how the name is "questionsARTISAN_ARMOIRE_WOOD" instead of "questions[ARTISAN_ARMOIRE_WOOD]". The brackets got dropped in 3.0.1.
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.tags.form.AbstractDataBoundFormElementTag.java</file>
+			<file type="M">org.springframework.web.servlet.tags.form.CheckboxTagTests.java</file>
+			<file type="M">org.springframework.web.servlet.tags.form.AbstractCheckedElementTag.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6921</link>
+			<link type="Duplicate" description="is duplicated by">7040</link>
+			<link type="Related" description="is related to">6840</link>
+			<link type="Related" description="is related to">5382</link>
+			<link type="Duplicate" description="duplicates">6871</link>
+		</links>
+	</bug>
+	<bug id="28" master="6901" duplicate="6955" opendate="2010-02-24 01:01:22" fixdate="2010-06-06 22:26:42" resolution="Complete">
+		<buginformation>
+			<summary>Tomcat does not shutdown correctly when using task:scheduled-taks TaskExecutor created with task:executor not shutdown when context closes</summary>
+			<description>Using the regular task:scheduler element in conjunction with the task:scheduled-tasks element, results, at least with Tomcat, in a server that is unable to shut down.
+The server hangs after having logged the following statement:
+Destroying singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@d81cda: defining beans []; parent: org.springframework.beans.factory.support.DefaultListableBeanFactory@1d49247
+Manually defining a task scheduler and setting the threads to run as daemon provides a workaround:
+	&amp;lt;task:scheduled-tasks scheduler="taskScheduler"&amp;gt;
+		&amp;lt;task:scheduled ref="myTask" method="run" cron="0 0 0 * * ?"/&amp;gt;
+	&amp;lt;/task:scheduled-tasks&amp;gt;
+	&amp;lt;bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler"&amp;gt;
+		&amp;lt;property name="daemon" value="true"/&amp;gt;
+	&amp;lt;/bean&amp;gt;
+However this is only a workaround, and the default behavior should work out of the box. As you can see from the forum post reference, I am not the only one facing this issue. TaskExecutorFactoryBean does not implement DisposableBean, so there is no callback for the shutdown to happen.  It is easy to verify that the executor is not shut down (you expect to see a log message from it and don&amp;amp;apos;t).  I have no idea why, but the problem seems to be particularly acute in a webapp because for some reason there it prevents the lifecycle processor from completing the shutdown (before timing out).</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.config.ScheduledTaskRegistrar.java</file>
+			<file type="M">org.springframework.scheduling.config.TaskExecutorFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6955</link>
+			<link type="Related" description="is related to">6955</link>
+			<link type="Related" description="is related to">7231</link>
+			<link type="Duplicate" description="is duplicated by">6901</link>
+			<link type="Related" description="is related to">6901</link>
+		</links>
+	</bug>
+	<bug id="43" master="7004" duplicate="6981" opendate="2010-03-14 15:10:54" fixdate="2010-05-26 07:35:43" resolution="Complete">
+		<buginformation>
+			<summary>CronTrigger is not triggered at correct time Spring TaskScheduler not accurate</summary>
+			<description>When running CronTrigger on short interval I get the task triggered sooner then requested and also get duplicates.
+public void initScheduler() {
+    	System.out.println("Got initScheduler");
+    	taskExecutor = new ThreadPoolTaskScheduler();
+    	taskExecutor.initialize();
+    	taskExecutor.schedule(new Runnable() {
+			@Override
+			public void run() 
+{
+				System.out.println(new Date());				
+			}
+		},new CronTrigger("0/5 * * * * ?"));
+}  
+The output is:
+Got initScheduler
+Thu Mar 18 17:08:19 IST 2010
+Thu Mar 18 17:08:24 IST 2010
+Thu Mar 18 17:08:24 IST 2010
+Thu Mar 18 17:08:25 IST 2010
+Thu Mar 18 17:08:29 IST 2010
+Thu Mar 18 17:08:30 IST 2010 I got the latest task-basic spring samples from svn. I have tried to changed the cron expression to "0/10 * * * * ?" and verify the triggering time. I found that the triggering time is not exactly every ONCE for every 10 seconds. It might execute twice and have some time variation.
+Mon Mar 15 11:00:40 CST 2010 &amp;lt;-- correct
+Mon Mar 15 11:00:49 CST 2010 &amp;lt;-- incorrect time and also should not trigger, as it is incorrect trigger time
+Mon Mar 15 11:00:50 CST 2010 &amp;lt;-- trigger twice??
+Mon Mar 15 11:01:00 CST 2010 &amp;lt;-- correct again</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.support.CronTriggerTests.java</file>
+			<file type="M">org.springframework.scheduling.support.CronSequenceGenerator.java</file>
+			<file type="M">org.springframework.scheduling.support.CronTrigger.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6981</link>
+			<link type="Related" description="is related to">6859</link>
+			<link type="Duplicate" description="duplicates">7004</link>
+		</links>
+	</bug>
+	<bug id="72" master="6871" duplicate="6921" opendate="2010-02-18 20:38:30" fixdate="2010-03-02 00:17:13" resolution="Complete">
+		<buginformation>
+			<summary>Spring MVC regression: binding to indexed properties is broken Indexed properties not set correctly in form tags</summary>
+			<description>When you submit a form, with databinding on a command object with indexed properties, the indexed properties of the command object are not filled in.
+I think this bug is related to the correction that happened in SPR-6840.
+The characters [ and ] are not only removed from the id attrbute of the HTML elements, but also (unnessesary) from the name attribute of the HTML elements.
+You can see it happening via next example.
+When you type 10 and 20 in the input fields, the output to the console is: 
+{Belgium=null, Switzerland=null}
+while the output should have been 
+{Belgium=10, Switzerland=20}
+
+The class that acts as command object:
+--------------------------------------
+package org.example.entities;
+import java.util.LinkedHashMap;
+import java.util.Map;
+public class Continent {
+  // key = name of country
+  // Integer= number of inhabitants
+  private Map&amp;lt;String, Integer&amp;gt; countries = new LinkedHashMap&amp;lt;String, Integer&amp;gt;();
+  public Continent() 
+{
+    countries.put("Belgium", null);
+    countries.put("Switzerland", null);
+  }
+
+  public void setCountries(Map&amp;lt;String, Integer&amp;gt; countries) 
+{
+    this.countries = countries;
+  }
+
+  public Map&amp;lt;String, Integer&amp;gt; getCountries() 
+{
+    return countries;
+  }
+}
+The Controller class:
+---------------------
+package org.example.web;
+import org.example.entities.Continent;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+@Controller
+public class ContinentController {
+  @RequestMapping(value = "/continent.htm", method = RequestMethod.GET)
+  public String continentForm(Model model) 
+{
+    Continent continent = new Continent();
+    model.addAttribute(continent);
+    return "continent.jsp";
+  }
+
+  @RequestMapping(value = "/continent.htm", method = RequestMethod.POST)
+  public String continentForm(@ModelAttribute Continent continent,
+      BindingResult bindingResult) 
+{
+    System.out.println(continent.getCountries()); // Here you can see the bug
+    return "continent.jsp";
+  }
+}
+continent.jsp
+-------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;%@page contentType="text/html" pageEncoding="UTF-8" session="false"%&amp;gt;
+&amp;lt;%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%&amp;gt;
+&amp;lt;%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%&amp;gt;
+&amp;lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&amp;gt;
+&amp;lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="nl" lang="nl"&amp;gt;
+&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;Continent example&amp;lt;/title&amp;gt;
+&amp;lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+&amp;lt;form:form commandName="continent"&amp;gt;
+&amp;lt;c:forEach items="$
+{continent.countries}
+" var="entry"&amp;gt;
+&amp;lt;div&amp;gt;
+&amp;lt;form:label path="countries[$
+{entry.key}]"&amp;gt;${entry.key}
+&amp;lt;/form:label&amp;gt;	
+&amp;lt;form:input path="countries[$
+{entry.key}]" /&amp;gt;
+&amp;lt;form:errors path="countries[${entry.key}
+]" /&amp;gt;
+&amp;lt;/div&amp;gt;
+&amp;lt;/c:forEach&amp;gt; 
+&amp;lt;div&amp;gt;&amp;lt;input type="submit" /&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/form:form&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt; Since 3.0.1 the input form tag generates a different html code for indexed properties:
+Example:
+&amp;lt;form:input path="searchValues[author]" /&amp;gt;
+searchValues is a Map&amp;lt;String, String&amp;gt; object in the model.
+In 3.0.0 the resulting html was:
+&amp;lt;input id="searchValuesauthor" name="searchValues[author]" type="text" value=""/&amp;gt;
+3.0.1 now generates:
+&amp;lt;input id="searchValuesauthor" name="searchValuesauthor" type="text" value=""/&amp;gt;
+This results in unset properties in the model property searchValues.
+When I modify the parameter name in the request manually to the old form, the values are set correctly.
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.tags.form.AbstractDataBoundFormElementTag.java</file>
+			<file type="M">org.springframework.web.servlet.tags.form.CheckboxTagTests.java</file>
+			<file type="M">org.springframework.web.servlet.tags.form.AbstractCheckedElementTag.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6921</link>
+			<link type="Duplicate" description="is duplicated by">7040</link>
+			<link type="Related" description="is related to">6840</link>
+			<link type="Related" description="is related to">5382</link>
+			<link type="Duplicate" description="duplicates">6871</link>
+		</links>
+	</bug>
+</bugrepository>

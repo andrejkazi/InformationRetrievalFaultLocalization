@@ -1,0 +1,82 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="9" master="1416" duplicate="1436" opendate="2016-04-10 15:43:11" fixdate="2016-05-24 16:25:27" resolution="Fixed">
+		<buginformation>
+			<summary>Standard bootstrap issues warning in converter registration CustomConversions complains about built-in converters</summary>
+			<description>I just upgraded to 1.9.1 from 1.8.4 and keep getting these warnings. 
+
+
+
+
+
+
+org.springframework.data.mongodb.core.convert.CustomConversions:229 - Registering converter from class java.lang.Number to class java.lang.Number as writing converter although it doesn&amp;amp;apos;t convert to a Mongo supported type! You might wanna check you annotation setup at the converter implementation
+
+
+
+
+
+
+ I have NO custom converters configured.  Not sure where this is coming from or how to fix. When registering any custom converters for MongoDB, the CustomConversions constructor adds a whole slew of hard-coded converters to the list. These include NumberToNumberConverterFactory, which apparently converts java.lang.Number-&amp;gt;java.lang.Number and causes warnings to be logged.</description>
+			<version>1.9.1 (Hopper SR1)</version>
+			<fixedVersion>1.9.2 (Hopper SR2), 1.10 M1 (Ingalls)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConvertersUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConverters.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1436</link>
+			<link type="Duplicate" description="is duplicated by">1438</link>
+			<link type="Duplicate" description="duplicates">1416</link>
+		</links>
+	</bug>
+	<bug id="15" master="1416" duplicate="1438" opendate="2016-04-10 15:43:11" fixdate="2016-05-26 14:03:47" resolution="Fixed">
+		<buginformation>
+			<summary>Standard bootstrap issues warning in converter registration I get a warning in my logs since switched to Spring Data MongoDB Hopper-SR1 Release Train in Spring Boot 1.3.5</summary>
+			<description>I just upgraded to 1.9.1 from 1.8.4 and keep getting these warnings. 
+
+
+
+
+
+
+org.springframework.data.mongodb.core.convert.CustomConversions:229 - Registering converter from class java.lang.Number to class java.lang.Number as writing converter although it doesn&amp;amp;apos;t convert to a Mongo supported type! You might wanna check you annotation setup at the converter implementation
+
+
+
+
+
+
+ I have NO custom converters configured.  Not sure where this is coming from or how to fix. When I start my Spring Boot 1.3.5 application with no custom conversions and with Spring Data MongoDB Release Train Hopper-SR1 I get following warning in my logs:
+
+
+
+
+
+
+Registering converter from class java.lang.Number to class java.lang.Number as writing converter although it doesn&amp;amp;apos;t convert to a Mongo supported type! You might wanna check you annotation setup at the converter implementation.
+
+
+
+
+
+
+With the in Spring Boot 1.3.5 integrated version the warning is not exists..
+I have alle my Domain classes they are saved in MongoDB annotated with @Document (see DATAMONGO-1413)</description>
+			<version>1.9.1 (Hopper SR1)</version>
+			<fixedVersion>1.9.2 (Hopper SR2), 1.10 M1 (Ingalls)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConvertersUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConverters.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1436</link>
+			<link type="Duplicate" description="is duplicated by">1438</link>
+			<link type="Duplicate" description="duplicates">1416</link>
+		</links>
+	</bug>
+</bugrepository>

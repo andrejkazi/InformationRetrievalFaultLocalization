@@ -1,0 +1,25 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="12" master="642" duplicate="594" opendate="2012-12-24 11:37:31" fixdate="2013-04-02 03:40:27" resolution="Fixed">
+		<buginformation>
+			<summary>MongoChangeSetPersister does not use mapped collection name cross-store=&gt; Define document name using annotation</summary>
+			<description> In a cross-store configuration, the RelatedDocument is stored in a MongoDB collection using the container&amp;amp;apos;s Entity&amp;amp;apos;s package name.
+It would be nice if the collection name would be either the name of the class (document, not entity) or as specified using annotations(@Document(collection="")).
+This "issue" is caused by the class
+org.springframework.data.mongodb.crossstore.MongoChangeSetPersister
+which gets the name of the collection from the method getCollectionNameForEntity which does:
+return ClassUtils.getQualifiedName(entityClass);</description>
+			<version>1.1.1</version>
+			<fixedVersion>1.2.1, 1.3 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.crossstore.CrossStoreMongoTests.java</file>
+			<file type="M">org.springframework.data.mongodb.crossstore.MongoChangeSetPersister.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">594</link>
+			<link type="Duplicate" description="duplicates">642</link>
+		</links>
+	</bug>
+</bugrepository>

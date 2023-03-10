@@ -1,0 +1,3735 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="5016" opendate="2008-07-17 19:54:59" fixdate="2008-07-18 00:36:13" resolution="Duplicate">
+		<buginformation>
+			<summary>Add more properties to &lt;context:property-placeholder/&gt;</summary>
+			<description>&amp;lt;context:property-placeholder/&amp;gt; only has an attribute (location). This is not enough for advance usage. Please add others like ignoreUnresolvablePlaceholders.</description>
+			<version>2.5.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.context.config.PropertyOverrideBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.context.config.ContextNamespaceHandlerTests.java</file>
+			<file type="M">org.springframework.context.config.PropertyPlaceholderBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.context.config.AbstractPropertyLoadingBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">4661</link>
+		</links>
+	</bug>
+	<bug id="5171" opendate="2008-09-21 16:58:30" fixdate="2008-09-21 20:39:19" resolution="Duplicate">
+		<buginformation>
+			<summary>Incompatible with JUnit 4.5</summary>
+			<description>Spring relies on org.junit.Assume$AssumptionViolatedException which no longer exists in JUnit 4.5</description>
+			<version>2.5.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.test.web.AbstractModelAndViewTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4ClassRunner.java</file>
+			<file type="D">org.springframework.test.context.junit4.SpringMethodRoadie.java</file>
+			<file type="D">org.springframework.test.context.junit4.SpringTestMethod.java</file>
+			<file type="M">org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5145</link>
+		</links>
+	</bug>
+	<bug id="5275" opendate="2008-11-06 10:09:58" fixdate="2008-11-20 08:07:23" resolution="Fixed">
+		<buginformation>
+			<summary>JmsUtils.buildExceptionMessage throws NPE if the linked exception doesn&amp;apos;t have a message</summary>
+			<description>This method throws an exception if the linked exception&amp;amp;apos;s message is null.  I&amp;amp;apos;ve patched it locally as follow:
+	/**
+
+Build a descriptive exception message for the given JMSException,
+incorporating a linked exception&amp;amp;apos;s message if appropriate.
+@param ex the JMSException to build a message for
+@return the descriptive message String
+@see javax.jms.JMSException#getLinkedException()
+	 */
+	public static String buildExceptionMessage(JMSException ex) 
+Unknown macro: {		String message = ex.getMessage();		Exception linkedEx = ex.getLinkedException();		if (linkedEx != null &amp;amp;&amp;amp; (linkedEx.getMessage() == null || message.indexOf(linkedEx.getMessage()) == -1)) {
+			message = message + "; nested exception is " + linkedEx;
+		}		return message;	} 
+
+</description>
+			<version>2.5.6</version>
+			<fixedVersion>3.0 M1, 3.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5332</link>
+			<link type="Duplicate" description="is duplicated by">5402</link>
+			<link type="Duplicate" description="is duplicated by">5785</link>
+			<link type="Duplicate" description="is duplicated by">5958</link>
+			<link type="Duplicate" description="is duplicated by">6052</link>
+			<link type="Duplicate" description="is duplicated by">5470</link>
+		</links>
+	</bug>
+	<bug id="5324" opendate="2008-11-26 04:47:48" fixdate="2008-11-28 00:05:48" resolution="Fixed">
+		<buginformation>
+			<summary>AnnotationSessionFactoryBean.scanPackages() creates scanning pattern incorrectly</summary>
+			<description>The "scanPackages" property requires the package name to have a trailing "." which is inconsistent with the component-scan.  This feature was adding by SPR-4738
+ClassPathScanningCandidateComponentProvider (used by component-scan) constructs the scanning pattern like this:
+String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(basePackage) + "/" + this.resourcePattern;
+AnnotationSessionFactoryBean constructs the scanning pattern like this:
+String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(pkg) + RESOURCE_PATTERN;
+Notice the missing "/" in the hibernate class.  This means that the resource pattern is constructed like classpath*:myPackage*/.class instead of classpath*:myPackage/*/.class
+This works when all persistence classes are in the package to be scanned, but fails to scan subclasses.  AnnotationSessionFactoryBean should be changed to construct its pattern like component-scan does.
+A workaround is to append a trailing "." onto the end of your package name.
+</description>
+			<version>2.5.6</version>
+			<fixedVersion>3.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6042</link>
+		</links>
+	</bug>
+	<bug id="5332" opendate="2008-12-01 02:20:17" fixdate="2009-02-11 22:20:13" resolution="Duplicate">
+		<buginformation>
+			<summary>JmsException.getMessage throws NPE if a cause doesn&amp;apos;t have a message</summary>
+			<description>Under some circumstances a JMS Exception may have a message unassigned i.e. its getMessage() returns null.
+Like in SPR-5275 that fixed JmsUtils.buildExceptionMessage I can propose a fix like
+	public String getMessage() {
+		String message = super.getMessage();
+		Throwable cause = getCause();
+		if (cause instanceof JMSException) {
+			Exception linkedEx = ((JMSException) cause).getLinkedException();
+			if (linkedEx != null &amp;amp;&amp;amp; (cause.getMessage() != null &amp;amp;&amp;amp; cause.getMessage().indexOf(linkedEx.getMessage()) == -1 || cause.getMessage() == null)) 
+{
+				message = message + "; nested exception is " + linkedEx;
+			}
+		}
+		return message;
+	}</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5275</link>
+		</links>
+	</bug>
+	<bug id="5402" opendate="2009-01-07 20:49:56" fixdate="2009-02-12 06:51:27" resolution="Duplicate">
+		<buginformation>
+			<summary>NullPointerException in JmsException</summary>
+			<description>I saw a NullPointerException in the logs of my tomcat (started using maven cargo):
+
+
+
+
+
+
+[INFO] [talledLocalContainer] java.lang.NullPointerException
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.String.indexOf(String.java:1734)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.String.indexOf(String.java:1716)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.springframework.jms.JmsException.getMessage(JmsException.java:87)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.Throwable.getLocalizedMessage(Throwable.java:267)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.Throwable.toString(Throwable.java:343)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.String.valueOf(String.java:2827)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.io.PrintWriter.println(PrintWriter.java:710)
+
+
+
+
+[INFO] [talledLocalContainer] 	at java.lang.Throwable.printStackTrace(Throwable.java:509)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.spi.ThrowableInformation.getThrowableStrRep(ThrowableInformation.java:76)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.spi.LoggingEvent.getThrowableStrRep(LoggingEvent.java:407)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.WriterAppender.subAppend(WriterAppender.java:305)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.WriterAppender.append(WriterAppender.java:160)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.AppenderSkeleton.doAppend(AppenderSkeleton.java:251)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.helpers.AppenderAttachableImpl.appendLoopOnAppenders(AppenderAttachableImpl.java:66)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.Category.callAppenders(Category.java:206)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.Category.forcedLog(Category.java:391)
+
+
+
+
+[INFO] [talledLocalContainer] 	at org.apache.log4j.Category.error(Category.java:322)
+
+
+
+
+
+
+The problem can be seen by looking at the code of JmsMessage.java:
+
+
+
+
+
+
+	public String getMessage() {
+
+
+
+
+		String message = super.getMessage();
+
+
+
+
+		Throwable cause = getCause();
+
+
+
+
+		if (cause instanceof JMSException) {
+
+
+
+
+			Exception linkedEx = ((JMSException) cause).getLinkedException();
+
+
+
+
+			if (linkedEx != null &amp;amp;&amp;amp; cause.getMessage().indexOf(linkedEx.getMessage()) == -1) {
+
+
+
+
+				message = message + "; nested exception is " + linkedEx;
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+		return message;
+
+
+
+
+	}
+
+
+
+
+
+
+The line that does the indexOf() can give a NPE if linkedEx.getMessage() returns null</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5275</link>
+		</links>
+	</bug>
+	<bug id="5362" opendate="2008-12-15 13:28:05" fixdate="2009-02-12 20:16:48" resolution="Duplicate">
+		<buginformation>
+			<summary>@RequestMapping best match gives wrong Controller method when using wildcards</summary>
+			<description>Reference forum message http://forum.springsource.org/showthread.php?t=64011
+Given the following two methods in a Controller
+@RequestMapping(value="/rest/mail/v1/ipm/*", method=RequestMethod.GET)
+public ModelAndView Method1()
+@RequestMapping(value="/rest/mail/v1/ipm//*", method=RequestMethod.GET)
+public ModelAndView Method2()
+Given the request path /rest/mail/v1/ipm/JA8AAAAAAAAAKwAB4awBIfRXAeRU it matches the first method, but then chooses the second path as a BETTER match, resulting in the wrong method being called.  This is because of the simplistic implementation of isBetterPathMatch() that decides that a longer length path is a better match regardless of the number of elements in the path.
+This occurs in AnnotationMethodHandlerAdapter.ServletHandlerMethodResolver.isBetterPathMatch.  It clearly does not take account of the extra / in the second path, which is not present in the given URL.
+Although it is possible to make a workaround which involves having a single method, where the code then makes decisions based on the request path, it complicates Controller implementations forcing different sets of business logic to be combined.</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.util.AntPathMatcherTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5367</link>
+			<link type="Duplicate" description="duplicates">5924</link>
+		</links>
+	</bug>
+	<bug id="5145" opendate="2008-09-08 12:16:48" fixdate="2009-04-29 13:47:24" resolution="Fixed">
+		<buginformation>
+			<summary>Spring TestContext Framework not compatible with JUnit 4.5</summary>
+			<description>After upgrading to junit 4.5 my test class which uses the SpringJUnit4ClassRunner gets a NoClassDefFoundError:
+org.apache.maven.surefire.booter.SurefireExecutionException: org/junit/Assume$AssumptionViolatedException; nested exception is java.lang.NoClassDefFoundError: org/junit/Assume$AssumptionViolatedException
+java.lang.NoClassDefFoundError: org/junit/Assume$AssumptionViolatedException
+	at org.springframework.test.context.junit4.SpringMethodRoadie.runTestMethod(SpringMethodRoadie.java:240)
+	at org.springframework.test.context.junit4.SpringMethodRoadie$RunBeforesThenTestThenAfters.run(SpringMethodRoadie.java:333)
+	at org.springframework.test.context.junit4.SpringMethodRoadie.runWithRepetitions(SpringMethodRoadie.java:217)
+	at org.springframework.test.context.junit4.SpringMethodRoadie.runTest(SpringMethodRoadie.java:197)
+	at org.springframework.test.context.junit4.SpringMethodRoadie.run(SpringMethodRoadie.java:143)
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.invokeTestMethod(SpringJUnit4ClassRunner.java:142)
+	at org.junit.internal.runners.JUnit4ClassRunner.runMethods(JUnit4ClassRunner.java:59)
+etc.
+This is a Junit 4.5 issue.  The static class AssumptionViolatedException within org.junit.Assume that existed in 4.4 has become org.junit.internal.AssumptionViolatedException.
+The file tiger/mock/org/springframework/test/context/junit4/SpringMethodRoadie.java imports org.junit.Assume.AssumptionViolatedException which is why my test is failing.
+Workaround is to stick with Junit 4.4.
+(Aside: are there plans to create a "SpringTEST" component?).
+</description>
+			<version>2.5.5</version>
+			<fixedVersion>3.0 M3</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.test.web.AbstractModelAndViewTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4ClassRunner.java</file>
+			<file type="D">org.springframework.test.context.junit4.SpringMethodRoadie.java</file>
+			<file type="D">org.springframework.test.context.junit4.SpringTestMethod.java</file>
+			<file type="M">org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5171</link>
+			<link type="Related" description="is related to">5887</link>
+		</links>
+	</bug>
+	<bug id="5395" opendate="2009-01-05 01:38:48" fixdate="2009-05-02 18:52:05" resolution="Duplicate">
+		<buginformation>
+			<summary>ApplicationContext not closed when using @ContextConfiguration to implement integration tests</summary>
+			<description>I am seeing side-effects in an integration test that initializes a Spring ApplicationContext using @ContextConfiguration.  Specifically, close() on the context does not appear to be being called, ever.  I noticed this because one of my DispoableBeans is not receiving a destroy() callback and that is what is causing the side-effect [which pops up when a @Test runs in another, unrelated TestCase class].
+I understand a test ApplicationContext is cached between test methods, but I would still expect the context to be closed after all tests have run, before moving on to the next test class in the suite.</description>
+			<version>3.0 M1</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.test.context.TestContextManager.java</file>
+			<file type="M">org.springframework.test.context.testng.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit38.AbstractJUnit38SpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.TestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractTestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4ClassRunner.java</file>
+			<file type="M">org.springframework.test.context.testng.ConcreteTransactionalTestNGSpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.testng.DirtiesContextTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.statements.RunSpringTestContextAfters.java</file>
+			<file type="M">org.springframework.test.context.support.DirtiesContextTestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.junit4.ClassLevelDisabledSpringRunnerTests.java</file>
+			<file type="M">org.springframework.test.context.SpringRunnerContextCacheTests.java</file>
+			<file type="M">org.springframework.test.annotation.DirtiesContext.java</file>
+			<file type="M">org.springframework.test.context.testng.AbstractTestNGSpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.statements.RunSpringTestContextBefores.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">4702</link>
+			<link type="Related" description="is related to">5640</link>
+			<link type="Related" description="is related to">4702</link>
+		</links>
+	</bug>
+	<bug id="5406" opendate="2009-01-13 06:13:48" fixdate="2009-05-13 01:18:57" resolution="Fixed">
+		<buginformation>
+			<summary>Make Tiles 2 easier to configure in Spring MVC</summary>
+			<description>Simple thing we can do:
+
+Provide a TilesViewResolver subclass of UrlBasedViewResolver that configures the viewClass to be TilesView as a convenience
+
+First noticed this when explaining configuring you need to configure a URL resolver for Tiles view proved quite complex.  It&amp;amp;apos;s simpler to just say configure a Tiles view resolver.</description>
+			<version>3.0 M1</version>
+			<fixedVersion>3.0 M4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.io.ResourceEditorTests.java</file>
+			<file type="M">org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.java</file>
+			<file type="M">org.springframework.beans.factory.xml.XmlBeanDefinitionReaderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5504</link>
+			<link type="Related" description="is related to">5689</link>
+		</links>
+	</bug>
+	<bug id="5785" opendate="2009-05-25 21:27:45" fixdate="2009-05-27 21:40:44" resolution="Duplicate">
+		<buginformation>
+			<summary>NullPointerException in JmsUtils.buildExceptionMessage</summary>
+			<description>I triggered  this by fetching an invalid JMS message from a  JMS Queue, that causes a NullPointerException exeption.
+The spring framework catches this exeption and tries to handle it. But while it tries to generate the error output it triggers another NPE.
+I think what happens is, that it does "message.indexOf(linkedEx.getMessage())" but "linkedEx.getMessage()" is null.
+Exception in thread "OrderStateListener-2" java.lang.NullPointerException
+        at java.lang.String.indexOf(String.java:1734)
+        at java.lang.String.indexOf(String.java:1716)
+        at org.springframework.jms.support.JmsUtils.buildExceptionMessage(JmsUtils.java:255)
+        at org.springframework.jms.listener.DefaultMessageListenerContainer.handleListenerSetupFailure(DefaultMessageListenerContainer.java:745)
+        at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:897)
+        at java.lang.Thread.run(Thread.java:619)</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5275</link>
+		</links>
+	</bug>
+	<bug id="5854" opendate="2009-06-22 01:24:06" fixdate="2009-06-22 04:31:33" resolution="Duplicate">
+		<buginformation>
+			<summary>Method lookup facility doesn&amp;apos;t work properly with scope defined in parent bean</summary>
+			<description>I have an abstract bean which used as a template. This bean has scope=prototype. Children declarations are real beans which are injected (as method lookup).
+The problem is, that this  scope=prototype is ignore (beans are created only once). Found solution  declare scope=prototype for each &amp;amp;apos;real&amp;amp;apos; bean.
+
+
+
+
+
+
+	&amp;lt;bean id="reportingService" class="com.uwiss.hr.service.impl.ReportingServiceImpl"&amp;gt;
+
+
+
+
+		&amp;lt;property name="asyncTaskManager" ref="asyncTaskManager"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="projectBO" ref="projectBO"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="context" ref="asyncTaskContext"/&amp;gt;
+
+
+
+
+		&amp;lt;!-- lookups --&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createEmployeeReportTask" bean="employeeReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createSummaryEmployeeReportTask" bean="summaryEmployeeReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createEmployeeAllDetailReportTask" bean="employeeAllDetailReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createProjectReportTask" bean="projectReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createProjectDetailReportTask" bean="projectDetailReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createProjectAllDetailReportTask" bean="projectAllDetailReportTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createAllBankDataInfoCallableTask" bean="allBankDataInfoCallableTask"/&amp;gt;
+
+
+
+
+		&amp;lt;lookup-method name="createInvoiceReportCallableTask" bean="invoiceReportCallableTask"/&amp;gt;
+
+
+
+
+	&amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+
+
+
+         &amp;lt;!-- template --&amp;gt;
+
+
+
+
+	&amp;lt;bean id="jasperReportJDBCTaskGeneric" class="com.uwiss.jenive.asynctask.server.AbstractJasperReportJDBCCallableTask" scope="prototype" abstract="true"&amp;gt;
+
+
+
+
+		&amp;lt;property name="dataSource" ref="dataSource"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="cacheBaseDirectory" value="${jasper.cache.location}"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="resultProcessor" ref="asyncTaskProgressableUrlCreator"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="fileResolver"&amp;gt;
+
+
+
+
+			&amp;lt;bean class="com.uwiss.hr.RuntimeCompilationFileResolver"&amp;gt;
+
+
+
+
+				&amp;lt;constructor-arg&amp;gt;
+
+
+
+
+					&amp;lt;list&amp;gt;
+
+
+
+
+						&amp;lt;value&amp;gt;classpath:/fonts/&amp;lt;/value&amp;gt;
+
+
+
+
+						&amp;lt;value&amp;gt;classpath:/com/uwiss/hr/report/&amp;lt;/value&amp;gt;
+
+
+
+
+					&amp;lt;/list&amp;gt;
+
+
+
+
+				&amp;lt;/constructor-arg&amp;gt;
+
+
+
+
+				&amp;lt;property name="cacheBaseDirectory" value="${jasper.cache.location}"/&amp;gt;
+
+
+
+
+			&amp;lt;/bean&amp;gt;
+
+
+
+
+		&amp;lt;/property&amp;gt;
+
+
+
+
+	&amp;lt;/bean&amp;gt;
+
+
+
+
+        
+
+
+
+
+       &amp;lt;!-- real beans: have to declare scope=target as a workaround --&amp;gt;
+
+
+
+
+	&amp;lt;bean id="allBankDataInfoCallableTask" class="com.uwiss.hr.service.async.report.AllBankDataInfoCallableTask" scope="prototype" parent="jasperReportJDBCTaskGeneric"&amp;gt;
+
+
+
+
+		&amp;lt;property name="reportLocation" value="classpath:/com/uwiss/hr/report/AllBankDataInfo.jrxml"/&amp;gt;
+
+
+
+
+		&amp;lt;property name="employeeBO" ref="employeeBO"/&amp;gt;
+
+
+
+
+	&amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+
+
+
+
+</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.config.BeanDefinition.java</file>
+			<file type="M">org.springframework.beans.factory.xml.BeanDefinitionParserDelegate.java</file>
+			<file type="M">org.springframework.beans.factory.xml.XmlBeanFactoryTests.java</file>
+			<file type="M">org.springframework.beans.factory.support.AbstractBeanFactory.java</file>
+			<file type="M">org.springframework.beans.factory.support.AbstractBeanDefinition.java</file>
+			<file type="M">org.springframework.beans.factory.DefaultListableBeanFactoryTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">3542</link>
+		</links>
+	</bug>
+	<bug id="4702" opendate="2008-04-14 13:06:57" fixdate="2009-07-06 05:07:47" resolution="Fixed">
+		<buginformation>
+			<summary>Support for @DirtiesContext at the test class level</summary>
+			<description>Expected behavior:
+  Context should be close()&amp;amp;apos;d after end of test class execution
+Observed behavior:
+  Context only closed when @DirtiesContext annotates method
+Multiple test classes can re-use the same context, which allows for faster test execution, so automatically closing a context after test class execution is probably not the best mechanism.  
+However, there should be a way to annotate that a context should be close()&amp;amp;apos;d after all tests in a test class are executed. 
+Suggested fix:
+
+allow @DirtiesContext to annotate class
+add TestExecutionListener#destroyTestInstance
+
+Willing to implementing, if given approval of design. </description>
+			<version>3.0 M1</version>
+			<fixedVersion>3.0 M4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.test.context.TestContextManager.java</file>
+			<file type="M">org.springframework.test.context.testng.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.FailingBeforeAndAfterMethodsTests.java</file>
+			<file type="M">org.springframework.test.context.junit38.AbstractJUnit38SpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.TestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractTestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4ClassRunner.java</file>
+			<file type="M">org.springframework.test.context.testng.ConcreteTransactionalTestNGSpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.testng.DirtiesContextTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.statements.RunSpringTestContextAfters.java</file>
+			<file type="M">org.springframework.test.context.support.DirtiesContextTestExecutionListener.java</file>
+			<file type="M">org.springframework.test.context.junit4.ClassLevelDisabledSpringRunnerTests.java</file>
+			<file type="M">org.springframework.test.context.SpringRunnerContextCacheTests.java</file>
+			<file type="M">org.springframework.test.annotation.DirtiesContext.java</file>
+			<file type="M">org.springframework.test.context.testng.AbstractTestNGSpringContextTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.statements.RunSpringTestContextBefores.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5395</link>
+			<link type="Relate" description="is related to">5305</link>
+			<link type="Related" description="is related to">5640</link>
+			<link type="Related" description="is related to">2007</link>
+			<link type="Related" description="is related to">5395</link>
+		</links>
+	</bug>
+	<bug id="5924" opendate="2009-07-13 00:15:59" fixdate="2009-07-13 18:08:50" resolution="Fixed">
+		<buginformation>
+			<summary>REOPENED -PathVariable mappings are greedy over hard coded mappings</summary>
+			<description>Hard coded request mapping values should take precedence over path variables.  Wild card patterns in a path are currently inferior to explicit values.  Path variables should be applied after explicit paths and before wild cards.
+For example:
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+is currently trumped by
+@RequestMapping(value = "/resources/
+{resourceName}/", method = RequestMethod.GET)
+
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+currently trumps
+@RequestMapping(value = "/resources/*/", method = RequestMethod.GET)
+
+
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+should trump
+@RequestMapping(value = "/resources/{resourceName}
+/", method = RequestMethod.GET)
+should trump
+@RequestMapping(value = "/resources/*/", method = RequestMethod.GET)</description>
+			<version>3.0 M1</version>
+			<fixedVersion>3.0 M4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.util.AntPathMatcher.java</file>
+			<file type="M">org.springframework.util.AntPathMatcherTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5362</link>
+			<link type="Related" description="is related to">5367</link>
+			<link type="Related" description="is related to">5731</link>
+		</links>
+	</bug>
+	<bug id="5958" opendate="2009-07-27 08:28:55" fixdate="2009-07-27 21:40:51" resolution="Duplicate">
+		<buginformation>
+			<summary>NullPointerException in JmsUtils.buildExceptionMessage()</summary>
+			<description>I am currently using Spring 2.5.6 and we are using the DefaultMessageListenerContainer object.  We were doing some integration testing and noticed that when we killed the JVM hosting our JMS Topic that our Spring DefaultMessageListenerContainer would not successfully re-establish a JMS connection after the JVM hosting the JMS Topic was restarted.
+We would get a stack trace that indicated a NullPointerException from this code:
+	public static String buildExceptionMessage(JMSException ex) {
+		String message = ex.getMessage();
+		Exception linkedEx = ex.getLinkedException();
+		if (linkedEx != null &amp;amp;&amp;amp; message.indexOf(linkedEx.getMessage()) == -1) 
+{  // Need to check for null on linkedEx.getMessage()
+			message = message + "; nested exception is " + linkedEx;
+		}
+		return message;
+	}
+You need to check for a null before calling "message.indexOf(linkedEx.getMessage())".  This NPE was causing the Spring JMS internals to not automatically re-connect to the JMS Topic.</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5275</link>
+		</links>
+	</bug>
+	<bug id="6042" opendate="2009-08-25 21:25:50" fixdate="2009-08-25 23:26:16" resolution="Duplicate">
+		<buginformation>
+			<summary>AnnotationSessionFactoryBean packagesToScan in a OSGi environment</summary>
+			<description>The code
+
+
+
+
+
+
+String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+
+
+
+
+    ClassUtils.convertClassNameToResourcePath(pkg) + RESOURCE_PATTERN;
+
+
+
+
+
+
+in the AnnotationSessionFactoryBean.scanPackages() method resolves the pattern to scan to classpath:com/mycompany*/.class* for a packagesToScan="com/mycompany", but it fails to get the resources. I think a slash is missing to obtain classpath:com/mycompany/*/.class*, like the one in ClassPathScanningCandidateComponentProvider.findCandidateComponents():
+
+
+
+
+
+
+String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+
+
+
+
+    resolveBasePackage(basePackage) + "/" + this.resourcePattern;
+
+
+
+
+
+
+or at least a setResourcePattern() like ClassPathScanningCandidateComponentProvider.
+</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5324</link>
+		</links>
+	</bug>
+	<bug id="6052" opendate="2009-08-28 20:43:06" fixdate="2009-08-31 01:38:07" resolution="Duplicate">
+		<buginformation>
+			<summary>NullPointerException can occur from JmsUtils.buildException</summary>
+			<description>The following exception has been noted when the WL JMS drivers failed to connect:
+Exception in thread "jms.jobs.messageListenerContainer.SRUpdateFromSiebel-1" java.lang.NullPointerException
+	at java.lang.String.indexOf(String.java:1564)
+	at java.lang.String.indexOf(String.java:1546)
+	at org.springframework.jms.support.JmsUtils.buildExceptionMessage(JmsUtils.java:255)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer.handleListenerSetupFailure(DefaultMessageListenerContainer.java:745)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:897)
+	at java.lang.Thread.run(Thread.java:595)
+The problem is this line of code in JmsUtils.buildException:
+		if (linkedEx != null &amp;amp;&amp;amp; message.indexOf(linkedEx.getMessage()) == -1) {
+linkedEx may not be null, but the message can be null, so it simply need to be:
+		if (linkedEx != null &amp;amp;&amp;amp; linkedEx.getMessage() != null &amp;amp;&amp;amp; message.indexOf(linkedEx.getMessage()) == -1) {</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.support.JmsUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5275</link>
+		</links>
+	</bug>
+	<bug id="6070" opendate="2009-09-02 21:04:28" fixdate="2009-09-02 23:12:45" resolution="Fixed">
+		<buginformation>
+			<summary>Differing types for getter/setter of CookieGenerator.cookieMaxAge causes configuring to fail.</summary>
+			<description>CookieGenerator.cookieMaxAge&amp;amp;apos;s setter uses the primitive type &amp;amp;apos;int&amp;amp;apos;, but the getter uses &amp;amp;apos;Integer&amp;amp;apos;.  This seems to stop this property from being configured through the spring configuration xml file.
+If it&amp;amp;apos;s important, I&amp;amp;apos;m actually using a subclass of CookieGenerator.
+Somebody in the forums had a similar problem:
+http://forum.springsource.org/showthread.php?p=254675
+Partial stacktrace:
+
+
+
+
+
+
+Caused by: org.springframework.beans.NotWritablePropertyException: Invalid property &amp;amp;apos;cookieMaxAge&amp;amp;apos; of bean class [org.jasig.cas.web.support.CookieRetrievingCookieGenerator]: Bean property &amp;amp;apos;cookieMaxAge&amp;amp;apos; is not writable or has an invalid setter method. Does the parameter type of the setter match the return type of the getter?
+
+
+
+
+	at org.springframework.beans.BeanWrapperImpl.setPropertyValue(BeanWrapperImpl.java:850)
+
+
+
+
+	at org.springframework.beans.BeanWrapperImpl.setPropertyValue(BeanWrapperImpl.java:701)
+
+
+
+
+	at org.springframework.beans.AbstractPropertyAccessor.setPropertyValues(AbstractPropertyAccessor.java:78)
+
+
+
+
+	at org.springframework.beans.AbstractPropertyAccessor.setPropertyValues(AbstractPropertyAccessor.java:60)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1330)
+
+
+
+
+	... 55 more
+
+
+
+
+
+</description>
+			<version>3.0 M4</version>
+			<fixedVersion>3.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.util.CookieGenerator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6082</link>
+		</links>
+	</bug>
+	<bug id="6082" opendate="2009-09-04 14:20:44" fixdate="2009-09-06 23:53:46" resolution="Duplicate">
+		<buginformation>
+			<summary>cookieMaxAge field fails in org.springframework.web.servlet.i18n.CookieLocaleResolver</summary>
+			<description>upgrading a functioning 2.5 app to the most recent 3.0 (M4) release.
+I have the following bean definition that fails in 3.0 M4: 
+&amp;lt;bean id="localeResolver"^M
+        class="org.springframework.web.servlet.i18n.CookieLocaleResolver"&amp;gt;^M
+        &amp;lt;property name="cookieName" value="language" /&amp;gt;^M
+        &amp;lt;property name="cookieMaxAge" value="3600" /&amp;gt;^M
+        &amp;lt;property name="defaultLocale" value="en" /&amp;gt;^M
+&amp;lt;/bean&amp;gt;
+When I deploy this in Tomcat 6.20 I get the following error.
+SEVERE: Allocate exception for servlet court
+org.springframework.beans.NotWritablePropertyException: Invalid property &amp;amp;apos;cookieMaxAge&amp;amp;apos; of bean class [org.springframework.web.servlet.i18n.CookieLocaleResolver]: Bean property &amp;amp;apos;cookieMaxAge&amp;amp;apos; is not writable or has an invalid setter method. Does the parameter type of the setter match the return type of the getter?
+        at org.springframework.beans.BeanWrapperImpl.setPropertyValue(BeanWrapperImpl.java:850)
+        at org.springframework.beans.BeanWrapperImpl.setPropertyValue(BeanWrapperImpl.java:701)
+        at org.springframework.beans.AbstractPropertyAccessor.setPropertyValues(AbstractPropertyAccessor.java:78)
+        at org.springframework.beans.AbstractPropertyAccessor.setPropertyValues(AbstractPropertyAccessor.java:60)
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1330)
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1060)
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510)
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:449)
+        at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:289)
+        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:286)
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:188)
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:528)
+        at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:716)
+        at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:383)
+        at org.springframework.web.servlet.FrameworkServlet.createWebApplicationContext(FrameworkServlet.java:447)
+        at org.springframework.web.servlet.FrameworkServlet.initWebApplicationContext(FrameworkServlet.java:342)
+        at org.springframework.web.servlet.FrameworkServlet.initServletBean(FrameworkServlet.java:308)
+        at org.springframework.web.servlet.HttpServletBean.init(HttpServletBean.java:127)
+        at javax.servlet.GenericServlet.init(GenericServlet.java:212)
+        at org.apache.catalina.core.StandardWrapper.loadServlet(StandardWrapper.java:1173)
+        at org.apache.catalina.core.StandardWrapper.allocate(StandardWrapper.java:809)
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:129)
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+I reviewed the docs on M4
+http://static.springsource.org/spring/docs/3.0.0.M4/javadoc-api/org/springframework/web/servlet/i18n/CookieLocaleResolver.html
+The method is inherited from org.springframework.web.util.CookieGenerator . I saw the source 
+https://src.springframework.org/svn/spring-framework/tags/spring-framework-3.0.0.M4/org.springframework.web/src/main/java/org/springframework/web/util/CookieGenerator.java 
+And the set and getCookieMaxAge methods appears to be there. 
+Not exactly sure what is the root of this error message/bug.</description>
+			<version>3.0 M4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.util.CookieGenerator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6070</link>
+		</links>
+	</bug>
+	<bug id="6053" opendate="2009-08-29 14:13:40" fixdate="2009-09-07 04:36:54" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot retrieve database metadata for Sybase</summary>
+			<description>When executing a Sybase stored procedure using SimpleJdbcCall class, the database metadata is not being loaded. The logs show the following messages:
+org.springframework.jdbc.core.metadata.CallMetaDataProviderFactory - SQL Server is not one of the databases fully supported for procedure calls  supported are: [Apache Derby, DB2, MySQL, Microsoft SQL Server, Oracle, Sybase]
+org.springframework.jdbc.core.metadata.CallMetaDataProviderFactory - Metadata processing disabled - you must specify all parameters explicitly
+org.springframework.jdbc.core.metadata.CallMetaDataProviderFactory - Using org.springframework.jdbc.core.metadata.GenericCallMetaDataProvider
+After little research, I found that our Sybase database is named "SQL Server" and the commonDatabaseName method in JdbcUtils being used to get the database name compares against the string "sql server". 
+This problem gets fixed if the comparison with "sql server" is done without considering the case. </description>
+			<version>2.5.6</version>
+			<fixedVersion>3.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.support.JdbcUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6965</link>
+			<link type="Duplicate" description="is duplicated by">6269</link>
+		</links>
+	</bug>
+	<bug id="5120" opendate="2008-08-27 04:12:18" fixdate="2009-09-17 02:58:53" resolution="Fixed">
+		<buginformation>
+			<summary>Spring component scanning does not work within JBoss EJB container</summary>
+			<description>The spring scanner functionality do not work when I create my ApplicationContext from a EJB managed by JBoss. I do test the same spring application context on diferents enviroments. Just on a managed EJB on a JBoos it is not workin.
+EJB code
+        appContext = new GenericApplicationContext();
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(appContext);
+        scanner.scan("com");
+        appContext.refresh();
+Annotated class
+       @Service
+        public class TransactionService {
+Exception
+        ERROR: org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named &amp;amp;apos;transactionService&amp;amp;apos; is defined</description>
+			<version>2.5.5</version>
+			<fixedVersion>3.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.io.support.jboss.VfsResource.java</file>
+			<file type="M">org.springframework.core.io.ClassPathResource.java</file>
+			<file type="M">org.springframework.core.io.support.PathMatchingResourcePatternResolver.java</file>
+			<file type="M">org.springframework.core.io.UrlResource.java</file>
+			<file type="M">org.springframework.util.ResourceUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">6146</link>
+			<link type="Duplicate" description="is duplicated by">6385</link>
+			<link type="Related" description="is related to">5340</link>
+			<link type="Related" description="is related to">5784</link>
+		</links>
+	</bug>
+	<bug id="6093" opendate="2009-09-09 05:23:10" fixdate="2009-09-24 19:46:24" resolution="Fixed">
+		<buginformation>
+			<summary>MVC Annotation Inheritance</summary>
+			<description>I currently run a patched M4 build to work around problems with @ExceptionHandler methods (and @ResponseStatus on them) not functioning with overridden methods (in my case it&amp;amp;apos;s due to @Transactional CGlib proxies). While patching these issues, I also changed handling of some other annotations which were being queried using Method.getAnnotation/Method.isAnnotationPresent as opposed to AnnotationUtils.findAnnotation.
+I have attached my patch as a starting point. I believe I found all instances where AnnotationUtils.findAnnotation was not being used and fixed them. However, I only updated the tests for AnnotationMethodHandlerExceptionResolver. I did not feel confident with the amount of time I had to update the tests for AnnotationMethodHandlerAdapter.
+I think these changes are in line with a recent checkin (revision 1852) related to inheritance of JMX annotations (SPR-3635 SPR-5039 and SPR-5813).
+</description>
+			<version>3.0 M4</version>
+			<fixedVersion>3.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5959</link>
+			<link type="Related" description="is related to">5935</link>
+		</links>
+	</bug>
+	<bug id="6163" opendate="2009-09-29 07:55:43" fixdate="2009-09-30 22:52:52" resolution="Fixed">
+		<buginformation>
+			<summary>Using ignoreAcceptHeader and defaultContentType together causes problems.</summary>
+			<description>Using ignore accept header and default content type causes problems. Here is my bean xml:
+
+{code?xml}
+    &amp;lt;bean id="contentNegotiatingViewResolver"
+          class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver"&amp;gt;
+        &amp;lt;property name="order" value="1"/&amp;gt;
+        &amp;lt;property name="ignoreAcceptHeader" value="true" /&amp;gt;
+        &amp;lt;property name="defaultContentType" value="text/html" /&amp;gt;
+        &amp;lt;property name="mediaTypes"&amp;gt;
+            &amp;lt;map&amp;gt;
+                &amp;lt;entry key="ftl" value="text/html"/&amp;gt;
+                &amp;lt;entry key="xml" value="application/xml"/&amp;gt;
+                &amp;lt;entry key="json" value="application/json"/&amp;gt;
+                &amp;lt;entry key="atom" value="application/atom+xml"/&amp;gt;
+                &amp;lt;entry key="rss" value="application/rss+xml"/&amp;gt;
+            &amp;lt;/map&amp;gt;
+        &amp;lt;/property&amp;gt;
+        &amp;lt;property name="defaultViews"&amp;gt;
+            &amp;lt;list&amp;gt;
+                &amp;lt;bean class="org.springframework.web.servlet.view.xml.MarshallingView"&amp;gt;
+                    &amp;lt;property name="contentType" value="application/xml" /&amp;gt;
+                    &amp;lt;property name="marshaller"&amp;gt;
+                        &amp;lt;bean class="org.springframework.oxm.xstream.XStreamMarshaller"&amp;gt;
+                            &amp;lt;property name="autodetectAnnotations" value="true"/&amp;gt;
+                        &amp;lt;/bean&amp;gt;
+                    &amp;lt;/property&amp;gt;
+                &amp;lt;/bean&amp;gt;
+                &amp;lt;bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"&amp;gt;
+                    &amp;lt;property name="contentType" value="application/json" /&amp;gt;
+                &amp;lt;/bean&amp;gt;
+            &amp;lt;/list&amp;gt;
+        &amp;lt;/property&amp;gt;
+        &amp;lt;property name="viewResolvers"&amp;gt;
+            &amp;lt;list&amp;gt;
+                &amp;lt;bean id="viewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver"&amp;gt;
+                    &amp;lt;property name="contentType" value="text/html" /&amp;gt;
+                    &amp;lt;property name="order" value="2"/&amp;gt;
+                    &amp;lt;property name="cache" value="false"/&amp;gt;
+                    &amp;lt;property name="prefix" value=""/&amp;gt;
+                    &amp;lt;property name="suffix" value=".ftl"/&amp;gt;
+                    &amp;lt;property name="exposeSpringMacroHelpers" value="true"/&amp;gt;
+                &amp;lt;/bean&amp;gt;
+            &amp;lt;/list&amp;gt;
+        &amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+
+
+
+
+
+Here is the exception that is generated:
+
+
+
+
+
+
+
+
+
+
+
+SEVERE: Servlet.service() for servlet jawbs threw exception
+java.lang.UnsupportedOperationException
+	at java.util.AbstractList.set(AbstractList.java:115)
+	at java.util.AbstractList$ListItr.set(AbstractList.java:412)
+	at java.util.Collections.sort(Collections.java:121)
+	at org.springframework.web.servlet.view.ContentNegotiatingViewResolver.resolveViewName(ContentNegotiatingViewResolver.java:344)
+	at org.springframework.web.servlet.DispatcherServlet.resolveViewName(DispatcherServlet.java:1105)
+	at org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1052)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:808)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:726)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:636)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:545)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:690)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:803)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+
+
+
+
+
+
+
+
+
+If there is a short-term fix, I&amp;amp;apos;d love to hear it.
+Basically what I want to do is have no extension (like /rest/hotels/list) go to text/html and still have the json, xml, etc. views work with the extensions on any/all browsers.
+Thanks!</description>
+			<version>3.0 RC1</version>
+			<fixedVersion>3.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.view.ContentNegotiatingViewResolver.java</file>
+			<file type="M">org.springframework.web.servlet.view.ContentNegotiatingViewResolverTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6178</link>
+		</links>
+	</bug>
+	<bug id="6161" opendate="2009-09-29 03:31:22" fixdate="2009-10-13 08:35:49" resolution="Fixed">
+		<buginformation>
+			<summary>Task namespace usage should not require concurrent backport JARs</summary>
+			<description>This should not happen:
+java.lang.IllegalStateException: Failed to load ApplicationContext
+...
+Caused by: org.springframework.beans.factory.BeanDefinitionStoreException: Unexpected exception parsing XML document from class path resource [...];
+nested exception is org.springframework.beans.FatalBeanException: Invalid NamespaceHandler class [org.springframework.scheduling.config.TaskNamespaceHandler] for namespace http://www.springframework.org/schema/task: problem with handler class file or dependent class; nested exception is java.lang.NoClassDefFoundError: edu/emory/mathcs/backport/java/util/concurrent/ThreadPoolExecutor$AbortPolicy</description>
+			<version>3.0 RC1</version>
+			<fixedVersion>3.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.config.ExecutorBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">810</link>
+			<link type="Duplicate" description="is duplicated by">6250</link>
+		</links>
+	</bug>
+	<bug id="6178" opendate="2009-10-02 03:51:56" fixdate="2009-10-13 10:03:01" resolution="Duplicate">
+		<buginformation>
+			<summary>Using defaultContentType property in ContentNegotiatingViewResolver throws java.lang.UnsupportedOperationException</summary>
+			<description>In my application I have a ContentNegotiatingViewResolver set to handle html , xml and json. Following is the beans declaration:
+
+
+
+
+
+
+
+&amp;lt;bean
+
+
+
+
+    class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver"
+
+
+
+
+    p:order="1"&amp;gt;
+
+
+
+
+    &amp;lt;property name="mediaTypes"&amp;gt;
+
+
+
+
+      &amp;lt;map&amp;gt;
+
+
+
+
+        &amp;lt;entry key="html" value="text/html"/&amp;gt;
+
+
+
+
+        &amp;lt;entry key="xml" value="application/xml" /&amp;gt;
+
+
+
+
+        &amp;lt;entry key="json" value="application/json" /&amp;gt;
+
+
+
+
+      &amp;lt;/map&amp;gt;
+
+
+
+
+    &amp;lt;/property&amp;gt;
+
+
+
+
+    &amp;lt;property name="defaultViews"&amp;gt;
+
+
+
+
+      &amp;lt;list&amp;gt;
+
+
+
+
+        &amp;lt;bean class="org.springframework.web.servlet.view.xml.MarshallingView"&amp;gt;
+
+
+
+
+          &amp;lt;property name="marshaller"&amp;gt;
+
+
+
+
+            &amp;lt;bean class="org.springframework.oxm.xstream.XStreamMarshaller"
+
+
+
+
+              p:autodetectAnnotations="true" /&amp;gt;
+
+
+
+
+          &amp;lt;/property&amp;gt;
+
+
+
+
+        &amp;lt;/bean&amp;gt;
+
+
+
+
+        &amp;lt;bean
+
+
+
+
+          class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" /&amp;gt;
+
+
+
+
+      &amp;lt;/list&amp;gt;
+
+
+
+
+    &amp;lt;/property&amp;gt;
+
+
+
+
+    &amp;lt;property name="ignoreAcceptHeader" value="true"/&amp;gt;
+
+
+
+
+    &amp;lt;property name="defaultContentType" value="application/xml"/&amp;gt;
+
+
+
+
+  &amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+
+
+
+  &amp;lt;bean id="jspViewResolver"
+
+
+
+
+    class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+
+
+
+
+    p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" p:order="2" /&amp;gt;
+
+
+
+
+
+
+//
+As seen in the code I turned off acceptHeader and want to have a default content type of application/xml. When I access the page without an explicit extension I get a java.lang.UnsupportedOperationException:
+java.lang.UnsupportedOperationException
+        at java.util.AbstractList.set(AbstractList.java:115)
+        at java.util.AbstractList$ListItr.set(AbstractList.java:412)
+        at java.util.Collections.sort(Collections.java:121)
+        at org.springframework.web.servlet.view.ContentNegotiatingViewResolver.resolveViewName(ContentNegotiatingViewResolver.java:344)
+        at org.springframework.web.servlet.DispatcherServlet.resolveViewName(DispatcherServlet.java:1105)
+        at org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1052)
+        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:808)
+        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:726)
+        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:636)
+        at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:545)
+      ...</description>
+			<version>3.0 RC1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.view.ContentNegotiatingViewResolver.java</file>
+			<file type="M">org.springframework.web.servlet.view.ContentNegotiatingViewResolverTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6163</link>
+		</links>
+	</bug>
+	<bug id="5959" opendate="2009-07-27 09:42:38" fixdate="2009-10-14 00:36:21" resolution="Duplicate">
+		<buginformation>
+			<summary>@ExceptionHandler on CGLib-proxied controller is ineffectual</summary>
+			<description>Here is a condensed example of the problem I&amp;amp;apos;m encountering:
+Controller:
+
+
+
+
+
+
+package com.test;
+
+
+
+
+
+
+
+
+
+import java.io.PrintWriter;
+
+
+
+
+
+
+
+
+
+import org.springframework.stereotype.Controller;
+
+
+
+
+import org.springframework.transaction.annotation.Transactional;
+
+
+
+
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+
+
+
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+
+
+
+
+
+
+
+@Controller
+
+
+
+
+@Transactional( readOnly=true )
+
+
+
+
+public class Test
+
+
+
+
+{
+
+
+
+
+	@ExceptionHandler
+
+
+
+
+	public void exception( Throwable t )
+
+
+
+
+	{
+
+
+
+
+		System.out.println( "In exception handler" );
+
+
+
+
+	}
+
+
+
+
+	
+
+
+
+
+	@RequestMapping( "/" )
+
+
+
+
+	public void get()
+
+
+
+
+	{
+
+
+
+
+		throw new RuntimeException( "foo" );
+
+
+
+
+	}
+
+
+
+
+}
+
+
+
+
+
+
+Dispatcher servlet config:
+
+
+
+
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+
+
+
+
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans"
+
+
+
+
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+
+
+
+
+	xmlns:context="http://www.springframework.org/schema/context"
+
+
+
+
+	xsi:schemaLocation="
+
+
+
+
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+
+
+
+
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+
+
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&amp;gt;
+
+
+
+
+	
+
+
+
+
+	&amp;lt;tx:annotation-driven transaction-manager="transactionManager"/&amp;gt;
+
+
+
+
+	&amp;lt;bean id="transactionManager" class="com.test.MockTransactionManager"/&amp;gt;
+
+
+
+
+	
+
+
+
+
+	&amp;lt;context:component-scan base-package="com.test"/&amp;gt;
+
+
+
+
+	
+
+
+
+
+&amp;lt;/beans&amp;gt;
+
+
+
+
+
+
+web.xml
+
+
+
+
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+
+
+
+
+&amp;lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+
+
+
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd"
+
+
+
+
+	version="2.5"&amp;gt;
+
+
+
+
+	
+
+
+
+
+	&amp;lt;servlet&amp;gt;
+
+
+
+
+		&amp;lt;servlet-name&amp;gt;action&amp;lt;/servlet-name&amp;gt;
+
+
+
+
+		&amp;lt;servlet-class&amp;gt;org.springframework.web.servlet.DispatcherServlet&amp;lt;/servlet-class&amp;gt;
+
+
+
+
+		&amp;lt;load-on-startup&amp;gt;1&amp;lt;/load-on-startup&amp;gt;
+
+
+
+
+	&amp;lt;/servlet&amp;gt;
+
+
+
+
+	&amp;lt;servlet-mapping&amp;gt;
+
+
+
+
+		&amp;lt;servlet-name&amp;gt;action&amp;lt;/servlet-name&amp;gt;
+
+
+
+
+		&amp;lt;url-pattern&amp;gt;/*&amp;lt;/url-pattern&amp;gt;
+
+
+
+
+	&amp;lt;/servlet-mapping&amp;gt;
+
+
+
+
+	
+
+
+
+
+&amp;lt;/web-app&amp;gt;
+
+
+
+
+
+
+The exception handler is never invoked when the controller is proxied by CGLib (removing @Transactional removes the proxy and restores the exception handler). A little digging led me to org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver  where there is this iteration over methods of the controller
+
+
+
+
+
+
+		ReflectionUtils.doWithMethods(handlerType, new ReflectionUtils.MethodCallback() {
+
+
+
+
+			public void doWith(Method method) {
+
+
+
+
+				method = ClassUtils.getMostSpecificMethod(method, handlerType);
+
+
+
+
+[snip]
+
+
+
+
+			}
+
+
+
+
+		});
+
+
+
+
+
+
+which does arrive eventually at the proper exception handler method of my controller class, but because of the call to ClassUtils.getMostSpecificMethod() it winds up back at the overridden method on the CGLib-generated class (which from what I noticed it had already visited). I haven&amp;amp;apos;t researched enough to say this is the problem though.
+@RequestMapping annotations appear to work normally through a proxied controller (and the @Transactional annotation does function correctly), so I&amp;amp;apos;m hoping this can be fixed.</description>
+			<version>3.0 M3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6093</link>
+			<link type="Related" description="is related to">7337</link>
+		</links>
+	</bug>
+	<bug id="6231" opendate="2009-10-13 04:29:28" fixdate="2009-10-14 01:43:11" resolution="Duplicate">
+		<buginformation>
+			<summary>RESTful URLs with path variables containing dots are incorrectly mapped</summary>
+			<description>The change made in SPR-5537 effectively strips any file extension in GET requests in order to exclude it from the path variable value. Unfortunately, this prevents queries that contains dots as part of the path variable, i.e. an email address. Therefore the following request:
+http://localhost:8080/rest/emailaddress/email/test%40mail.com
+with the following controller request mapping:
+@RequestMapping(value = "/email/
+{email}
+", method = RequestMethod.GET)
+public ModelAndView getEmail(@PathVariable("email") final String email) {
+}
+will map the value "test@mail" to the variable email.</description>
+			<version>3.0 RC1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ProducesRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.HeadersRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.RequestMappingInfo.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMappingTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.PatternsRequestConditionTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ParamsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6164</link>
+			<link type="Related" description="is related to">5537</link>
+		</links>
+	</bug>
+	<bug id="6250" opendate="2009-10-19 22:16:31" fixdate="2009-10-23 04:13:01" resolution="Duplicate">
+		<buginformation>
+			<summary>ExecutorBeanDefinitionParser  must not directly depends on backport concurrent</summary>
+			<description>If you use the &amp;amp;apos;executor&amp;amp;apos; element of the task namespace ( or simply do a  new ExecutorBeanDefinitionParser() ), there are an error :
+Exception in thread "main" java.lang.NoClassDefFoundError: edu/emory/mathcs/backport/java/util/concurrent/ThreadPoolExecutor$AbortPolicy
+And, even with JDK 6 or 5. But they possess java.util.currurent directly, it should not be any errors.</description>
+			<version>3.0 M4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.config.ExecutorBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6161</link>
+		</links>
+	</bug>
+	<bug id="4661" opendate="2008-04-03 20:21:13" fixdate="2009-10-27 01:39:13" resolution="Fixed">
+		<buginformation>
+			<summary>Improve context-property-placeholder configurablity</summary>
+			<description>I was replacing our current PropertiesPlaceHolderConfigurer with a &amp;lt;context:property-placeholder but couldn&amp;amp;apos;t do that (whilst recommended by STS). 
+I need the &amp;amp;apos;ignoreResourceNotFound&amp;amp;apos; property to be settable from the tag. Maybe some more options also depending on the tag (property-placholder or property-override).</description>
+			<version>2.5.2</version>
+			<fixedVersion>3.0 RC2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.context.config.PropertyOverrideBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.context.config.ContextNamespaceHandlerTests.java</file>
+			<file type="M">org.springframework.context.config.PropertyPlaceholderBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.context.config.AbstractPropertyLoadingBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5016</link>
+		</links>
+	</bug>
+	<bug id="3542" opendate="2007-06-01 16:21:59" fixdate="2009-11-11 10:13:20" resolution="Fixed">
+		<buginformation>
+			<summary>scope (&amp; similar attributes) on abstract beans should be inherited in child beans, or not permitted</summary>
+			<description>Hi,
+given this config:
+&amp;lt;bean id="parent" scope="prototype" abstract="true"&amp;gt;
+    &amp;lt;property name="prop" ref="prop" /&amp;gt;
+     .....
+&amp;lt;/bean&amp;gt;
+&amp;lt;bean id="child1" parent="parent" class="X" /&amp;gt;
+&amp;lt;bean id="child2" parent="parent" class="X" /&amp;gt;
+&amp;lt;bean id="child3" parent="parent" scope="singleton" class="X" /&amp;gt;
+the prototype attribute on the abstract parent does not carry down to any child beans.  So child1 &amp;amp; 2 here are scoped singleton, wouldn&amp;amp;apos;t it make sense to inherit that?  I am not sure, just throwing this out there for someone to consider.  If it does, the child beans could also override scope and the similar attributes. 
+If it doesn&amp;amp;apos;t make sense, abstract="true" &amp;amp; scope="*" should probably generate an xml error since they will be a waste of typing.
+</description>
+			<version>2.1 M2</version>
+			<fixedVersion>3.0 RC2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.config.BeanDefinition.java</file>
+			<file type="M">org.springframework.beans.factory.xml.BeanDefinitionParserDelegate.java</file>
+			<file type="M">org.springframework.beans.factory.xml.XmlBeanFactoryTests.java</file>
+			<file type="M">org.springframework.beans.factory.support.AbstractBeanFactory.java</file>
+			<file type="M">org.springframework.beans.factory.support.AbstractBeanDefinition.java</file>
+			<file type="M">org.springframework.beans.factory.DefaultListableBeanFactoryTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5854</link>
+			<link type="Relate" description="is related to">12570</link>
+		</links>
+	</bug>
+	<bug id="6234" opendate="2009-10-13 20:50:38" fixdate="2009-11-12 01:10:47" resolution="Fixed">
+		<buginformation>
+			<summary>Add facility to EhCacheFactorybean for registering event listeners</summary>
+			<description>With EhCach you can register event listeners with individual caches. Unfortunately, Spring&amp;amp;apos;s EhCacheFactoryBean does not provide the facility for configuring these.
+We still have the option of configuring the caches in ehcache.xml (see http://ehcache.org/EhcacheUserGuide.html#id.s28), but I much prefer doing this via EhCacheFactoryBean. 
+I suggest being able to inject a List of CacheEventListenerFactory objects into EhCacheFactoryBean, which would then register them with the cache it creates.</description>
+			<version>2.5.6</version>
+			<fixedVersion>3.0 RC2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.cache.ehcache.EhCacheFactoryBean.java</file>
+			<file type="M">org.springframework.cache.ehcache.EhCacheManagerFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5641</link>
+		</links>
+	</bug>
+	<bug id="6269" opendate="2009-10-24 03:16:51" fixdate="2009-11-12 01:33:58" resolution="Duplicate">
+		<buginformation>
+			<summary>Include &amp;apos;ASE&amp;apos; in the list of product names recognised by JDBCUtils as Sybase</summary>
+			<description>JdbcUtils#commonDatabaseName uses a number of hardcoded database product names to identify Sybase. 
+public static String commonDatabaseName(String source) {
+  String name = source;
+  if (source != null &amp;amp;&amp;amp; source.startsWith("DB2")) 
+{
+    name = "DB2";
+  }
+  else if ("Sybase SQL Server".equals(source) ||
+    "Adaptive Server Enterprise".equals(source) || "sql server".equals(source) ) 
+{
+    name = "Sybase";
+  }
+  return name;
+}
+Unfortunately, when using JTDS 1.2.4 against a Sybase 15.0.3 server, JtdsDatabaseMetadata will (for some server configurations) return &amp;amp;apos;ASE&amp;amp;apos; rather than &amp;amp;apos;sql server&amp;amp;apos;. 
+This has knock on implications, most notably in this case in CallMetaDataProviderFactory, which uses the common database name to determine which meta data provider to use:
+else if ("Sybase".equals(databaseProductName)) {
+  provider = new SybaseCallMetaDataProvider((databaseMetaData));
+}
+The net result of this is that a generic provider is used rather than a Sybase provider. The generic provider does not function correctly with at least one stored procedure in one of our applications, which results in no parameters being passed to the server.
+The proposed change would be to introduce &amp;amp;apos;ASE&amp;amp;apos; alongside the existing Sybase product name checks in JdbcUtils, so that it is identified correctly as Sybase. </description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.support.JdbcUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6053</link>
+		</links>
+	</bug>
+	<bug id="6366" opendate="2009-11-16 18:54:14" fixdate="2009-11-16 19:52:43" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot import bean definitions using classpath*: resource location</summary>
+			<description>Cannot import bean definitions using classpath*: resource location. Somewhere between RC1 and RC2 the behaviour of &amp;lt;import resource="classpath*:..."/&amp;gt; changed so that it is now treated as a relative resource, where clearly it is not.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.0 RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.io.ResourceEditorTests.java</file>
+			<file type="M">org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.java</file>
+			<file type="M">org.springframework.beans.factory.xml.XmlBeanDefinitionReaderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5762</link>
+			<link type="Duplicate" description="is duplicated by">6379</link>
+			<link type="Duplicate" description="is duplicated by">6411</link>
+			<link type="Duplicate" description="is duplicated by">6351</link>
+			<link type="Related" description="is related to">6410</link>
+		</links>
+	</bug>
+	<bug id="6385" opendate="2009-11-18 02:19:15" fixdate="2009-11-18 21:52:28" resolution="Duplicate">
+		<buginformation>
+			<summary>Context Scanning doesnt work in Jboss 5</summary>
+			<description>Hi All,
+When I use context scanning and deploy it on Jboss5. Spring somehow seem to have issue of finding the beans in the classpath. If the same war is dropped on Jboss 4.X it seems to Work just fine.
+I tried using the newer Spring3 - m3 as well with no luck.
+Any suggestions is appreciated.
+-Sundar 
+http://forum.springsource.org/showthread.php?p=269977</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.io.support.jboss.VfsResource.java</file>
+			<file type="M">org.springframework.core.io.ClassPathResource.java</file>
+			<file type="M">org.springframework.core.io.support.PathMatchingResourcePatternResolver.java</file>
+			<file type="M">org.springframework.core.io.UrlResource.java</file>
+			<file type="M">org.springframework.util.ResourceUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">5120</link>
+		</links>
+	</bug>
+	<bug id="6379" opendate="2009-11-17 19:22:24" fixdate="2009-11-18 22:05:17" resolution="Duplicate">
+		<buginformation>
+			<summary>Import of XML resources with &amp;apos;classpath*:&amp;apos; URLs doesn&amp;apos;t work</summary>
+			<description>it&amp;amp;apos;s probably related to SPR-5762.
+I think, that the issue is in DefaultBeanDefinitionDocumentReader class. In 3.0.0.RC1 there was used call &amp;amp;apos;ResourcePatternUtils.isUrl(location)&amp;amp;apos;, in 3.0.0.RC2 it&amp;amp;apos;s changed and I think, that it&amp;amp;apos;s related to this correction. 
+When the classes are unpacked, it leads to transformation of classpath* URL to file URL, which causes the problem.
+Attach is simple test case, which works in 3.0.0.RC1, but fail on 3.0.0.RC2.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.io.ResourceEditorTests.java</file>
+			<file type="M">org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.java</file>
+			<file type="M">org.springframework.beans.factory.xml.XmlBeanDefinitionReaderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6366</link>
+		</links>
+	</bug>
+	<bug id="6356" opendate="2009-11-14 01:51:39" fixdate="2009-11-24 09:48:35" resolution="Fixed">
+		<buginformation>
+			<summary>NPE in AbstractApplicationContext finishRefresh when initialized via Spring DM</summary>
+			<description>I&amp;amp;apos;ve just tried upgrading dm Server to run with Spring 3.0.0.RC2 and
+have encountered the following NPE whenever Spring DM tries to create an
+application context for a Bundle:
+
+
+
+
+
+
+java.lang.NullPointerException at
+
+
+
+
+org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:861) at
+
+
+
+
+org.springframework.osgi.context.support.AbstractOsgiBundleApplicationContext.finishRefresh(AbstractOsgiBundleApplicationContext.java:235) at
+
+
+
+
+org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext$4.run(AbstractDelegatedExecutionApplicationContext.java:358) at
+
+
+
+
+org.springframework.osgi.util.internal.PrivilegedUtils.executeWithCustomTCCL(PrivilegedUtils.java:85) at
+
+
+
+
+org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.completeRefresh(AbstractDelegatedExecutionApplicationContext.java:320) at
+
+
+
+
+org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor$CompleteRefreshTask.run(DependencyWaiterApplicationContextExecutor.java:136) at
+
+
+
+
+com.springsource.kernel.agent.dm.ContextPropagatingTaskExecutor$2.run(ContextPropagatingTaskExecutor.java:106) at
+
+
+
+
+java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) at
+
+
+
+
+java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) at
+
+
+
+
+java.lang.Thread.run(Thread.java:637)
+
+
+
+
+
+</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.0 RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.context.support.AbstractApplicationContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6359</link>
+			<link type="Related" description="is related to">783</link>
+		</links>
+	</bug>
+	<bug id="6359" opendate="2009-11-15 19:36:53" fixdate="2009-11-24 09:50:47" resolution="Duplicate">
+		<buginformation>
+			<summary>lifecycleProcessor Is NULL</summary>
+			<description>Error while deploing application.
+With RC1 - it was OK.
+SEVERE: Application context refresh failed (OsgiBundleXmlApplicationContext(bundle=ndx.billing.DatabaseFunctions, config=osgibundle:/META-INF/spring/*.xml))                        
+java.lang.NullPointerException                                                                                                                                                      
+        at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:861)                                                        
+        at org.springframework.osgi.context.support.AbstractOsgiBundleApplicationContext.finishRefresh(AbstractOsgiBundleApplicationContext.java:235)                               
+        at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext$4.run(AbstractDelegatedExecutionApplicationContext.java:358)                       
+        at org.springframework.osgi.util.internal.PrivilegedUtils.executeWithCustomTCCL(PrivilegedUtils.java:85)                                                                    
+        at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.completeRefresh(AbstractDelegatedExecutionApplicationContext.java:320)             
+        at org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor$CompleteRefreshTask.run(DependencyWaiterApplicationContextExecutor.java:136)                                                                                                                                                                      
+        at java.lang.Thread.run(Thread.java:619)                                                                                                                                    
+Nov 16, 2009 12:27:05 PM                                                                                                                                                            
+SEVERE: Exception in thread "SpringOsgiExtenderThread-14"                                                                                                                           
+Nov 16, 2009 12:27:05 PM                                                                                                                                                            
+SEVERE: java.lang.NullPointerException                                                                                                                                              
+        at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:861)                                                        
+        at org.springframework.osgi.context.support.AbstractOsgiBundleApplicationContext.finishRefresh(AbstractOsgiBundleApplicationContext.java:235)                               
+        at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext$4.run(AbstractDelegatedExecutionApplicationContext.java:358)                       
+        at org.springframework.osgi.util.internal.PrivilegedUtils.executeWithCustomTCCL(PrivilegedUtils.java:85)                                                                    
+        at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.completeRefresh(AbstractDelegatedExecutionApplicationContext.java:320)             
+        at org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor$CompleteRefreshTask.run(DependencyWaiterApplicationContextExecutor.java:136)                                                                                                                                                                      
+        at java.lang.Thread.run(Thread.java:619)        </description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.context.support.AbstractApplicationContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6356</link>
+		</links>
+	</bug>
+	<bug id="6378" opendate="2009-11-17 15:52:48" fixdate="2009-11-24 21:12:35" resolution="Fixed">
+		<buginformation>
+			<summary>RC2: Issue with RequestMethod.GET differs from M2</summary>
+			<description>I have a demo for Spring 3 Web that I&amp;amp;apos;ve been running for some time... the upgrade to RC2 broke the demo.  The code is listed below.  What we need is details on the order of requestmappings... I thought I saw that earlier this year in the forums, but I can&amp;amp;apos;t find it anymore.  Can someone please provide the details on the order of requestmappings... thanks.
+The code below (which worked before) now fails for a GET request against the list method or http://localhost:8080/mvc/book/list
+I had specified the GET and POST for clarification before on the create methods... after some investigation, I discovered that if I remove the method = RequestMethod.GET on the create method that the app begins to work.  So I can work around this.  What behavior should be expected?
+
+
+
+
+
+
+@Controller
+
+
+
+
+public class BookController {
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    BookDAO dao;
+
+
+
+
+
+
+
+
+
+    // http://localhost:8080/mvc/book/list
+
+
+
+
+    @RequestMapping("list")
+
+
+
+
+    public List&amp;lt;Book&amp;gt; list() {
+
+
+
+
+        return dao.findAllBooks();
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // http://localhost:8080/mvc/book/book?id=12
+
+
+
+
+    @RequestMapping("book")
+
+
+
+
+    public Book book(@RequestParam(required = true) Long id) {
+
+
+
+
+
+
+
+
+
+        Book book = dao.getBook(id);
+
+
+
+
+        return book;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @RequestMapping(method = RequestMethod.GET)
+
+
+
+
+    public Book create() {
+
+
+
+
+        return new Book();
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // http://localhost:8080/mvc/book/create (POST)
+
+
+
+
+    @RequestMapping(method = RequestMethod.POST)
+
+
+
+
+    public String create(@ModelAttribute Book book, BindingResult results) {
+
+
+
+
+
+
+
+
+
+        if (book == null)
+
+
+
+
+            return null;
+
+
+
+
+
+
+
+
+
+        dao.save(book);
+
+
+
+
+
+
+
+
+
+        return "redirect:list";
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.0 RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.handler.AbstractUrlHandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.servlet.HandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6475</link>
+		</links>
+	</bug>
+	<bug id="6475" opendate="2009-11-30 06:20:55" fixdate="2009-11-30 19:23:29" resolution="Duplicate">
+		<buginformation>
+			<summary>Combining ControllerClassNameHandlerMapping and @RequestMapping with relative value on Controller method  doesn&amp;apos;t work anymore</summary>
+			<description>The controller beans xml file contains:
+---------------------------------------
+&amp;lt;context:component-scan base-package="org.example.web"/&amp;gt;
+&amp;lt;bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"/&amp;gt;
+The Controller class:
+---------------------
+package org.example.web;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+@Controller
+public class ArticlesController {
+  @RequestMapping("all") // all == a relative URL
+  public String findAll() 
+{	
+    return "/WEB-INF/JSP/allArticles.jsp";
+  }
+}
+Spring 2.5
+----------
+A GET request with the URL /articles/all was processed by the function findAll
+Spring 3.0 RC2
+--------------
+A GET request with the URL /articles/all produces HTTP 404 error.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.handler.AbstractUrlHandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.servlet.HandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6378</link>
+		</links>
+	</bug>
+	<bug id="6494" opendate="2009-12-01 21:18:35" fixdate="2009-12-02 22:35:59" resolution="Duplicate">
+		<buginformation>
+			<summary>Regression about the suppport of the tag &lt;import resource="..."/&gt;</summary>
+			<description>The tag &amp;lt;import resource="..."/&amp;gt; acts differently in version 3.0.0 and 2.5.6.
+For example, consider these two xml configuration files, located in a package "context".
+File: dependent-context.xml
+---------------------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"&amp;gt;
+	&amp;lt;bean id="myBean" class="java.lang.String" /&amp;gt;
+&amp;lt;/beans&amp;gt;
+File: super-context.xml
+-----------------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"&amp;gt;
+	&amp;lt;import resource="dependent-context.xml" /&amp;gt;
+&amp;lt;/beans&amp;gt;
+We load the latter, using the following: 
+new ClassPathXmlApplicationContext("context/super-context.xml");
+Here is the log using Spring 2.5.6.SEC01:
+-----------------------------------------
+11:47:58,903 INFO  [ClassPathXmlApplicationContext] Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@19efb05: display name [org.springframework.context.support.ClassPathXmlApplicationContext@19efb05]; startup date [Wed Dec 02 11:47:58 CET 2009]; root of context hierarchy
+11:47:58,949 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/super-context.xml]
+11:47:59,027 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/dependent-context.xml]
+11:47:59,059 INFO  [ClassPathXmlApplicationContext] Bean factory for application context [org.springframework.context.support.ClassPathXmlApplicationContext@19efb05]: org.springframework.beans.factory.support.DefaultListableBeanFactory@47393f
+11:47:59,059 INFO  [DefaultListableBeanFactory] Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@47393f: defining beans [myBean]; root of factory hierarchy
+Note that the dependent-context.xml file is loaded as "class path resource [context/dependent-context.xml]"
+Here is the log using Spring 3.0.0.RC3:
+-----------------------------------------
+12:06:57,312 INFO  [ClassPathXmlApplicationContext] Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@8814e9: startup date [Wed Dec 02 12:06:57 CET 2009]; root of context hierarchy
+12:06:57,608 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/super-context.xml]
+12:06:57,686 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from URL file:/C:/Workspace/__Test/target/classes/context/dependent-context.xml
+12:06:57,795 INFO  [DefaultListableBeanFactory] Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@1a9334: defining beans [myBean]; root of factory hierarchy
+Note that the dependent-context.xml file is new loaded as "URL file:/C:/Workspace/__Test/target/classes/context/dependent-context.xml"
+If the two file are located in different folders on the file system, as it is often the case, the loading fails.
+This difference generates several major regressions in our existing projects.</description>
+			<version>3.0 RC3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6493</link>
+		</links>
+	</bug>
+	<bug id="6499" opendate="2009-12-02 12:10:05" fixdate="2009-12-03 02:35:36" resolution="Duplicate">
+		<buginformation>
+			<summary>@MVC URI Template Variable Regression - Matching values containing . (dot)</summary>
+			<description>Given the URI Template:
+http://www.example.com/users/
+{username}
+/blah.html
+In M1 - M3 and RC1 the username could be "bill" or "bill.smith" and everything would work.
+Starting with RC3 (I never got around to using RC2) "bill" still works fine, but "bill.smith" causes a HTTP 404 to be returned due to:
+DispatcherServlet.noHandlerFound(962) | No mapping found for HTTP request with URI
+</description>
+			<version>3.0 RC3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.util.AntPathStringMatcher.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.util.AntPathMatcher.java</file>
+			<file type="M">org.springframework.util.AntPathMatcherTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6482</link>
+		</links>
+	</bug>
+	<bug id="6525" opendate="2009-12-06 02:01:30" fixdate="2009-12-06 09:20:58" resolution="Fixed">
+		<buginformation>
+			<summary>SpEL context is wrong in method parameter resolution</summary>
+			<description>SpEL context is wrong in method parameter resolution.  Instead of using the current context for the stack (which refers to the method target), parameters should have a current context equal to the context root.  This test would fail in EvaluationTests():
+
+
+
+
+
+
+	@Test
+
+
+
+
+	public void testNestedMethod() {
+
+
+
+
+		evaluate("placeOfBirth.doubleIt(inventions.length)", 18, Integer.class);
+
+
+
+
+	}
+
+
+
+
+
+</description>
+			<version>3.0 RC3</version>
+			<fixedVersion>3.0 GA</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.expression.spel.ast.MethodReference.java</file>
+			<file type="M">org.springframework.expression.spel.EvaluationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5584</link>
+		</links>
+	</bug>
+	<bug id="6493" opendate="2009-12-01 21:10:31" fixdate="2009-12-07 01:19:46" resolution="Fixed">
+		<buginformation>
+			<summary>Regression about the suppport of the tag &lt;import resource="..."/&gt;</summary>
+			<description>The tag &amp;lt;import resource="..."/&amp;gt; acts differently in version 3.0.0 and 2.5.6.
+For example, consider these two xml configuration files, located in a package "context".
+File: dependent-context.xml
+---------------------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"&amp;gt;
+	&amp;lt;bean id="myBean" class="java.lang.String" /&amp;gt;
+&amp;lt;/beans&amp;gt;
+File: super-context.xml
+-----------------------
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"&amp;gt;
+	&amp;lt;import resource="dependent-context.xml" /&amp;gt;
+&amp;lt;/beans&amp;gt;
+We load the latter, using the following: 
+new ClassPathXmlApplicationContext("context/super-context.xml");
+Here is the log using Spring 2.5.6.SEC01:
+-----------------------------------------
+11:47:58,903 INFO  [ClassPathXmlApplicationContext] Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@19efb05: display name [org.springframework.context.support.ClassPathXmlApplicationContext@19efb05]; startup date [Wed Dec 02 11:47:58 CET 2009]; root of context hierarchy
+11:47:58,949 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/super-context.xml]
+11:47:59,027 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/dependent-context.xml]
+11:47:59,059 INFO  [ClassPathXmlApplicationContext] Bean factory for application context [org.springframework.context.support.ClassPathXmlApplicationContext@19efb05]: org.springframework.beans.factory.support.DefaultListableBeanFactory@47393f
+11:47:59,059 INFO  [DefaultListableBeanFactory] Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@47393f: defining beans [myBean]; root of factory hierarchy
+Note that the dependent-context.xml file is loaded as "class path resource [context/dependent-context.xml]"
+Here is the log using Spring 3.0.0.RC3:
+-----------------------------------------
+12:06:57,312 INFO  [ClassPathXmlApplicationContext] Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@8814e9: startup date [Wed Dec 02 12:06:57 CET 2009]; root of context hierarchy
+12:06:57,608 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from class path resource [context/super-context.xml]
+12:06:57,686 INFO  [XmlBeanDefinitionReader] Loading XML bean definitions from URL file:/C:/Workspace/__Test/target/classes/context/dependent-context.xml
+12:06:57,795 INFO  [DefaultListableBeanFactory] Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@1a9334: defining beans [myBean]; root of factory hierarchy
+Note that the dependent-context.xml file is new loaded as "URL file:/C:/Workspace/__Test/target/classes/context/dependent-context.xml"
+If the two file are located in different folders on the file system, as it is often the case, the loading fails.
+This difference generates several major regressions in our existing projects.</description>
+			<version>3.0 RC3</version>
+			<fixedVersion>3.0 GA</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6494</link>
+		</links>
+	</bug>
+	<bug id="6560" opendate="2009-12-13 18:19:08" fixdate="2009-12-13 19:51:11" resolution="Duplicate">
+		<buginformation>
+			<summary>Requests URIs containing . cannot be mapped correctly using @RequestMapping in RC3 </summary>
+			<description>I have the following request mapping.
+@RequestMapping(value = "/
+{username}
+/
+{domain}
+/
+{theme}
+/
+{locale}
+/
+{documenttype}
+", method = RequestMethod.GET)
+In RC1 it works like a breeze, regardless the values of the different elements. In RC3, however, whenever a path element contains a . (dot), the URI is not mapped correctly.
+In this project, we&amp;amp;apos;re using email addresses as usernames, and this is a major problem for us now.</description>
+			<version>3.0 RC3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.util.AntPathStringMatcher.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.util.AntPathMatcher.java</file>
+			<file type="M">org.springframework.util.AntPathMatcherTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6482</link>
+		</links>
+	</bug>
+	<bug id="6656" opendate="2010-01-07 19:55:06" fixdate="2010-01-08 01:55:40" resolution="Fixed">
+		<buginformation>
+			<summary>ScheduledAnnotationBeanPostProcessor registers schedules twice in web application</summary>
+			<description>ScheduledAnnotationBeanPostProcessor.onApplicationEvent is first run when the Root WebApplicationContext initializes. Then run again when the FrameworkServlet initializes. Each time onApplicationEvent runs a new schedule is registered.
+I have modified the task-basic sample from https://src.springframework.org/svn/spring-samples/task-basic/trunk/ to run as a web application for verification. Will attach the source and war file.
+This is the console output of task-basic in jetty. It&amp;amp;apos;s the same in tomcat. Notice the "processing next 10..." text that shows up twice every 30 seconds. When the application runs from a main class outside a web server the "processing next 10..." text only shows up once every 30 seconds.
+
+
+
+
+
+
+2010-01-08 10:38:22.612::INFO:  Logging to STDERR via org.mortbay.log.StdErrLog
+
+
+
+
+2010-01-08 10:38:22.738::INFO:  jetty-6.1.17
+
+
+
+
+2010-01-08 10:38:23.212:/task-basic:INFO:  Initializing Spring root WebApplicationContext
+
+
+
+
+INFO : org.springframework.web.context.ContextLoader - Root WebApplicationContext: initialization started
+
+
+
+
+INFO : org.springframework.web.context.support.XmlWebApplicationContext - Refreshing Root WebApplicationContext: startup date [Fri Jan 08 10:38:23 CET 2010]; root of context hierarchy
+
+
+
+
+INFO : org.springframework.beans.factory.xml.XmlBeanDefinitionReader - Loading XML bean definitions from class path resource [org/springframework/samples/task/basic/annotation/config.xml]
+
+
+
+
+INFO : org.springframework.beans.factory.support.DefaultListableBeanFactory - Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@144b9ff: defining beans [scheduledProcessor,org.springframework.context.annotation.internalConfigurationAnnotationProcessor,org.springframework.context.annotation.internalAutowiredAnnotationProcessor,org.springframework.context.annotation.internalRequiredAnnotationProcessor,org.springframework.context.annotation.internalCommonAnnotationProcessor,org.springframework.scheduling.annotation.internalAsyncAnnotationProcessor,org.springframework.scheduling.annotation.internalScheduledAnnotationProcessor]; root of factory hierarchy
+
+
+
+
+INFO : org.springframework.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 13801 ms
+
+
+
+
+processing next 10 at Fri Jan 08 10:38:37 CET 2010
+
+
+
+
+INFO : org.springframework.web.servlet.DispatcherServlet - FrameworkServlet &amp;amp;apos;SpringServlet&amp;amp;apos;: initialization started
+
+
+
+
+INFO : org.springframework.web.context.support.XmlWebApplicationContext - Refreshing WebApplicationContext for namespace &amp;amp;apos;SpringServlet-servlet&amp;amp;apos;: startup date [Fri Jan 08 10:38:37 CET 2010]; parent: Root WebApplicationContext
+
+
+
+
+INFO : org.springframework.beans.factory.xml.XmlBeanDefinitionReader - Loading XML bean definitions from ServletContext resource [/servlet-context.xml]
+
+
+
+
+2010-01-08 10:38:37.139:/task-basic:INFO:  Initializing Spring FrameworkServlet &amp;amp;apos;SpringServlet&amp;amp;apos;
+
+
+
+
+INFO : org.springframework.beans.factory.support.DefaultListableBeanFactory - Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@fffa61: defining beans []; parent: org.springframework.beans.factory.support.DefaultListableBeanFactory@144b9ff
+
+
+
+
+INFO : org.springframework.web.servlet.DispatcherServlet - FrameworkServlet &amp;amp;apos;SpringServlet&amp;amp;apos;: initialization completed in 4407 ms
+
+
+
+
+processing next 10 at Fri Jan 08 10:38:41 CET 2010
+
+
+
+
+2010-01-08 10:38:41.557::INFO:  Opened C:\Users\Christian\Programmer\jetty-6.1.17\logs\2010_01_08.request.log
+
+
+
+
+2010-01-08 10:38:41.641::INFO:  Started SelectChannelConnector@0.0.0.0:8080
+
+
+
+
+processing next 10 at Fri Jan 08 10:39:07 CET 2010
+
+
+
+
+processing next 10 at Fri Jan 08 10:39:11 CET 2010
+
+
+
+
+processing next 10 at Fri Jan 08 10:39:37 CET 2010
+
+
+
+
+processing next 10 at Fri Jan 08 10:39:41 CET 2010
+
+
+
+
+
+</description>
+			<version>3.0 GA</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6663</link>
+			<link type="Duplicate" description="is duplicated by">6859</link>
+			<link type="Relate" description="is related to">12039</link>
+		</links>
+	</bug>
+	<bug id="6663" opendate="2010-01-08 09:51:54" fixdate="2010-01-09 04:36:06" resolution="Duplicate">
+		<buginformation>
+			<summary>@Scheduled tasks scheduled multiple times when a child application context is refreshed</summary>
+			<description>Just switched to the new @Scheduled, configured only with the default &amp;lt;task:annotation-driven/&amp;gt;.  I noticed that my @Scheduled task was being executed more frequently than expected. I have Spring/Struts integration that creates a child web app context on init of ActionServlet.  Looks like when the child app context is created, an event is published to the parent root WAC.  This event causes the ScheduledAnnotationBeanPostProcessor in the root WAC to execute ScheduledTaskRegistrar.afterPropertiesSet again, which schedules all tasks again.  So I end up with the same task scheduled to execute at a fixed rate twice.
+Stack trace on init of the Struts ActionServlet:
+ScheduledTaskRegistrar.afterPropertiesSet() line: 107	
+ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ContextRefreshedEvent) line: 135	
+ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ApplicationEvent) line: 1	
+SimpleApplicationEventMulticaster.multicastEvent(ApplicationEvent) line: 97	
+XmlWebApplicationContext(AbstractApplicationContext).publishEvent(ApplicationEvent) line: 294	
+XmlWebApplicationContext(AbstractApplicationContext).publishEvent(ApplicationEvent) line: 296	
+XmlWebApplicationContext(AbstractApplicationContext).finishRefresh() line: 858	
+XmlWebApplicationContext(AbstractApplicationContext).refresh() line: 419	
+ContextLoaderPlugIn.createWebApplicationContext(WebApplicationContext) line: 356	
+ContextLoaderPlugIn.initWebApplicationContext() line: 297	
+ContextLoaderPlugIn.init(ActionServlet, ModuleConfig) line: 227	
+ActionServlet.initModulePlugIns(ModuleConfig) line: 871	
+ActionServlet.init() line: 359	
+ActionServlet(GenericServlet).init(ServletConfig) line: 212	</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6656</link>
+		</links>
+	</bug>
+	<bug id="6858" opendate="2010-02-17 03:34:41" fixdate="2010-02-17 08:19:50" resolution="Fixed">
+		<buginformation>
+			<summary>Push the Java 5 simplifications in SimpleJdbcTemplate up to JdbcTemplate</summary>
+			<description>Since Spring 3 targets Java 5, I wouldn&amp;amp;apos;t expect to need SimpleJdbcTemplate anymore.  I&amp;amp;apos;d expect Java 5 functionality to be incorporated in the base JdbcTemplate so I could take advantage of simplifications there without having to bring in another class.  Then I would only ever want to work with JdbcTemplate.
+The most useful feature of SimpleJdbcTemplate not in JdbcTemplate is the ability to specify args using var args.</description>
+			<version>3.0 GA</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.core.JdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6856</link>
+		</links>
+	</bug>
+	<bug id="6955" opendate="2010-03-07 19:37:31" fixdate="2010-03-07 22:15:14" resolution="Duplicate">
+		<buginformation>
+			<summary>TaskExecutor created with task:executor not shutdown when context closes</summary>
+			<description>TaskExecutorFactoryBean does not implement DisposableBean, so there is no callback for the shutdown to happen.  It is easy to verify that the executor is not shut down (you expect to see a log message from it and don&amp;amp;apos;t).  I have no idea why, but the problem seems to be particularly acute in a webapp because for some reason there it prevents the lifecycle processor from completing the shutdown (before timing out).</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.scheduling.config.TaskExecutorFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6901</link>
+			<link type="Related" description="is related to">6901</link>
+		</links>
+	</bug>
+	<bug id="6965" opendate="2010-03-09 23:51:24" fixdate="2010-03-11 00:21:13" resolution="Duplicate">
+		<buginformation>
+			<summary>Sybase isn&amp;apos;t detected by metadata when using WebLogic JDBC Driver</summary>
+			<description>When trying to use Spring JDBC classes with Sybase through WebLogic JDBC driver, you get exception like "SQL Server is not one of the databases fully supported for procedure calls...".
+Research shows that WebLogic driver returns "SQL Server" to "getDatabaseProductName" metadata call, unlike JConnect driver which returns "Sybase SQL Server". I also found corresponding issue CR120330 in documentation.</description>
+			<version>2.5.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.support.JdbcUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6053</link>
+		</links>
+	</bug>
+	<bug id="7084" opendate="2010-04-09 06:17:47" fixdate="2010-04-13 23:07:13" resolution="Complete">
+		<buginformation>
+			<summary>IllegalArgumentException thrown for simple java.lang.String prototype bean </summary>
+			<description>Code
+====
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.core.io.ClassPathResource;
+/**
+ */
+public class IllegalArgumentProblem {
+    public static void main(String[] args) 
+{
+         GenericApplicationContext parent = new GenericApplicationContext();
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(parent);
+        reader.loadBeanDefinitions(new ClassPathResource("app.xml", IllegalArgumentProblem.class));
+        parent.refresh();
+
+        String bean = (String) parent.getBean("x");
+        String bean2 = (String) parent.getBean("x"); // second access throws the exception.
+    }
+
+}
+Configuration
+=============
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"&amp;gt;
+    &amp;lt;bean id="x" class="java.lang.String" scope="prototype"&amp;gt;
+        &amp;lt;constructor-arg&amp;gt;&amp;lt;value&amp;gt;PARENT value&amp;lt;/value&amp;gt;&amp;lt;/constructor-arg&amp;gt;
+    &amp;lt;/bean&amp;gt;
+&amp;lt;/beans&amp;gt;
+Error
+=====
+log4j:WARN No appenders could be found for logger (org.springframework.core.CollectionFactory).
+log4j:WARN Please initialize the log4j system properly.
+Exception in thread "main" org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;x&amp;amp;apos; defined in class path resource [app.xml]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Could not instantiate bean class [java.lang.String]: Illegal arguments for constructor; nested exception is java.lang.IllegalArgumentException: argument type mismatch
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:254)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:925)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:823)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:440)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory$1.run(AbstractAutowireCapableBeanFactory.java:409)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:380)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:283)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:185)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:164)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:881)
+	at IllegalArgumentProblem.main(IllegalArgumentProblem.java:21)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:90)
+Caused by: org.springframework.beans.BeanInstantiationException: Could not instantiate bean class [java.lang.String]: Illegal arguments for constructor; nested exception is java.lang.IllegalArgumentException: argument type mismatch
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:111)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:87)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:248)
+	... 16 more
+Caused by: java.lang.IllegalArgumentException: argument type mismatch
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:513)
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:100)
+	... 18 more
+Process finished with exit code 1</description>
+			<version>2.5.5</version>
+			<fixedVersion>3.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.support.ConstructorResolver.java</file>
+			<file type="M">org.springframework.beans.factory.DefaultListableBeanFactoryTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5569</link>
+		</links>
+	</bug>
+	<bug id="6567" opendate="2009-12-15 15:12:31" fixdate="2010-08-24 07:59:46" resolution="Duplicate">
+		<buginformation>
+			<summary>Annotation configuration based TestContext</summary>
+			<description>Why don&amp;amp;apos;t you add AnnotationContextLoader that supports annotation configuration based TestContext.
+for example. If there is an annotation configuration like this
+@Configuration
+public class SpringAnnotationConfigTestAppConfig {
+    @Bean
+    public String name()
+{
+        return "keesun";
+    }
+
+}
+and, at the same package, I can make test like this.
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = 
+{"."})
+public class SpringAnnotationConfigTest {
+
+    @Autowired ApplicationContext ac;
+    @Autowired String name;
+
+    @Test
+    public void di(){
+        assertNotNull(ac);
+        assertThat(name, is("keesun"));
+    }
+
+}
+
+then, conventionally SpringJUnit4ClassRunner finds SpringAnnotationConfigTest + "AppConfig.java" for an annotation configuration.
+
+Of course, It makes sence that we sould use &amp;amp;apos;locations&amp;amp;apos; attribute of @ContextConfigruation like these.
+
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"/sandbox/springtest/sample/SpringAnnotationConfigTestAppConfig.java"})
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"/sandbox/springtest/sample/"})
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"/sandbox/springtest/sample"})
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"./SpringAnnotationConfigTestAppConfig.java"})
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"./"})
+@ContextConfiguration(loader = AnnotationContextLoader.class, locations = {"."}
+)
+with &amp;amp;apos;.Java&amp;amp;apos; locations can be used to AnnotationConfigurationApplicationContext.regist(), and without &amp;amp;apos;.java&amp;amp;apos; locations will be used to AnnotationConfigurationApplicationContext.scan().
+What do you think about this?</description>
+			<version>3.0 RC3</version>
+			<fixedVersion></fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.support.AnnotationConfigContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesBaseTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingExplicitConfigClassesInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.ContextLoaderUtils.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractGenericContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ResourceTypeAwareContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextConfiguration.java</file>
+			<file type="M">org.springframework.test.context.support.GenericPropertiesContextLoader.java</file>
+			<file type="M">org.springframework.test.context.support.GenericXmlContextLoader.java</file>
+			<file type="M">org.springframework.test.context.testng.ConcreteTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigTestSuite.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTests.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.PojoAndStringConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.TestContext.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6184</link>
+		</links>
+	</bug>
+	<bug id="1461" opendate="2005-11-10 20:03:53" fixdate="2010-09-13 22:58:32" resolution="Complete">
+		<buginformation>
+			<summary>ClassLoader set on a WebApplicationContext is used to load beans but not to inject Class properties which uses the current thread&amp;apos;s context ClassLoader</summary>
+			<description>Set a ClassLoader set on a WebApplicationContext that is NOT the current thread&amp;amp;apos;s ClassLoader.
+This ClassLoader is used to load beans.
+But if you try to inject Class properties into those beans then it uses the current thread&amp;amp;apos;s context ClassLoader.
+The same ClassLoader should be used in both cases - ideally the one set on the WebApplicationContext.
+org.springframework.beans.propertyeditors.ClassEditor.setAsText calls ClassUtils.forName(String className).
+This method is hardwired to use the current thread&amp;amp;apos;s context ClassLoader.
+Any call to ClassUtils.forName(String className)  should be changed to the version that accepts a ClassLoader.
+Thanks.</description>
+			<version>1.2.5</version>
+			<fixedVersion>3.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.support.ResourceEditorRegistrar.java</file>
+			<file type="M">org.springframework.beans.propertyeditors.ClassArrayEditor.java</file>
+			<file type="M">org.springframework.beans.propertyeditors.ClassEditor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="5367" opendate="2008-12-16 06:57:03" fixdate="2010-10-13 08:09:00" resolution="Fixed">
+		<buginformation>
+			<summary>PathVariable mappings are greedy over hard coded mappings</summary>
+			<description>Hard coded request mapping values should take precedence over path variables.  Wild card patterns in a path are currently inferior to explicit values.  Path variables should be applied after explicit paths and before wild cards.
+For example:
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+is currently trumped by
+@RequestMapping(value = "/resources/
+{resourceName}/", method = RequestMethod.GET)
+
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+currently trumps
+@RequestMapping(value = "/resources/*/", method = RequestMethod.GET)
+
+
+@RequestMapping(value = "/resources/new/", method = RequestMethod.GET)
+should trump
+@RequestMapping(value = "/resources/{resourceName}
+/", method = RequestMethod.GET)
+should trump
+@RequestMapping(value = "/resources/*/", method = RequestMethod.GET)</description>
+			<version>3.0 M1</version>
+			<fixedVersion>3.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.annotation.RequestMappingInfoComparatorTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">5362</link>
+			<link type="Related" description="is related to">5731</link>
+			<link type="Related" description="is related to">5924</link>
+			<link type="Related" description="is related to">7525</link>
+		</links>
+	</bug>
+	<bug id="6844" opendate="2010-02-15 03:34:03" fixdate="2010-10-31 10:48:37" resolution="Duplicate">
+		<buginformation>
+			<summary>improve annotation based invocations</summary>
+			<description>The code path for annotation-based servlet and portlet controllers has some "hot spots" that could be improved.</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.portlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.portlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7703</link>
+		</links>
+	</bug>
+	<bug id="7703" opendate="2010-10-31 10:42:17" fixdate="2010-10-31 10:50:43" resolution="Fixed">
+		<buginformation>
+			<summary>improve the process of finding actual methods for servlet and portlet handlers</summary>
+			<description>The process of finding the methods to be invoked for each http dispatch could be improved. While it has been already addressed in a previous released, there are still some minor improvements to be made.</description>
+			<version>3.0 GA</version>
+			<fixedVersion>3.0.6, 3.1 M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.portlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.portlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6844</link>
+		</links>
+	</bug>
+	<bug id="5641" opendate="2009-03-31 17:54:16" fixdate="2011-03-07 23:35:31" resolution="Duplicate">
+		<buginformation>
+			<summary>EhCacheFactoryBean should support CacheEventListener</summary>
+			<description>Actually, EhCacheFactoryBean doesn&amp;amp;apos;t allow instanciate EhCache caches with CacheEventListeners. This forbids for instance to instanciate caches that supports distribution over a cluster, because the way ehcache runs needs the cache to be fully setup before adding it to the CacheManager (see net.sf.ehcache.distribution.RMICacheManagerPeerListener.notifyCacheAdded(String)).
+I wrote an extended version of EhCacheFactoryBean so that I can provide cacheEventListeners to the factory in order to have distribution works.
+Now I think you can backport my class to spring-core so that evereybody can use it. As I can&amp;amp;apos;t find the url of spring scm, I can&amp;amp;apos;t provide patch, although I wish I could.
+Here is what you have to setup in your bean definition :
+&amp;lt;bean id="eventListenersFactory" class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+		scope="singleton" /&amp;gt;
+&amp;lt;bean class="com.dexia.sofaxis.common.cache.ExtendedEhCacheFactoryBean"&amp;gt;
+				&amp;lt;property name="diskPersistent"&amp;gt;
+					&amp;lt;value&amp;gt;false&amp;lt;/value&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="cacheName"&amp;gt;
+					&amp;lt;value&amp;gt;itemsReferenceData&amp;lt;/value&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="cacheManager"&amp;gt;
+					&amp;lt;ref bean="globalCacheManager" /&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="eternal"&amp;gt;
+					&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="maxElementsInMemory"&amp;gt;
+					&amp;lt;value&amp;gt;10000&amp;lt;/value&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="overflowToDisk"&amp;gt;
+					&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+				&amp;lt;/property&amp;gt;
+				&amp;lt;property name="cacheEventListeners"&amp;gt;
+					&amp;lt;list&amp;gt;
+						&amp;lt;bean factory-bean="eventListenersFactory" factory-method="createCacheEventListener"&amp;gt;
+							&amp;lt;constructor-arg&amp;gt;
+								&amp;lt;null /&amp;gt;
+							&amp;lt;/constructor-arg&amp;gt;
+						&amp;lt;/bean&amp;gt;
+					&amp;lt;/list&amp;gt;
+				&amp;lt;/property&amp;gt;
+			&amp;lt;/bean&amp;gt;
+</description>
+			<version>2.5.1</version>
+			<fixedVersion></fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.cache.ehcache.EhCacheFactoryBean.java</file>
+			<file type="M">org.springframework.cache.ehcache.EhCacheManagerFactoryBean.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6234</link>
+		</links>
+	</bug>
+	<bug id="6180" opendate="2009-10-02 22:33:04" fixdate="2011-04-11 06:15:15" resolution="Fixed">
+		<buginformation>
+			<summary>Upgrade Apache HttpClient to version 4.0</summary>
+			<description>Folks,
+Please consider upgrading HttpClient to version 4.0 which is the latest stable (GA) version of the library. Commons HttpClient 3.1 is very likely to be deprecated / officially declared end of life very soon (3 - 6 months). There have been no bug fixes in the 3.x branch for over a year. 
+Patch attached. Unfortunately I was unable to fix the Ivy build which I am not very familiar with.
+Oleg </description>
+			<version>3.0 RC1</version>
+			<fixedVersion>3.1 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.http.client.CommonsClientHttpResponse.java</file>
+			<file type="M">org.springframework.web.client.RestTemplateIntegrationTests.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequest.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequestFactory.java</file>
+			<file type="M">org.springframework.http.client.AbstractHttpRequestFactoryTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7645</link>
+			<link type="Duplicate" description="is duplicated by">6719</link>
+			<link type="Relate" description="is related to">10728</link>
+		</links>
+	</bug>
+	<bug id="6922" opendate="2010-03-02 04:16:01" fixdate="2011-04-14 11:45:23" resolution="Complete">
+		<buginformation>
+			<summary>Deprecate SimpleJdbcTemplate in favor of JdbcTemplate</summary>
+			<description>also add public int[] batchUpdate(String sql, List&amp;lt;Object[]&amp;gt; batchArgs) as well as any other methods that exist only on SimpleJdbcTemplate at that time.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.1 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcTemplate.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplate.java</file>
+			<file type="M">org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplateTests.java</file>
+			<file type="M">org.springframework.jdbc.core.metadata.CallMetaDataProvider.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.package-info.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6440</link>
+			<link type="Relate" description="relates to">9235</link>
+			<link type="Relate" description="is related to">11895</link>
+			<link type="Relate" description="is related to">8990</link>
+		</links>
+	</bug>
+	<bug id="6184" opendate="2008-11-05 19:05:42" fixdate="2011-06-01 09:07:08" resolution="Complete">
+		<buginformation>
+			<summary>Provide TestContext support for @Configuration classes</summary>
+			<description>Currently, JavaConfig integrates with the TestContext framework via its ContextLoader implementation, JavaConfigContextLoader:
+
+
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@ContextConfiguration(locations="com.bank.TransferAppConfig",
+
+
+
+
+                      loader=JavaConfigContextLoader.class)
+
+
+
+
+public class TransferServiceTests {
+
+
+
+
+    // @Test methods ...
+
+
+
+
+}
+
+
+
+
+
+
+This integration works well enough but is not refactoring-friendly due to the requirement that @ContextConfiguration imposes that locations must be a String[]. It forces the fully-qualified class name to be expressed as a string, when it would clearly be superior to be able to pass it around by Class literal.
+Implementing this change would require a change to core, either by adding an attribute to @ContextConfiguration that takes a Class[] (not likely), or otherwise devising a way of proving a customized annotation (e.g., @JavaConfigContextConfiguration).</description>
+			<version>3.0 GA</version>
+			<fixedVersion>3.1 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.support.AnnotationConfigContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesBaseTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingExplicitConfigClassesInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.ContextLoaderUtils.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractGenericContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ResourceTypeAwareContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextConfiguration.java</file>
+			<file type="M">org.springframework.test.context.support.GenericPropertiesContextLoader.java</file>
+			<file type="M">org.springframework.test.context.support.GenericXmlContextLoader.java</file>
+			<file type="M">org.springframework.test.context.testng.ConcreteTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigTestSuite.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTests.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.PojoAndStringConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.TestContext.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">8386</link>
+			<link type="Depend" description="is depended on by">8240</link>
+			<link type="Duplicate" description="is duplicated by">7769</link>
+			<link type="Duplicate" description="is duplicated by">6567</link>
+			<link type="Duplicate" description="is duplicated by">272</link>
+			<link type="Relate" description="relates to">8395</link>
+			<link type="Relate" description="is related to">7960</link>
+			<link type="Relate" description="is related to">7937</link>
+			<link type="Related" description="is related to">5682</link>
+			<link type="Related" description="is related to">7420</link>
+		</links>
+	</bug>
+	<bug id="6164" opendate="2009-09-29 08:12:07" fixdate="2011-06-21 04:59:11" resolution="Complete">
+		<buginformation>
+			<summary>a Uri Value is incorrectly extracted if it contains &amp;apos;.&amp;apos;.</summary>
+			<description>Suppose we have the controller request mapping as the following
+ @RequestMapping(value = "/my/
+{vari}", method = RequestMethod.GET)
+ @ResponseBody
+    public String getVari(@PathVariable String vari) {
+        System.out.println("vari=" + vari);
+        return vari;
+    }
+
+
+If a request such as  "http://localhost/myapp/my/abc.mycontroller.com" is submitted, the actually value of &amp;amp;apos;vari&amp;amp;apos; obtained by Spring API only returns &amp;amp;apos;abc.mycontroller&amp;amp;apos;.  
+
+Further investigation turns out the issue is at line 564 in https://src.springframework.org/svn/spring-framework/tags/spring-framework-3.0.0.RC1/org.springframework.web.servlet/src/main/java/org/springframework/web/servlet/mvc/annotation/AnnotationMethodHandlerAdapter.java. The pattern generated by the line results in "{vari}
+.*". With  the &amp;amp;apos;pathMatcher&amp;amp;apos; (the matcher used at line 565) object created by AntPathStringMatcher("
+{vari}
+.*", "abc.mycontroller.com", map), the value of &amp;amp;apos;vari&amp;amp;apos; will be &amp;amp;apos;abc.mycontroller&amp;amp;apos; in the &amp;amp;apos;map&amp;amp;apos; variable after executing line 566.</description>
+			<version>3.0 M4</version>
+			<fixedVersion>3.1 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ProducesRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.HeadersRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.RequestMappingInfo.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMappingTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.PatternsRequestConditionTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ParamsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6231</link>
+			<link type="Duplicate" description="is duplicated by">10026</link>
+			<link type="Duplicate" description="is duplicated by">14678</link>
+			<link type="Relate" description="relates to">7632</link>
+			<link type="Related" description="is related to">5537</link>
+		</links>
+	</bug>
+	<bug id="6482" opendate="2009-12-01 02:15:27" fixdate="2011-07-11 00:51:14" resolution="Complete">
+		<buginformation>
+			<summary>@RequestMapping handled incorrectly when value contains "." (dot) character</summary>
+			<description>At the moment in my code exist method with such signature:
+
+
+
+
+
+
+@RequestMapping(value = "/projects/{filter}/{order}-{direction}", method = RequestMethod.GET)
+
+
+
+
+public String filteredProjectListing(@PathVariable("filter") String filter, @PathVariable("order") String order,
+
+
+
+
+            @PathVariable("direction") String direction, ModelMap model) {
+
+
+
+
+ ...
+
+
+
+
+}
+
+
+
+
+
+
+order is String variable containing ognl-like expresssion ie. "raging.result" (which I later use for BeanComparator) but this mapping is in version RC3 is not found, which is different behaviour from RC2 where there is no such problem.
+Log message with example of given fault result is:
+
+
+
+
+
+
+2009-12-01 16:38:02,459 WARN [org.springframework.web.servlet.PageNotFound] - &amp;lt;No mapping found for HTTP request with URI [/Example/projects/all/rate.result-asc.html] in DispatcherServlet with name &amp;amp;apos;Example&amp;amp;apos;&amp;gt;
+
+
+
+
+
+
+There is no problem with handling path which doesn&amp;amp;apos;t contain more &amp;amp;apos;.&amp;amp;apos; (dot) characters, so this can probably help you with analysis of the problem. </description>
+			<version>3.0 RC3</version>
+			<fixedVersion>3.0 GA</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.util.AntPathStringMatcher.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.UriTemplateServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.util.AntPathMatcher.java</file>
+			<file type="M">org.springframework.util.AntPathMatcherTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6560</link>
+			<link type="Duplicate" description="is duplicated by">6499</link>
+			<link type="Related" description="is related to">6280</link>
+		</links>
+	</bug>
+	<bug id="6464" opendate="2009-11-27 15:03:38" fixdate="2011-09-16 10:08:23" resolution="Complete">
+		<buginformation>
+			<summary>Flash Scope  for Spring MVC (Without Spring Web Flow)</summary>
+			<description>Geert Pante submitted the codes for this issue at: MOD-458.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.1 RC1</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.bind.annotation.RequestMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RedirectAttributesMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectView.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapterTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectViewTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.web.method.support.HandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupportTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletResponseMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletRequestMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.support.DefaultFlashMapManager.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ViewMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.DefaultMethodReturnValueHandlerTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.HttpEntityMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ModelAndViewMethodReturnValueHandlerTests.java</file>
+			<file type="M">org.springframework.web.util.WebUtils.java</file>
+			<file type="M">org.springframework.web.method.support.HandlerMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethodTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestPartMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletResponseMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMapTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.support.DefaultFlashMapManagerTests.java</file>
+			<file type="M">org.springframework.web.method.support.ModelAndViewContainer.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ModelAndViewMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.util.WebUtilsTests.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMapManager.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMap.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.method.annotation.ModelFactory.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.HttpEntityMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletAnnotationControllerHandlerMethodTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributesModelMapTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributes.java</file>
+			<file type="M">org.springframework.web.servlet.SmartView.java</file>
+			<file type="M">org.springframework.web.servlet.support.RequestContextUtils.java</file>
+			<file type="M">org.springframework.web.servlet.DispatcherServlet.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectViewUriTemplateTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ParamsRequestCondition.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.support.RedirectModel.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.support.RedirectModelTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.support.RedirectModelMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ViewMethodReturnValueHandlerTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.ResponseContext.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.RedirectResponse.java</file>
+			<file type="M">org.springframework.web.method.annotation.SessionAttributesHandler.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.ViewResponse.java</file>
+			<file type="M">org.springframework.web.method.annotation.InitBinderDataBinderFactoryTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver.java</file>
+			<file type="D">org.springframework.web.servlet.support.FlashMapTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelMethodProcessor.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.FlashAttributesServletTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.ModelFactoryTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessor.java</file>
+			<file type="D">org.springframework.web.bind.support.SimpleFlashStatus.java</file>
+			<file type="D">org.springframework.web.method.annotation.FlashAttributesHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.DefaultMethodReturnValueHandler.java</file>
+			<file type="D">org.springframework.web.bind.support.FlashStatus.java</file>
+			<file type="D">org.springframework.web.bind.annotation.FlashAttributes.java</file>
+			<file type="D">org.springframework.web.method.annotation.HandlerSessionAttributeStoreTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapterIntegrationTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.ServletHandlerMethodTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.UriTemplateServletHandlerMethodTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2657</link>
+			<link type="Supersede" description="supersedes">1068</link>
+		</links>
+	</bug>
+	<bug id="6373" opendate="2009-11-17 04:43:39" fixdate="2011-12-03 07:47:37" resolution="Complete">
+		<buginformation>
+			<summary>Support for validation groups in @Valid used by spring MVC</summary>
+			<description>It would be useful to be able to use validation groups in spring MVC as specified by JSR-303. With the improvement it should be possible to write something like: 
+@RequestMapping("/foo", method=RequestMethod.POST)
+public void processFoo(@Valid(groups=
+{Default.class, MyValidationGroup.class}
+) Foo foo) 
+{ ... }
+
+
+</description>
+			<version>3.0 RC2</version>
+			<fixedVersion>3.1 GA</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.bind.annotation.support.HandlerMethodInvoker.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestPartMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.validation.beanvalidation.SpringValidatorAdapter.java</file>
+			<file type="M">org.springframework.validation.DataBinder.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.MvcNamespaceTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">6369</link>
+			<link type="Duplicate" description="is duplicated by">7062</link>
+			<link type="Relate" description="is related to">7847</link>
+		</links>
+	</bug>
+	<bug id="6369" opendate="2009-11-16 23:03:58" fixdate="2011-12-03 07:48:03" resolution="Duplicate">
+		<buginformation>
+			<summary>Support for &amp;apos;groups&amp;apos; in addition to @Valid for @MVC Controllers</summary>
+			<description>I want to be able to specify the JSR303 validation group when specifying @Valid in @Controller-s.
+I don&amp;amp;apos;t want the validation to be run against the default group every time.
+I guess currently I can inject a javax.validation.Validator reference in the @Controller and handle this programmatically. Would be nice if this can be driven through an annotation as well.
+But @Valid doesn&amp;amp;apos;t support a "group" attribute though.
+What do you guys think?</description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.bind.annotation.support.HandlerMethodInvoker.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestPartMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.validation.beanvalidation.SpringValidatorAdapter.java</file>
+			<file type="M">org.springframework.validation.DataBinder.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.MvcNamespaceTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6373</link>
+		</links>
+	</bug>
+	<bug id="7062" opendate="2010-04-01 08:35:05" fixdate="2011-12-03 07:48:40" resolution="Duplicate">
+		<buginformation>
+			<summary>Add Group Class support to JSR-303 Validation using @Valid</summary>
+			<description>Would like a replacement for @Valid that could take group classes for JSR-303 validation. Right now only the default group class of JSR-303 Constraints is run for the @Valid.  
+Please refer to this forum thread for more detail: http://forum.springsource.org/showthread.php?p=292566 </description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.ServletAnnotationControllerTests.java</file>
+			<file type="M">org.springframework.web.bind.annotation.support.HandlerMethodInvoker.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestPartMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.validation.beanvalidation.SpringValidatorAdapter.java</file>
+			<file type="M">org.springframework.validation.DataBinder.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.MvcNamespaceTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">1453</link>
+			<link type="Duplicate" description="duplicates">6373</link>
+		</links>
+	</bug>
+	<bug id="6752" opendate="2010-01-22 03:04:38" fixdate="2012-01-23 05:33:25" resolution="Fixed">
+		<buginformation>
+			<summary>RestTemplate throws IllegalArgumentException when HTTP status is not in the HttpStatus enum </summary>
+			<description>Using RestTemplate to connect to a server that occasionally throws HTTP Status of 420, I am getting IllegalArgumentExceptions when accessing the HttpStatus object in my implementation of the ResponseErrorHandler interface.  When I removed that, and started pulling the status from the Headers directly, RestTemplate started throwing errors due to the logger.warn call in RestTemplate.handleResponseError().  I&amp;amp;apos;ve gotten around this by not using the HttpStatus enum (getting status from the HttpHeaders directly) and by turning up the log level for RestTemplate to ERROR.  Shouldn&amp;amp;apos;t this support any HTTP status value?</description>
+			<version>3.0 GA</version>
+			<fixedVersion>3.0.1, 3.1.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.http.HttpStatus.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">9068</link>
+			<link type="Duplicate" description="is duplicated by">9311</link>
+			<link type="Relate" description="relates to">9406</link>
+		</links>
+	</bug>
+	<bug id="5569" opendate="2009-03-12 04:49:14" fixdate="2012-02-21 11:21:45" resolution="Duplicate">
+		<buginformation>
+			<summary>not singleton StringBeans</summary>
+			<description>Bean definition:
+&amp;lt;bean id="test" singleton="false" class="java.lang.String"&amp;gt;
+   &amp;lt;constructor-arg&amp;gt;
+        &amp;lt;value&amp;gt;test&amp;lt;/value&amp;gt;
+   &amp;lt;/constructor-arg&amp;gt;
+&amp;lt;/bean&amp;gt;
+code:
+Object stringBean1 = ctx.getBean("test")
+Object stringBean2 = ctx.getBean("test")
+The first reading of the bean is ok.
+The second reading fails because the system interprets the bean as java.lang.StringBuilder.</description>
+			<version>2.0.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.support.ConstructorResolver.java</file>
+			<file type="M">org.springframework.beans.factory.DefaultListableBeanFactoryTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7084</link>
+		</links>
+	</bug>
+	<bug id="5584" opendate="2009-03-19 10:27:06" fixdate="2012-03-08 09:16:58" resolution="Duplicate">
+		<buginformation>
+			<summary>Spel parser is not able to resolve bean id variable when it is passed as parameter to a static method.</summary>
+			<description>&amp;lt;bean id="A" class="..."&amp;gt;
+   &amp;lt;property name="a" value="4"/&amp;gt;
+&amp;lt;/bean&amp;gt;
+&amp;lt;bean id="B" class="..."&amp;gt;
+   &amp;lt;property name="b" value=" #
+{T(Math).sqrt(4)}
+"/&amp;gt;
+&amp;lt;/bean&amp;gt;
+The above bean definition works as expected resolving value of the property "b" to 2.
+However, the following definition fails on expression parsing:
+&amp;lt;bean id="B" class="..."&amp;gt;
+   &amp;lt;property name="b" value=" #
+{T(Math).sqrt(A.a)}
+"/&amp;gt;
+&amp;lt;/bean&amp;gt;
+The error is:
+Field or property &amp;amp;apos;A&amp;amp;apos; cannot be found on object of type &amp;amp;apos;java.lang.Math&amp;amp;apos; 
+</description>
+			<version>3.0 M2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.expression.spel.ast.MethodReference.java</file>
+			<file type="M">org.springframework.expression.spel.EvaluationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6525</link>
+		</links>
+	</bug>
+	<bug id="6440" opendate="2009-11-24 20:08:41" fixdate="2012-03-20 06:29:29" resolution="Duplicate">
+		<buginformation>
+			<summary>Merge JdbcTemplate and SimpleJdbcTemplate, deprecate SimpleJdbcTemplate</summary>
+			<description>Now that RowMapper offers parameterized types can we please abandon SimpleJdbcTemplate? It still lacks some functionality (e.g. fetch size) over JdbcTemplate so sometimes both are used.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcTemplate.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplate.java</file>
+			<file type="M">org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.SimpleJdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplateTests.java</file>
+			<file type="M">org.springframework.jdbc.core.metadata.CallMetaDataProvider.java</file>
+			<file type="M">org.springframework.jdbc.core.simple.package-info.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6922</link>
+		</links>
+	</bug>
+	<bug id="6856" opendate="2010-02-17 03:16:17" fixdate="2012-03-20 06:31:37" resolution="Duplicate">
+		<buginformation>
+			<summary>Could SimpleJdbcTemplate/Operations/DaoSupport be deprecated now?</summary>
+			<description>The types SimpleJdbcDaoSupport (which extends JdbcDaoSupport), SimpleJdbcTemplate and SimpleJdbcOperations were introduced in Spring 2.0 to make life easier for Java 5 users.
+Now that Spring 3.0 is Java5+ only, would it be worthwhile moving the methods and code from the SimpleJdbcXYZ types into the corresponding JbcXYZ types, and then deprecating the SimpleJdbcXYZ versions? Assuming that this can done in a backwards-compatible way, then the reasons for the separation are now purely historical.</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jdbc.core.JdbcOperations.java</file>
+			<file type="M">org.springframework.jdbc.core.JdbcTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6858</link>
+		</links>
+	</bug>
+	<bug id="7191" opendate="2010-05-11 13:06:53" fixdate="2012-06-19 03:22:28" resolution="Duplicate">
+		<buginformation>
+			<summary>&lt;mvc:annotation-driven / &gt; should supports the attributes of setting customized HttpMessageConverter bean list</summary>
+			<description>Currently, the &amp;lt;mvc:annotation-driven / &amp;gt; doesn&amp;amp;apos;t allow the HttpMessageConverters be customizable (It is read-only in AnnotationDrivenBeanDefinitionParser).
+It is recommended to allow the MessageConverters be reference by external HttpMessageConverter beans list.</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.format.FormatterRegistry.java</file>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.format.support.FormattingConversionServiceFactoryBean.java</file>
+			<file type="M">org.springframework.format.support.FormattingConversionService.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">7504</link>
+			<link type="Relate" description="is related to">7091</link>
+		</links>
+	</bug>
+	<bug id="6719" opendate="2010-01-19 11:09:35" fixdate="2013-07-09 03:05:45" resolution="Duplicate">
+		<buginformation>
+			<summary>CommonsClientHttpRequestFactory getHttpClient() returns HttpClient from Commons HttpClient 3.x which has been EOL&amp;apos;d</summary>
+			<description>I need to extend CommonsClientHttpRequestFactory and override getHttpClient() in order to use RestTemplate(ClientHttpRequestFactory requestFactory) to make authenticated restful web service calls.  Unfortunately, getHttpClient() returns HttpClient from Commons HttpClient 3.x which has been end-of-life&amp;amp;apos;d (EOL) and is no longer supported.  The CommonsClientHttpRequestFactory and in turn RestTemplate need to use the supported HttpCore 4.x and HttpClient 4.x libraries.</description>
+			<version>3.0 GA</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.http.client.CommonsClientHttpResponse.java</file>
+			<file type="M">org.springframework.web.client.RestTemplateIntegrationTests.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequest.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequestFactory.java</file>
+			<file type="M">org.springframework.http.client.AbstractHttpRequestFactoryTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6180</link>
+			<link type="Duplicate" description="is duplicated by">7383</link>
+			<link type="Duplicate" description="is duplicated by">7424</link>
+			<link type="Related" description="is related to">7331</link>
+		</links>
+	</bug>
+	<bug id="2657" opendate="2006-09-29 00:01:15" fixdate="2014-05-15 01:45:47" resolution="Duplicate">
+		<buginformation>
+			<summary>There is no way to display success message(s).</summary>
+			<description>There is no way to display success message(s) like struts&amp;amp;apos; ActionMessage. Spring should provide Messages inteface in a similar way of Errors and related tag libraries.</description>
+			<version>3.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.bind.annotation.RequestMapping.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RedirectAttributesMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectView.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapterTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectViewTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.web.method.support.HandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupportTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletResponseMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletRequestMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.support.DefaultFlashMapManager.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ViewMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.DefaultMethodReturnValueHandlerTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.HttpEntityMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ModelAndViewMethodReturnValueHandlerTests.java</file>
+			<file type="M">org.springframework.web.util.WebUtils.java</file>
+			<file type="M">org.springframework.web.method.support.HandlerMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethodTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestPartMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ServletResponseMethodArgumentResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMapTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.RequestResponseBodyMethodProcessor.java</file>
+			<file type="M">org.springframework.web.servlet.support.DefaultFlashMapManagerTests.java</file>
+			<file type="M">org.springframework.web.method.support.ModelAndViewContainer.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ModelAndViewMethodReturnValueHandler.java</file>
+			<file type="M">org.springframework.web.util.WebUtilsTests.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMapManager.java</file>
+			<file type="M">org.springframework.web.servlet.FlashMap.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.java</file>
+			<file type="M">org.springframework.web.method.annotation.ModelFactory.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.HttpEntityMethodProcessorTests.java</file>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ServletAnnotationControllerHandlerMethodTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributesModelMapTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.RedirectAttributes.java</file>
+			<file type="M">org.springframework.web.servlet.SmartView.java</file>
+			<file type="M">org.springframework.web.servlet.support.RequestContextUtils.java</file>
+			<file type="M">org.springframework.web.servlet.DispatcherServlet.java</file>
+			<file type="M">org.springframework.web.servlet.view.RedirectViewUriTemplateTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.condition.ParamsRequestCondition.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.support.RedirectModel.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.support.RedirectModelTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.support.RedirectModelMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.ViewMethodReturnValueHandlerTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.ResponseContext.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.RedirectResponse.java</file>
+			<file type="M">org.springframework.web.method.annotation.SessionAttributesHandler.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.support.ViewResponse.java</file>
+			<file type="M">org.springframework.web.method.annotation.InitBinderDataBinderFactoryTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver.java</file>
+			<file type="D">org.springframework.web.servlet.support.FlashMapTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelMethodProcessor.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.FlashAttributesServletTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.ModelFactoryTests.java</file>
+			<file type="M">org.springframework.web.method.annotation.support.ModelAttributeMethodProcessor.java</file>
+			<file type="D">org.springframework.web.bind.support.SimpleFlashStatus.java</file>
+			<file type="D">org.springframework.web.method.annotation.FlashAttributesHandler.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.support.DefaultMethodReturnValueHandler.java</file>
+			<file type="D">org.springframework.web.bind.support.FlashStatus.java</file>
+			<file type="D">org.springframework.web.bind.annotation.FlashAttributes.java</file>
+			<file type="D">org.springframework.web.method.annotation.HandlerSessionAttributeStoreTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapterIntegrationTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.ServletHandlerMethodTests.java</file>
+			<file type="D">org.springframework.web.servlet.mvc.method.annotation.UriTemplateServletHandlerMethodTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6464</link>
+		</links>
+	</bug>
+</bugrepository>

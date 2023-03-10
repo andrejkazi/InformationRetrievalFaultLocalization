@@ -1,0 +1,17 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="ELY">
+	<bug id="256" opendate="2015-08-05 13:30:40" fixdate="2015-08-06 16:08:18" resolution="Done">
+		<buginformation>
+			<summary>ChannelBindingSaslClient and -ServerFactory should not pass on ChannelBindingCallback</summary>
+			<description>Currently this causes a FastUnsupportedCallbackException since these factories are the only thing to handle this callback. It doesn&amp;amp;apos;t really cause any problems, but I noticed this while debugging.
+TLSServerEndPointChannelBindingSaslClientFactory removes the SSLCallback from the array before delegating, and the ChannelBinding ones should take the same approach from what I can tell.</description>
+			<version>1.0.0.Alpha3</version>
+			<fixedVersion>1.1.0.Alpha1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.wildfly.security.sasl.util.ChannelBindingSaslServerFactory.java</file>
+			<file type="M">org.wildfly.security.sasl.util.ChannelBindingSaslClientFactory.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

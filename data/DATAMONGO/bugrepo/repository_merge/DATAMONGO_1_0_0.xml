@@ -1,0 +1,1272 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="7" master="376" duplicate="359" opendate="2011-12-23 14:22:07" fixdate="2012-01-16 11:59:43" resolution="Fixed">
+		<buginformation>
+			<summary>Fix potential NPE in SpringDataMongodbSerializer Collection any() paths can&amp;apos;t be treated as property paths.</summary>
+			<description>We currently run into a NPE in case no property with the to-string expression is found. This is inevitably the case if an any() expression is used in the predicate because of the way visit() is implemented in the superclass. I&amp;amp;apos;ve opened a ticket against Querydsl to prevent the invocation (as it doesn&amp;amp;apos;t seem necessary) but we should guard against the issue nevertheless. NPE in QueryDslMongoRepository after M4 - RC1 upgrade 
+Example code, variable state and stacktraces nicely formatted in the reference forum post.
+Timo Westkmper from QDSL has indicated this is a bug in Spring Data https://groups.google.com/forum/#!topic/querydsl/bZVxc4v0NPk</description>
+			<version>1.0 GA</version>
+			<fixedVersion>1.0.1, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializerUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.QueryDslMongoRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">359</link>
+			<link type="Duplicate" description="duplicates">376</link>
+		</links>
+	</bug>
+	<bug id="14" master="369" duplicate="430" opendate="2012-01-02 07:47:13" fixdate="2012-04-10 07:38:52" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong query created when one value is a DBObject Query criteria is not considered in the query</summary>
+			<description>Regression in 1.0.0-RELEASE. Works as expected in 1.0.0-RC1
+Query: { "type" : 
+{ "$in" : [ "folder"]}
+ , "deleted" : false }
+When a query contains a DBObject as a value like "type" in the example QueryMapper.getMappedObject will return in line 103 ignoring all further keys of the query.
+This results in the query { "type" : 
+{ "$in" : [ "folder"]}
+ } sent to MongoDB.
+ When I perform a query that includes more than one criteria, only the first criteria is being considered, others are discarded.
+An example is attached; When the query is performed by MongoDB driver it works fine, but with Spring, the problem occurs.</description>
+			<version>1.0 GA</version>
+			<fixedVersion>1.0.1, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">381</link>
+			<link type="Duplicate" description="is duplicated by">430</link>
+			<link type="Relate" description="relates to">363</link>
+			<link type="Relate" description="relates to">364</link>
+			<link type="Relate" description="relates to">393</link>
+			<link type="Relate" description="relates to">417</link>
+			<link type="Duplicate" description="duplicates">369</link>
+		</links>
+	</bug>
+	<bug id="16" master="380" duplicate="398" opendate="2012-01-16 10:47:58" fixdate="2013-02-04 08:17:04" resolution="Fixed">
+		<buginformation>
+			<summary>maps with mongo reserved characters for keys generate on save: java.lang.IllegalArgumentException: fields stored in the db can&amp;apos;t have . in them Fails to store org.osgi.service.event.Event</summary>
+			<description>create an object like:
+
+
+
+
+
+
+@Document
+
+
+
+
+class MyDataObject {
+
+
+
+
+  private Map&amp;lt;String, Long&amp;gt; impressionsByOSVersion;
+
+
+
+
+}
+
+
+
+
+
+
+add an entry to map like
+
+
+
+
+
+
+myObject.osVersions.put("iPhone 4.3.2", 1L);
+
+
+
+
+
+
+save this object using mongo operations i.e.
+see exception:
+
+
+
+
+
+
+java.lang.IllegalArgumentException: fields stored in the db can&amp;amp;apos;t have . in them. (Bad Key: &amp;amp;apos;iPhone 5.0.1&amp;amp;apos;)
+
+
+
+
+        at com.mongodb.DBCollection.validateKey(DBCollection.java:1203)
+
+
+
+
+        at com.mongodb.DBCollection._checkKeys(DBCollection.java:1171)
+
+
+
+
+        at com.mongodb.DBCollection._checkKeys(DBCollection.java:1174)
+
+
+
+
+        at com.mongodb.DBCollection._checkObject(DBCollection.java:1161)
+
+
+
+
+        at com.mongodb.DBCollection.save(DBCollection.java:706)
+
+
+
+
+        at com.mongodb.DBCollection.save(DBCollection.java:691)
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate$11.doInCollection(MongoTemplate.java:790)
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.saveDBObject(MongoTemplate.java:784)
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.doSave(MongoTemplate.java:720)
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:707)
+
+
+
+
+        at org.springframework.data.mongodb.repository.support.SimpleMongoRepository.save(SimpleMongoRepository.java:72)
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+        at java.lang.reflect.Method.invoke(Method.java:601)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.executeMethodOn(RepositoryFactorySupport.java:322)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:307)
+
+
+
+
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+        at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+
+
+
+
+        at $Proxy3022.save(Unknown Source)
+
+
+
+
+
+
+if I extend MappingMongoConverter and use it, the save works.
+
+
+
+
+
+
+class KeyEscapingMongoConverter extends MappingMongoConverter {
+
+
+
+
+
+
+
+
+
+    public KeyEscapingMongoConverter(MongoDbFactory mongoDbFactory,
+
+
+
+
+        MappingContext&amp;lt;? extends MongoPersistentEntity&amp;lt;?&amp;gt;, MongoPersistentProperty&amp;gt; mappingContext) {
+
+
+
+
+        super(mongoDbFactory, mappingContext);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+
+
+
+
+    protected Map&amp;lt;Object, Object&amp;gt; readMap(TypeInformation&amp;lt;?&amp;gt; type, DBObject dbObject) {
+
+
+
+
+        return unescapeKeys(super.readMap(type, dbObject));
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+
+
+
+
+    protected DBObject writeMapInternal(Map&amp;lt;Object, Object&amp;gt; map, DBObject dbo, TypeInformation&amp;lt;?&amp;gt; propertyType) {
+
+
+
+
+        return super.writeMapInternal(escapeKeys(map), dbo, propertyType);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @SuppressWarnings("unchecked")
+
+
+
+
+    private &amp;lt;K, V&amp;gt; Map&amp;lt;K, V&amp;gt; escapeKeys(Map&amp;lt;K, V&amp;gt; map) {
+
+
+
+
+        Map&amp;lt;K, V&amp;gt; escaped = newHashMap();
+
+
+
+
+        for (Object key : map.keySet()) {
+
+
+
+
+            Object newKey = key;
+
+
+
+
+            if (key instanceof String) {
+
+
+
+
+                newKey = escapeMongoValue((String) key);
+
+
+
+
+            }
+
+
+
+
+            escaped.put((K) newKey, map.get(key));
+
+
+
+
+        }
+
+
+
+
+        return escaped;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @SuppressWarnings("unchecked")
+
+
+
+
+    private &amp;lt;K, V&amp;gt; Map&amp;lt;K, V&amp;gt; unescapeKeys(Map&amp;lt;K, V&amp;gt; map) {
+
+
+
+
+        Map&amp;lt;K, V&amp;gt; unescaped = newHashMap();
+
+
+
+
+        for (Object key : map.keySet()) {
+
+
+
+
+            Object newKey = key;
+
+
+
+
+            if (key instanceof String) {
+
+
+
+
+                newKey = unescapeMongoValue((String) key);
+
+
+
+
+            }
+
+
+
+
+            unescaped.put((K) newKey, map.get(key));
+
+
+
+
+        }
+
+
+
+
+        return unescaped;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private String escapeMongoValue(String raw) {
+
+
+
+
+        return raw.replaceAll("\\.", "ZZ");
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private String unescapeMongoValue(String raw) {
+
+
+
+
+        return raw.replaceAll("ZZ", "\\.");
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+ When I attempt to save an object from org.apache.felix&amp;amp;apos;s versions of org.osgi.service.event.Event, the stack trace below occurs. This appears to be due to the system attempting to save the topic field in Event as event.topics. If anyone could confirm this as a bug, or tell me what I am doing wrong that would be great.
+I am using the following dependency versions
+
+
+
+
+
+
+&amp;lt;dependency&amp;gt;
+
+
+
+
+    &amp;lt;groupId&amp;gt;org.apache.felix&amp;lt;/groupId&amp;gt;
+
+
+
+
+    &amp;lt;artifactId&amp;gt;org.osgi.core&amp;lt;/artifactId&amp;gt;
+
+
+
+
+    &amp;lt;version&amp;gt;1.4.0&amp;lt;/version&amp;gt;
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+
+
+
+
+
+&amp;lt;dependency&amp;gt;
+
+
+
+
+    &amp;lt;groupId&amp;gt;org.springframework.data&amp;lt;/groupId&amp;gt;
+
+
+
+
+    &amp;lt;artifactId&amp;gt;spring-data-mongodb&amp;lt;/artifactId&amp;gt;
+
+
+
+
+    &amp;lt;version&amp;gt;1.0.0.RELEASE&amp;lt;/version&amp;gt;
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+
+
+
+
+
+&amp;lt;dependency&amp;gt;
+
+
+
+
+    &amp;lt;groupId&amp;gt;org.apache.felix&amp;lt;/groupId&amp;gt;
+
+
+
+
+    &amp;lt;artifactId&amp;gt;org.osgi.compendium&amp;lt;/artifactId&amp;gt;
+
+
+
+
+    &amp;lt;version&amp;gt;1.4.0&amp;lt;/version&amp;gt;
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+
+
+
+
+
+
+
+
+org.osgi.framework.BundleException: Exception in myproject.bundle.dbtest.Activator.start() of bundle myproject.bundle.dbtest.policy-db-test.
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.startActivator(BundleContextImpl.java:806)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.start(BundleContextImpl.java:755)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleHost.startWorker(BundleHost.java:370)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:284)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:276)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandProvider._start(FrameworkCommandProvider.java:252)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:616)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandInterpreter.execute(FrameworkCommandInterpreter.java:155)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.docommand(FrameworkConsole.java:156)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.runConsole(FrameworkConsole.java:141)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.run(FrameworkConsole.java:105)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:679)
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: fields stored in the db can&amp;amp;apos;t have . in them. (Bad Key: &amp;amp;apos;event.topics&amp;amp;apos;)
+
+
+
+
+	at com.mongodb.DBCollection.validateKey(DBCollection.java:1213)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1181)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1184)
+
+
+
+
+	at com.mongodb.DBCollection._checkObject(DBCollection.java:1171)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:718)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:703)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$11.doInCollection(MongoTemplate.java:790)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.saveDBObject(MongoTemplate.java:784)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doSave(MongoTemplate.java:720)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:707)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:703)
+
+
+
+
+	at myproject.bundle.db.PolicyDb.updatePolicy(PolicyDb.java:32)
+
+
+
+
+	at myproject.bundle.dbtest.Activator.start(Activator.java:21)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl$1.run(BundleContextImpl.java:783)
+
+
+
+
+	at java.security.AccessController.doPrivileged(Native Method)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.startActivator(BundleContextImpl.java:774)
+
+
+
+
+	... 14 more
+
+
+
+
+Nested Exception:
+
+
+
+
+java.lang.IllegalArgumentException: fields stored in the db can&amp;amp;apos;t have . in them. (Bad Key: &amp;amp;apos;event.topics&amp;amp;apos;)
+
+
+
+
+	at com.mongodb.DBCollection.validateKey(DBCollection.java:1213)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1181)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1184)
+
+
+
+
+	at com.mongodb.DBCollection._checkObject(DBCollection.java:1171)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:718)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:703)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$11.doInCollection(MongoTemplate.java:790)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.saveDBObject(MongoTemplate.java:784)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doSave(MongoTemplate.java:720)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:707)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:703)
+
+
+
+
+	at myproject.bundle.db.PolicyDb.updatePolicy(PolicyDb.java:32)
+
+
+
+
+	at myproject.bundle.dbtest.Activator.start(Activator.java:21)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl$1.run(BundleContextImpl.java:783)
+
+
+
+
+	at java.security.AccessController.doPrivileged(Native Method)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.startActivator(BundleContextImpl.java:774)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.start(BundleContextImpl.java:755)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleHost.startWorker(BundleHost.java:370)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:284)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:276)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandProvider._start(FrameworkCommandProvider.java:252)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:616)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandInterpreter.execute(FrameworkCommandInterpreter.java:155)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.docommand(FrameworkConsole.java:156)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.runConsole(FrameworkConsole.java:141)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.run(FrameworkConsole.java:105)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:679)
+
+
+
+
+Nested Exception:
+
+
+
+
+java.lang.IllegalArgumentException: fields stored in the db can&amp;amp;apos;t have . in them. (Bad Key: &amp;amp;apos;event.topics&amp;amp;apos;)
+
+
+
+
+	at com.mongodb.DBCollection.validateKey(DBCollection.java:1213)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1181)
+
+
+
+
+	at com.mongodb.DBCollection._checkKeys(DBCollection.java:1184)
+
+
+
+
+	at com.mongodb.DBCollection._checkObject(DBCollection.java:1171)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:718)
+
+
+
+
+	at com.mongodb.DBCollection.save(DBCollection.java:703)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$11.doInCollection(MongoTemplate.java:790)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.saveDBObject(MongoTemplate.java:784)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doSave(MongoTemplate.java:720)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:707)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:703)
+
+
+
+
+	at myproject.bundle.db.PolicyDb.updatePolicy(PolicyDb.java:32)
+
+
+
+
+	at myproject.bundle.dbtest.Activator.start(Activator.java:21)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl$1.run(BundleContextImpl.java:783)
+
+
+
+
+	at java.security.AccessController.doPrivileged(Native Method)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.startActivator(BundleContextImpl.java:774)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.start(BundleContextImpl.java:755)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.BundleHost.startWorker(BundleHost.java:370)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:284)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:276)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandProvider._start(FrameworkCommandProvider.java:252)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:616)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkCommandInterpreter.execute(FrameworkCommandInterpreter.java:155)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.docommand(FrameworkConsole.java:156)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.runConsole(FrameworkConsole.java:141)
+
+
+
+
+	at org.eclipse.osgi.framework.internal.core.FrameworkConsole.run(FrameworkConsole.java:105)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:679)
+
+
+
+
+
+</description>
+			<version>1.0 GA</version>
+			<fixedVersion>1.0.1, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">398</link>
+			<link type="Relate" description="relates to">615</link>
+			<link type="Duplicate" description="duplicates">380</link>
+		</links>
+	</bug>
+	<bug id="17" master="369" duplicate="381" opendate="2012-01-02 07:47:13" fixdate="2012-01-22 22:27:19" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong query created when one value is a DBObject Querying criteria for "$in" on enum field gets lost in QueryMapper</summary>
+			<description>Regression in 1.0.0-RELEASE. Works as expected in 1.0.0-RC1
+Query: { "type" : 
+{ "$in" : [ "folder"]}
+ , "deleted" : false }
+When a query contains a DBObject as a value like "type" in the example QueryMapper.getMappedObject will return in line 103 ignoring all further keys of the query.
+This results in the query { "type" : 
+{ "$in" : [ "folder"]}
+ } sent to MongoDB.
+ As I was updating my project from M5 to GA, some of my tests started failing. It seemed that "$in" stopped working because I was getting an unfiltered result set back. I was able to trace the problem to QueryMapper.
+Before it goes in, the DBOBject for query.getCriteriaObject()&amp;amp;apos;s toString() shows:
+
+
+
+
+
+
+{
+
+
+
+
+"cardId" : "12345" , 
+
+
+
+
+"interactionTime" : { "$lte" : { "$date" : "2012-01-18T00:44:06.469Z"}} , 
+
+
+
+
+"isDeleted" : false , 
+
+
+
+
+"actionCode" : { "$in" : [ "AVATAR_STAND"]} , 
+
+
+
+
+"sourcePersonId" : { "$in" : [ "4f1615cb036416a89c12a60f"]}
+
+
+
+
+}
+
+
+
+
+
+
+after query mapper, when it gets passed into new FindCallback(...), the query DBObject is reduced to only the following:
+
+
+
+
+
+
+{
+
+
+
+
+"cardId" : "12345" , 
+
+
+
+
+"interactionTime" : { "$lte" : { "$date" : "2012-01-18T00:44:06.469Z"}}
+
+
+
+
+}
+
+
+
+
+
+
+So I&amp;amp;apos;m not sure exactly what I&amp;amp;apos;m doing wrong / missing, but something between M5 and GA must&amp;amp;apos;ve changed. Any pointers?
+Here&amp;amp;apos;s part of my class, in case it&amp;amp;apos;s any help:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class CardInteraction {
+
+
+
+
+  @Id private String interactionId;
+
+
+
+
+  private String cardId;
+
+
+
+
+  private String sourcePersonId;
+
+
+
+
+  private ActionCodeEnum actionCode; // a java enum class
+
+
+
+
+  private Date interactionTime;
+
+
+
+
+  private boolean isDeleted;
+
+
+
+
+
+
+
+
+
+  ...
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.0 GA</version>
+			<fixedVersion>1.0.1, 1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">381</link>
+			<link type="Duplicate" description="is duplicated by">430</link>
+			<link type="Relate" description="relates to">363</link>
+			<link type="Relate" description="relates to">364</link>
+			<link type="Relate" description="relates to">393</link>
+			<link type="Relate" description="relates to">417</link>
+			<link type="Duplicate" description="duplicates">369</link>
+		</links>
+	</bug>
+</bugrepository>

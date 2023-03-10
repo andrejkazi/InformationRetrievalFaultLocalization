@@ -1,0 +1,18 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SOCIALFB">
+	<bug id="189" opendate="2015-08-19 10:00:23" fixdate="2015-08-19 10:05:57" resolution="Complete">
+		<buginformation>
+			<summary>Error deserializing null into primitives when using Jackson 2.6</summary>
+			<description>Prior to Jackson 2.6 custom deserializers apparently weren&amp;amp;apos;t even used if the field to be deserialized was null...consequently, they would remain at the default value. An int, for example, would be left as 0.
+Starting with Jackson 2.6, the custom deserializer will be used even if the field is null, resulting in a NPE attempting to deserialize null into a non-nullable primitive.
+This can be fixed by overriding the getNullValue() method in any custom deserializers such as AchievementPointsDeserializer. </description>
+			<version>2.0.1.RELEASE</version>
+			<fixedVersion>2.0.2.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PostMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.AchievementTypeMixin.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

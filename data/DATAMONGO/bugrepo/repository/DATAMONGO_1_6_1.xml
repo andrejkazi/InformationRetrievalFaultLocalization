@@ -1,0 +1,1400 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1088" opendate="2014-11-07 03:08:58" fixdate="2014-11-12 23:11:42" resolution="Duplicate">
+		<buginformation>
+			<summary>@Query $in does not remove "_class" property on collection of embedded objects </summary>
+			<description>Following method on repository 
+
+
+
+
+
+
+	@Query(value = "{ embedded : { $in : ?0} }")
+
+
+
+
+	List&amp;lt;Foo&amp;gt; findByEmbeddedIn2(Collection&amp;lt;EmbeddedObject&amp;gt; c);
+
+
+
+
+
+
+generates incorrect query. 
+
+
+
+
+
+
+{ "embedded" : { "$in" : [ {  "_class" : "demo.EmbeddedObject" , "s" : "hello"}]}}
+
+
+
+
+
+
+Query should be without _class property e.g.:
+
+
+
+
+
+
+{ "embedded" : { "$in" : [ { "s" : "hello"}]}}
+
+
+
+
+
+
+I attached test project demonstrating this bug.
+This bug is related to https://jira.spring.io/browse/DATAMONGO-893</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.MyId.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.ComplexIdRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.UserWithComplexId.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1078</link>
+		</links>
+	</bug>
+	<bug id="1096" opendate="2014-11-17 07:38:45" fixdate="2014-11-26 00:45:45" resolution="Complete">
+		<buginformation>
+			<summary>RuntimeExceptions during debug query printing in MongoTemplate</summary>
+			<description>When printing DEBUG logs for remove and update queries in org.springframework.data.mongodb.core.MongoTemplate, string value of queries should be obtained with org.springframework.data.mongodb.core.query.SerializationUtils#serializeToJsonSafely method.  This protects us from RuntimeException&amp;amp;apos;s as mentioned in DATAMONGO-495</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1094" opendate="2014-11-14 03:34:58" fixdate="2014-11-26 01:05:11" resolution="Complete">
+		<buginformation>
+			<summary>Wrong reference to @DocumentField in error message</summary>
+			<description>Looking through the code, it looks like this message is outdated:
+https://github.com/spring-projects/spring-data-mongodb/blob/master/spring-data-mongodb/src/main/java/org/springframework/data/mongodb/core/mapping/BasicMongoPersistentEntity.java#L56
+I guess it should just refer to the @Field annotation to disambiguate? According to git blame this has been there for quite a while</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapping.MongoMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentEntity.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1120" opendate="2014-12-15 13:39:20" fixdate="2014-12-18 07:02:23" resolution="Fixed">
+		<buginformation>
+			<summary>Pageable queries timeout or return incorrect counts</summary>
+			<description>Counts for total elements and pages on some repositories return 0 and some throw a 500 when the socket times out.  This is ONLY occurring on calls that return a Page object and accept a Pageable input.  After debugging a bit, the inputs all seem to be populated from the controller fine.  The query definitions are
+findByActiveIsTrue = wrong counts for totalElements and totalPages. both are 0
+findByUserId = this collection is large at around 3 million records, but is indexed.
+This is only happening in 1.6.1 and works correctly in 1.6.0</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1126</link>
+			<link type="Relate" description="is related to">1080</link>
+		</links>
+	</bug>
+	<bug id="1118" opendate="2014-12-11 05:12:11" fixdate="2015-01-06 06:54:54" resolution="Fixed">
+		<buginformation>
+			<summary>Custom converters not used for map keys</summary>
+			<description>I have an enum with rather long names and shorter per-value "tags" that I want to use for serialization. I&amp;amp;apos;ve implemented a Converter pair that maps the values back and forth. They work properly when saving a Set of the enum.
+However, when saving a Map&amp;lt;MyEnum,?&amp;gt;, the converter method is skipped; the enum&amp;amp;apos;s name is still used as the map key saved to Mongo. This would be frustrating but work-aroundable, but the proper converter is applied on reads. This means that when I save an object with a non-empty map and immediately attempt to read it, I get an exception when calling the read converter (since it&amp;amp;apos;s being supplied an invalid argument).
+The problem appears to be at MappingMongoConverter:644, where the conversion service is explicitly skipped. This means that converters are applied to all types on read, and to all instances except map keys on write.</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversions.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1123" opendate="2014-12-17 09:39:36" fixdate="2015-01-07 06:15:01" resolution="Fixed">
+		<buginformation>
+			<summary>geoNear, does not return all matching elements, it returns only a max of 100 documents</summary>
+			<description>Aloha,
+I have the following query:
+
+
+
+
+
+
+public GeoResults&amp;lt;MyObject&amp;gt; findByTypeAndLocationNear(MyObjectType type, Point p, Distance distance) {
+
+
+
+
+   final NearQuery nearQuery = NearQuery.near(p).maxDistance(distance);
+
+
+
+
+   log.info("{}",nearQuery.toDBObject());
+
+
+
+
+   return mongoTemplate.geoNear(nearQuery, MyObject.class);
+
+
+
+
+}
+
+
+
+
+
+
+The geoNear method is documented like this:
+
+
+
+
+
+
+Returns {@link GeoResults} for all entities matching the given {@link NearQuery}.
+
+
+
+
+
+
+I expect 1000 "matching" documents But i only get 100. There is some default being set, that restricts the result to 100. That should be stated in the method. And another method having a pageable should be added.
+What do you think?</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1121" opendate="2014-12-16 11:29:02" fixdate="2015-01-20 03:55:21" resolution="Fixed">
+		<buginformation>
+			<summary>"Cycle found" false positive</summary>
+			<description>
+
+
+
+
+
+@Document(collection = "normalized_profiles")
+
+
+
+
+public class NormalizedProfile {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private ObjectId id = ObjectId.get();
+
+
+
+
+...
+
+
+
+
+    private ListField&amp;lt;String&amp;gt; firstName;
+
+
+
+
+    private ListField&amp;lt;String&amp;gt; firstNameCanonical;
+
+
+
+
+...
+
+
+
+
+}
+
+
+
+
+
+
+So I have 2 properties - firstName and firstNameCanonical, and CycleChecker warns about possible cycle reference on framework startup. Quite misleading, because searchResults.profile.lastNameCanonical is not a subpath of searchResults.profile.lastName (for example).
+I believe the problem is with following code in MongoPersistentEntityIndexResolver.Path.cycles():
+
+
+
+
+
+
+/**
+
+
+
+
+ * Checks whether the given property is owned by the same entity and if it has been already visited by a subset of
+
+
+
+
+ * the current path. Given {@literal foo.bar.bar} cycles if {@literal foo.bar} has already been visited and
+
+
+
+
+ * {@code class Bar} contains a property of type {@code Bar}. The previously mentioned path would not cycle if
+
+
+
+
+ * {@code class Bar} contained a property of type {@code SomeEntity} named {@literal bar}.
+
+
+
+
+ * 
+
+
+
+
+ * @param property
+
+
+
+
+ * @param path
+
+
+
+
+ * @return
+
+
+
+
+ */
+
+
+
+
+boolean cycles(MongoPersistentProperty property, String path) {
+
+
+
+
+
+
+
+
+
+    if (!property.getOwner().equals(this.property.getOwner())) {
+
+
+
+
+        return false;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    return path.contains(this.path);
+
+
+
+
+}
+
+
+
+
+
+
+&amp;amp;apos;Contains&amp;amp;apos; should be analyzed in terms of dot-notation (ie properties), rather than a simple string contains.
+Full stacktrace:
+
+
+
+
+
+
+2014-12-16 22:26:35.419 / [main] WARN  o.s.d.m.c.index.MongoPersistentEntityIndexResolver - Found cycle for field &amp;amp;apos;data&amp;amp;apos; in type &amp;amp;apos;ListField&amp;amp;apos; for path &amp;amp;apos;searchResults.profile.lastName&amp;amp;apos;
+
+
+
+
+org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$CyclicPropertyReferenceException: Found cycle for field &amp;amp;apos;data&amp;amp;apos; in type &amp;amp;apos;ListField&amp;amp;apos; for path &amp;amp;apos;searchResults.profile.lastName&amp;amp;apos;
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$CycleGuard.protect(MongoPersistentEntityIndexResolver.java:472) ~[spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:231) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294) [spring-data-commons-1.9.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294) [spring-data-commons-1.9.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294) [spring-data-commons-1.9.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294) [spring-data-commons-1.9.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.potentiallyCreateTextIndexDefinition(MongoPersistentEntityIndexResolver.java:205) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForEntity(MongoPersistentEntityIndexResolver.java:99) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:79) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:56) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForAndCreateIndexes(MongoPersistentEntityIndexCreator.java:128) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForIndexes(MongoPersistentEntityIndexCreator.java:121) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.&amp;lt;init&amp;gt;(MongoPersistentEntityIndexCreator.java:87) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.&amp;lt;init&amp;gt;(MongoPersistentEntityIndexCreator.java:64) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.&amp;lt;init&amp;gt;(MongoTemplate.java:218) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.config.AbstractMongoConfiguration.mongoTemplate(AbstractMongoConfiguration.java:95) [spring-data-mongodb-1.6.1.RELEASE.jar:na]
+
+
+
+
+	at com.scorr.config.MongoStorageConfig$$EnhancerBySpringCGLIB$$486c2c56.CGLIB$mongoTemplate$8(&amp;lt;generated&amp;gt;) [spring-core-4.0.6.RELEASE.jar:na]
+
+
+
+
+	at com.scorr.config.MongoStorageConfig$$EnhancerBySpringCGLIB$$486c2c56$$FastClassBySpringCGLIB$$8ad6efc3.invoke(&amp;lt;generated&amp;gt;) [spring-core-4.0.6.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:228) [spring-core-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:312) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at com.scorr.config.MongoStorageConfig$$EnhancerBySpringCGLIB$$486c2c56.mongoTemplate(&amp;lt;generated&amp;gt;) [spring-core-4.0.6.RELEASE.jar:na]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_25]
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:483) ~[na:1.8.0_25]
+
+
+
+
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:166) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:586) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1094) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:989) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:504) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:302) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:298) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:328) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1456) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1197) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:537) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:302) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:298) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:198) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:271) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:1017) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:960) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:858) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:480) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:87) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:289) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1185) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:537) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:302) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:298) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:324) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at com.scorr.collector.CollectorWebConfig$$EnhancerBySpringCGLIB$$a7d50d23.userDetailsService(&amp;lt;generated&amp;gt;) [spring-core-4.0.6.RELEASE.jar:na]
+
+
+
+
+	at com.scorr.collector.CollectorWebConfig.configureGlobal(CollectorWebConfig.java:79) [classes/:na]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_25]
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:483) ~[na:1.8.0_25]
+
+
+
+
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredMethodElement.inject(AutowiredAnnotationBeanPostProcessor.java:589) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:87) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:289) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1185) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:537) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:302) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:298) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:703) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:760) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:482) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.web.context.ContextLoader.configureAndRefreshWebApplicationContext(ContextLoader.java:403) [spring-web-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.web.context.ContextLoader.initWebApplicationContext(ContextLoader.java:306) [spring-web-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.web.context.ContextLoaderListener.contextInitialized(ContextLoaderListener.java:106) [spring-web-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at com.scorr.web.EmbeddedWebServer$1.contextInitialized(EmbeddedWebServer.java:86) [classes/:na]
+
+
+
+
+	at org.eclipse.jetty.server.handler.ContextHandler.callContextInitialized(ContextHandler.java:798) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.servlet.ServletContextHandler.callContextInitialized(ServletContextHandler.java:444) [jetty-servlet-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.handler.ContextHandler.startContext(ContextHandler.java:789) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.servlet.ServletContextHandler.startContext(ServletContextHandler.java:294) [jetty-servlet-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.webapp.WebAppContext.startWebapp(WebAppContext.java:1343) [jetty-webapp-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.webapp.WebAppContext.startContext(WebAppContext.java:1336) [jetty-webapp-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.handler.ContextHandler.doStart(ContextHandler.java:741) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.webapp.WebAppContext.doStart(WebAppContext.java:499) [jetty-webapp-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.ContainerLifeCycle.start(ContainerLifeCycle.java:132) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.ContainerLifeCycle.doStart(ContainerLifeCycle.java:114) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.handler.AbstractHandler.doStart(AbstractHandler.java:61) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.ContainerLifeCycle.start(ContainerLifeCycle.java:132) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.Server.start(Server.java:387) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.ContainerLifeCycle.doStart(ContainerLifeCycle.java:114) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.handler.AbstractHandler.doStart(AbstractHandler.java:61) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.server.Server.doStart(Server.java:354) [jetty-server-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68) [jetty-util-9.2.4.v20141103.jar:9.2.4.v20141103]
+
+
+
+
+	at com.scorr.web.EmbeddedWebServer.start(EmbeddedWebServer.java:106) [classes/:na]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_25]
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_25]
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:483) ~[na:1.8.0_25]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeCustomInitMethod(AbstractAutowireCapableBeanFactory.java:1681) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1620) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1549) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:539) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:302) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:298) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:703) [spring-beans-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:760) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:482) [spring-context-4.0.6.RELEASE.jar:4.0.6.RELEASE]
+
+
+
+
+	at com.scorr.service.ServiceLauncher.main(ServiceLauncher.java:48) [classes/:na]
+
+
+
+
+
+</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1124</link>
+			<link type="Relate" description="is related to">1087</link>
+		</links>
+	</bug>
+	<bug id="1126" opendate="2014-12-21 06:03:21" fixdate="2015-01-20 08:04:31" resolution="Fixed">
+		<buginformation>
+			<summary>Repository keyword query findByInId with pageable not returning correctly</summary>
+			<description>I&amp;amp;apos;ve been trying to use the In-keyword with identifiers and making the query pageable. The query returns results but getTotalElements() and getTotalPages() always returns 0. Also when you try to get any other page than 0, no results return. I&amp;amp;apos;ve tried using In with another member other than id and it works as expected. Below is a strip down example I used for testing;
+I&amp;amp;apos;ve created 3 types and 10 items per those types, results in a total of 30 items.
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Item {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private String id;
+
+
+
+
+    private String type;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public interface ItemRepository extends MongoRepository&amp;lt;Item, String&amp;gt; {
+
+
+
+
+
+
+
+
+
+    Page&amp;lt;Item&amp;gt; findByIdIn(Collection ids, Pageable pageable);
+
+
+
+
+    Page&amp;lt;Item&amp;gt; findByTypeIn(Collection types, Pageable pageable);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@ContextConfiguration(classes = {MongoDbConfig.class})
+
+
+
+
+@TransactionConfiguration(defaultRollback = false)
+
+
+
+
+public class TestPageableIdIn {
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private ItemRepository itemRepository;
+
+
+
+
+    
+
+
+
+
+    private List&amp;lt;String&amp;gt; allIds = new LinkedList&amp;lt;&amp;gt;();
+
+
+
+
+
+
+
+
+
+    @Before
+
+
+
+
+    public void setUp() {
+
+
+
+
+        itemRepository.deleteAll();
+
+
+
+
+        String[] types = {"SWORD", "SHIELD", "ARMOUR"};
+
+
+
+
+
+
+
+
+
+        // 10 items per type
+
+
+
+
+        for (String type : types) {
+
+
+
+
+            for (int i = 0; i &amp;lt; 10; i++) {
+
+
+
+
+                String id = UUID.randomUUID().toString();
+
+
+
+
+                allIds.add(id);
+
+
+
+
+                itemRepository.save(new Item(id, type));
+
+
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testPageableIdIn() {
+
+
+
+
+        
+
+
+
+
+        Pageable pageable = new PageRequest(0, 5);
+
+
+
+
+        
+
+
+
+
+        // expect 5 Items returned, total of 10 Items(SWORDS) in 2 Pages
+
+
+
+
+        Page&amp;lt;Item&amp;gt; results = itemRepository.findByTypeIn(Arrays.asList("SWORD"), pageable);
+
+
+
+
+        Assert.assertEquals(5, results.getContent().size());
+
+
+
+
+        Assert.assertEquals(10, results.getTotalElements());
+
+
+
+
+        Assert.assertEquals(2, results.getTotalPages());
+
+
+
+
+        
+
+
+
+
+        // expect 5 Items returned, total of 30 Items in 6 Pages
+
+
+
+
+        results = itemRepository.findByIdIn(allIds, pageable);
+
+
+
+
+        Assert.assertEquals(5, results.getContent().size());
+
+
+
+
+        Assert.assertEquals(30, results.getTotalElements()); // this is returning 0
+
+
+
+
+        Assert.assertEquals(6, results.getTotalPages());     // this is returning 0
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1120</link>
+		</links>
+	</bug>
+	<bug id="1133" opendate="2015-01-07 00:20:51" fixdate="2015-05-25 05:03:59" resolution="Fixed">
+		<buginformation>
+			<summary>Field aliasing is not honored in Aggregation operations</summary>
+			<description>the aggretation uses the property name of a class rather than the name designated in @Field.</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.7 RC1 (Fowler), 1.6.3 (Evans SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.MeterData.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.TypeBasedAggregationOperationContextUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

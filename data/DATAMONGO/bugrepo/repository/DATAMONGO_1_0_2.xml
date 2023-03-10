@@ -1,0 +1,484 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="467" opendate="2012-06-24 08:58:49" fixdate="2012-06-25 04:13:59" resolution="Fixed">
+		<buginformation>
+			<summary>String @id field is not mapped to ObjectId when using QueryDSL ".id" path</summary>
+			<description>Using this entity (@Document) definition with a String as the declared ID:
+
+
+
+
+
+
+User.class
+
+
+
+
+...
+
+
+
+
+@Id String id;
+
+
+
+
+
+
+and the following query
+
+
+
+
+
+
+QUser.id.eq("4f43b6a384aea4e77d403709")
+
+
+
+
+
+
+Always returns null for a repository find. Looking at the mongoDb query log (mongod -v) it appears that the spring-data-mongodb/QueryDSL layers are not translating the String 4f43b6a384aea4e77d403709 to ObjectId("4f43b6a384aea4e77d403709") as one would normally do in the mongo shell.</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializerUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="475" opendate="2012-07-02 01:29:47" fixdate="2012-07-16 08:41:17" resolution="Fixed">
+		<buginformation>
+			<summary>&amp;apos;group&amp;apos; operation fails where query references non primitive property</summary>
+			<description>&amp;amp;apos;group&amp;amp;apos; operation fails where query references non primitive property
+See failing test at https://bitbucket.org/patrikfr/springmongotest/src/96590e6d599c/ CarRepositoryTest#groupByWithNonPrimitiveProperty
+Stacktrace:
+java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class mongo.MakeId
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:77)
+	at com.mongodb.util.JSONSerializers$IterableSerializer.serialize(JSONSerializers.java:280)
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:307)
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:307)
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:307)
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:307)
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+	at com.mongodb.util.JSON.serialize(JSON.java:56)
+	at com.mongodb.util.JSON.serialize(JSON.java:41)
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84)
+	at org.springframework.data.mongodb.core.MongoTemplate.group(MongoTemplate.java:1070)
+	at mongo.CarRepositoryCustomImpl.aggregateDistanceTravelledAndColorByMake(CarRepositoryCustomImpl.java:29)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="483" opendate="2012-07-14 22:16:49" fixdate="2012-07-16 09:37:35" resolution="Fixed">
+		<buginformation>
+			<summary>@Indexed(unique=true, name="foo") puts name&amp;apos;s value to the &amp;apos;key&amp;apos; in the MongoDB </summary>
+			<description>Here is the example:
+
+
+
+
+
+
+@Document
+
+
+
+
+class User {
+
+
+
+
+   @Id
+
+
+
+
+   private String id;
+
+
+
+
+   
+
+
+
+
+   @Indexed(unique=true, name="username_unique_1")
+
+
+
+
+   @Field("username")
+
+
+
+
+   private String user_name;
+
+
+
+
+} 
+
+
+
+
+
+
+Spring Data will generate the follwoing index document: 
+
+
+
+
+
+
+{ "v" : 1, "key" : { "username_unique_1" : 1 }, "unique" : true, "ns" : "test_db.user", "name" : "username_unique_1", "dropDups" : false, "sparse" : false }
+
+
+
+
+
+
+However the expected document is:
+
+
+
+
+
+
+{ "v" : 1, "key" : { "username" : 1 }, "unique" : true, "ns" : "test_db.user", "name" : "username_unique_1", "dropDups" : false, "sparse" : false }
+
+
+
+
+
+
+I think the expected behavior is: @Indexed.name should correpond to name in the index document, while @Field.value should correpsond to the key in the index document. If @Field is absent, than field name should be used as a key in the index document.
+The current implementation confusing: if you put something different from a field name into @Indexed.name, your index will be created on nonexistent field. However this is why we need @Indexed.name - to add a descriptive name to the index.
+If someone wants to use @Indexed.name for creating an index on non-existen field (to be honest can&amp;amp;apos;t imagine the case) then low-level API like execute on DBCollection should be used.
+The issue is related to the line 165 of MongoPersistentEntityIndexCreator.java where @Inbdexed.name is implicitly used as a name of the field on which index should be created.
+P.S. Before submitting this issue I&amp;amp;apos;ve seatched this JIRA for similar defact and found couple of them:
+
+DATAMONGO-70
+DATAMONGO-79
+DATAMONGO-237
+
+The mentioned issues doesn&amp;amp;apos;t describe the problem in full.
+Guys, would you like me to sumbit a patch for that?</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.CompoundIndex.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="480" opendate="2012-07-09 09:00:44" fixdate="2012-07-16 10:01:25" resolution="Fixed">
+		<buginformation>
+			<summary>The WriteResultChecking is not used in case of insert or save of documents.</summary>
+			<description>The insertDBObject(), insertDBObjectList() and saveDBObject() do not use the WriteResultChecking similar to what is done in doInsert() and doUpdate() methods.</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="489" opendate="2012-07-22 08:44:19" fixdate="2012-07-23 07:43:59" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException when loading Map&lt;String, String[]&gt;</summary>
+			<description>When saving a regular Java Map with array inside (as in SolrQuery), it seems that Spring Sata saves the object fine, but when you trying to read it, it is a Map with List as the value type. When you&amp;amp;apos;re trying to work with the object you&amp;amp;apos;re getting a ClassCastException: java.util.ArrayList cannot be cast to [Ljava.lang.String. We find that the problem is in MappingMongoConverter#readCollectionOrArray(), at this line:
+
+
+
+
+
+
+collectionType = Collection.class.isAssignableFrom(collectionType) ? collectionType : List.class;
+
+
+
+
+
+
+When the type is array (String[]) it obviously cannot be assigned to Collection so it returns it as a List. Possible solution is to return an object from this method and handle arrays too. There is a main that reproduce that issue as an attachment.</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="474" opendate="2012-06-29 06:01:31" fixdate="2012-07-24 06:28:18" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong property is used for Id mapping</summary>
+			<description>After upgrading to 1.0.2 storing fails with the stacktrace below:
+It seems like the incorrect property is used when mapping the ID, possibly being confused by a getter &amp;amp;apos;getId()&amp;amp;apos; that is not referencing the MongoDB Id.
+See example project on Bitbucket for testcase. CarRepositoryTest#findByCarId
+https://bitbucket.org/patrikfr/springmongotest
+
+
+
+
+
+
+org.springframework.core.convert.ConverterNotFoundException: No converter found capable of converting from type mongo.CarId to type java.lang.String
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.handleConverterNotFound(GenericConversionService.java:475)
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:175)
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:154)
+
+
+
+
+	at org.springframework.data.mapping.model.BeanWrapper.getPotentiallyConvertedValue(BeanWrapper.java:233)
+
+
+
+
+	at org.springframework.data.mapping.model.BeanWrapper.getProperty(BeanWrapper.java:212)
+
+
+
+
+	at org.springframework.data.mapping.model.BeanWrapper.getProperty(BeanWrapper.java:183)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.populateIdIfNecessary(MongoTemplate.java:1375)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doSave(MongoTemplate.java:723)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:708)
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.SimpleMongoRepository.save(SimpleMongoRepository.java:70)
+
+
+
+
+
+</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="481" opendate="2012-07-11 16:33:26" fixdate="2012-08-10 01:54:16" resolution="Fixed">
+		<buginformation>
+			<summary>After upgrading to 1.0.2 IsTrue does not work properly in query method</summary>
+			<description>For such created query:
+Account findByUsernameAndConfirmedIsTrue(String username);
+I see following in logs:
+Created query Query: { "confirmed" : true , "$and" : [ 
+{ "confirmed" : true}
+]}, Fields: null, Sort: null
+And the query does not return proper value.
+In previous release (1.0.1.RELEASE) the same code produces valid query:
+Created query 
+{ "username" : "me" , "confirmed" : true}</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">469</link>
+		</links>
+	</bug>
+	<bug id="472" opendate="2012-06-28 02:35:59" fixdate="2012-08-29 02:34:39" resolution="Fixed">
+		<buginformation>
+			<summary>Using a "Not" Keyword in a Query Method Doesn&amp;apos;t Work</summary>
+			<description>I basically created an interface that contains a query method that looks something like this:
+
+
+
+
+
+
+List&amp;lt;Status&amp;gt; findByStatusNot(String status);
+
+
+
+
+
+
+When I tired to use this method spring-mongo threw: 
+
+
+
+
+
+
+InvalidMongoDbApiUsageException: "Invalid query: &amp;amp;apos;not&amp;amp;apos; can&amp;amp;apos;t be used with &amp;amp;apos;is&amp;amp;apos; - use &amp;amp;apos;ne&amp;amp;apos; instead."
+
+
+
+
+
+
+From the looks of it there seems to be a bug in the MongoQueryCreator class which does the following for NEGATING_SIMPLE_PROPERTY case:
+
+
+
+
+
+
+criteria.not().is(parameters.nextConverted(property));
+
+
+
+
+
+
+Note that criteria.is() explicitly throws an exception if a call to not() proceeds it.</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.1 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="469" opendate="2012-06-25 12:57:40" fixdate="2012-08-31 01:39:48" resolution="Fixed">
+		<buginformation>
+			<summary>Query creation from method names using AND criteria does not work anymore</summary>
+			<description>When migrating from 1.0.1 to 1.0.2, one of my test failed.
+
+
+
+
+
+
+@Test
+
+
+
+
+public void testFindByPseudoAndPassword_wrongPseudo() {
+
+
+
+
+    Member member = new Member("pseudo");
+
+
+
+
+    member.setPassword("password");
+
+
+
+
+
+
+
+
+
+    memberRepository.save(member);
+
+
+
+
+
+
+
+
+
+    Member findMember = memberRepository.findByPseudoAndPassword("wrong-pseudo", "password");
+
+
+
+
+    assertThat(findMember).isNull(); // FAILS HERE because the query retrieve the member with password equals "password" and miss the pseudo value
+
+
+
+
+}
+
+
+
+
+
+
+and the log is : 
+
+
+
+
+
+ DEBUG [MongoTemplate] findOne using query: { "password" : "password" , "$and" : [ { "password" : "password"}]} 
+
+
+
+
+
+
+I saw that in https://github.com/SpringSource/spring-data-mongodb/blob/1.0.x/spring-data-mongodb/src/test/java/org/springframework/data/mongodb/repository/query/MongoQueryCreatorUnitTests.java there is no assertion for the test #createsQueryCorrectly which test the Criteria AND case.
+May be it is due to https://github.com/SpringSource/spring-data-mongodb/commit/c8bb46ffb3b2ffa5456417a199ffa0d3b977bf0b</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">481</link>
+			<link type="Relate" description="relates to">547</link>
+		</links>
+	</bug>
+</bugrepository>

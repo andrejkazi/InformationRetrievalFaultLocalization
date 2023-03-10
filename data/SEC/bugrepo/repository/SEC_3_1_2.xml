@@ -1,0 +1,422 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2055" opendate="2012-09-19 05:00:44" fixdate="2012-09-21 13:17:06" resolution="Fixed">
+		<buginformation>
+			<summary>SaveContextServletOutputStream should delegate flush and close methods to wrapped ServletOutputStream</summary>
+			<description>In flush() and close() methods, SaveContextServletOutputStream calls super.flush() and super.close() respectively. These methods do nothing in superclass. Instead,this.delegate.flush() and this.delegate.close() should be called to ensure proper flushing and closing by the wrapped output stream</description>
+			<version>3.1.2</version>
+			<fixedVersion>3.0.8, 3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepositoryTests.java</file>
+			<file type="M">org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">2041</link>
+		</links>
+	</bug>
+	<bug id="2038" opendate="2012-08-28 09:09:14" fixdate="2012-09-21 13:25:59" resolution="Complete">
+		<buginformation>
+			<summary>initFilterBean() is not called within AbstractPreAuthenticatedProcessingFilter</summary>
+			<description>AbstractPreAuthenticatedProcessingFilter overrides afterPropertiesSet() method thus initFilterBean() from GenericFilterBean is never called. I guess it should by the contract.</description>
+			<version>3.1.2</version>
+			<fixedVersion>3.0.8, 3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2072" opendate="2012-11-02 13:53:59" fixdate="2012-11-02 14:58:00" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;security:anonymous&gt; no longer supports multiple authories</summary>
+			<description>Description from the forum:
+Hi. I&amp;amp;apos;m using this configuration
+
+
+
+
+
+
+&amp;lt;security:anonymous granted-authority="ROLE_INVITADO,ROLE_PROFILE_INVITADO,ROLE_GRUPO_PUBLICO" username="invitado" /&amp;gt;
+
+
+
+
+
+
+So the guest has 3 roles. Up until spring 3.1.1.RELEASE if I did
+
+
+
+
+
+
+SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+
+
+
+
+
+
+I got 3 authorities (as expected).
+In Spring 3.1.2.RELEASE I get only one authority and it&amp;amp;apos;s value is
+
+
+
+
+
+
+"ROLE_INVITADO,ROLE_PROFILE_INVITADO,ROLE_GRUPO_PUBLICO"
+
+
+
+
+
+
+So those 3 comma separated values are not being split in 3.1.2 as they were in 3.1.1.
+I&amp;amp;apos;m not sure if it was originally intended to support mutiple roles separating them by comma or not. Was it? Is it now? Any othe way to set that up? Is this a bug in 3.1.2?
+I don&amp;amp;apos;t see this change in the version changes, maybe it was an unintended consecuence of some other change.</description>
+			<version>3.1.2</version>
+			<fixedVersion>3.1.4, 3.2.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1909</link>
+		</links>
+	</bug>
+	<bug id="2101" opendate="2012-12-19 03:38:46" fixdate="2012-12-27 13:19:49" resolution="Duplicate">
+		<buginformation>
+			<summary>AbstractAuthorizeTag.getPrivilegeEvaluator() always returns first WebInvocationPrivilegeEvaluator found</summary>
+			<description>When using the authorize tag like this:
+
+
+
+
+
+
+&amp;lt;sec:authorize method="POST" url="/data/hosts"&amp;gt;....&amp;lt;/sec:authorize&amp;gt;
+
+
+
+
+
+
+...the AbstractAuthorizeTag.getPrivilegeEvaluator() method is requested to return an evaluator. But this method will always return the first it finds even if more than one is found. This is especially a problem if one or more of the &amp;amp;apos;sections&amp;amp;apos; of privileges are aimed at something else than a HTML access(fx. JSON API).
+I have this in my springsecuritycontext.xml:
+
+
+
+
+
+
+&amp;lt;http request-matcher-ref="jsonMatcher" create-session="stateless" authentication-manager-ref="apiAuthMgr"&amp;gt;
+
+
+
+
+        &amp;lt;intercept-url pattern="/data/**" access="ROLE_API_USER" /&amp;gt;
+
+
+
+
+        &amp;lt;http-basic /&amp;gt;
+
+
+
+
+    &amp;lt;/http&amp;gt;
+
+
+
+
+    
+
+
+
+
+    &amp;lt;http authentication-manager-ref="siteAuthMgr"&amp;gt;
+
+
+
+
+        &amp;lt;intercept-url  method="PUT" pattern="/data/**" access="ROLE_IT-infrastruktur" /&amp;gt;
+
+
+
+
+        &amp;lt;intercept-url  method="POST" pattern="/data/**" access="ROLE_IT-infrastruktur" /&amp;gt;
+
+
+
+
+        &amp;lt;intercept-url  method="DELETE" pattern="/data/**" access="ROLE_IT-infrastruktur" /&amp;gt;
+
+
+
+
+        &amp;lt;intercept-url  method="GET" pattern="/data/credentials**" access="ROLE_IT-infrastruktur" /&amp;gt;
+
+
+
+
+        &amp;lt;form-login/&amp;gt;
+
+
+
+
+    &amp;lt;/http&amp;gt;
+
+
+
+
+.......
+
+
+
+
+
+
+This work flawlessly in regards to using the correct authentication-manager based on the request-matcher, but when it comes to the authorize-tag it will always try to match on the first section, because AbstractAuthorizeTag.getPrivilegeEvaluator() always returns the first one:
+
+
+
+
+
+
+private WebInvocationPrivilegeEvaluator getPrivilegeEvaluator() throws IOException {
+
+
+
+
+        ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+
+
+
+
+        Map&amp;lt;String, WebInvocationPrivilegeEvaluator&amp;gt; wipes = ctx.getBeansOfType(WebInvocationPrivilegeEvaluator.class);
+
+
+
+
+
+
+
+
+
+        if (wipes.size() == 0) {
+
+
+
+
+            throw new IOException(
+
+
+
+
+                    "No visible WebInvocationPrivilegeEvaluator instance could be found in the application "
+
+
+
+
+                            + "context. There must be at least one in order to support the use of URL access checks in &amp;amp;apos;authorize&amp;amp;apos; tags.");
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        return (WebInvocationPrivilegeEvaluator) wipes.values().toArray()[0];   &amp;lt;---- PROBLEM (Line 340)
+
+
+
+
+    }
+
+
+
+
+
+</description>
+			<version>3.1.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.WebAttributes.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AbstractAuthorizeTag.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2045</link>
+		</links>
+	</bug>
+	<bug id="2103" opendate="2012-12-24 20:12:01" fixdate="2013-08-24 21:41:26" resolution="Fixed">
+		<buginformation>
+			<summary>Querying token for series: thread dump for info level </summary>
+			<description>In case of empty remember me tokens JdbcTokenRepositoryImpl writes thread dump to log file that is not required because it&amp;amp;apos;s clear from context:
+
+
+
+
+
+
+        catch(EmptyResultDataAccessException zeroResults) {
+
+
+
+
+            if(logger.isInfoEnabled()) {
+
+
+
+
+                logger.info("Querying token for series &amp;amp;apos;" + seriesId + "&amp;amp;apos; returned no results.", zeroResults);
+
+
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+Is it possible to change level to debug or remove thread dump (better for me)?</description>
+			<version>3.1.2</version>
+			<fixedVersion>3.1.5, 3.2.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImplTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1964</link>
+		</links>
+	</bug>
+	<bug id="2177" opendate="2013-06-12 06:49:56" fixdate="2014-03-18 13:49:59" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultRedirectStrategy could be less vulnerable to open redirect phishing attacks</summary>
+			<description>We have the the following configuration of the
+org.springframework.security.web.authentication.AuthenticationSuccessHandler
+
+
+
+
+
+
+  &amp;lt;bean id="simpleUrlAuthenticationSuccessHandler"
+
+
+
+
+        class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler"&amp;gt;
+
+
+
+
+    &amp;lt;property name="targetUrlParameter" value="continue"/&amp;gt;
+
+
+
+
+    &amp;lt;property name="defaultTargetUrl" value="/"/&amp;gt;
+
+
+
+
+    &amp;lt;property name="redirectStrategy"&amp;gt;
+
+
+
+
+      &amp;lt;bean class="org.springframework.security.web.DefaultRedirectStrategy"&amp;gt;
+
+
+
+
+        &amp;lt;property name="contextRelative" value="true"/&amp;gt;
+
+
+
+
+      &amp;lt;/bean&amp;gt;
+
+
+
+
+    &amp;lt;/property&amp;gt;
+
+
+
+
+  &amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+We were hoping that setting redirectStrategy to be context relative would help us deal with open redirect vulnerability. It works fine for forged URLs like:
+http://example.com/login?continue=http://unsecure.com
+because user wont leave our service. Unfortunately, it works only for one occurrence of scheme declaration. The following URL
+http://example.com/login?continue=http://http://unsecure.com
+will still perform a redirect request to the outer service. This behaviour could be easily extended by changing the following line of org.springframework.security.web.DefaultRedirectStrategy
+
+
+
+
+
+
+url = url.substring(url.indexOf("://") + 3); // strip off scheme
+
+
+
+
+
+
+to 
+
+
+
+
+
+
+url = url.substring(url.lastIndexOf("://") + 3); // strip off scheme
+
+
+
+
+
+</description>
+			<version>3.1.2</version>
+			<fixedVersion>3.2.3, 4.0.0.M1</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.DefaultRedirectStrategyTests.java</file>
+			<file type="M">org.springframework.security.web.DefaultRedirectStrategy.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

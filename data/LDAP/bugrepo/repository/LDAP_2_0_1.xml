@@ -1,0 +1,155 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LDAP">
+	<bug id="304" opendate="2014-05-23 08:07:00" fixdate="2015-04-27 09:26:55" resolution="Complete">
+		<buginformation>
+			<summary>NullPointerException DirContextAdapter.collectModifications</summary>
+			<description>My domain class has following javax.naming.Name attribute:
+
+
+
+
+
+
+	@Attribute(name = "memberDN")
+
+
+
+
+	private final Set&amp;lt;Name&amp;gt; memberDNs = new HashSet&amp;lt;Name&amp;gt;();
+
+
+
+
+
+
+
+
+
+	public Set&amp;lt;Name&amp;gt; getMemberDNs() {
+
+
+
+
+		return this.memberDNs ;
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+	public void addMemberDN(final Name memberDN) {
+
+
+
+
+		this.memberDNs.add(memberDN);
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+	public void removeMemberDN(final Name memberDN) {
+
+
+
+
+		this.memberDNs.remove(memberDN);
+
+
+
+
+	}
+
+
+
+
+
+
+1) First I created a new instance (without setting this attribut !!!) and save the instance by calling LDAPRepository.save() method.
+2) After that I modified this attribut by calling addMemberDN(),
+and saving the instance again throws a NullPointerException
+
+
+
+
+
+
+[ERROR] java.lang.NullPointerException
+
+
+
+
+[ERROR] 	at org.springframework.ldap.core.DirContextAdapter.collectModifications(DirContextAdapter.java:338)
+
+
+
+
+
+
+look at the sourcecode:
+
+
+
+
+
+
+NameAwareAttribute currentAttribute = originalAttrs.get(changedAttr.getID());
+
+
+
+
+
+
+
+
+
+        if(changedAttr.hasValuesAsNames()) {
+
+
+
+
+            try {
+
+
+
+
+338:                currentAttribute.initValuesAsNames();
+
+
+
+
+            }
+
+
+
+
+
+
+problem: currentAttribute is null, because this attribute has not been seet,</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.core.DirContextAdapter.java</file>
+			<file type="M">org.springframework.ldap.core.DirContextAdapterTest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

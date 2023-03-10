@@ -1,0 +1,39 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LDAP">
+	<bug id="1" master="192" duplicate="186" opendate="2009-07-18 11:51:31" fixdate="2009-12-21 08:23:18" resolution="Fixed">
+		<buginformation>
+			<summary>Add authentication methods that provide authentication exception Enhance or create LdapTemplate.authenticate methods to throw exception rather than simply returning "false".</summary>
+			<description>I realize that the AuthenticationException is logged, but I need to return this information to the caller so that they can seek remedy.
+For example, if error is:
+52e then user will know to re-enter password
+530 then user will know to try later
+532 then user will know password has expired
+533 then user will know that account is disabled
+etc....
+If I have to use "plain old" JNDI for authentication purposes just to capture the AuthenticationException, then SPRING LDAP is useless to me.
+Please make the ldaptemplate.authenticate throwable or somehow able to return the exception message instead of just FALSE. The ldaptemplate.authenticate method swallows the AuthenticationException.
+I realize that the AuthenticationException is logged, but I need to return this information to the caller so that they can seek remedy.
+For example, if error is:
+52e then user will know to re-enter password
+530 then user will know to try later
+532 then user will know password has expired
+533 then user will know that account is disabled
+etc....
+Please make the ldaptemplate.authenticate throwable or somehow able to return the exception message along with FALSE.
+Or create a new set of "authenticate" methods that throw the Exception.</description>
+			<version>1.3.0</version>
+			<fixedVersion>1.3.1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.LdapTemplateAuthenticationITest.java</file>
+			<file type="M">org.springframework.ldap.core.LdapTemplate.java</file>
+			<file type="M">org.springframework.ldap.core.LdapOperations.java</file>
+			<file type="M">org.springframework.ldap.support.LdapUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">186</link>
+			<link type="Duplicate" description="is duplicated by">192</link>
+		</links>
+	</bug>
+</bugrepository>

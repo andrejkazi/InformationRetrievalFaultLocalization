@@ -1,0 +1,1209 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="132" opendate="2012-02-17 19:02:20" fixdate="2012-04-11 09:32:48" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException AbstractPersistentProperty inside isEntity</summary>
+			<description>isEntity() throws a NPE when evaluating a HashMap. See the forum reference (from entry #4 and forth) for more details.</description>
+			<version>1.3 M1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.AbstractPersistentPropertyUnitTests.java</file>
+			<file type="M">org.springframework.data.mapping.model.AbstractPersistentProperty.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="139" opendate="2012-03-26 14:28:55" fixdate="2012-04-11 09:35:14" resolution="Fixed">
+		<buginformation>
+			<summary>StackOverflowError from infinite recursion in PropertyPath.create:326</summary>
+			<description>Using the mapper from Spring Data MongoDB, I get a stack overflow exception when I make a call to findOne using a simple .is() criteria. I tested with spring-data-commons-core 1.2.1.RELEASE and 1.2.2.BUILD-SNAPSHOT.
+I was able to reproduce the error using data common&amp;amp;apos;s PropertyPath stand-alone; putting following line in a test causes the same exception:
+
+
+
+
+
+
+PropertyPath pp = PropertyPath.from("_id", CardInteraction.class);
+
+
+
+
+
+
+where CardInteraction is defined with the @Id annotation:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class CardInteraction {
+
+
+
+
+@Id private String interactionId;
+
+
+
+
+...
+
+
+
+
+}
+
+
+
+
+
+
+The infinite recursion converges with the arguments PropertyPath.create:326(source="_", type=..., addTail="id")</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PropertyPath.java</file>
+			<file type="M">org.springframework.data.mapping.PropertyUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">158</link>
+			<link type="Relate" description="relates to">179</link>
+		</links>
+	</bug>
+	<bug id="154" opendate="2012-04-17 06:02:43" fixdate="2012-04-19 03:52:20" resolution="Fixed">
+		<buginformation>
+			<summary>Overwriting of delete(T entity) saveAndFlush(T entity); does not work anymore</summary>
+			<description>During initialization of the following repository an exception occurs for these two methods.
+
+
+
+
+
+
+public interface UserRepository extends JpaRepository&amp;lt;User, Long&amp;gt;,
+
+
+
+
+		PagingAndSortingRepository&amp;lt;User, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+	public User saveAndFlush(User entity);
+
+
+
+
+
+
+
+
+
+	public void delete(User entity);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;userRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract entities.User repositories.UserRepository.saveAndFlush(entities.User)!
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1442)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:248)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:848)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:790)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:707)
+
+
+
+
+        at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:478)
+
+
+
+
+        ... 41 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract entities.User repositories.UserRepository.saveAndFlush(entities.User)!
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:95)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:164)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:269)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:142)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:114)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:38)
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+        ... 49 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property save found for type class entities.User
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:319)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:301)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:265)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+
+
+
+
+        at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:70)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:68)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:57)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:93)
+
+
+
+
+        ... 56 more
+
+
+
+
+
+
+
+
+
+
+
+The same code works with snapshot before weekend (13.04.2012).
+So </description>
+			<version>1.3 RC1</version>
+			<fixedVersion>1.3 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">160</link>
+		</links>
+	</bug>
+	<bug id="157" opendate="2012-04-20 01:24:38" fixdate="2012-04-20 05:15:54" resolution="Fixed">
+		<buginformation>
+			<summary>@Query in extending interface is not picked up correctly</summary>
+			<description>I try to define an interface method in a super repository interface and &amp;amp;apos;implement&amp;amp;apos; this in an extending interface with @Query. This does not work.
+Tested in the latest nightly build:
+
+
+
+
+
+
+@NoRepositoryBean
+
+
+
+
+public interface EntityRepository&amp;lt;T&amp;gt; extends JpaRepository&amp;lt;T, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+	T findByDealer(Dealer dealer);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public interface CarRepository extends EntityRepository&amp;lt;PersonalSiteVehicle&amp;gt; {
+
+
+
+
+
+
+
+
+
+	@Override
+
+
+
+
+	@Query("select p from PersonalSiteVehicle p join p.detail d join d.enrichable e where e.dealer = ?1")
+
+
+
+
+	PersonalSiteVehicle findByDealer(Dealer dealer);
+
+
+
+
+}
+
+
+
+
+
+
+Results in 
+
+
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;carRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract java.lang.Object nl.inmotiv.indi.repository.EntityRepository.findByDealer(nl.inmotiv.indi.domain.Dealer)!
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1442)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:248)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:848)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:790)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:707)
+
+
+
+
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:478)
+
+
+
+
+	... 32 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract java.lang.Object nl.inmotiv.indi.repository.EntityRepository.findByDealer(nl.inmotiv.indi.domain.Dealer)!
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:95)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:164)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:269)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:142)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:114)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:38)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+	... 40 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property dealer found for type class nl.inmotiv.indi.domain.PersonalSiteVehicle
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:319)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:301)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:265)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:70)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:71)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:57)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:93)
+
+
+
+
+
+
+It looks like Spring Data does not use the @Query annotation in the sub interface. </description>
+			<version>1.3 RC1</version>
+			<fixedVersion>1.3 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="160" opendate="2012-04-21 08:47:35" fixdate="2012-04-26 09:13:19" resolution="Duplicate">
+		<buginformation>
+			<summary>Regression of Repository instances with only delete* methods</summary>
+			<description>A repository which only defines delete methods is not created by the Spring Data code with the exception:
+
+
+
+
+
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;treeEntityDeleteRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract void example.data.DeleteOnlyRepository.delete(java.lang.Object)!
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1441)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:305)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:585)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:913)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:464)
+
+
+
+
+	at org.springframework.context.support.ClassPathXmlApplicationContext.&amp;lt;init&amp;gt;(ClassPathXmlApplicationContext.java:139)
+
+
+
+
+	at org.springframework.context.support.ClassPathXmlApplicationContext.&amp;lt;init&amp;gt;(ClassPathXmlApplicationContext.java:83)
+
+
+
+
+	at example.data.RepositoryTest.testExample(RepositoryTest.java:10)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:601)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runNotIgnored(BlockJUnit4ClassRunner.java:79)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:71)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:49)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract void example.data.DeleteOnlyRepository.delete(java.lang.Object)!
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:95)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:164)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:269)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:142)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:114)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:38)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+	... 33 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property delete found for type class example.data.TreeEntity
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:319)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:301)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:265)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:70)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:68)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:57)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:93)
+
+
+
+
+	... 40 more
+
+
+
+
+
+
+caused by a repository which extends:
+
+
+
+
+
+
+public interface DeleteOnlyRepository&amp;lt;T, ID extends Serializable&amp;gt; extends Repository&amp;lt;T, ID&amp;gt;{
+
+
+
+
+
+
+
+
+
+    public void delete(ID paramID);
+
+
+
+
+
+
+
+
+
+    public void delete(T paramT);
+
+
+
+
+
+
+
+
+
+    public void delete(Iterable&amp;lt;? extends T&amp;gt; paramIterable);
+
+
+
+
+
+
+
+
+
+    public void deleteAll();
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+This appears to be a regression following the upgrade to Spring Data Commons 1.3.0 RC1, as it&amp;amp;apos;s not present when using Spring Data JPA 1.1.0.RC1, only when using the build snapshots. I realise that the bug is most likely in the data commons package, but I wasn&amp;amp;apos;t sure how to reproduce it without using the JPA component, so I&amp;amp;apos;m reporting here for the mo - hope that&amp;amp;apos;s OK.
+I attach a sample Maven project to reproduce the issue
+The reason for wanting such a repository is to prevent clients from performing CRU operations on a child object without the use of the parent, but I do need to offer the ability to delete it.</description>
+			<version>1.3 RC1</version>
+			<fixedVersion>1.3 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">154</link>
+		</links>
+	</bug>
+	<bug id="170" opendate="2012-05-07 03:51:44" fixdate="2012-05-07 10:12:26" resolution="Fixed">
+		<buginformation>
+			<summary>Potential NullPointerException in ReflectionEntityInformation</summary>
+			<description>After scanning for the annotation handed to the constructor, ReflectionEntityInformation tries to make it accessible before checking the field for null. This will cause a NullPointerException being thrown. Thus, thhe null-check following afterwards should be moved before that statement.</description>
+			<version>1.3 RC2</version>
+			<fixedVersion>1.3 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.ReflectionEntityInformation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="133" opendate="2012-02-08 22:51:42" fixdate="2012-05-21 04:54:15" resolution="Fixed">
+		<buginformation>
+			<summary>Documented Configuration of Conversion Service with DomainClassConverter Does Not Work</summary>
+			<description>The Spring Data JPA documentation describes configuring a DomainClassConverter like so:
+
+
+
+
+
+
+&amp;lt;mvc:annotation-driven conversion-service="conversionService" /&amp;gt;
+
+
+
+
+
+
+
+
+
+&amp;lt;bean id="conversionService" class="....context.support.ConversionServiceFactoryBean"&amp;gt;
+
+
+
+
+  &amp;lt;property name="converters"&amp;gt;
+
+
+
+
+    &amp;lt;list&amp;gt;
+
+
+
+
+      &amp;lt;bean class="org.springframework.data.repository.support.DomainClassConverter"&amp;gt;
+
+
+
+
+        &amp;lt;constructor-arg ref="conversionService" /&amp;gt;
+
+
+
+
+      &amp;lt;/bean&amp;gt;
+
+
+
+
+    &amp;lt;/list&amp;gt;
+
+
+
+
+  &amp;lt;/property&amp;gt;
+
+
+
+
+&amp;lt;/bean&amp;gt;
+
+
+
+
+
+
+However, this fails to work from an apparent cyclic instantiation error ("Error creating bean with name &amp;amp;apos;conversionService&amp;amp;apos;: FactoryBean which is currently in creation returned null from getObject").
+This is one workaround for the problem:
+
+
+
+
+
+
+&amp;lt;bean id="conversionService" class="org.springframework.core.convert.support.DefaultConversionService"/&amp;gt;
+
+
+
+
+
+
+
+
+
+&amp;lt;bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean"&amp;gt;
+
+
+
+
+  &amp;lt;property name="targetClass" value="org.springframework.core.convert.support.ConversionServiceFactory"/&amp;gt;
+
+
+
+
+  &amp;lt;property name="targetMethod" value="registerConverters"/&amp;gt;
+
+
+
+
+  &amp;lt;property name="arguments"&amp;gt;
+
+
+
+
+    &amp;lt;util:list&amp;gt;
+
+
+
+
+      &amp;lt;set&amp;gt;
+
+
+
+
+        &amp;lt;bean class="org.springframework.data.repository.support.DomainClassConverter"&amp;gt;
+
+
+
+
+          &amp;lt;constructor-arg ref="conversionService"/&amp;gt;
+
+
+
+
+        &amp;lt;/bean&amp;gt;
+
+
+
+
+      &amp;lt;/set&amp;gt;
+
+
+
+
+      &amp;lt;ref bean="conversionService"/&amp;gt;
+
+
+
+
+    &amp;lt;/util:list&amp;gt;
+
+
+
+
+  &amp;lt;/property&amp;gt;
+
+
+
+
+&amp;lt;/bean&amp;gt;
+
+
+
+
+
+</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverter.java</file>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.AbstractEntityInformationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">9177</link>
+			<link type="Depend" description="depends on">9143</link>
+			<link type="Depend" description="depends on">8954</link>
+			<link type="Duplicate" description="is duplicated by">171</link>
+			<link type="Relate" description="is related to">151</link>
+		</links>
+	</bug>
+	<bug id="176" opendate="2012-05-21 11:47:05" fixdate="2012-09-13 10:21:33" resolution="Fixed">
+		<buginformation>
+			<summary>StackOverflowError when inserted object is a CGLIB proxy</summary>
+			<description>When trying to persist an object [to MongoDB (spring-data-mongodb v1.1.0.M1)] that is in "session" scope and using a CGLIB proxy (ie: "@Scope(value="session", proxyMode = ScopedProxyMode.TARGET_CLASS)") I receive a StackOverflowError.  When removing the session scoping, it works correctly.
+java.lang.StackOverflowError
+	at java.util.HashMap$EntryIterator.&amp;lt;init&amp;gt;(HashMap.java:832)
+	at java.util.HashMap$EntryIterator.&amp;lt;init&amp;gt;(HashMap.java:832)
+	at java.util.HashMap.newEntryIterator(HashMap.java:846)
+	at java.util.HashMap$EntrySet.iterator(HashMap.java:950)
+	at java.util.AbstractMap.hashCode(AbstractMap.java:459)
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:336)
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:365)
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:39)
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:336)
+	at org.springframework.data.util.ParentTypeAwareTypeInformation.hashCode(ParentTypeAwareTypeInformation.java:79)
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:336)
+	at org.springframework.data.util.ParentTypeAwareTypeInformation.hashCode(ParentTypeAwareTypeInformation.java:79)
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:336)
+	at org.springframework.data.util.ParentTypeAwareTypeInformation.hashCode(ParentTypeAwareTypeInformation.java:79)
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:336)
+        .... (Repeats)</description>
+			<version>1.3 RC1</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.ClassTypeInformation.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

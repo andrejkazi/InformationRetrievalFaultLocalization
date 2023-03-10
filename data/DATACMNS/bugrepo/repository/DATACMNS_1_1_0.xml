@@ -1,0 +1,305 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="81" opendate="2011-09-29 08:01:56" fixdate="2011-09-29 09:53:07" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryInterfaceAwareBeanPostProcessor potentially suffers from NullPointerException</summary>
+			<description>RepositoryInterfaceAwareBeanPostProcessor.getClassForPropertyValue(...) returns null if a repository interface can not be loaded. The caching ConcurrentHashMap does not allow null as values.</description>
+			<version>1.2 M1</version>
+			<fixedVersion>1.2 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="92" opendate="2011-10-23 09:08:05" fixdate="2011-12-02 04:04:56" resolution="Fixed">
+		<buginformation>
+			<summary>Invalid Entities are placed in the MappingContext - Cache</summary>
+			<description>If a call to verify() of an persistent entity fails, it is still in the cache and will be returned on the next call of getPersistentEntity(), so you get the exception thrown by verify() on the first call and get just the entity back on the second call. So we need to remove the entity from the cache after a failed verify(), or put a Null/Dummy object in there that throws the same mapping exeption on getPersistentEntity().</description>
+			<version>1.2 M1</version>
+			<fixedVersion>1.2 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.data.mapping.context.AbstractMappingContextIntegrationTest.java</file>
+			<file type="D">org.springframework.data.repository.core.support.AbstractRepositoryMetadataUnitTest.java</file>
+			<file type="D">org.springframework.data.mapping.context.AbstractMappingContextUnitTest.java</file>
+			<file type="M">org.springframework.data.mapping.model.MutablePersistentEntity.java</file>
+			<file type="D">org.springframework.data.mapping.context.DefaultPersistenPropertyPathUnitTest.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="108" opendate="2011-12-05 09:57:35" fixdate="2011-12-06 04:45:09" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryFactorySupport throws ClassCastException for annotation based repositories</summary>
+			<description>Repository interfaces using the annotation based declaration model cannot be created through RepositoryFactorySupport as it&amp;amp;apos;s generics are typed to T extends Repository. As the proxy generated might not implement this interface itself we should add it to the interfaces the proxy exposes.</description>
+			<version>1.2 M2</version>
+			<fixedVersion>1.2 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupport.java</file>
+			<file type="M">org.springframework.data.mapping.model.BeanWrapper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="109" opendate="2011-12-07 10:20:32" fixdate="2011-12-19 09:13:36" resolution="Fixed">
+		<buginformation>
+			<summary>Upgrade to latest Querydsl</summary>
+			<description>Hello,
+Unit tests against spring-data-commons-core don&amp;amp;apos;t run on JDK 1.7. 
+It happens because spring-data-commons-core depends on querydsl 2.2.0 version which has a known bug. Please see https://bugs.launchpad.net/querydsl/+bug/819861
+This issue was fixed in 2.2.1, so after I updated dependency everything works fine.
+Regards,
+Alexey.</description>
+			<version>1.2 M2</version>
+			<fixedVersion>1.2 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.TypeVariableTypeInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">112</link>
+		</links>
+	</bug>
+	<bug id="114" opendate="2011-12-19 03:21:41" fixdate="2011-12-20 03:35:19" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong custom implementation automatically detected</summary>
+			<description>We have two repositories with a similar name suffix. Both repositories have a custom interface and implementation, also ending with a similar name suffix. When automatically scanning the repositories, and their custom implementation, the wrong custom implementation is wired to our repository bean. Resulting in the following exception:
+
+
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property find found for type class com.myproject.Contract
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.&amp;lt;init&amp;gt;(Property.java:76)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.&amp;lt;init&amp;gt;(Property.java:97)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.create(Property.java:312)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.create(Property.java:326)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.create(Property.java:326)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.create(Property.java:326)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.create(Property.java:292)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.from(Property.java:251)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Property.from(Property.java:232)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:48)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:242)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.buildTree(PartTree.java:101)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:77)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:56)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:92)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:159)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:303)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:157)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:120)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:39)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+	... 67 more
+
+
+
+
+
+
+For example:
+We have a repository named ContractRepository with a custom interface ContractRepositoryCustom and an implementation ContractRepositoryImpl, all defined inside the same package. In another package we have a repository, for another entity type, named AnotherContractRepository with a custom interface AnotherContractRepositoryCustom and an implementation AnotherContractRepositoryImpl. When starting the application context, the contractRepository bean is linked to our anotherContractRepositoryImpl rather than the contractRepositoryImpl.
+This behavior seems to be operating system dependent, as it only occurs on our Linux CI server.
+The cause of our problem can be found at AbstractRepositoryConfigDefinitionParser.detectCustomImplementation(...). It might be desirable to scan on getImplementationClassName() before applying the wildcard prefix.</description>
+			<version>1.2 RC1</version>
+			<fixedVersion>1.2 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.AbstractRepositoryConfigDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="125" opendate="2012-01-24 01:19:36" fixdate="2012-02-02 09:28:19" resolution="Fixed">
+		<buginformation>
+			<summary>QueryExecutorMethodInterceptor does not reject interfaces with query methods if no QueryLookupStrategy defined</summary>
+			<description>The constructor of QueryExecutorMethodInterceptor tries to reject interfaces containing query methods if no QueryLookupStrategy is defined. Unfortunately it doesn&amp;amp;apos;t as it checks for custom methods instead of query methods.</description>
+			<version>1.2 Final</version>
+			<fixedVersion>1.2.1, 1.3 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.QueryExecutorMethodInterceptorUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupport.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="120" opendate="2012-01-16 10:17:49" fixdate="2012-04-11 09:25:50" resolution="Fixed">
+		<buginformation>
+			<summary>PreferredConstructor.Parameter does not have equals(...) and hashCode() methods</summary>
+			<description>If this is fixed MappedConstructor.getFor(...) in Spring Data Mongo could rather hold a Map of Parameter to MappedParameter to avoid iterating over all MappedParameter instances on each call.</description>
+			<version>1.2 Final</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PreferredConstructor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="238" opendate="2012-09-21 03:01:18" fixdate="2012-10-09 00:26:14" resolution="Duplicate">
+		<buginformation>
+			<summary>Re-write PageableArgumentResolver (WebArgumentResolver) as HandlerMethodArgumentResolver</summary>
+			<description>To align better with Spring&amp;amp;apos;s transition from WebArgumentResolver to HandlerMethodArgumentResolver (Spring 3.1) it&amp;amp;apos;s recommended to re-write existing WebArgumentResolvers.
+Now a ServletWebArgumentResolverAdapter is needed to add the Pageable argument rsolver. In Java config:
+
+
+
+
+
+
+@Override
+
+
+
+
+public void addArgumentResolvers(List&amp;lt;HandlerMethodArgumentResolver&amp;gt; argumentResolvers) {
+
+
+
+
+	argumentResolvers.add(new ServletWebArgumentResolverAdapter(new PageableArgumentResolver()));
+
+
+
+
+}
+
+
+
+
+
+
+Quoted from this ServletWebArgumentResolverAdapter javadocs:
+Note: This class is provided for backwards compatibility. However it is recommended to re-write a WebArgumentResolver as HandlerMethodArgumentResolver. For more details see javadoc of AbstractWebArgumentResolverAdapter.</description>
+			<version>1.2 RC1</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableDefaults.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">117</link>
+		</links>
+	</bug>
+	<bug id="117" opendate="2011-12-21 07:33:22" fixdate="2013-02-12 08:42:47" resolution="Fixed">
+		<buginformation>
+			<summary>Add HandlerMethodArgumentResolver alternative to the PageableArgumentResolver</summary>
+			<description>It is recommended to re-implement WebArgumentResolver types as HandlerMethodArgumentResolver in Spring 3.1. Although a WebArgumentResolver is adapted transparently to the new contract, as the javadoc for AbstractWebArgumentResolverAdapter indicates, a HandlerMethodArgumentResolver.supportsParameter(MethodParameter) method can only be implemented by actually calling WebArgumentResolver.resolve() and checking if the return value is UNRESOLVED. If an exception occurs during that check, it isn&amp;amp;apos;t clear if the failure is because the parameter can not be supported or whether there was some other real failure. As a result the exception has to be absorbed and other resolvers given a chance instead.</description>
+			<version>1.2 RC1</version>
+			<fixedVersion>1.6 M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableDefaults.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">238</link>
+			<link type="Relate" description="relates to">330</link>
+		</links>
+	</bug>
+</bugrepository>

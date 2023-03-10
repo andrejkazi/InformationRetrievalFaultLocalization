@@ -1,0 +1,1054 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="773" opendate="2011-11-16 13:03:08" fixdate="2011-11-16 13:44:27" resolution="Fixed">
+		<buginformation>
+			<summary>ImmutablePair doc contains nonsense text</summary>
+			<description>Description of this class contains the following nonsense text:
+#ThreadSafe# if the objects are threadsafe</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.tuple.ImmutablePair.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="775" opendate="2011-11-17 23:38:26" fixdate="2011-11-18 00:02:15" resolution="Fixed">
+		<buginformation>
+			<summary>TypeUtils.getTypeArguments() misses type arguments for partially-assigned classes</summary>
+			<description>failing test code to add to TypeUtilsTest.testGetTypeArguments():
+
+
+typeVarAssigns = TypeUtils.getTypeArguments(Other.class, This.class);
+Assert.assertEquals(2, typeVarAssigns.size());
+Assert.assertEquals(String.class, typeVarAssigns.get(This.class.getTypeParameters()[0]));
+Assert.assertEquals(Other.class.getTypeParameters()[0], typeVarAssigns.get(This.class.getTypeParameters()[1]));
+
+
+These should pass based on:
+
+
+
+public interface This&amp;lt;K, V&amp;gt; {
+}
+
+public class Other&amp;lt;T&amp;gt; implements This&amp;lt;String, T&amp;gt; {
+}
+
+
+This case fails because the current code ignores the Other class due to its specifying its own type variables, which is obviously incorrect.  This report is extrapolated from an offline report received by Hen.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtils.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">776</link>
+		</links>
+	</bug>
+	<bug id="776" opendate="2011-11-17 23:55:21" fixdate="2011-11-18 00:02:32" resolution="Fixed">
+		<buginformation>
+			<summary>TypeUtilsTest contains incorrect type assignability assertion due to lost/skipped type variable information during the decision process</summary>
+			<description>TypeUtilsTest originally contained the following under #testIsAssignable():
+
+
+Assert.assertTrue("WRONG!", TypeUtils.isAssignable(dingType, disType));
+
+
+For background:
+
+
+public interface This&amp;lt;K, V&amp;gt; {
+}
+
+public class Other&amp;lt;T&amp;gt; implements This&amp;lt;String, T&amp;gt; {
+}
+
+public class Thing&amp;lt;Q&amp;gt; extends Other&amp;lt;B&amp;gt; {
+}
+
+
+&amp;lt;B&amp;gt; refers to a type parameter on the TypeUtilsTest class itself.
+disType and dingType refer to the generic types of the following fields, respectively:
+
+
+public This&amp;lt;String, String&amp;gt; dis;
+public Thing ding;
+
+
+Thus the assertion in question declares that type Thing is assignable to This&amp;lt;String, String&amp;gt;.  If we start at This we can see that the implementing class Other maps its T type parameter to the V type parameter of This.  From this point we can proceed down to Thing and see that it maps the B type parameter of the enclosing TypeUtilsTest class to the T type parameter of Other.  Thus it is fairly obvious that only a TypeUtilsTest&amp;lt;String&amp;gt;.Thing is assignable to This&amp;lt;String, String&amp;gt;.  From this we can determine that the intent of the message in the original test assertion must indeed have been to flag an incorrect assertion.  This is the associated bug report.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtils.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">775</link>
+		</links>
+	</bug>
+	<bug id="783" opendate="2011-12-16 08:38:25" fixdate="2011-12-28 05:58:37" resolution="Fixed">
+		<buginformation>
+			<summary>Documentation bug: StringUtils.split</summary>
+			<description>The documentation for StringUtils.split(String, String, int) contains wrong strings:
+StringUtils.split("ab de fg", null, 0)   = ["ab", "cd", "ef"]
+StringUtils.split("ab   de fg", null, 0) = ["ab", "cd", "ef"]
+This should read:
+StringUtils.split("ab cd ef", null, 0)   = ["ab", "cd", "ef"]
+StringUtils.split("ab   cd ef", null, 0) = ["ab", "cd", "ef"]</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="788" opendate="2012-02-11 12:36:48" fixdate="2012-02-29 14:39:49" resolution="Fixed">
+		<buginformation>
+			<summary>SerializationUtils throws ClassNotFoundException when cloning primitive classes</summary>
+			<description>If a serializable object contains a reference to a primitive class, e.g. int.class or int[].class, the SerializationUtils throw a ClassNotFoundException when trying to clone that object.
+
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Test;
+
+
+public class SerializationUtilsTest {
+
+	
+	@Test
+	public void primitiveTypeClassSerialization(){
+		Class&amp;lt;?&amp;gt; primitiveType = int.class;
+		
+		Class&amp;lt;?&amp;gt; clone = SerializationUtils.clone(primitiveType);
+		assertEquals(primitiveType, clone);
+	}
+}
+
+
+The problem was already reported as a java bug http://bugs.sun.com/view_bug.do?bug_id=4171142 and ObjectInputStream is fixed since java version 1.4.
+The SerializationUtils problem arises because the SerializationUtils internally use the ClassLoaderAwareObjectInputStream that overrides the ObjectInputStream&amp;amp;apos;s
+resoleClass method without delegating to the super method in case of a ClassNotFoundException.
+I understand the intention of the ClassLoaderAwareObjectInputStream, but this implementation should also implement a fallback to the original implementation.
+For example:
+
+        protected Class&amp;lt;?&amp;gt; resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            String name = desc.getName();
+            try {
+                return Class.forName(name, false, classLoader);
+            } catch (ClassNotFoundException ex) {
+            	try {
+            	     return Class.forName(name, false, Thread.currentThread().getContextClassLoader());
+            	} catch (Exception e) {
+		     return super.resolveClass(desc);
+		}
+            }
+        }
+
+
+Here is the code in ObjectInputStream that fixed the java bug.
+
+    protected Class&amp;lt;?&amp;gt; resolveClass(ObjectStreamClass desc)
+	throws IOException, ClassNotFoundException
+    {
+	String name = desc.getName();
+	try {
+	    return Class.forName(name, false, latestUserDefinedLoader());
+	} catch (ClassNotFoundException ex) {
+	    Class cl = (Class) primClasses.get(name);
+	    if (cl != null) {
+		return cl;
+	    } else {
+		throw ex;
+	    }
+	}
+    }
+
+</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.SerializationUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.SerializationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="800" opendate="2012-04-18 05:10:12" fixdate="2012-04-24 12:56:54" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc bug in DateUtils#ceiling for Calendar and Object versions.</summary>
+			<description>The documentation has only been corrected for the ceiling method that takes a Date, but not for those that take a Calendar or an Object, respectively.
+
+For example, if you had the datetime of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 13:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Mar 2002 0:00:00.000. 
+
+Looks like copy-paste from truncate. (the dates are incorrect)</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is a clone of">672</link>
+		</links>
+	</bug>
+	<bug id="802" opendate="2012-05-25 10:18:08" fixdate="2012-05-25 14:40:09" resolution="Fixed">
+		<buginformation>
+			<summary>LocaleUtils - unnecessary recursive call in SyncAvoid class</summary>
+			<description>The SyncAvoid class calls availableLocaleList() which is a method in the containing class that returns SyncAvoid.AVAILABLE_LOCALE_LIST.
+This is unnecessarily complex. The code should use the local variable "list" instead.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.LocaleUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="813" opendate="2012-07-14 00:15:04" fixdate="2012-07-14 00:54:12" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.equalsIgnoreCase doesn&amp;apos;t check string reference equality</summary>
+			<description>This looks like a regression from .lang versions prior to 3. If the 2 given CharSequences are strings (and both not null) you should check reference equality before delegating to regionMatches()</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="814" opendate="2012-08-03 17:16:57" fixdate="2012-08-03 17:44:39" resolution="Fixed">
+		<buginformation>
+			<summary>[Method|Constructor]Utils.invoke*(*, Object... args) variants cannot handle null values</summary>
+			<description>throws NPE</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.ConstructorUtils.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.ConstructorUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.MethodUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.MethodUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="817" opendate="2012-09-04 15:09:22" fixdate="2012-09-04 15:11:38" resolution="Fixed">
+		<buginformation>
+			<summary>Add org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8</summary>
+			<description>Add org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8 to check for version "6.2".</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="810" opendate="2012-07-07 02:06:06" fixdate="2012-09-12 21:54:18" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.join() endIndex, bugged for loop</summary>
+			<description>endIndex is described as index, but for loop still checks it as "array length".
+Basically missing equal sign
+commons-lang3-3.1-sources.jar, StringUtils.java lines 3309, 3394:
+        for (int i = startIndex; i &amp;lt; endIndex; i++) {
+should be:
+        for (int i = startIndex; i &amp;lt;= endIndex; i++) {
+</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="799" opendate="2012-04-12 21:45:37" fixdate="2012-09-22 13:24:57" resolution="Fixed">
+		<buginformation>
+			<summary>DateUtils#parseDate uses default locale; add Locale support</summary>
+			<description>Similar issue as https://issues.apache.org/jira/browse/HTTPCLIENT-471
+Following line throws an ParseException on a German system:
+d = DateUtils.parseDate("Wed, 09 Apr 2008 23:55:38 GMT", new String[] 
+{"EEE, dd MMM yyyy HH:mm:ss zzz"}
+);
+Reason: parseDate internally calls SimpleDateFormat without providing a locale. This causes "MMM" to be interpreted using the system locale. If the system is German, the date is trying to be interpreted as German date.
+I see following solutions:
+ A) Always instantiate SimpleDateFormat with Locale.ENGLISH
+ B) Make two instances of SimpleDateFormat. One without providing a locale and one with Locale.ENGLISH. Try two parsings
+ C) Make as many SimpleDateFormat instances as locales are availble iterate over all instances at the parsing attempts.
+ D) provide an additional (optional) parameter to parseDate for providing a Locale
+I would prefer B) as this seems the best trade-off between internationalization and local usage.
+What do you think?</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1202</link>
+		</links>
+	</bug>
+	<bug id="826" opendate="2012-09-25 01:03:19" fixdate="2012-09-25 01:08:06" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateParser does not handle non-ASCII digits correctly</summary>
+			<description>The FastDateParser class assumes that all numbers are ascii digits.
+However, that is not the case for some locales such as
+ja_JP_JP, hi_IN, th_TH, and th_TH_TH
+Rather than using "\d", the code needs to match using "\p
+{IsNd}
+" which is the Unicode class for numeric digits.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="828" opendate="2012-09-25 16:24:16" fixdate="2012-09-26 18:04:51" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateParser does not handle non-Gregorian calendars properly</summary>
+			<description>The following calendars are non-Gregorian [1]:
+ja_JP_JP - Japanese Imperial)
+th_TH (with any variant) - Thai Buddhist
+This causes errors when testing round-trip conversions.
+The simplest solution is to fall back to SimpleDateFormat for these calendars.
+[1] http://docs.oracle.com/javase/6/docs/technotes/guides/intl/calendar.doc.html</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="838" opendate="2012-09-28 22:38:31" fixdate="2012-09-28 23:33:21" resolution="Fixed">
+		<buginformation>
+			<summary>ArrayUtils removeElements methods clone temporary index arrays unnecessarily</summary>
+			<description>The private method removeAll(Object array, int... indices) sorts the indices array, so arrays passed in by application code need to be cloned first.
+However, where the index array is generated locally, that is unnecessary.
+The removeElements() methods currently call the public removeAll(&amp;lt;type&amp;gt;[] array, int... indices) methods, which clone the indices before calling the private removeAll() method.
+The removeElements() methods should call the private method directly, avoiding the unnecessary clone call.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ArrayUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="849" opendate="2012-11-06 01:49:14" fixdate="2012-11-06 02:00:18" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat and FastDatePrinter generates Date objects wastefully</summary>
+			<description>The code:
+    @Override
+    public String format(long millis) 
+{
+        return format(new Date(millis));
+    }
+
+should be:
+    @Override
+    public String format(long millis) 
+{
+        return printer.format(millis);
+    }
+
+There is no need to create the extra Date object.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="822" opendate="2012-09-12 21:22:47" fixdate="2012-11-11 13:18:53" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils#createNumber - bad behaviour for leading "--"</summary>
+			<description>NumberUtils#createNumber checks for a leading "--" in the string, and returns null if found. This is documented as a work round for a bug in BigDecimal.
+Returning nulll is contrary to the Javadoc and the behaviour for other methods which would throw NumberFormatException.
+It&amp;amp;apos;s not clear whether the BigDecimal problem still exists with recent versions of Java. However, if it does exist, then the check needs to be done for all invocations of BigDecimal, i.e. needs to be moved to createBigDecimal.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="857" opendate="2012-11-20 12:36:14" fixdate="2012-11-20 20:47:52" resolution="Fixed">
+		<buginformation>
+			<summary>StringIndexOutOfBoundsException in CharSequenceTranslator</summary>
+			<description>I found that there is bad surrogate pair handling in the CharSequenceTranslator
+This is a simple test case for this problem.
+\uD83D\uDE30 is a surrogate pair.
+
+
+@Test
+public void testEscapeSurrogatePairs() throws Exception {
+    assertEquals("\uD83D\uDE30", StringEscapeUtils.escapeCsv("\uD83D\uDE30"));
+}
+
+
+You&amp;amp;apos;ll get the exception as shown below.
+
+
+java.lang.StringIndexOutOfBoundsException: String index out of range: 2
+	at java.lang.String.charAt(String.java:658)
+	at java.lang.Character.codePointAt(Character.java:4668)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+
+
+Patch attached, the method affected:
+
+public final void translate(CharSequence input, Writer out) throws IOException
+
+</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.CharSequenceTranslator.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">862</link>
+		</links>
+	</bug>
+	<bug id="865" opendate="2013-01-03 01:38:59" fixdate="2013-01-03 06:20:30" resolution="Fixed">
+		<buginformation>
+			<summary>LocaleUtils.toLocale does not parse strings starting with an underscore</summary>
+			<description>Hi,
+Javadocs of Locale.toString() states that "If the language is missing, the string will begin with an underbar.". This is not handled in the LocaleUtils.toLocale method if it is meant to be the inversion method of Locale.toString().
+The fix for the ticket 328 does not handle well the case "fr__P", which I found out during fixing the first bug.
+I am attaching the patch for both problems.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.LocaleUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.LocaleUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="881" opendate="2013-03-27 08:43:48" fixdate="2013-03-27 16:31:48" resolution="Fixed">
+		<buginformation>
+			<summary> NumberUtils.createNumber() Javadoc says it does not work for octal numbers</summary>
+			<description>The javadoc for NumberUtils.createNumber() states:
+"Values with leading 0&amp;amp;apos;s will not be interpreted as octal."
+However,
+assertEquals(25, NumberUtils.createNumber("0025"));
+fails, because NumberUtils.createNumber("0025") returns 21.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="882" opendate="2013-03-28 16:25:26" fixdate="2013-04-23 06:03:28" resolution="Fixed">
+		<buginformation>
+			<summary>LookupTranslator accepts CharSequence as input, but fails to work with implementations other than String</summary>
+			<description>The core of org.apache.commons.lang3.text.translate is a HashMap&amp;lt;CharSequence, CharSequence&amp;gt; lookupMap.
+From the Javadoc of CharSequence (emphasis mine):
+
+This interface does not refine the general contracts of the equals and hashCode methods. The result of comparing two objects that implement CharSequence is therefore, in general, undefined. Each object may be implemented by a different class, and there is no guarantee that each class will be capable of testing its instances for equality with those of the other. It is therefore inappropriate to use arbitrary CharSequence instances as elements in a set or as keys in a map.
+The current implementation causes code such as the following to not work as expected:
+
+
+CharSequence cs1 = "1 &amp;lt; 2";
+CharSequence cs2 = CharBuffer.wrap("1 &amp;lt; 2".toCharArray());
+
+System.out.println(StringEscapeUtils.ESCAPE_HTML4.translate(cs1));
+System.out.println(StringEscapeUtils.ESCAPE_HTML4.translate(cs2));
+
+
+... which gives the following results (but should be identical):
+
+1 &amp;amp;lt; 2
+1 &amp;lt; 2
+
+
+The problem, at a minimum, is that CharBuffer.equals is even documented in the Javadoc that:
+
+A char buffer is not equal to any other type of object.
+... so a lookup on a CharBuffer in the Map will always fail when compared against the String implementations that it contains.
+An obvious work-around is to instead use something along the lines of either of the following:
+
+
+System.out.println(StringEscapeUtils.ESCAPE_HTML4.translate(cs2.toString()));
+System.out.println(StringEscapeUtils.escapeHtml4(cs2.toString()));
+
+
+... which forces everything back to a String.  However, this is not practical when working with large sets of data, which would require significant heap allocations and garbage collection concerns.  (As such, I was actually trying to use the translate method that outputs to a Writer - but simplified the above examples to omit this.)
+Another option that I&amp;amp;apos;m considering is to use a custom CharSequence wrapper around a char[] that implements hashCode() and equals() to work with those implemented on String.  (However, this will be interesting due to the symmetric assumption - which is further interesting that String.equals is currently implemented using instanceof - even though String is final...)</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.LookupTranslatorTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.translate.LookupTranslator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="862" opendate="2012-12-10 12:04:44" fixdate="2013-05-16 21:35:38" resolution="Duplicate">
+		<buginformation>
+			<summary>CharSequenceTranslator causes StringIndexOutOfBoundsException during translation of unicode codepoints with length &gt; 1 character</summary>
+			<description>When translating a string with unicode characters in, I&amp;amp;apos;ve encountered an index exception:
+
+
+	java.lang.StringIndexOutOfBoundsException: String index out of range: 50
+	at java.lang.String.charAt(String.java:686)
+	at java.lang.Character.codePointAt(Character.java:2335)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+	...
+
+
+The input string was from a twitter status:
+org.apache.commons.lang3.StringEscapeUtils.escapeCsv("pink &amp;amp; black adidas suit for this rainy weather \ud83d\udc4d");
+Both those characters are &amp;amp;apos;Invalid&amp;amp;apos; unicode characters, so presumably there is a conversion error somewhere. However, this shouldn&amp;amp;apos;t cause the translator to crash.
+At line 94, the loop which generates the exception increments the position by the size of the codepoint, which seems to grow faster than the number of characters. I don&amp;amp;apos;t really know how codepoints work, but it looks to me like there are two indexes which are treated as if they are the same one by this loop:
+
+pt is incrementing by one character each iteration
+pos is incrementing by one or more characters each iteration
+pos is being used to index into the character array
+pt is the value actually being tested in the loop test, so pos can be bigger than pt, causing an index problem at the end of the array
+
+My guess would be that the loop should read something like:
+
+
+            for (int pt = 0; pt &amp;lt; consumed;) {
+                int count = Character.charCount(Character.codePointAt(input, pos));
+                pt += count;
+                pos += count;
+            }
+
+
+I&amp;amp;apos;m not sure if that was the intention, hope it makes some sense!
+Stepping through that code with the input string " \ud83d\udc4d":
+
+the input string becomes " \ud83d\udc4d\u008d" (appended &amp;amp;apos;Reverse Line Feed&amp;amp;apos; - no idea why)
+consumed == 4
+Iterating the loop gives pt=0, pos=0 -&amp;gt; pt=1, pos=1 -&amp;gt; pt=2, pos=3 -&amp;gt; pt-3, pos=4 (Index exception)
+
+So \ud83d\udc4d seems to be a codepoint with a width of 2, which puts the index off by one after that.
+Anyway, hope that helps,
+Regards,
+Mike.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.CharSequenceTranslator.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">857</link>
+		</links>
+	</bug>
+	<bug id="879" opendate="2013-03-18 21:46:29" fixdate="2013-05-30 22:13:22" resolution="Fixed">
+		<buginformation>
+			<summary>LocaleUtils test fails with new Locale "ja_JP_JP_#u-ca-japanese" of JDK7</summary>
+			<description>The Test below fails with the following error on JDK7, but succeeds on JDK6:
+testAllLocales
+"java.lang.AssertionError: 
+Expected: &amp;lt;ja_JP_JP_#u-ca-japanese&amp;gt;
+     but: was &amp;lt;ja_JP_JP_#u-ca-japanese&amp;gt;
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:20)
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:8)
+	at com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testStringToLocale(LocaleStringConverterTest.java:20)
+	at com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testAllLocales(LocaleStringConverterTest.java:28)
+	at org.apache.maven.surefire.testng.TestNGExecutor.run(TestNGExecutor.java:76)
+	at org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.executeMulti(TestNGDirectoryTestSuite.java:161)
+	at org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.execute(TestNGDirectoryTestSuite.java:101)
+	at org.apache.maven.surefire.testng.TestNGProvider.invoke(TestNGProvider.java:115)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:103)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:74)
+... Removed 25 stack frames
+ java.lang.AssertionError: 
+Expected: &amp;lt;ja_JP_JP_#u-ca-japanese&amp;gt;
+     but: was &amp;lt;ja_JP_JP_#u-ca-japanese&amp;gt;
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:20)
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:8)
+	at com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testStringToLocale(LocaleStringConverterTest.java:20)
+	at com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testAllLocales(LocaleStringConverterTest.java:28)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:715)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:907)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1237)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:127)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:111)
+	at org.testng.TestRunner.privateRun(TestRunner.java:767)
+	at org.testng.TestRunner.run(TestRunner.java:617)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:51)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:85)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1197)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1122)
+	at org.testng.TestNG.run(TestNG.java:1030)
+	at org.apache.maven.surefire.testng.TestNGExecutor.run(TestNGExecutor.java:76)
+	at org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.executeMulti(TestNGDirectoryTestSuite.java:161)
+	at org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.execute(TestNGDirectoryTestSuite.java:101)
+	at org.apache.maven.surefire.testng.TestNGProvider.invoke(TestNGProvider.java:115)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:103)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:74)
+"
+org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:20)
+org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:8)
+com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testStringToLocale(LocaleStringConverterTest.java:20)
+com.scispike.foundation.test.unit.i18n.LocaleStringConverterTest.testAllLocales(LocaleStringConverterTest.java:28)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:601)
+org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+org.testng.internal.Invoker.invokeMethod(Invoker.java:715)
+org.testng.internal.Invoker.invokeTestMethod(Invoker.java:907)
+org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1237)
+org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:127)
+org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:111)
+org.testng.TestRunner.privateRun(TestRunner.java:767)
+org.testng.TestRunner.run(TestRunner.java:617)
+org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+org.testng.SuiteRunner.run(SuiteRunner.java:240)
+org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:51)
+org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:85)
+org.testng.TestNG.runSuitesSequentially(TestNG.java:1197)
+org.testng.TestNG.runSuitesLocally(TestNG.java:1122)
+org.testng.TestNG.run(TestNG.java:1030)
+org.apache.maven.surefire.testng.TestNGExecutor.run(TestNGExecutor.java:76)
+org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.executeMulti(TestNGDirectoryTestSuite.java:161)
+org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.execute(TestNGDirectoryTestSuite.java:101)
+org.apache.maven.surefire.testng.TestNGProvider.invoke(TestNGProvider.java:115)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:601)
+org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:103)
+org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:74)
+========== Test
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import java.util.Locale;
+import org.testng.annotations.Test;
+import com.scispike.foundation.i18n.StringToLocaleConverter;
+public class LocaleStringConverterTest {
+	StringToLocaleConverter converter = new StringToLocaleConverter();
+	public void testStringToLocale(Locale l) 
+{
+		String s = l.toString();
+
+		assertThat(converter.convert(s), equalTo(l));
+	}
+
+	@Test
+	public void testAllLocales() {
+		Locale[] locales = Locale.getAvailableLocales();
+		for (Locale l : locales) 
+{
+			testStringToLocale(l);
+		}
+	}
+}
+========== StringToLocaleConverter
+import java.util.Locale;
+import org.apache.commons.lang3.LocaleUtils;
+import org.springframework.core.convert.converter.Converter;
+public class StringToLocaleConverter implements Converter&amp;lt;String, Locale&amp;gt; {
+	@Override
+	public Locale convert(String source) {
+		if (source == null) 
+{
+			return LocaleToStringConverter.DEFAULT;
+		}
+		return LocaleUtils.toLocale(source);
+	}
+}</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.LocaleUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.LocaleUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Regression" description="breaks">559</link>
+		</links>
+	</bug>
+	<bug id="920" opendate="2013-10-11 19:35:41" fixdate="2013-10-11 19:39:23" resolution="Fixed">
+		<buginformation>
+			<summary>Add ArrayUtils#nullToEmpty(Class&lt;?&gt;[])</summary>
+			<description>Class is a ubiquitous array component type. This method can be immediately consumed by [lang]&amp;amp;apos;s own reflection code.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ArrayUtils.java</file>
+			<file type="M">org.apache.commons.lang3.ArrayUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="921" opendate="2013-10-15 17:46:38" fixdate="2013-10-15 18:32:26" resolution="Fixed">
+		<buginformation>
+			<summary>BooleanUtils.xor(boolean...) produces wrong results</summary>
+			<description>BooleanUtils.xor(true, true, false, true) returns false, although 
+true ^ true ^ false ^ true is true. This is because the implementation only checks the count of true in the provided array.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.BooleanUtils.java</file>
+			<file type="M">org.apache.commons.lang3.BooleanUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">922</link>
+		</links>
+	</bug>
+	<bug id="902" opendate="2013-06-21 12:24:56" fixdate="2013-10-16 08:31:09" resolution="Fixed">
+		<buginformation>
+			<summary>RandomStringUtils.random (count, letters=true, number=true) may not use numerics</summary>
+			<description>Either there is a bug in an implementation or misunderstanding in docs.
+RandomStringUtils.random (count, letters, numbers) is documented so that:
+letters  if true, generated string will include alphabetic characters
+numbers  if true, generated string will include numeric characters
+But apparently the current implementation supports only that generated string may include either only letters, only numbers or both.
+This is current implementation:
+ if (letters &amp;amp;&amp;amp; Character.isLetter(ch) || numbers &amp;amp;&amp;amp; Character.isDigit(ch) || !letters &amp;amp;&amp;amp; !numbers)
+So there may be situation when generated string is not containing numbers at all which is in contrary with what the docs say. </description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.RandomStringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="915" opendate="2013-09-10 12:47:28" fixdate="2014-01-11 13:08:03" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong locale handling in LocaleUtils.toLocale()</summary>
+			<description>The static method LocaleUtils.toLocale() fails, at least, to parse 3-char locale strings, which are completelly valid BCP47 locales.</description>
+			<version>3.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.LocaleUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.LocaleUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Incorporates" description="is part of">155</link>
+			<link type="Regression" description="breaks">1172</link>
+			<link type="Regression" description="breaks">1260</link>
+		</links>
+	</bug>
+	<bug id="951" opendate="2014-01-14 10:06:55" fixdate="2014-01-20 17:24:06" resolution="Fixed">
+		<buginformation>
+			<summary>Fragments are wrong by 1 day when using fragment YEAR or MONTH</summary>
+			<description>When one trys to get the fragments of a calendar object and uses the fragment YEAR or MONTH, the returned value is wrong by 1 day in the targeted timeunit. The bug resides in the class DateUtils in function 
+
+
+private static long getFragment(Calendar calendar, int fragment, int unit)
+
+
+There is an initial recalculation if the fragment is YEAR or MONTH. So if one would like to have the minutes for the fragment YEAR for the date 2000-01-01 00:00:00 this would return 1440 which is actually wrong. The error can be found on lines 1635 - 1643.
+Suggested fix:
+
+
+// Fragments bigger than a day require a breakdown to days
+        switch (fragment) {
+            case Calendar.YEAR:
+                result += ((calendar.get(Calendar.DAY_OF_YEAR)-1) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+            case Calendar.MONTH:
+                result += ((calendar.get(Calendar.DAY_OF_MONTH)-1) * MILLIS_PER_DAY) / millisPerUnit;
+                break;
+        }
+
+</description>
+			<version>3.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsFragmentTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">987</link>
+		</links>
+	</bug>
+	<bug id="943" opendate="2014-01-05 23:24:13" fixdate="2014-01-20 18:45:56" resolution="Fixed">
+		<buginformation>
+			<summary>Test DurationFormatUtilsTest.testEdgeDuration fails in JDK 1.6, 1.7 and 1.8, BRST time zone</summary>
+			<description>While helping testing LANG-942 with JDK1.8 I always got three tests failing, while others had 2. After @britter fixed the issues related to JDK1.8, I continue getting errors with JDK1.8.
+I decided to vote for [lang] 3.2.1 and test the tag with JDK 1.8 and a few others. However, I&amp;amp;apos;m getting errors with any JDK, 1.6, 1.7 and 1.8 (build 121). Always the same error:
+Failed tests: 
+  DurationFormatUtilsTest.testEdgeDurations:467-&amp;gt;assertEqualDuration:562-&amp;gt;assertEqualDuration:575 expected:&amp;lt;7[7]&amp;gt; but was:&amp;lt;7[6]&amp;gt;
+I get the same error with JDK 1.6 and the tag 3.1
+Since the test is somewhat related to Time Zones (there are some Calendar&amp;amp;apos;s, TimeZone.getDefault(), etc), here&amp;amp;apos;s my locale and time zone:
+kinow@chuva:~/java/apache/commons-lang-31$ locale
+LANG=en_US.UTF-8
+LANGUAGE=en_US
+LC_CTYPE="en_US.UTF-8"
+LC_NUMERIC="en_US.UTF-8"
+LC_TIME="en_US.UTF-8"
+LC_COLLATE="en_US.UTF-8"
+LC_MONETARY="en_US.UTF-8"
+LC_MESSAGES="en_US.UTF-8"
+LC_PAPER="en_US.UTF-8"
+LC_NAME="en_US.UTF-8"
+LC_ADDRESS="en_US.UTF-8"
+LC_TELEPHONE="en_US.UTF-8"
+LC_MEASUREMENT="en_US.UTF-8"
+LC_IDENTIFICATION="en_US.UTF-8"
+LC_ALL=
+kinow@chuva:~/java/apache/commons-lang-31$ date
+Sun Jan  5 21:23:05 BRST 2014</description>
+			<version>3.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="936" opendate="2013-12-15 15:18:21" fixdate="2014-01-22 08:19:55" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.getLevenshteinDistance with too big of a threshold returns wrong result</summary>
+			<description>StringUtils.getLevenshteinDistance(CharSequence s, CharSequence t, int threshold) specifies:
+
+Find the Levenshtein distance between two Strings if it&amp;amp;apos;s less than or equal to a given threshold.
+When passing a threshold &amp;gt; Integer.MAX_VALUE - max(s.length(), t.length()) the method always returns -1.
+The simplest use case is passing Integer.MAX_VALUE (a common practice if one would want to find the min/max LD of a string to several other strings in an iterative fashion.
+The code should be fixed to consider the threshold in relation to the source/target lengths, or alternatively the javadoc should be fixed to pronounce the current limit.</description>
+			<version>3.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">684</link>
+		</links>
+	</bug>
+	<bug id="883" opendate="2013-04-05 11:19:57" fixdate="2014-12-27 16:29:39" resolution="Fixed">
+		<buginformation>
+			<summary>Add StringUtils.containsAny(CharSequence, CharSequence... ) method</summary>
+			<description>Presently there is a: public static boolean containsAny(CharSequence cs, char... searchChars). It would be useful to have the: public static boolean containsAny(CharSequence cs, CharSequence... searchCharSequences) which will return true if any of the searchCharSequences are contained within the cs. If you decide to implement it, it would be nice to have an alias method for collections, e.g., public static boolean containsAny(CharSequence cs, Collection&amp;lt;CharSequence&amp;gt; searchCharSequences)</description>
+			<version>3.1</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">733</link>
+		</links>
+	</bug>
+	<bug id="794" opendate="2012-03-16 23:15:36" fixdate="2015-04-03 12:02:36" resolution="Fixed">
+		<buginformation>
+			<summary>SystemUtils.IS_OS_WINDOWS_2008, VISTA are incorrect</summary>
+			<description>On Windows Server 2008 R2 (a Rackspace Cloud Instance), the values of SystemUtils.IS_OS_WINDOWS_2008 and SystemUtils.IS_OS_WINDOWS_VISTA are incorrect: the former is false and the latter is true.
+I&amp;amp;apos;m not sure how to fix the VISTA flag (as I don&amp;amp;apos;t have an instance to test against), but the cause of WINDOWS_2008 being set to false is that the match explicitly requires the version to be 6.1, where 6.0 can apparently also be the version number for 2008 R2.</description>
+			<version>3.1</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="916" opendate="2013-09-13 01:19:23" fixdate="2015-05-01 02:29:01" resolution="Fixed">
+		<buginformation>
+			<summary>CLONE - DateFormatUtils.format does not correctly change Calendar TimeZone in certain situations</summary>
+			<description>In LANG-538 issue, there is an unit test:
+
+  public void testFormat_CalendarIsoMsZulu() {
+    final String dateTime = "2009-10-16T16:42:16.000Z";
+    GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT-8"));
+    cal.clear();
+    cal.set(2009, 9, 16, 8, 42, 16);
+    cal.getTime();
+
+    FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("GMT"));
+    assertEquals("dateTime", dateTime, format.format(cal));
+  }
+
+
+This test passes successfully in lang-2.6 but failed in lang3-3.1:
+
+org.junit.ComparisonFailure: dateTime expected:&amp;lt;2009-10-16T[16]:42:16.000Z&amp;gt; but was:&amp;lt;2009-10-16T[08]:42:16.000Z&amp;gt;
+
+
+Reproduced whit Sun Java version: 1.6.0_45 and 1.7.0_21 on Fedora 17 (Linux 3.9.10-100.fc17.i686.PAE).
+Moreover, I wrote another unit test showing that the timeZone parameter seems to be ignored :
+
+public void test() {
+	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Paris"));
+	cal.set(2009, 9, 16, 8, 42, 16);
+
+	// System.out.println(DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(cal));
+
+	System.out.println("long");
+	System.out.println(DateFormatUtils.format(cal.getTimeInMillis(), DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(), TimeZone.getDefault()));
+	System.out.println(DateFormatUtils.format(cal.getTimeInMillis(), DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(),
+			TimeZone.getTimeZone("Asia/Kolkata")));
+	System.out.println(DateFormatUtils.format(cal.getTimeInMillis(), DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(),
+			TimeZone.getTimeZone("Europe/London")));
+
+	System.out.println("calendar");
+	System.out.println(DateFormatUtils.format(cal, DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(), TimeZone.getDefault()));
+	System.out.println(DateFormatUtils.format(cal, DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(), TimeZone.getTimeZone("Asia/Kolkata")));
+	System.out.println(DateFormatUtils.format(cal, DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(), TimeZone.getTimeZone("Europe/London")));
+
+	System.out.println("calendar fast");
+	System.out.println(FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("Europe/Paris")).format(cal));
+	System.out.println(FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("Asia/Kolkata")).format(cal));
+	System.out.println(FastDateFormat.getInstance("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss.SSS&amp;amp;apos;Z&amp;amp;apos;", TimeZone.getTimeZone("Europe/London")).format(cal));
+}
+
+
+Gives the following console logs:
+
+long
+2009-10-16T08:42:16+02:00
+2009-10-16T12:12:16+05:30
+2009-10-16T07:42:16+01:00
+calendar
+2009-10-16T08:42:16+02:00
+2009-10-16T08:42:16+02:00
+2009-10-16T08:42:16+02:00
+calendar fast
+2009-10-16T08:42:16.975Z
+2009-10-16T08:42:16.975Z
+2009-10-16T08:42:16.975Z
+
+
+When DateFormatUtils.format takes a long parameter, the time string is good.
+When DateFormatUtils.format takes a Calendar parameter, the time string is wrong, the timezone parameter is IGNORED.</description>
+			<version>3.1</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTimeZonesTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is a clone of">538</link>
+			<link type="Reference" description="relates to">1092</link>
+			<link type="Reference" description="is related to">1127</link>
+			<link type="Required" description="requires">1123</link>
+		</links>
+	</bug>
+	<bug id="1205" opendate="2016-02-23 16:40:09" fixdate="2016-04-24 03:37:53" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber() behaves inconsistently with NumberUtils.isNumber()</summary>
+			<description>The NumberUtils.createNumber() method fails to check for multiple trailing characters, and as a result, it returns a value even though NumberUtils.isNumber() indicates that it should not.  For example:
+
+
+boolean isNumber = NumberUtils.isNumber("81.5514DD");   // returns false
+
+Number numValue = NumberUtils.createNumber("81.5514DD");  // returns a Double value, 81.5514
+
+
+I would expect the createNumber() method to throw a NumberFormatException in this case.</description>
+			<version>3.1</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="901" opendate="2013-06-19 14:53:05" fixdate="2016-05-28 10:50:31" resolution="Fixed">
+		<buginformation>
+			<summary>endsWithAny is case sensitive - documented as case insensitive</summary>
+			<description>endsWithAny was added in response to this task: LANG-614
+Documentation says that the method returns "true if the CharSequence starts with any of the the prefixes, case insensitive, or both null" 
+StringUtils.endsWithAny("MIME/TYPE", "TYPE") true
+StringUtils.endsWithAny("MIME/TYPE", "type") false</description>
+			<version>3.1</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsStartsEndsWithTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1278" opendate="2016-10-21 15:06:39" fixdate="2016-10-21 19:08:03" resolution="Fixed">
+		<buginformation>
+			<summary>BooleanUtils javadoc issues</summary>
+			<description>1.  Every instance of NOTE: This returns null and will throw a NullPointerException if autoboxed to a boolean. needs to be fixed, for example: https://github.com/apache/commons-lang/blob/LANG_3_5/src/main/java/org/apache/commons/lang3/BooleanUtils.java#L51
+autoboxed -&amp;gt; unboxed
+reference: https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html
+2.  https://github.com/apache/commons-lang/blob/LANG_3_5/src/main/java/org/apache/commons/lang3/BooleanUtils.java#L1025
+The examples are duplicated: lines 1029~1031 are identical to lines 1026~1028.</description>
+			<version>3.1</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.BooleanUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

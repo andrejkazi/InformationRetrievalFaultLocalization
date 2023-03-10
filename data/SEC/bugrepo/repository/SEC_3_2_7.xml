@@ -1,0 +1,24 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="3045" opendate="2015-07-17 12:48:38" fixdate="2015-07-17 13:44:29" resolution="Complete">
+		<buginformation>
+			<summary>EnableGlobalMethodSecurity mode=ASPECTJ creates proxies if InfrastructureAdvisorAutoProxyCreator is Added</summary>
+			<description>If InfrastructureAdvisorAutoProxyCreator exists, then Spring Security will create proxies for security related classes when @EnableGlobalMethodSecurity(mode=ASPECTJ, ....
+This is due to the fact that GlobalMethodSecurityConfiguration creates a MethodSecurityMetadataSourceAdvisor.
+Instead we should conditionally create MethodSecurityMetadataSourceAdvisor in an ImportBeanDefintionRegistrar only when using proxies for Spring Security.</description>
+			<version>3.2.7</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration.java</file>
+			<file type="M">org.springframework.security.config.annotation.method.configuration.GlobalMethodSecuritySelector.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">2595</link>
+			<link type="Relate" description="relates to">3005</link>
+			<link type="Relate" description="relates to">2698</link>
+			<link type="Supersede" description="supersedes">3005</link>
+		</links>
+	</bug>
+</bugrepository>

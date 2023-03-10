@@ -1,0 +1,1106 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1223" opendate="2009-08-19 08:28:52" fixdate="2009-08-19 08:34:50" resolution="Fixed">
+		<buginformation>
+			<summary>BindAuthenticator should use first successful return from bindWithDn</summary>
+			<description>Regression issue. Loop should end when first non-null user is returned.</description>
+			<version>3.0.0 M1</version>
+			<fixedVersion>3.0.0 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1201" opendate="2009-07-17 04:08:21" fixdate="2009-08-23 03:43:16" resolution="Fixed">
+		<buginformation>
+			<summary>PropertyPlaceholderConfigurer does not work for intercept-url attributes</summary>
+			<description>Hello,
+I need to define a property placeholder to configure the access for an intercept URL pattern:
+&amp;lt;security:http&amp;gt;
+  &amp;lt;security:intercept-url pattern="/**" access="ROLE_$
+{access.role}
+" /&amp;gt;
+&amp;lt;/security:http&amp;gt;
+As the HttpSecurityBeanDefinitionParser doesn&amp;amp;apos;t create BeanDefinitions for any the properties (and sub-properties) that are passed to the FilterSecurityInterceptor, the PropertyPlaceholderConfigurer can&amp;amp;apos;t substitute them. This issue looks very equal to SEC-975, but I guess it&amp;amp;apos;s a little harder to solve as the pattern-access map resides deeper in the object hierarchy.
+Kind regards
+Marc</description>
+			<version>3.0.0 M2</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.access.channel.ChannelProcessingFilter.java</file>
+			<file type="M">org.springframework.security.config.http.WebConfigUtils.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.SecurityConfig.java</file>
+			<file type="M">org.springframework.security.config.http.FilterInvocationSecurityMetadataSourceBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.FilterSecurityMetadataSourceBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1236" opendate="2009-09-04 05:58:44" fixdate="2009-09-05 02:27:31" resolution="Fixed">
+		<buginformation>
+			<summary>Using HTTP Method-specific intercept-urls causes patterns with no method to be ignored</summary>
+			<description>With this configuration the URLs with /user/** pattern does not get intercepted:
+&amp;lt;http&amp;gt;
+	&amp;lt;http-basic/&amp;gt;
+	&amp;lt;intercept-url pattern="/user/**" access="ROLE_USER"/&amp;gt;
+	&amp;lt;intercept-url pattern="/teller/**" access="ROLE_TELLER" method="GET"/&amp;gt;
+&amp;lt;/http&amp;gt;
+this is beacause org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource never search for null key.
+Here is the current code:
+ Map&amp;lt;Object, List&amp;lt;ConfigAttribute&amp;gt;&amp;gt; requestMap = httpMethodMap.get(method);
+ // If no method-specific map, use the general one stored under the null key
+ if (requestMap == null) 
+{
+   requestMap = httpMethodMap.get(null);
+ }
+
+Because "method" is never "null", in the first line the variable "requestMap" will either, so the "if"&amp;amp;apos;s condition is never "true".
+Attached is a working version of the class.</description>
+			<version>3.0.0 M1</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSourceTests.java</file>
+			<file type="M">org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1241" opendate="2009-09-08 08:50:16" fixdate="2009-09-08 21:21:39" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequest not destroyed after successful authentication</summary>
+			<description>SUMMARY:
+After an anonymous user authenticates in order to access a protected resource, the RequestCacheAwareFilter does not destroy the saved request. 
+After successfully replaying the original request for the protected resource, the saved request is no longer valid/useful and should be destroyed.
+BACKGROUND:
+I have a form handler registered at:
+http://foo.com/app/form
+A handler is defined with two methods (one for GET and one for POST). The form posts back to the same url as the GET request for the form (a relatively common practice?).
+So for example:
+GET: /app/form
+&amp;lt;form action="/app/form" method="POST"&amp;gt; ... &amp;lt;/form&amp;gt;
+The URL "/app/form" is protected by Spring Security and requires "IS_AUTHENTICATED_FULLY".
+When an anonymous user  attempts to access the protected resource, they are correctly redirected to the login form. Once authentication is successful, the user is directed back to the protected resource.
+Upon submitting the form, though, the POST fails, because the session still contains a cached copy of the original GET request.
+Because the session still contains a copy of the original GET request, SavedRequest.doesRequestMatch (line 166) erroneously returns true. However, the requests do NOT match: the current request is a POST, whereas the saved request was a GET.
+Additionally, after successfully completing the saved request after authentication, RequestCacheAwareFilter.doFilter (line 36) does not remove the saved request from the cache.
+As a result, when the user attempts to POST the form, the result is the user being directed back to the GET view of the form, with no form-processing actions taking place. Debugging confirms that the requests are mapped to the handler&amp;amp;apos;s GET method.
+I would consider this a critical if not blocking issue, as it prevents normal form processing to occur after authenticating. 
+I am still looking, but I have not yet discovered a way to configure Spring Security to use a custom class in-place-of the RequestCacheAwareFilter - so I cannot easily extend or remove the Filter.
+As a work around, I can change the form handler&amp;amp;apos;s POST methods to map to a different URL than the GET method - however, this breaks any RESTful contracts I might have wished to adhere to.
+Additionally, I can configure a custom AuthenticationSuccessHandler (namely, using the SimpleUrlAuthenticationSuccessHandler instead of the SavedRequestAwareAuthenticationSuccessHandler). Doing so effectively stops the Security layer from trying to replay the original request, but this has a jarring impact on the user experience in that users always get redirected back to the default URL after authenticating.
+CONCLUSION
+Any other suggestions are welcome, and I am happy to provide more concrete code examples if necessary...</description>
+			<version>3.0.0 M2</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.savedrequest.RequestCache.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.HttpSessionRequestCache.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1240" opendate="2009-09-08 02:44:09" fixdate="2009-09-08 23:13:44" resolution="Fixed">
+		<buginformation>
+			<summary>{ssha} is specified in the Spring Security password-encoder schema, but isn&amp;apos;t handled by code</summary>
+			<description>Pretty minor, but I noticed that the 
+{ssha}
+ option for LDAP SSHA is an allowable value in the schema for password-encoder&amp;amp;apos;s hash attribute, but it isn&amp;amp;apos;t handled by PasswordEncoderParser.</description>
+			<version>3.0.0 M2</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.authentication.PasswordEncoderParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1242" opendate="2009-09-11 03:27:19" fixdate="2009-09-13 07:36:31" resolution="Fixed">
+		<buginformation>
+			<summary>Injecting NullRememberMeService Throws ClassCastException</summary>
+			<description>
+
+
+
+
+
+Caused by: java.lang.ClassCastException: org.springframework.security.web.authentication.NullRememberMeServices cannot be cast to org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices
+
+
+
+
+	at org.springframework.security.config.http.UserDetailsServiceInjectionBeanPostProcessor.postProcessBeforeInitialization(UserDetailsServiceInjectionBeanPostProcessor.java:54)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:393)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1386)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:511)
+
+
+
+
+	... 46 more
+
+
+
+
+
+
+
+
+
+
+
+
+	&amp;lt;security:http ...&amp;gt;
+
+
+
+
+                ...
+
+
+
+
+		&amp;lt;security:remember-me services-ref="rememberMeServices" /&amp;gt;
+
+
+
+
+		...
+
+
+
+
+	&amp;lt;/security:http&amp;gt;
+
+
+
+
+
+
+
+
+
+	&amp;lt;bean id="rememberMeServices"
+
+
+
+
+		class="org.springframework.security.web.authentication.NullRememberMeServices" /&amp;gt;
+
+
+
+
+
+</description>
+			<version>3.0.0 M2</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.UserDetailsServiceInjectionBeanPostProcessor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1256" opendate="2009-10-05 13:58:16" fixdate="2009-10-06 03:41:48" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot use bean configuration to configure a FilterSecurityMetadataSource with SpEL expressions due to hard-coded "false" value in code</summary>
+			<description>I ran into this as I was trying to configure a Spring Sec stack without the security namespace in place. In 3.0.0M2 there is a hard-coded "false" for useExpressions in the FilterInvocationSecurityMetadataSourceBeanDefinitionParser, at the following line (on or about line 47):
+        LinkedHashMap&amp;lt;RequestKey, List&amp;lt;ConfigAttribute&amp;gt;&amp;gt; requestMap =
+        HttpSecurityBeanDefinitionParser.parseInterceptUrlsForFilterInvocationRequestMap(interceptUrls,
+                convertPathsToLowerCase, false, parserContext);
+I believe this code should be augmented to look for the "use-expressions" attribute on the &amp;lt;sec:filter-security-metadata-source&amp;gt; element. The resultant code would look something like the following (note, I haven&amp;amp;apos;t been able to get a compilable version of Spring Sec from source, otherwise I&amp;amp;apos;d supply a patch  ):
+        boolean useExpressions = false;
+        if(StringUtils.hasLength(element.getAttribute(HttpSecurityBeanDefinitionParser.ATT_USE_EXPRESSIONS))) 
+{
+        	useExpressions = Boolean.parseBoolean(element.getAttribute(HttpSecurityBeanDefinitionParser.ATT_USE_EXPRESSIONS));
+        }
+        LinkedHashMap&amp;lt;RequestKey, List&amp;lt;ConfigAttribute&amp;gt;&amp;gt; requestMap =
+        HttpSecurityBeanDefinitionParser.parseInterceptUrlsForFilterInvocationRequestMap(interceptUrls,
+                convertPathsToLowerCase, useExpressions, parserContext);
+Note also that in order to use this code patch you&amp;amp;apos;ll have to expand the visibility of the constant reference ATT_USE_EXPRESSIONS.
+Since I can&amp;amp;apos;t verify that SpEL access declarations work with this fix (although they should), I can&amp;amp;apos;t guarantee this is all-inclusive, but hopefully it&amp;amp;apos;ll be close!
+Sample bean definition (although you probably don&amp;amp;apos;t need it):
+	&amp;lt;bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor"&amp;gt;
+	  &amp;lt;property name="authenticationManager" ref="customAuthenticationManager"/&amp;gt;
+	  &amp;lt;property name="accessDecisionManager" ref="affirmativeBased"/&amp;gt;
+	  &amp;lt;property name="securityMetadataSource"&amp;gt;
+	    &amp;lt;security:filter-security-metadata-source use-expressions="true"&amp;gt;
+			&amp;lt;security:intercept-url pattern="/login.do" access="permitAll"/&amp;gt;
+			&amp;lt;security:intercept-url pattern="/home.do" access="permitAll"/&amp;gt;
+			&amp;lt;security:intercept-url pattern="/account/*.do" access="hasRole(&amp;amp;apos;ROLE_USER&amp;amp;apos;) and fullyAuthenticated"/&amp;gt;
+			&amp;lt;security:intercept-url pattern="/*" access="hasRole(&amp;amp;apos;ROLE_USER&amp;amp;apos;)"/&amp;gt;
+	    &amp;lt;/security:filter-security-metadata-source&amp;gt;
+	  &amp;lt;/property&amp;gt;
+	&amp;lt;/bean&amp;gt;
+You needn&amp;amp;apos;t worry about analyzing the expressions for correctness - I&amp;amp;apos;ve verified they work already using the standard &amp;lt;http use-expressions="true"&amp;gt; format. Thanks for reviewing the bug!</description>
+			<version>3.0.0 M2</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.SecurityNamespaceHandler.java</file>
+			<file type="M">org.springframework.security.config.http.FilterSecurityMetadataSourceBeanDefinitionParserTests.java</file>
+			<file type="D">org.springframework.security.config.http.FilterInvocationSecurityMetadataSourceBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1269" opendate="2009-10-13 09:37:01" fixdate="2009-10-13 11:34:07" resolution="Fixed">
+		<buginformation>
+			<summary>Combining &lt;form-login&gt; and &lt;open-id&gt; fails to find entry point</summary>
+			<description></description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1282" opendate="2009-10-30 16:23:15" fixdate="2009-11-03 02:33:46" resolution="Fixed">
+		<buginformation>
+			<summary>Possible Bug - UnanimousBased Incorrectly Grants When One Of The Votes Is An Absension</summary>
+			<description>Overall Spring Security is AWESOME and you guys are doing a great job!
+However, I am convinced I found either a bug or Doc error in UnanimousBased AccessDecisionManager.  
+The API doc says "grants access if only grant votes were received" but I am certain I got it to grant access when one of the votes was an Abstention.
+Or if this is not a bug, please clarify API to say 
+"grants access if only grant or abstained votes were received"
+Thanks so much and keep up the great work!!
+Spring Security Rocks!</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.vote.UnanimousBased.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1281" opendate="2009-10-30 03:35:54" fixdate="2009-11-04 00:51:09" resolution="Fixed">
+		<buginformation>
+			<summary>RememberMeAuthenticationProvider is created with default "key" parameter instead of my own specified</summary>
+			<description>I tried to define my own RememberMeService as shown
+&amp;lt;security:remember-me 
+   services-ref="rememberMeServices" 
+   key="$
+{app.security.key.rememberMe}"/&amp;gt;
+
+&amp;lt;bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices"&amp;gt;
+        &amp;lt;property name="key" value="${app.security.key.rememberMe}
+"/&amp;gt;
+        &amp;lt;property name="cookieName" value="rememberme-ref"/&amp;gt;
+        &amp;lt;property name="parameter" value="j_rememberme"/&amp;gt;
+        &amp;lt;property name="tokenValiditySeconds" value="1209600"/&amp;gt;
+        &amp;lt;property name="tokenRepository" ref="rememberMeDao"/&amp;gt;
+        &amp;lt;property name="userDetailsService" ref="userDetailsDao" /&amp;gt;
+&amp;lt;/bean&amp;gt;
+But RememberMeAuthenticationProvider instance is created with default "SpringSecured" key instead of my own so RememberMeAuthenticationProvider.authenticate never succeeds.
+</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.RememberMeBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1280" opendate="2009-10-27 12:05:44" fixdate="2009-11-04 03:21:08" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in PersistentTokenBasedRememberMeServices when logging out twice</summary>
+			<description>When remember-me is enabled in Spring Security 3.0.0 RC1, a user who attempts to log out when not already logged in will cause a NullPointerException - and probably receive a blank page as a result.
+The exception is:
+ava.lang.NullPointerException
+	at org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices.logout(PersistentTokenBasedRememberMeServices.java:145)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:80)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	at org.springframework.security.web.access.channel.ChannelProcessingFilter.doFilter(ChannelProcessingFilter.java:110)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:150)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+[...]
+Logout works fine if the user is already logged in, the exception only occurs if the user is not logged in.
+Obviously a well-designed web application doesn&amp;amp;apos;t show a logout link when no-one is logged in, which mitigatges the problem. However it does affect users who open multiple windows - and then log out from two or more of them.</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServicesTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1283" opendate="2009-11-01 07:25:44" fixdate="2009-11-04 03:40:21" resolution="Fixed">
+		<buginformation>
+			<summary>AuthenticationConfigBuilder.createAnonymousFilter uses httpElt instead of anonymousElt</summary>
+			<description>I think lines 378-383 should refer to anonymousElt, not httpElt. As it stands,  &amp;lt;security:anonymous /&amp;gt; namespace attributes are ignored.
+        if (anonymousElt != null) 
+{
+            grantedAuthority = httpElt.getAttribute("granted-authority");
+            username = httpElt.getAttribute("username");
+            key = httpElt.getAttribute("key");
+            source = pc.extractSource(anonymousElt);
+        }</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1289" opendate="2009-11-09 16:58:07" fixdate="2009-11-11 01:28:10" resolution="Duplicate">
+		<buginformation>
+			<summary>Successful registration event</summary>
+			<description>With 3.0M2 and before I used the following code to register successful registrations and save client&amp;amp;apos;s IPs
+[code]
+public class AuthenticationListener implements ApplicationListener {
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof AuthenticationSuccessEvent) 
+{
+            onAuthenticationSuccessEvent((AuthenticationSuccessEvent) event);
+        }
+    }
+    public void onAuthenticationSuccessEvent(AuthenticationSuccessEvent authenticationSuccessEvent) 
+{
+        // my code
+    }
+}
+[/code]
+With 3.0RC1 there are no AuthenticationSuccessEvent events any more. I&amp;amp;apos;ve found the following comment for org.springframework.security.authentication.DefaultAuthenticationEventPublisher
+"The default strategy used by &amp;lt;tt&amp;gt;ProviderManager&amp;lt;/tt&amp;gt; for publishing authentication events."
+But when I looked in ProviderManager I&amp;amp;apos;ve found that the default strategy is NullEventPublisher which is created by private field&amp;amp;apos;s initializer.
+I thought that it&amp;amp;apos;s possible to inject DefaultAuthenticationEventPublisher with default XML security scheme but I&amp;amp;apos;ve found no entry point to do this.</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.authentication.DefaultAuthenticationEventPublisher.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1272</link>
+		</links>
+	</bug>
+	<bug id="1272" opendate="2009-10-18 16:06:23" fixdate="2009-11-16 23:04:52" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;authentication-manager&gt; does not register default event handler DefaultAuthenticationEventPublisher</summary>
+			<description>When using the namespace configuration, creating an &amp;lt;authentication-manager&amp;gt; should automatically register a default event publisher. This allows applications to be notified about security events such as logins and login failures - for example I want these notifications so that I can write audit logs of failed logins. 
+The Javadoc on org.springframework.security.authentication.ProviderManager states that such a default event publisher is automatically registered when using the namespace. It says: 
+"The standard implementation is DefaultAuthenticationEventPublisher which maps common exceptions to events (in the case of authentication failure) and publishes an AuthenticationSuccessEvent if authentication succeeds. If you are using the namespace then an instance of this bean will be used automatically by the &amp;lt;http&amp;gt; configuration, so you will receive events from the web part of your application automatically."
+However ProviderManager does not actually register a DefaultAuthenticationEventPublisher! It uses its private NullEventPublisher class that does nothing. That means that if you use the namespace configuration you don&amp;amp;apos;t actually receive the default events. The only way to receive those events is to manually create a ProviderManager bean and inject a DefaultAuthenticationEventPublisher bean into it.
+I think that:
+
+&amp;lt;authentication-manager&amp;gt; should use DefaultAuthenticationEventPublisher instead of NullEventPublisher
+&amp;lt;authentication-manager&amp;gt; should allow the AuthenticationEventPublisher on ProviderManager to be overridden if desired
+
+</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.authentication.DefaultAuthenticationEventPublisher.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1289</link>
+		</links>
+	</bug>
+	<bug id="1287" opendate="2009-11-06 11:58:40" fixdate="2009-11-16 23:14:34" resolution="Fixed">
+		<buginformation>
+			<summary>Regression with fix SEC-1022 - cannot register custom permissions w/BasicLookupStrategy</summary>
+			<description>With the fix for SEC-1002 in 3.0RC1 and the removal of the static methods in BasePermission, unfortunately it is now impossible to use BasicLookupStrategy with custom permissions. This is because the PermissionFactory member of BasicLookupStrategy is private, with no accessor and no setter or constructor injection possible. While this wasn&amp;amp;apos;t available in prior versions of 3.0 either, at least in prior versions you could use the static methods to register permissions.
+Can you expose the PermissionFactory member on BasicLookupStrategy, either through an overloaded constructor or setter?</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategyTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1286" opendate="2009-11-06 06:15:36" fixdate="2009-11-17 07:45:36" resolution="Fixed">
+		<buginformation>
+			<summary>toString misformatting for Acl.java</summary>
+			<description>Line 348:
+sb.append("parent: ").append((this.parentAcl == null) ? "Null" : this.parentAcl.getObjectIdentity().toString());
+There should be a space after &amp;amp;apos;Null&amp;amp;apos;, as it stands you get output with "NullaclAuthorizationStrategy".
+Example:
+AccessControlEntryImpl[id: 3539; granting: true; sid: GrantedAuthoritySid[IS_AUTHENTICATED_ANONYMOUSLY]; permission: BasePermission[...............................R=1]; auditSuccess: false; auditFailure: false]
+inheriting: true; parent: NullaclAuthorizationStrategy: org.springframework.security.acls.domain.AclAuthorizationStrategyImpl@1c7e73f; auditLogger: org.springframework.security.acls.domain.ConsoleAuditLogger@11efef0]</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1306" opendate="2009-11-23 15:48:19" fixdate="2009-11-24 00:50:32" resolution="Fixed">
+		<buginformation>
+			<summary>OpenIDAttribute class is not marked as Serializable</summary>
+			<description>SEC-935 adds the OpenIDAttribute class. Because the OpenIDAuthenticationToken class (which is Serializable) has a List&amp;lt;OpenIDAttribute&amp;gt;, OpenIDAttribute should be Serializable too.
+This interface should be no problem to add to the OpenIDAttribute class, because all its members are primitives or Strings and therefore already Serializable themselves.
+P.S. while you&amp;amp;apos;re at it, OpenIDAttribute#toString() should probably be annotated with @Override (and in OpenIDAuthenticationStatus too).</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.openid.OpenIDAttribute.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1295" opendate="2009-11-16 11:45:16" fixdate="2009-11-30 08:01:14" resolution="Fixed">
+		<buginformation>
+			<summary>Placing Security on Roo Aspected methods fails</summary>
+			<description>When using @Secured on generated Roo_Entity methods a NPE is thrown due to target and _this information being missing when AspectJ creates the Join Point over an already aspected class. this NPE is thrown in AbstractMethodSecurityMetadataSource.getAttributes as there is a check against the Target to get the class. 
+Have found that this information can also be retrieved from the signature.
+This is using AspectJSecurityInterceptor configuration as opposed to SpringAOP, which we know doesn&amp;amp;apos;t work with Roo at all - yet   The configuration is based on the aspects sample within Spring Security.
+I have changed the following within AbstractMethodSecurityMetadataSource and it seems to work.... 
+Class&amp;lt;?&amp;gt; targetClass = jp.getTarget().getClass();
+To the following - though it too could just use one line and only call the signature:
+            Class&amp;lt;?&amp;gt; targetClass = null;
+            if(jp.getTarget() != null)
+            {
+                targetClass = jp.getTarget().getClass();
+            }
+            else
+            {
+                //this class has already been aspected, hence see if we can get the info from the
+                //static part
+                targetClass = jp.getStaticPart().getSignature().getDeclaringType();
+            }
+</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.method.AbstractMethodSecurityMetadataSource.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1317" opendate="2009-12-07 03:54:15" fixdate="2009-12-08 01:41:26" resolution="Fixed">
+		<buginformation>
+			<summary>Http configuration with no internal AuthenticationProviders causes Exception</summary>
+			<description>The the internal ProviderManager, which is created by the &amp;lt;http&amp;gt; namespace element (SEC-1195), fails if it has no providers. Either a null provider should be added if the provider list is empty or the use of an internal instance should be skipped completely.</description>
+			<version>3.0.0 RC1</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.authentication.ProviderManager.java</file>
+			<file type="M">org.springframework.security.authentication.ProviderManagerTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1333" opendate="2009-12-16 10:48:51" fixdate="2009-12-18 05:30:20" resolution="Fixed">
+		<buginformation>
+			<summary>Invalid &amp;apos;authentication-failure-url&amp;apos; attribute results in assertion failure</summary>
+			<description>If I set the &amp;amp;apos;authentication-failure-url&amp;amp;apos; attribute of a &amp;lt;openid-login&amp;gt; or &amp;lt;form-login&amp;gt; element to something like "XXX/secure/login.html".  I get a bean wiring failure whose message says "java.lang.IllegalArgumentException: [Assertion failed] - this expression must be true".
+Stacktrace attached.</description>
+			<version>3.0.0.RC2</version>
+			<fixedVersion>3.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1342" opendate="2009-12-22 22:13:05" fixdate="2009-12-23 00:56:51" resolution="Fixed">
+		<buginformation>
+			<summary>intercept-url EL expressions are parsed or validated incorrectly</summary>
+			<description>	&amp;lt;security:http use-expressions="true"&amp;gt;
+		&amp;lt;security:access-denied-handler error-page="/authfail.html" /&amp;gt;
+		&amp;lt;!-- XXX requires-channel="https" --&amp;gt;
+		&amp;lt;security:intercept-url pattern="/app/**" access="hasAnyRole(&amp;amp;apos;ROLE_A&amp;amp;apos;,&amp;amp;apos;ROLE_B&amp;amp;apos;,&amp;amp;apos;ROLE_C&amp;amp;apos;,&amp;amp;apos;ROLE_D&amp;amp;apos;)" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/css/**" access="isAuthenticated()" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/images/logo.png" access="permitAll" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/images/**" access="isAuthenticated()" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/xmlhttp/**" access="isAuthenticated()" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/authfail.html" access="permitAll" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/login.jsp" access="permitAll" /&amp;gt;
+		&amp;lt;security:intercept-url pattern="/**" access="denyAll" /&amp;gt;
+		&amp;lt;security:form-login always-use-default-target="true" default-target-url="/app/index.jspx" login-page="/" /&amp;gt;
+		&amp;lt;security:logout invalidate-session="true" logout-success-url="/" /&amp;gt;
+		&amp;lt;security:anonymous /&amp;gt;
+		&amp;lt;security:session-management&amp;gt;
+			&amp;lt;security:concurrency-control max-sessions="1" /&amp;gt;
+		&amp;lt;/security:session-management&amp;gt;
+	&amp;lt;/security:http&amp;gt;
+When the context loads, this happens:
+Caused by: java.lang.IllegalArgumentException: Expected a single expression attribute for [&amp;lt;url&amp;gt;]
+	at org.springframework.util.Assert.isTrue(Assert.java:65)
+	at org.springframework.security.web.access.expression.ExpressionBasedFilterInvocationSecurityMetadataSource.processMap(ExpressionBasedFilterInvocationSecurityMetadataSource.java:43)
+	at org.springframework.security.web.access.expression.ExpressionBasedFilterInvocationSecurityMetadataSource.&amp;lt;init&amp;gt;(ExpressionBasedFilterInvocationSecurityMetadataSource.java:30)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:513)
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:126)
+	... 37 more
+That bit of code in o.s.s.web.access.expression.ExpressionBasedFilterInvocationSecurityMetadataSource looks like this:
+    public ExpressionBasedFilterInvocationSecurityMetadataSource(UrlMatcher urlMatcher,
+            LinkedHashMap&amp;lt;RequestKey, Collection&amp;lt;ConfigAttribute&amp;gt;&amp;gt; requestMap, WebSecurityExpressionHandler expressionHandler) 
+{
+        super(urlMatcher, processMap(requestMap, expressionHandler.getExpressionParser()));
+        Assert.notNull(expressionHandler, "A non-null SecurityExpressionHandler is required");
+    }
+
+    private static LinkedHashMap&amp;lt;RequestKey, Collection&amp;lt;ConfigAttribute&amp;gt;&amp;gt; processMap(
+            LinkedHashMap&amp;lt;RequestKey,Collection&amp;lt;ConfigAttribute&amp;gt;&amp;gt; requestMap, ExpressionParser parser) {
+[...]
+        for (Map.Entry&amp;lt;RequestKey, Collection&amp;lt;ConfigAttribute&amp;gt;&amp;gt; entry : requestMap.entrySet()) {
+            RequestKey request = entry.getKey();
+            Assert.isTrue(entry.getValue().size() == 1, "Expected a single expression attribute for " + request);
+The Assert is line 43, where the failure happens. In the debugger, entry.getValue() has 4 entries. It is basically the expression hasAnyRole(&amp;amp;apos;ROLE_A&amp;amp;apos;,&amp;amp;apos;ROLE_B&amp;amp;apos;,&amp;amp;apos;ROLE_C&amp;amp;apos;,&amp;amp;apos;ROLE_D&amp;amp;apos;) tokenized on the commas.</description>
+			<version>3.0.0.RC2</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.FilterInvocationSecurityMetadataSourceParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.SecurityConfig.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1346" opendate="2009-12-29 12:17:09" fixdate="2010-01-04 05:08:22" resolution="Fixed">
+		<buginformation>
+			<summary>SessionManagementFilter: should "return;" after "redirectStrategy.sendRedirect(request, response, invalidSessionUrl);"</summary>
+			<description>java.lang.IllegalStateException: Cannot create a session after the response has been committed
+	org.apache.catalina.connector.Request.doGetSession(Request.java:2313)
+	org.apache.catalina.connector.Request.getSession(Request.java:2074)
+	org.apache.catalina.connector.RequestFacade.getSession(RequestFacade.java:833)
+	org.apache.catalina.connector.RequestFacade.getSession(RequestFacade.java:844)
+	javax.servlet.http.HttpServletRequestWrapper.getSession(HttpServletRequestWrapper.java:224)
+	org.springframework.security.web.savedrequest.HttpSessionRequestCache.saveRequest(HttpSessionRequestCache.java:38)
+	org.springframework.security.web.access.ExceptionTranslationFilter.sendStartAuthentication(ExceptionTranslationFilter.java:177)
+	org.springframework.security.web.access.ExceptionTranslationFilter.handleException(ExceptionTranslationFilter.java:158)
+	org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:118)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:95)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:79)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:55)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:36)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:188)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:106)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:80)
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:356)
+	org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:150)
+	org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+	org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.concurrent.ConcurrentSessionFilterTests.java</file>
+			<file type="M">org.springframework.security.web.session.SessionManagementFilter.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.web.session.SessionManagementFilterTests.java</file>
+			<file type="M">org.springframework.security.web.session.ConcurrentSessionFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1353</link>
+		</links>
+	</bug>
+	<bug id="1353" opendate="2010-01-06 06:10:35" fixdate="2010-01-06 07:26:21" resolution="Duplicate">
+		<buginformation>
+			<summary>SessionManagementFilter can invoke other filters after sending redirect</summary>
+			<description>SessionManagementFilter::doFilter() fails to stop request processing in branch "No security context or authentication present" (at SessionManagementFilter.java:89). More precisely, it does not return after calling redirectStrategy.sendRedirect(), but passes to the next filter.
+This causes an error if there are controllers that define methods taking a HttpSession argument, because in this case AnnotationMethodHandlerAdapter attempts to call request.getSession(), which is not permitted after a redirect had been sent.</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.concurrent.ConcurrentSessionFilterTests.java</file>
+			<file type="M">org.springframework.security.web.session.SessionManagementFilter.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.web.session.SessionManagementFilterTests.java</file>
+			<file type="M">org.springframework.security.web.session.ConcurrentSessionFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1346</link>
+		</links>
+	</bug>
+	<bug id="1357" opendate="2010-01-08 04:53:02" fixdate="2010-01-08 11:17:03" resolution="Fixed">
+		<buginformation>
+			<summary>Use reader context classloader when checking for web classes in namespace handler</summary>
+			<description>Following discussion with Christian. In some situations (e.g. tooling), ClassUtils.getDefaultClassLoader() will fail to locate the web classes.  parserContext.getReaderContext().getBeanClassLoader() should be used instead.</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.SecurityNamespaceHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1358" opendate="2010-01-11 10:15:34" fixdate="2010-01-11 10:57:22" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultWebInvocationPrivilegeEvaluator fails with empty context path</summary>
+			<description>There is currently an assertion which checks that the context path has a length &amp;gt; 0, when in fact this is unnecessary.</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1359" opendate="2010-01-12 15:37:02" fixdate="2010-01-13 01:25:08" resolution="Fixed">
+		<buginformation>
+			<summary>Typo in the Reference doc appendix B</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/appendix-namespace.html
+In B.1.1 &amp;gt; realm
+proerty should read property </description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1364" opendate="2010-01-12 18:38:43" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Missing markup in the reference documentation section 8.4</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/core-web-filters.html#form-login-filter
+In the first paragraph:
+&amp;lt;form-login&amp;gt;
+should be wrapped within &amp;lt;tt&amp;gt;&amp;lt;/tt&amp;gt; to appear in monospace font</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1367" opendate="2010-01-12 18:49:31" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Type in the Reference documentation in section 19.2</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/taglibs.html#d4e2693
+In the 1st paragraph:
+"WebSecurityExpressionHandlder"
+should read
+"WebSecurityExpressionHandler"</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1361" opendate="2010-01-12 17:19:21" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Bad markup in Javadoc for UsernamePasswordAuthenticationFilter</summary>
+			<description>In the class description of clasa
+org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+at
+http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs/org/springframework/security/web/authentication/UsernamePasswordAuthenticationFilter.html
+The first &amp;lt;tt&amp;gt; tag is not well-balanced and the rest of the text shows up in monospace font.
+"&amp;lt;tt&amp;gt;AuthenticationProcessingFilter&amp;lt;tt&amp;gt;"
+should be
+"&amp;lt;tt&amp;gt;AuthenticationProcessingFilter&amp;lt;/tt&amp;gt;"</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1366" opendate="2010-01-12 18:46:15" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Typo in the reference documentation section 8.4.1</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/core-web-filters.html#form-login-flow-handling
+In the 2nd paragraph:
+"approprate"
+should read
+"appropriate"</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1365" opendate="2010-01-12 18:44:49" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Missing markup in the reference documentation section 8.4.1</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/core-web-filters.html#form-login-flow-handling
+In the 2nd paragraph:
+AuthenticationSuccessHandler should be wrapped within &amp;lt;tt&amp;gt;&amp;lt;/tt&amp;gt; tags</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1360" opendate="2010-01-12 17:15:44" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Typo in the Javadoc for class AbstractAuthenticationTargetUrlRequestHandler</summary>
+			<description>In the JavaDoc for class
+org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler
+at
+http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs/org/springframework/security/web/authentication/AbstractAuthenticationTargetUrlRequestHandler.html#setTargetUrlParameter(java.lang.String)
+"...as the target URL if resent."
+should read
+"...as the target URL if present."</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1363" opendate="2010-01-12 18:32:35" fixdate="2010-01-13 01:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Type in the Reference documentation in section 6.1</summary>
+			<description>http://static.springsource.org/spring-security/site/docs/3.0.x/reference/core-services.html
+In the 3rd paragraph:
+"ProviderMananger"
+should read
+"ProviderManager"</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1369" opendate="2010-01-14 00:15:54" fixdate="2010-01-14 03:26:53" resolution="Fixed">
+		<buginformation>
+			<summary>Springbeans gets registered twice</summary>
+			<description>When Spring&amp;amp;apos;s beans-overriding property is set to false (bean overriding is forbidden), errors regarding duplicated beans are thrown (from Spring).
+After some debugging, I found the source of this problem in the following (and similar) lines inside the spring-security-config module.
+String id = pc.getReaderContext().registerWithGeneratedName(provider);
+pc.registerBeanComponent(new BeanComponentDefinition(provider, id));
+The problem is, that within the method registerWithGeneratedName, the method registerBeanDefinition is called (as the name says). This is also done when calling registerBeanComponent afterwards. 
+In my opinion, the solution is to replace the codelines above with:
+String id = pc.getReaderContext().generateBeanName(provider);
+pc.registerBeanComponent(new BeanComponentDefinition(provider, id));
+The problematic code fragment can be found in different classes of the module multiple times. 
+Replacing all occurrences solved the problem on our test cases. Also, all the tests of the whole Spring Security framework were passed successfully.
+I attach a patch which includes the modification that i have done. 
+This was created from / for the 3.0.0.RELEASE tag.
+I hope, this can be helpful and will be integrated into the next release. 
+Cheers
+Jonas</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.authentication.AbstractUserDetailsServiceBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.RememberMeBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.util.InMemoryXmlApplicationContext.java</file>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.authentication.AuthenticationManagerBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.FilterInvocationSecurityMetadataSourceParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1372" opendate="2010-01-18 03:30:48" fixdate="2010-01-18 11:09:48" resolution="Fixed">
+		<buginformation>
+			<summary>SessionRegistryImpl.getAllSessions returns null, Interface says it shouldn&amp;apos;t</summary>
+			<description>The documentation for org.springframework.security.core.session.SessionRegistry#getAllSessions(Object, boolean) says "Returns: the matching sessions for this principal (should not return null)." However, the default implementation org.springframework.security.core.session.SessionRegistryImpl#getAllSessions(Object, boolean) returns null if "final Set&amp;lt;String&amp;gt; sessionsUsedByPrincipal = principals.get(principal)" is null.
+It should, instead, return an empty list, per the interface specification and per good code practices such that methods that return lists should never return null, only empty lists when needed.</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.session.ConcurrentSessionControlStrategy.java</file>
+			<file type="M">org.springframework.security.core.session.SessionRegistryImplTests.java</file>
+			<file type="M">org.springframework.security.core.session.SessionRegistryImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1392" opendate="2010-01-28 07:22:14" fixdate="2010-02-06 01:42:23" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot use custom PermissionEvaluator</summary>
+			<description>I created a PermissionEvaluator to use with the new security expressions. I wrote a unit test and I&amp;amp;apos;m trying to test it. If I use the default configuration, it works and denies the access to the secured method, since it is the default behavior, this is the configuration (I&amp;amp;apos;m omitting the authenticationmanager part) :
+&amp;lt;sec:global-method-security pre-post-annotations="enabled"&amp;gt;
+But if I change the configuration in order to add my PermissionEvaluator, I get a NullPointerException while Spring initializes, this is my new config:
+    &amp;lt;sec:global-method-security pre-post-annotations="enabled"&amp;gt;
+        &amp;lt;sec:expression-handler ref="expressionHandler"/&amp;gt;
+    &amp;lt;/sec:global-method-security&amp;gt;
+    &amp;lt;bean id="expressionHandler" class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler"&amp;gt;
+        &amp;lt;property name="permissionEvaluator" ref="myPermissionEvaluator"/&amp;gt;
+    &amp;lt;/bean&amp;gt;
+Attached you&amp;amp;apos;ll see the stack-trace.
+thanks</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.PermissionEvaluator.java</file>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.expression.method.MethodSecurityExpressionHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1404" opendate="2010-02-09 19:44:01" fixdate="2010-02-10 09:50:30" resolution="Fixed">
+		<buginformation>
+			<summary>Expression not expanded in intercept-url pattern</summary>
+			<description>Expression is not expanded in intercept-url pattern.
+Here is my configuration :
+
+
+
+
+
+
+	&amp;lt;security:http&amp;gt;
+
+
+
+
+		&amp;lt;security:form-login login-page="${security.admin.loginPageUrl}" login-processing-url="${security.admin.loginProcessingUrl}" default-target-url="${security.admin.loginTargetUrl}" always-use-default-target="true" /&amp;gt;
+
+
+
+
+		&amp;lt;security:intercept-url pattern="${security.admin.loginPageUrl}" filters="none" /&amp;gt;
+
+
+
+
+		&amp;lt;security:intercept-url pattern="/restricted/**" access="ROLE_ADMIN" /&amp;gt;
+
+
+
+
+		&amp;lt;security:intercept-url pattern="/**" access="ROLE_USER" /&amp;gt;
+
+
+
+
+	&amp;lt;/security:http&amp;gt;
+
+
+
+
+
+
+and the error I get :
+
+
+
+
+
+
+org.springframework.beans.factory.BeanDefinitionStoreException: Invalid bean definition with name &amp;amp;apos;org.springframework.security.filterChainProxy&amp;amp;apos; defined in null: Could not resolve placeholder &amp;amp;apos;security.admin.loginpageurl&amp;amp;apos;
+
+
+
+
+
+
+The same expression works well in form-login#login-page attribute, but not in intercept-url#pattern attribute.
+</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.web.access.expression.WebSecurityExpressionRoot.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1446" opendate="2010-03-20 10:43:49" fixdate="2010-03-23 09:38:15" resolution="Fixed">
+		<buginformation>
+			<summary>Malformed Base64 in Basic Authentication header causes BasicAuthenticationFilter to throw a RuntimeException</summary>
+			<description>
+Since Base64.decode throws a RuntimeException if it detects bad characters in the input string, org.springframework.security.web.authentication.www.BasicAuthenticationFilter.doFilter throws the RTE if the Authentication header contains malformed base 64. The effect is that http servers return 500 rather than  401.
+My fix just adds an additional check by calling Base64.isBase64, and if that fails, continues processing as if the Authentication header were missing.
+</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.www.BasicAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.www.BasicAuthenticationFilterTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1455" opendate="2010-04-06 18:54:22" fixdate="2010-05-24 23:39:42" resolution="Fixed">
+		<buginformation>
+			<summary>SecurityNamespaceHandler problems in OSGi environment, need to import spring-security-web packages</summary>
+			<description>Imagine the following situation: there is an OSGi (in my case DM Server) environment, which contains some bundles. One of them uses the security namespace to protect some methods. This bundle has nothing to do with the web, this is the responsibility of the web bundle, which contains some web pages and expose some of the services from that bundle. . Within the web bundle, a filter-chain-map is used to protect some URLs.
+The manifest of the first bundle imports some Spring Security related packages, but not org.springframework.security.web, this package is only imported by the web bundle. The SecurityNamespaceHandler seems to be a singleton, and when the org.springframework.security.web.FilterChainProxy is not available on the classpath when the SecurityNamespaceHandler is loaded for the first time (in my case, when the first bundle is started), an exception will be thrown when another bundle is using the security:http and security:filter-chain-map elements.
+Workaround:
+Import the org.springframework.security.web package in all bundles which do something with the security namespace.
+Stacktrace:
+org.springframework.beans.factory.parsing.BeanDefinitionParsingException: Configuration problem: spring-security-web classes are not available. You need these to use &amp;lt;filter-chain-map&amp;gt;
+Offending resource: URL [bundleentry://121.fwk7527493/WEB-INF/applicationContext.xml]
+	at org.springframework.beans.factory.parsing.FailFastProblemReporter.fatal(FailFastProblemReporter.java:59)
+	at org.springframework.beans.factory.parsing.ReaderContext.fatal(ReaderContext.java:68)
+	at org.springframework.beans.factory.parsing.ReaderContext.fatal(ReaderContext.java:55)
+	at org.springframework.security.config.SecurityNamespaceHandler.reportMissingWebClasses(SecurityNamespaceHandler.java:91)
+	at org.springframework.security.config.SecurityNamespaceHandler.decorate(SecurityNamespaceHandler.java:72)
+	at org.springframework.beans.factory.xml.BeanDefinitionParserDelegate.decorateIfRequired(BeanDefinitionParserDelegate.java:1372)
+	at org.springframework.beans.factory.xml.BeanDefinitionParserDelegate.decorateBeanDefinitionIfRequired(BeanDefinitionParserDelegate.java:1359)
+	at org.springframework.beans.factory.xml.BeanDefinitionParserDelegate.decorateBeanDefinitionIfRequired(BeanDefinitionParserDelegate.java:1339)
+	at org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.processBeanDefinition(DefaultBeanDefinitionDocumentReader.java:261)
+	at org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.parseDefaultElement(DefaultBeanDefinitionDocumentReader.java:154)
+	at org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.parseBeanDefinitions(DefaultBeanDefinitionDocumentReader.java:133)
+	at org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader.registerBeanDefinitions(DefaultBeanDefinitionDocumentReader.java:93)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.registerBeanDefinitions(XmlBeanDefinitionReader.java:493)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.doLoadBeanDefinitions(XmlBeanDefinitionReader.java:390)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:334)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:302)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:143)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:178)
+	at org.springframework.beans.factory.support.AbstractBeanDefinitionReader.loadBeanDefinitions(AbstractBeanDefinitionReader.java:149)
+	at org.springframework.osgi.context.support.OsgiBundleXmlApplicationContext.loadBeanDefinitions(OsgiBundleXmlApplicationContext.java:164)
+	at org.springframework.osgi.context.support.OsgiBundleXmlApplicationContext.loadBeanDefinitions(OsgiBundleXmlApplicationContext.java:136)
+	at org.springframework.context.support.AbstractRefreshableApplicationContext.refreshBeanFactory(AbstractRefreshableApplicationContext.java:130)
+	at org.springframework.context.support.AbstractApplicationContext.obtainFreshBeanFactory(AbstractApplicationContext.java:458)
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.access$800(AbstractDelegatedExecutionApplicationContext.java:69)
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext$3.run(AbstractDelegatedExecutionApplicationContext.java:269)
+	at org.springframework.osgi.util.internal.PrivilegedUtils.executeWithCustomTCCL(PrivilegedUtils.java:85)
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.startRefresh(AbstractDelegatedExecutionApplicationContext.java:247)
+	at org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor.stageOne(DependencyWaiterApplicationContextExecutor.java:214)
+	at org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor.refresh(DependencyWaiterApplicationContextExecutor.java:169)
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.refresh(AbstractDelegatedExecutionApplicationContext.java:175)
+	at org.springframework.osgi.extender.internal.activator.ContextLoaderListener$2.run(ContextLoaderListener.java:716)
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:48)
+	at org.springframework.osgi.extender.internal.activator.ContextLoaderListener.maybeCreateApplicationContextFor(ContextLoaderListener.java:781)
+	at org.springframework.osgi.extender.internal.activator.ContextLoaderListener$ContextBundleListener.handleEvent(ContextLoaderListener.java:229)
+	at org.springframework.osgi.extender.internal.activator.ContextLoaderListener$BaseListener.bundleChanged(ContextLoaderListener.java:172)
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.dispatchEvent(BundleContextImpl.java:919)
+	at org.eclipse.osgi.framework.eventmgr.EventManager.dispatchEvent(EventManager.java:227)
+	at org.eclipse.osgi.framework.eventmgr.ListenerQueue.dispatchEventSynchronous(ListenerQueue.java:149)
+	at org.eclipse.osgi.framework.internal.core.Framework.publishBundleEventPrivileged(Framework.java:1350)
+	at org.eclipse.osgi.framework.internal.core.Framework.publishBundleEvent(Framework.java:1301)
+	at org.eclipse.osgi.framework.internal.core.BundleHost.startWorker(BundleHost.java:362)
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:280)
+	at com.springsource.kernel.core.internal.StandardBundleStarter.start(StandardBundleStarter.java:68)
+	at com.springsource.kernel.core.internal.StandardBundleStarter.start(StandardBundleStarter.java:56)
+	at sun.reflect.GeneratedMethodAccessor72.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:307)
+	at org.springframework.osgi.service.importer.support.internal.aop.ServiceInvoker.doInvoke(ServiceInvoker.java:58)
+	at org.springframework.osgi.service.importer.support.internal.aop.ServiceInvoker.invoke(ServiceInvoker.java:62)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.support.DelegatingIntroductionInterceptor.doProceed(DelegatingIntroductionInterceptor.java:131)
+	at org.springframework.aop.support.DelegatingIntroductionInterceptor.invoke(DelegatingIntroductionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.osgi.service.importer.support.LocalBundleContextAdvice.invoke(LocalBundleContextAdvice.java:59)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.support.DelegatingIntroductionInterceptor.doProceed(DelegatingIntroductionInterceptor.java:131)
+	at org.springframework.aop.support.DelegatingIntroductionInterceptor.invoke(DelegatingIntroductionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+	at $Proxy60.start(Unknown Source)
+	at com.springsource.kernel.install.artifact.internal.bundle.StandardBundleDriver.startBundle(StandardBundleDriver.java:177)
+	at com.springsource.kernel.install.artifact.internal.bundle.StandardBundleDriver.start(StandardBundleDriver.java:158)
+	at com.springsource.kernel.install.artifact.internal.bundle.StandardBundleInstallArtifact.doStart(StandardBundleInstallArtifact.java:262)
+	at com.springsource.kernel.install.artifact.internal.AbstractInstallArtifact.driveDoStart(AbstractInstallArtifact.java:211)
+	at com.springsource.kernel.install.artifact.internal.bundle.StandardBundleInstallArtifact.start(StandardBundleInstallArtifact.java:251)
+	at com.springsource.kernel.deployer.core.internal.PipelinedApplicationDeployer.start(PipelinedApplicationDeployer.java:291)
+	at com.springsource.kernel.deployer.core.internal.PipelinedApplicationDeployer.deploy(PipelinedApplicationDeployer.java:201)
+	at com.springsource.kernel.deployer.management.StandardDeployer.deploy(StandardDeployer.java:62)
+	at sun.reflect.GeneratedMethodAccessor88.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at com.sun.jmx.mbeanserver.ConvertingMethod.invokeWithOpenReturn(ConvertingMethod.java:167)
+	at com.sun.jmx.mbeanserver.MXBeanIntrospector.invokeM2(MXBeanIntrospector.java:96)
+	at com.sun.jmx.mbeanserver.MXBeanIntrospector.invokeM2(MXBeanIntrospector.java:33)
+	at com.sun.jmx.mbeanserver.MBeanIntrospector.invokeM(MBeanIntrospector.java:208)
+	at com.sun.jmx.mbeanserver.PerInterface.invoke(PerInterface.java:120)
+	at com.sun.jmx.mbeanserver.MBeanSupport.invoke(MBeanSupport.java:262)
+	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:836)
+	at com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:761)
+	at javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1426)
+	at javax.management.remote.rmi.RMIConnectionImpl.access$200(RMIConnectionImpl.java:72)
+	at javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1264)
+	at javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1359)
+	at javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:788)
+	at sun.reflect.GeneratedMethodAccessor87.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:305)
+	at sun.rmi.transport.Transport$1.run(Transport.java:159)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at sun.rmi.transport.Transport.serviceCall(Transport.java:155)
+	at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:535)
+	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:790)
+	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:649)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:619)</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.SecurityNamespaceHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1722" opendate="2011-04-21 23:38:03" fixdate="2011-05-03 03:39:57" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSession Destroyed/Created Event API confusion</summary>
+			<description>The api doc of HttpSessionCreatedEvent says:
+"Published by the HttpSessionEventPublisher when a HttpSession is destroyed by the container"
+is the HttpSessionDestroyedEvent should been fire when HttpSession is destroyed by the container?
+http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs/index.html</description>
+			<version>3.0.0</version>
+			<fixedVersion>3.1.0.RC2, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.session.HttpSessionCreatedEvent.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

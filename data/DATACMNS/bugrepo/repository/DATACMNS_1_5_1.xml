@@ -1,0 +1,389 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="320" opendate="2013-04-25 05:46:32" fixdate="2013-04-25 06:19:37" resolution="Fixed">
+		<buginformation>
+			<summary>Mapping ambiguation detection is too aggressive</summary>
+			<description>We&amp;amp;apos;re using both Jackson 1.9.x annotations and Spring Data annotations on the same entity, since we have a REST/JSON api and persist to Mongo.
+Here&amp;amp;apos;s the Code:
+
+
+
+
+
+
+@Id
+
+
+
+
+private String id;
+
+
+
+
+
+
+
+
+
+@Override
+
+
+
+
+@JsonProperty("_id")
+
+
+
+
+public String getId() {
+
+
+
+
+ return id;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@JsonProperty("_id")
+
+
+
+
+public void setId(String id) {
+
+
+
+
+  this.id = id;
+
+
+
+
+}
+
+
+
+
+
+
+At some point, we had to add both annotations to make it crystal clear for Jackson that it should both serialize and deserialize _i to the getter/setter. This worked with Spring Data Mongo 1.1.
+After upgrading to Spring Data Mongo 1.2.1, we get this exception:
+
+
+
+
+
+
+org.springframework.data.mapping.model.MappingException: Ambiguous mapping! Annotation interface org.codehaus.jackson.annotate.JsonProperty configured multiple times on accessor methods of property id in class com.xxxx.xxxxx.xxxxx.Foo!
+
+
+
+
+	at org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.populateAnnotationCache(AnnotationBasedPersistentProperty.java:86) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.&amp;lt;init&amp;gt;(AnnotationBasedPersistentProperty.java:62) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.mapping.BasicMongoPersistentProperty.&amp;lt;init&amp;gt;(BasicMongoPersistentProperty.java:73) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.mapping.CachingMongoPersistentProperty.&amp;lt;init&amp;gt;(CachingMongoPersistentProperty.java:44) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.mapping.MongoMappingContext.createPersistentProperty(MongoMappingContext.java:65) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.mapping.MongoMappingContext.createPersistentProperty(MongoMappingContext.java:37) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext$PersistentPropertyCreator.doWith(AbstractMappingContext.java:391) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.util.ReflectionUtils.doWithFields(ReflectionUtils.java:570) ~[spring-core-3.2.2.RELEASE.jar:3.2.2.RELEASE]
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.addPersistentEntity(AbstractMappingContext.java:283) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:190) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:159) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:69) ~[spring-data-commons-1.5.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.determineCollectionName(MongoTemplate.java:1607) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.findAll(MongoTemplate.java:1058) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+
+</description>
+			<version>1.5.1</version>
+			<fixedVersion>1.6 M1, 1.5.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.java</file>
+			<file type="M">org.springframework.data.mapping.model.AbstractAnnotationBasedPropertyUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="333" opendate="2013-05-27 05:54:07" fixdate="2013-05-29 09:04:30" resolution="Fixed">
+		<buginformation>
+			<summary>Support for Jackson 2.x for JSON repository populators</summary>
+			<description>Trying to getting started with:
+http://static.springsource.org/spring-data/commons/docs/current/reference/html/repositories.html#d0e893
+However I get a ClassNotFoundException: org.codehaus.jackson.map.ObjectMapper when using Jackson 2.x</description>
+			<version>1.5.1</version>
+			<fixedVersion>1.6 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.RepositoryNameSpaceHandler.java</file>
+			<file type="M">org.springframework.data.repository.config.ResourceReaderRepositoryPopulatorBeanDefinitionParserIntegrationTests.java</file>
+			<file type="M">org.springframework.data.repository.config.ResourceReaderRepositoryPopulatorBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">692</link>
+		</links>
+	</bug>
+	<bug id="327" opendate="2013-05-12 14:39:59" fixdate="2013-05-29 09:32:02" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractMappingContext has to init domain classes in afterPropertiesSet()</summary>
+			<description>We have to revert the fix introduced for DATACMNS-179 as this leaves MappingContext implementations in uninitialized state at container init stages when other application components might already rely on the context being fully initialized.
+E.g. this could be a MongoDB query execution in an init method of a component that relies on all persistent entities being known in advance. </description>
+			<version>1.5.1</version>
+			<fixedVersion>1.6 M1, 1.5.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">179</link>
+		</links>
+	</bug>
+	<bug id="345" opendate="2013-07-16 02:55:56" fixdate="2013-07-16 03:47:25" resolution="Fixed">
+		<buginformation>
+			<summary> AbstractMappingContext doesn&amp;apos;t consider the actual type of property of a generic collection type. </summary>
+			<description>AbstractMappingContext.getPersistentEntity() should use actual type information to deal with generic collection types. The current implementation of AbstractMappingContext.getPersistentEntity() returns null for the list property of the class listed below. 
+
+
+
+
+
+
+static class ParentClass {
+
+
+
+
+  
+
+
+
+
+  String id;
+
+
+
+
+  List&amp;lt;? extends AbstractChildClass&amp;gt; list;
+
+
+
+
+
+
+
+
+
+  public ParentClass(String id, List&amp;lt;? extends AbstractChildClass&amp;gt; list) {
+
+
+
+
+    this.id = id;
+
+
+
+
+    this.list = list;
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+static abstract class AbstractChildClass {
+
+
+
+
+
+
+
+
+
+  String id;
+
+
+
+
+  String value;
+
+
+
+
+
+
+
+
+
+  public AbstractChildClass(String id, String value) {
+
+
+
+
+    this.id = id;
+
+
+
+
+    this.value = value;
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+static class ConcreteChildClass extends AbstractChildClass {
+
+
+
+
+
+
+
+
+
+  public ConcreteChildClass(String id, String value) {
+
+
+
+
+    super(id, value);
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.5.1</version>
+			<fixedVersion>1.5.2, 1.6 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">721</link>
+		</links>
+	</bug>
+	<bug id="341" opendate="2013-07-04 22:35:09" fixdate="2013-08-12 01:51:31" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryFactorySupport proxy classloader</summary>
+			<description>The RepositoryFactorySupport.getRepository uses result.getProxy() to create a new proxy. Since the method is called to create a new bean it should probably use the variant that accepts a classloader (obtained via ClassLoaderAware).</description>
+			<version>1.5.1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupport.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

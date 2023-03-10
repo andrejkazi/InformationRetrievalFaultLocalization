@@ -1,0 +1,597 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="276" opendate="2014-03-20 05:46:49" fixdate="2014-05-02 05:44:53" resolution="Fixed">
+		<buginformation>
+			<summary>500 returned if URL ends with /</summary>
+			<description>So it all works fine if I try to access:
+http://localhost:8111/rest/product
+but if I try this:
+http://localhost:8111/rest/product/
+I get response 500 - no exception in the log or the response body.
+I&amp;amp;apos;m testing against the 2.1 SNAPSHOT</description>
+			<version>2.1 M1 (Dijkstra)</version>
+			<fixedVersion>2.1 RC1 (Dijkstra), 2.0.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.BaseUri.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.BaseUriUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.ResourceMetadataHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.util.UriUtils.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMappingUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="301" opendate="2014-05-06 01:58:25" fixdate="2014-05-06 03:24:08" resolution="Fixed">
+		<buginformation>
+			<summary>Illegal character &amp;apos;{&amp;apos; in URL when using projection and PUT request</summary>
+			<description>We are calling URL http://localhost:8080/rapnot/companies/4 with PUT method in order to update data.
+In the logs, we see this error: 
+
+
+
+
+
+
+2014-05-06 10:54:45,688 ERROR [org.springframework.data.rest.webmvc.AbstractRepositoryRestController] Illegal character in path at index 40: http://localhost:8080/rapnot/companies/4{?projection}
+
+
+
+
+
+
+The {?projection} has been added to the URL and we get an invalid URL.
+The issue seems to be located in this part of the code in org.springframework.data.rest.webmvc.RepositoryEntityController:
+
+
+
+
+
+
+private ResponseEntity&amp;lt;ResourceSupport&amp;gt; mergeAndReturn(Object incoming, Object domainObject,
+
+
+
+
+	RepositoryInvoker invoker, HttpMethod httpMethod, PersistentEntityResourceAssembler assembler) {
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+	if (PUT.equals(httpMethod)) {
+
+
+
+
+		headers.setLocation(URI.create(assembler.getSelfLinkFor(obj).getHref()));
+
+
+
+
+	}
+
+
+
+
+	
+
+
+
+
+}
+
+
+
+
+
+
+At least, this is where the {?projection} is added to the URL.</description>
+			<version>2.1 RC1 (Dijkstra)</version>
+			<fixedVersion>2.0.3 (Codd SR3), 2.1 GA (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="307" opendate="2014-05-20 04:31:13" fixdate="2014-05-20 04:41:44" resolution="Fixed">
+		<buginformation>
+			<summary>Root mapping not discovered on Tomcat</summary>
+			<description>In case the URI handling returns an empty String (e.g. on requests to the root mapping) the subsequent lookup of the handler method fails to discover the RepositoryController on Tomcat.</description>
+			<version>2.1 RC1 (Dijkstra)</version>
+			<fixedVersion>2.1 GA (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="325" opendate="2014-06-19 08:58:28" fixdate="2014-06-20 02:52:56" resolution="Fixed">
+		<buginformation>
+			<summary>ReflectionRepositoryInvoker fails to invoke non-public methods</summary>
+			<description>Assume the following repository:
+
+
+
+
+
+
+@RepositoryRestResource
+
+
+
+
+interface AuthorRepository extends Repository&amp;lt;Author, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+	List&amp;lt;Author&amp;gt; findByFirstnameContaining(String name);
+
+
+
+
+}
+
+
+
+
+
+
+This repo is package scope but still exported, due to its  @RepositoryRestResource annotation. Trying to invoke the finder will cause an exception in ReflectionRepositoryInvoker.invoke() as the method is not accessible.</description>
+			<version>2.0.3 (Codd SR3)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvokerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.ResourceMappingsIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="327" opendate="2014-06-19 14:16:29" fixdate="2014-06-20 05:08:14" resolution="Fixed">
+		<buginformation>
+			<summary>Collection references are removed on PUT and PATCH if defaulted to empty collections</summary>
+			<description>Whenever a PUT or PATCH is performed, the DomainObjectMerger erases the objects references/associations if not null on the "from" object. In our case of one-to-many, we initialize those variable to empty arrays so they are never null unless explicitly set so. I&amp;amp;apos;m curious as to why the DomainObjectMerger even would attempt to merge associations? Is it possible to send associations in the same payload as the aggregate root object? If so, then i could see why it would do so, but if not, then what is the point?
+Work around for now is to not default association values to empty collections.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.security.SecureJpaConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.security.PreAuthorizedOrderRepository.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.solr.SolrWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.security.SecurityConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.security.SecuredPersonRepository.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.support.ExceptionHandlingCustomizationIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.security.SecurityIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.security.Person.java</file>
+			<file type="M">org.springframework.data.rest.core.support.DomainObjectMerger.java</file>
+			<file type="M">org.springframework.data.rest.core.support.DomainObjectMergerTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="329" opendate="2014-06-24 05:29:48" fixdate="2014-06-24 06:41:02" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryRestMvcConfiguration causes eager initialization of beans</summary>
+			<description>RepositoryRestMvcConfiguration declares a bean of type AnnotatedHandlerBeanPostProcessor which is a BeanPostProcessor and thus will get initialized very early in the container lifecycle. This however means that the configuration class will be populated and thus trigger the creation of all beans that need to be autowired into the container.
+We should make the bean definition method static as it doesn&amp;amp;apos;t actually require any dependencies be present in the first place.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.neo4j.Neo4jWebTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="331" opendate="2014-06-24 10:16:07" fixdate="2014-06-24 10:44:05" resolution="Fixed">
+		<buginformation>
+			<summary>Improvements in ResourceProcessorHandlerMethodReturnValueHandler</summary>
+			<description>ResourceProcessorHandlerMethodReturnValueHandler currently doesn&amp;amp;apos;t invoke ResourceProcessor instances that are typed to Resources if the value returned from the controller is a subtype of Resources (e.g. PagedResources).</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandlerUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="335" opendate="2014-06-25 20:59:21" fixdate="2014-06-27 08:10:17" resolution="Fixed">
+		<buginformation>
+			<summary>Overriding repositories delete method results in "argument type mismatch" exception</summary>
+			<description>Hi,
+I just tried to override the delete method in a repository and when I try to call the URL DELETE http://localhost:8080/webapp/xs/53ab96c930049cc029440d46 Spring throws an exception within AbstractRepositoryRestController line 177.
+Stacktrace says:
+
+2014-06-26 05:44:02,011 ERROR o.s.d.rest.webmvc.AbstractRepositoryRestController: 177 - argument type mismatch
+java.lang.IllegalArgumentException: argument type mismatch
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_05]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_05]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_05]
+	at java.lang.reflect.Method.invoke(Method.java:483) ~[na:1.8.0_05]
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:196) ~[ReflectionUtils.class:4.0.5.RELEASE]
+	at org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker.invoke(ReflectionRepositoryInvoker.java:277) ~[ReflectionRepositoryInvoker.class:na]
+	at org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker.invokeDelete(ReflectionRepositoryInvoker.java:210) ~[ReflectionRepositoryInvoker.class:na]
+...
+My code ist fairly simple:
+
+
+
+
+
+
+@Document(collection="x")
+
+
+
+
+public class X implements Identifiable&amp;lt;ObjectId&amp;gt; {
+
+
+
+
+	@Id ObjectId id;
+
+
+
+
+	public ObjectId getId() { return id; };
+
+
+
+
+	
+
+
+
+
+	String x;
+
+
+
+
+	public String getX() { return x; }
+
+
+
+
+	public void setX(String x) { this.x = x; }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@RepositoryRestResource(
+
+
+
+
+		path="xs",
+
+
+
+
+		collectionResourceDescription=@Description("Xs"),
+
+
+
+
+		collectionResourceRel="xs",
+
+
+
+
+		itemResourceDescription=@Description("X"),
+
+
+
+
+		itemResourceRel="x"
+
+
+
+
+		)
+
+
+
+
+public interface XRepo extends MongoRepository&amp;lt;X, ObjectId&amp;gt;, XRepoCustom {}
+
+
+
+
+
+
+
+
+
+public interface XRepoCustom {
+
+
+
+
+	void delete(ObjectId id);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public class XRepoImpl implements XRepoCustom {
+
+
+
+
+	@Override
+
+
+
+
+	public void delete(ObjectId id) {
+
+
+
+
+		System.out.println("WORKS");
+
+
+
+
+	}	
+
+
+
+
+}
+
+
+
+
+
+
+I tried to find the underlying reason using the debugger, but after a few steps the code only consists of reflection method calling and I couldn&amp;amp;apos;t figure out what really happens underneath.
+EDIT:
+I now tried the same thing with the Page&amp;lt;X&amp;gt; findAll(Pageable pageable) method. And it works. So it must have something to do with the delete method, I think.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvokerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">346</link>
+		</links>
+	</bug>
+	<bug id="328" opendate="2014-06-19 20:00:01" fixdate="2014-06-27 09:51:13" resolution="Fixed">
+		<buginformation>
+			<summary>Serialization errors if type contains only renamed properties</summary>
+			<description>Adding @EnableMongoAuditing to an application configuration causes a few different problems related to (but probably not caused by) Jackson serialization.  These issues can be reproduced by (1) starting an application with @EnableMongoAuditing, (2) POSTing certain types of entities to a RepositoryRestResource, and (3) attempting to GET from the same repository.  
+Please refer to the referenced URL for a working example based on the mongodb-data-rest getting-started sample.  Also note the comment with sample command-line input at: https://github.com/ncantelmo/gs-accessing-mongodb-data-rest/commit/988626629a1ef708b5a3d44c4bd8b2874662747f#commitcomment-6740135
+Additional notes:
+
+This issue was initially identified in an application that implemented AuditorAware.  The inclusion of an AuditorAware bean appears to make no difference on the described behavior.
+The following sequence of events will NOT reveal the issue: (1) POST a new document to some repository X, (2) Restart the application, (3), GET from repository X, (4) POST another document with the same fields to repository X, (5) GET from repository X.
+In other words, if you GET from a populated repository before you POST, the serialization routines will work properly.
+In the referenced example, removing the @JsonProperty("brand_name") annotation in PetFood.java will prevent serialization from causing a crash.
+In root-level entities or immediate nested children, custom @JsonProperty annotations will cause the annotated properties to not be fetched during a GET after an initial POST, but won&amp;amp;apos;t cause a crash.
+
+</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">320</link>
+		</links>
+	</bug>
+	<bug id="320" opendate="2014-06-13 05:04:09" fixdate="2014-06-27 09:53:37" resolution="Fixed">
+		<buginformation>
+			<summary>Fields with @JsonProperty are ignored on serialization</summary>
+			<description>Field annotated with @JsonProperty are left out from the serialization. This also means that it is not possible to alter the json property name. 
+The problem seems to be caused by 
+
+
+
+
+
+PersistentEntityJackson2Module.updateBuilder(..)
+
+
+
+
+
+ on line #219, where the property is attempted looked up by the name from the @JsonProperty, instead of the "real" property name. One way I think this can be solved is to add an inner loop to find the internal name from beanDesc.findProperties().
+Example:
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Description {    
+
+
+
+
+    private String heading;
+
+
+
+
+    @JsonProperty("body")
+
+
+
+
+    private String content;
+
+
+
+
+    ...
+
+
+
+
+}
+
+
+
+
+
+
+On serialization, everything looks fine from Jackson&amp;amp;apos;s perspective, but when the updateBuilder() hook on PersistentEntityJackson2Module is called the content property is omitted because the name of the field is different from the @JsonProperty.
+I haven&amp;amp;apos;t sent a pull request, since I haven&amp;amp;apos;t enlisted in the contributor program, but hopefully you can cherry pick or look at the commit on my fork.
+This problem was also described in DATAREST-117 and the corresponding pull request that was never merged: https://github.com/spring-projects/spring-data-rest/pull/136.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">328</link>
+		</links>
+	</bug>
+	<bug id="340" opendate="2014-06-30 04:14:34" fixdate="2014-06-30 04:32:19" resolution="Fixed">
+		<buginformation>
+			<summary>Non-persistent properties not rendered</summary>
+			<description>See the Boot issue for reference.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2ModuleUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="319" opendate="2014-06-12 07:36:42" fixdate="2014-07-15 01:42:32" resolution="Fixed">
+		<buginformation>
+			<summary>Add means to prefer deleting by object instead of deleting by id</summary>
+			<description>From the REST interface to the Repository you cannot force preference for using the void delete(T t) method over void delete(ID id) method. As a result we cannot do @PreAuthorize filters on delete based of object values. A use case for this would be to set security constraints.</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.2 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.invoke.ReflectionRepositoryInvokerIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">539</link>
+		</links>
+	</bug>
+	<bug id="244" opendate="2014-02-07 15:57:41" fixdate="2015-02-06 00:22:42" resolution="Duplicate">
+		<buginformation>
+			<summary>SDR Schema follows json-schema?</summary>
+			<description>The schema (/schema) output of SDR follows the specification (http://json-schema.org/documentation.html )? If so what version?</description>
+			<version>2.1 RC1 (Dijkstra)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.domain.jpa.Person.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Address.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Book.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Profile.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Author.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySchemaController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.User.java</file>
+			<file type="M">org.springframework.data.rest.core.config.MetadataConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JacksonMetadata.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JsonSchema.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">354</link>
+		</links>
+	</bug>
+	<bug id="354" opendate="2014-07-15 00:16:34" fixdate="2015-03-05 01:14:29" resolution="Fixed">
+		<buginformation>
+			<summary>Revamp JSON Schema support to current draft of the spec</summary>
+			<description>Similarly to the support for ALPS we added in Evans M1, we should expose API meta-data in JSON Schema and JSON Hyper-Schema format.
+[0] http://json-schema.org</description>
+			<version>2.1 RC1 (Dijkstra)</version>
+			<fixedVersion>2.3 RC1 (Fowler)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.domain.jpa.Person.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Address.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Book.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Profile.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Author.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySchemaController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.User.java</file>
+			<file type="M">org.springframework.data.rest.core.config.MetadataConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JacksonMetadata.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JsonSchema.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">244</link>
+			<link type="Relate" description="relates to">486</link>
+			<link type="Relate" description="is related to">399</link>
+			<link type="Relate" description="is related to">194</link>
+			<link type="Relate" description="is related to">208</link>
+		</links>
+	</bug>
+</bugrepository>

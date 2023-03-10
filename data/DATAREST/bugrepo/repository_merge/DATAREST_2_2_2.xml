@@ -1,0 +1,100 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="7" master="502" duplicate="599" opendate="2015-04-02 05:44:30" fixdate="2015-07-17 13:40:39" resolution="Fixed">
+		<buginformation>
+			<summary>Not convenient to search a repository by a related entity using links findBy + @Param expects an Id, which is not visible via REST</summary>
+			<description>It doesn&amp;amp;apos;t seem to be very convenient to search a repository using an related entity as a query parameter. Consider the following repository:
+
+
+
+
+
+
+@RepositoryRestResource
+
+
+
+
+public interface TagRepository extends PagingAndSortingRepository&amp;lt;Tag, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+    Page&amp;lt;Tag&amp;gt; findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc(@Param("name") String name,
+
+
+
+
+                                                                             @Param("organisation") Organisation organisation,
+
+
+
+
+                                                                             Pageable pageable);
+
+
+
+
+}
+
+
+
+
+
+
+Organisations have many tags, a tag has one organisation. The HATEOAS semantics return entity relationships as links, however we cannot pass one of these links as the "organisation" query parameter above.
+As far as I can tell, the only way to pass an organisation parameter is by using the ID (primary key) of the entity directly. This is quite inconvenient as it means we need to resolve links on the client first in order to determine the ID we need and also means that we need to expose the IDs in our DTOs (which is not default and seems like a bad idea), or attempt to parse it from the URI link.
+This is how I would expect it to be able to work:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=http://localhost:8080/api/organisations/1
+However we are currently required to use it like this:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=1
+Is this the only way to query using a related entity? Hi,
+here is another issue I came across while trying out Spring Data REST: 
+IDs are, if I&amp;amp;apos;m correct, intentionally not exposed in the resource body, as you&amp;amp;apos;re supposed to use the URL as primary identifier. 
+This is a problem, because by exposing a repository finder Spring Data REST expects me to put the primary key as query param.
+I put up a small example on github:
+https://github.com/otrosien/spring-data-examples/tree/findQueryParamMismatch
+This is the interesting part: How am I, as REST client, suppose to fill the query param for customer1?
+
+
+
+
+
+
+public interface RelationshipRepository extends PagingAndSortingRepository&amp;lt;Relationship, Long&amp;gt; {
+
+
+
+
+ Page&amp;lt;Relationship&amp;gt; findByCustomer1(@Param("customer1") Customer customer1, Pageable pageable);
+
+
+
+
+
+</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.UriToEntityConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.BookRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">678</link>
+			<link type="Duplicate" description="is duplicated by">599</link>
+			<link type="Duplicate" description="duplicates">502</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,1033 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="401" opendate="2006-11-25 13:54:40" fixdate="2006-11-25 14:47:12" resolution="Fixed">
+		<buginformation>
+			<summary>AclEntryVoter and BasicAclEntryVoter use startsWith for configuration attribute matching</summary>
+			<description>AclEntryVoter and BasicAclEntryVoter both use String.startsWith(String) for determining whether they apply to a given secure object invocation. Instead equals(String) should be used.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.vote.BasicAclEntryVoter.java</file>
+			<file type="M">org.acegisecurity.vote.AclEntryVoter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="404" opendate="2006-11-29 13:52:40" fixdate="2006-12-28 07:24:19" resolution="Fixed">
+		<buginformation>
+			<summary>Logout when not logged in cause NullPointerException</summary>
+			<description>When a user attempts to logout when they aren&amp;amp;apos;t logged in (e.g. when their session has expired) a NullPointerException occurs in TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295).
+The line that fails is:
+        cancelCookie(request, response, "Logout of user " + authentication.getName());
+I guess the cookie should still be cancelled, so the change might simply be to change the line to something like:
+        cancelCookie(request, response, "Logout of user " + authentication == null ? "Unknown" : authentication.getName());
+Regards,
+Damien</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">433</link>
+			<link type="Duplicate" description="is duplicated by">464</link>
+			<link type="Duplicate" description="is duplicated by">407</link>
+		</links>
+	</bug>
+	<bug id="407" opendate="2006-12-02 06:52:31" fixdate="2006-12-28 07:24:54" resolution="Fixed">
+		<buginformation>
+			<summary>Hitting LogoutFilter&amp;apos;s URL when not logged in causes NPE</summary>
+			<description>After upgrading to 1.0.3, I&amp;amp;apos;m getting the following error when running
+some tests:
+[INFO] [talledLocalContainer] ERROR - StandardWrapperValve.invoke(260)
+
+
+ Servlet.service() for servlet jsp threw exception
+[INFO] [talledLocalContainer] java.lang.NullPointerException
+[INFO] [talledLocalContainer]   at
+org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+[INFO] [talledLocalContainer]   at
+org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+
+
+Here&amp;amp;apos;s what I have in my security.xml context file:
+   &amp;lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&amp;gt;
+       &amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+           &amp;lt;value&amp;gt;
+               CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+               PATTERN_TYPE_APACHE_ANT
+/**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
+           &amp;lt;/value&amp;gt;
+           &amp;lt;!-- Put channelProcessingFilter before
+securityContextHolderAwareRequestFilter to turn on SSL switching --&amp;gt;
+           &amp;lt;!-- It&amp;amp;apos;s off by default b/c Canoo WebTest doesn&amp;amp;apos;t support
+SSL out-of-the-box --&amp;gt;
+       &amp;lt;/property&amp;gt;
+   &amp;lt;/bean&amp;gt;
+   &amp;lt;bean id="httpSessionContextIntegrationFilter"
+class="org.acegisecurity.context.HttpSessionContextIntegrationFilter"/&amp;gt;
+   &amp;lt;bean id="logoutFilter" class="org.acegisecurity.ui.logout.LogoutFilter"&amp;gt;
+       &amp;lt;constructor-arg value="/index.jsp"/&amp;gt; &amp;lt;!-- URL redirected to
+after logout --&amp;gt;
+       &amp;lt;constructor-arg&amp;gt;
+           &amp;lt;list&amp;gt;
+               &amp;lt;ref bean="rememberMeServices"/&amp;gt;
+               &amp;lt;bean
+class="org.acegisecurity.ui.logout.SecurityContextLogoutHandler"/&amp;gt;
+           &amp;lt;/list&amp;gt;
+       &amp;lt;/constructor-arg&amp;gt;
+       &amp;lt;property name="filterProcessesUrl" value="/logout.jsp"/&amp;gt;
+   &amp;lt;/bean&amp;gt;
+The problem appears to be caused by trying to logout before you&amp;amp;apos;ve
+tried to login.  This worked fine in previous releases where the
+LogoutFilter was present.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+	<bug id="433" opendate="2007-02-11 03:19:28" fixdate="2007-05-21 18:56:10" resolution="Duplicate">
+		<buginformation>
+			<summary>Fix to SEC-359 has introduced a NullPointer to TokenBasedRememberMeServices.logout()</summary>
+			<description>
+cancelCookie(request, response, "Logout of user " + authentication.getName()); &amp;lt;-- NULL POINTER if authentication is null
+Stack trace: java.lang.NullPointerException
+    at org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+    at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:229)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.securechannel.ChannelProcessingFilter.doFilter(ChannelProcessingFilter.java:138)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:148)
+    at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:98) </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+	<bug id="464" opendate="2007-04-04 08:04:12" fixdate="2007-05-21 19:34:32" resolution="Duplicate">
+		<buginformation>
+			<summary>NPE when missing &amp;apos;j_acegi_logout&amp;apos; when not logged in</summary>
+			<description>I receive a NPE Null PointerException when linking to &amp;amp;apos;j_acegi_logout&amp;amp;apos;:
+    &amp;lt;a href="&amp;lt;c:url value="/j_acegi_logout"/&amp;gt;"&amp;gt;Logoff&amp;lt;/a&amp;gt;
+when there is no user currently logged in
+Here is the stack trace for the exception:
+An Error has occurred in this application.
+java.lang.NullPointerException
+	at org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+	at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:229)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:148)
+	at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:98)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:202)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:173)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:202)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:173)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:213)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:178)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:126)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:105)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:107)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:148)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:869)
+	at org.apache.coyote.http11.Http11BaseProtocol$Http11ConnectionHandler.processConnection(Http11BaseProtocol.java:664)
+	at org.apache.tomcat.util.net.PoolTcpEndpoint.processSocket(PoolTcpEndpoint.java:527)
+	at org.apache.tomcat.util.net.LeaderFollowerWorkerThread.runIt(LeaderFollowerWorkerThread.java:80)
+	at org.apache.tomcat.util.threads.ThreadPool$ControlRunnable.run(ThreadPool.java:684)
+	at java.lang.Thread.run(Thread.java:595)
+My current workaround for the problem is to wrap the "logout" link with &amp;lt;authz/&amp;gt; tags:
+    &amp;lt;authz:authorize ifAnyGranted="ROLE_USER,ROLE_ADMINISTRATOR"&amp;gt;
+        &amp;lt;a href="&amp;lt;c:url value="/j_acegi_logout"/&amp;gt;"&amp;gt;Logoff&amp;lt;/a&amp;gt;
+    &amp;lt;/authz:authorize&amp;gt;
+which prevents the "Logoff" link from showing, but does not stop a user from manually entering the &amp;amp;apos;j_acegi_logout&amp;amp;apos; link themselves.
+Here is the filterChainProxy config:
+    &amp;lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&amp;gt;
+        &amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+            &amp;lt;value&amp;gt;
+                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+                PATTERN_TYPE_APACHE_ANT
+                /images/**=#NONE#
+                /scripts/**=#NONE#
+                /styles/**=#NONE#
+                /**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
+            &amp;lt;/value&amp;gt;
+            &amp;lt;!-- :TODO: Put channelProcessingFilter before securityContextHolderAwareRequestFilter to turn on SSL switching --&amp;gt;
+            &amp;lt;!-- It&amp;amp;apos;s off by default b/c Canoo WebTest doesn&amp;amp;apos;t support SSL out-of-the-box --&amp;gt;
+        &amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+Here is the logoutFilter config:
+    &amp;lt;bean id="logoutFilter" class="org.acegisecurity.ui.logout.LogoutFilter"&amp;gt;
+      &amp;lt;constructor-arg value="/"/&amp;gt; &amp;lt;!-- URL redirected to after logout --&amp;gt;
+      &amp;lt;constructor-arg&amp;gt;
+         &amp;lt;list&amp;gt;
+              &amp;lt;ref bean="rememberMeServices"/&amp;gt;
+              &amp;lt;bean class="org.acegisecurity.ui.logout.SecurityContextLogoutHandler"/&amp;gt;
+         &amp;lt;/list&amp;gt;
+      &amp;lt;/constructor-arg&amp;gt;
+    &amp;lt;/bean&amp;gt;</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+	<bug id="438" opendate="2007-02-18 13:14:46" fixdate="2007-05-22 17:35:17" resolution="Fixed">
+		<buginformation>
+			<summary>exceptionMappings in ProviderManager cannot be added from subclasses</summary>
+			<description>The subclasses of ProviderManager cannot add exceptionMappings to raise custom events on custom exceptions as the doAfterPropertiesSet() is passed DEFAULT_EXCEPTION_MAPPINGS instead of instance variable exceptionMappings.
+Please also look at thread on the forums
+http://forum.springframework.org/showthread.php?t=35052
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.ProviderManager.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="478" opendate="2007-04-29 19:03:34" fixdate="2007-05-22 17:46:17" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect decoding of base64 cookie value by TokenBasedRememberMeServices.autoLogin</summary>
+			<description>This bug can be observed by using the contact example application and trying to login with dianne/emu while using the "remember me option". This user mght not be remembered, as it is the case for other users. this, however, might not be reproductible under certain conditions.
+The heart of the problem is that a user will not be remembered if the resulting base64 encoded value stored in in cookie has a number of significant caracters that is not an exact multiple of 4. In such condition, according to thee base64 specification, the value is padded with trailing "=". The result is a cookie value padded with "%3D", which is ok.
+When the cookie value is retrieved by the autoLogin method, the trailing "=" are lost. Although on might think this should be detected by Base64.Base64.isArrayByteBase64(), it is not because this method returns true if the value contains only valid character, even if the value itself is not valid.
+Workaround :
+A simple workaround is to add the missing trailing "=" to the retrieved value, which can be done with the following code :
+  public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
+    Cookie[] cookies = request.getCookies();
+    if ((cookies == null) || (cookies.length == 0)) 
+{
+      return null;
+    }
+
+    for (int i = 0; i &amp;lt; cookies.length; i++) {
+      if (ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY.equals(cookies[i].getName())) {
+        String cookieValue = cookies[i].getValue();
+        /*************************
+          PATCH BEGINS HERE
+         *************************/
+        for (int j = 0; j &amp;lt; cookieValue.length() % 4; j++) 
+{
+          cookieValue = cookieValue + "=";
+        }
+        /************************
+        PATCH ENDS HERE
+        *************************/
+        if (Base64.isArrayByteBase64(cookieValue.getBytes())) {
+          if (logger.isDebugEnabled()) 
+{
+            logger.debug("Remember-me cookie detected");
+          }
+
+Fix: 
+The real fix would probably concern either Base64.decodeBase64 or Cookie.getValue</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="474" opendate="2007-04-24 21:32:22" fixdate="2007-05-22 17:49:01" resolution="Fixed">
+		<buginformation>
+			<summary>TokenBasedRememberMeServices fail with empty password</summary>
+			<description>In case of an empty password, the service fails because of the Assert.hasLength(password) in the loginSuccess method.
+Fails heavily, with 500 page shown to the user.
+However I could not find any contract that the password can&amp;amp;apos;t be empty. Could you please change this behaviour to simply skip cookie creation in case of an empty username/password?
+Like:
+		if (StringUtils.hasLength(username) &amp;amp;&amp;amp; StringUtils.hasLength(password)) 
+{
+
+			long expiryTime = System.currentTimeMillis()
+					+ (getTokenValiditySeconds() * 1000);
+			// And so on
+		}</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="461" opendate="2007-03-30 07:19:42" fixdate="2007-05-22 17:55:02" resolution="Duplicate">
+		<buginformation>
+			<summary>HttpSessionContextIntegrationFilter with cloneFromHttpSession = true causes problems at login</summary>
+			<description>The cloneFromHttpSession feature of the HttpSessionContextIntegrationFilter is fantastic - just what I needed, but it has a bug. 
+On line 172, it checks to see if the clone feature is turned on and then asserts that the context from the session is an instance of Cloneable.  However, the context from the session might be null at this point.  The check for cloneFromHttpSession should be moved inside the next if() statement so that it only checks when the context in the session is non-null. </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">423</link>
+		</links>
+	</bug>
+	<bug id="459" opendate="2007-03-29 09:24:16" fixdate="2007-05-22 17:57:28" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect MessageSource constructor used</summary>
+			<description>Here&amp;amp;apos;s one example from BasicAclEntryAfterInvocationProvider:
+                if ((acls == null) || (acls.length == 0)) {
+                    throw new AccessDeniedException(messages.getMessage(
+                            "BasicAclEntryAfterInvocationProvider.noPermission",
+                            new Object[] 
+{authentication.getName(), returnedObject}
+,
+                            "Authentication 
+{0}
+ has NO permissions at all to the domain object 
+{1}
+"));
+                }
+It&amp;amp;apos;s missing the locale parameter at the end, so it&amp;amp;apos;s using an unintended constructor resulting in the string being logged verbatim without the substitutions. This makes debugging any security problems very hard. 
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.afterinvocation.BasicAclEntryAfterInvocationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="453" opendate="2007-03-14 07:41:55" fixdate="2007-05-22 17:59:41" resolution="Fixed">
+		<buginformation>
+			<summary>CasAuthenticationHandler does not log root cause of AuthenticationException.</summary>
+			<description>Excerpt from org.acegisecurity.adapters.cas3.CasAuthenticationHandler&amp;amp;apos;s authenticateUsernamePasswordInternal() method:
+----- excerpt begin -----
+try {
+  this.authenticationManager.authenticate(authenticationRequest);
+} catch (final org.acegisecurity.AuthenticationException e) {
+  if (log.isDebugEnabled()) 
+{
+    log.debug("Authentication request for " + credentials.getUsername() + "failed: " + e.toString());
+  }
+
+  return false;
+}
+------ excerpt end ------
+Problems (both with the log.debug() call):
+
+The log.debug call does not print the stack trace.  This could be solved by changing the log.debug() call to:
+    log.debug("Authentication request for " + credentials.getUsername() + "failed: ", e);
+There needs to be a space between the credentials.getUsername() and the word "failed".
+
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.adapters.cas3.CasAuthenticationHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="439" opendate="2007-02-18 18:01:19" fixdate="2007-05-22 18:05:01" resolution="Fixed">
+		<buginformation>
+			<summary>AclEntryAfterInvocationProvider.decide() returns null when result object not applicable to the provider</summary>
+			<description>Maybe I&amp;amp;apos;m confused but I&amp;amp;apos;m using ACL_AFTER_READ to control access to instances of my DomainObjectAclAware objects.  In my afterAclRead bean I define:
+&amp;lt;property name="processDomainObjectClass"&amp;gt;&amp;lt;value&amp;gt;foo.DomainObjectAclAware&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+I stepped through code while retrieving an object that was not an instance of DomainObjectAclAware and the provider returned null anyway as if I do not have access to the object.  See lines 90-96 of org.acegisecurity.afterinvocation.AclEntryAfterInvocationProvider:
+                if (!getProcessDomainObjectClass().isAssignableFrom(returnedObject.getClass())) {
+                    if (logger.isDebugEnabled()) 
+{
+                        logger.debug("Return object is not applicable for this provider, skipping");
+                    }
+
+                    return null;
+                }
+Shouldn&amp;amp;apos;t this return the object instead of null?</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.afterinvocation.AclEntryAfterInvocationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="451" opendate="2007-03-13 05:09:47" fixdate="2007-05-23 11:18:22" resolution="Fixed">
+		<buginformation>
+			<summary>Empty context path in LogoutFilter and AbstractProcessingFilter</summary>
+			<description>When context path is empty, LogoutFilter erroneously believes "/anything/before/j_acegi_logout" is a logout URL.  The requiresLogout() method should use uri.equals(request.getContextPath() + filterProcessesUrl) instead of uri.endsWith(request.getContextPath() + filterProcessesUrl), or more simple, uri.endsWith(filterProcessesUrl) to detect any URL ending with j_acegi_logout.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="411" opendate="2006-12-11 11:44:04" fixdate="2007-05-24 10:53:45" resolution="Fixed">
+		<buginformation>
+			<summary>SecurityContextHolderAwareRequestWrapper does not define required constructor</summary>
+			<description>SecurityContextHolderAwareRequestFilter requires that any request wrapper configured for it must provide a public constructor that accepts two arguments (HttpServletRequest and PortResolver). SecurityContextHolderAwareRequestWrapper does not provide this constructor.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.wrapper.SecurityContextHolderAwareRequestWrapperTests.java</file>
+			<file type="M">org.acegisecurity.wrapper.SavedRequestAwareWrapper.java</file>
+			<file type="M">org.acegisecurity.wrapper.SecurityContextHolderAwareRequestWrapper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="419" opendate="2006-12-23 14:04:56" fixdate="2007-05-24 12:55:24" resolution="Fixed">
+		<buginformation>
+			<summary>org.acegisecurity.afterinvocation.CollectionFilterer&amp;apos;s logger error</summary>
+			<description>class CollectionFilterer implements Filterer {
+    //~ Static fields/initializers =====================================================================================
+    protected static final Log logger = LogFactory.getLog(BasicAclEntryAfterInvocationCollectionFilteringProvider.class);
+BasicAclEntryAfterInvocationCollectionFilteringProvider.class should be CollectionFilterer.class</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.afterinvocation.CollectionFilterer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="467" opendate="2007-04-06 20:54:13" fixdate="2007-05-24 12:57:02" resolution="Duplicate">
+		<buginformation>
+			<summary>New Acl package not compatible with Mysql Db</summary>
+			<description>The sql statements JdbcAclService and JdbcMutableAclService are only compatible with hsqlDb but not with other DBs e.g. mysql. the "call identity()" for example query must be "SELECT LAST_INSERT_ID()" in mysql dialect.
+So it would be great if you could access the ...Query properties via setter-methods and configure JdbcMutableAclService via spring beans xml.
+also have a look at this thread please:
+http://forum.springframework.org/archive/index.php/t-34222.html
+thank you</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">422</link>
+		</links>
+	</bug>
+	<bug id="512" opendate="2007-07-23 19:41:50" fixdate="2007-07-24 04:04:31" resolution="Fixed">
+		<buginformation>
+			<summary>Method FilterBasedLdapUserSearch#searchForUser(String username) creates an unsed  DirContext which never closed</summary>
+			<description>The org.acegisecurity.ldap.searchFilterBasedLdapUserSearch#searchForUser(String username)  method create an DirContext in the first line. This DirContext create/use a connection to ldap server. This DirContext is only used for an debug level log output. The great problem is that this DirContext is never closed and the ldap connection is not closed or released to connection pool. </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ldap.search.FilterBasedLdapUserSearch.java</file>
+			<file type="M">org.acegisecurity.ldap.search.FilterBasedLdapUserSearchTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="502" opendate="2007-07-10 15:02:03" fixdate="2007-08-27 04:21:49" resolution="Fixed">
+		<buginformation>
+			<summary>LabelBasedAclVoter Tests fail </summary>
+			<description>Unit tests for LabelBasedAclVoter error on loading applicationcontest,
+(test resource org.acegisecurity.vote.labelBasedSecurityApplicationContext.xml).
+Due to the fact the with Spring 1.2.8 (not sure about other versions), an application context uses a 
+org.apache.commons.collections.map.LinkedMap which implements java.util.Map, but not 
+java.util.HashMap which org.acegisecurity.vote.LabelBasedAclVoter.setLabelMap(..) expects.
+Solution.
+change org.acegisecurity.vote.LabelBasedAclVoter labelMap member var to be of type java.util.Map (was java.util.HashMap)
+and change signature of setLabelMap(..)
+from public void setLabelMap(HashMap labelMap)
+to  public void setLabelMap(Map labelMap)
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.vote.LabelBasedAclVoter.java</file>
+			<file type="M">org.acegisecurity.vote.LabelBasedAclVoterTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="408" opendate="2006-12-03 14:04:17" fixdate="2007-08-28 23:37:44" resolution="Fixed">
+		<buginformation>
+			<summary>Add getFilterProcessesUrl() to org.acegisecurity.ui.logout.LogoutFilter</summary>
+			<description>Please add a getFilterProcessesUrl() method to LogoutFilter to give sub-classes access to the filterProcessesUrl field.
+For the JAMWiki project (jamwiki.org) we have a need to use a custom redirect, and therefore have created a subclass of LogoutFilter to implement a custom version of the sendRedirect() method.  Unfortunately this subclass cannot access the filterProcessesUrl field because it is private in the LogoutFilter class and there is no get method in LogoutFilter.  We have worked around the problem by extending the setFilterProcessesUrl() method in our subclass, but it would be much cleaner to just be able to call a parent getFilterProcessesUrl() method.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">500</link>
+			<link type="Duplicate" description="is duplicated by">500</link>
+		</links>
+	</bug>
+	<bug id="398" opendate="2006-11-24 21:14:12" fixdate="2007-08-31 07:43:41" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionContextIntegrationFilter/AuthenticationProcessingFilter thread concurrency issue</summary>
+			<description>On a successful authentication I occassionally get redirected back to the login page rather than the requested protected resource. This is due to a thread concurrency issue.
+C: GET /protected/resource
+S: 302 Redirect to /login
+C: GET /login
+S: 200 OK
+C: POST /j_acegi_security_check  // THREAD-1 (successful login)
+S: 302 Redirect to /protected/resource // THREAD-1
+ THREAD-1 not finished yet (not reached HttpSessionContextIntegrationFilter post doFilter() block, which means SecurityContext has not been updated with successfull authentication).
+C: GET /protected/resource // THREAD-2
+S: 302 Redirect to /login // THREAD-2
+...
+ THREAD-1 completes request and SecurityContext is updated.
+Solution:
+Delay the redirects using a response wrapper until after the HttpSessionContextIntegrationFilter has updated the SecurityContext.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">587</link>
+			<link type="Related" description="is related to">561</link>
+		</links>
+	</bug>
+	<bug id="549" opendate="2007-09-06 14:40:42" fixdate="2007-09-14 01:34:00" resolution="Fixed">
+		<buginformation>
+			<summary>AuthenticationProcessingFilter should trim white space from user name</summary>
+			<description>When a user logs in with either leading or trailing white space in their user name, authentication still succeeds (we are using a org.acegisecurity.providers.ldap.authenticator.BindAuthenticator), authorities are correctly populated.  However the leading or trailing white space is never removed from the user name, so auth.getName() will include the white space.
+Later when JdbcMutableAclService searches for the ACL_SID table or inserts into the ACL_SID table the unwanted white space is used in the where clause or even worse in the insert (if the SID record is being created for the user).
+I&amp;amp;apos;m not 100% sure if the ACL queries are incorrect and should perform a trim() on the ACL_SID.sid column, or whether the problem is more fundamental, and the AuthenticationProcessingFilter should perform a trim() after it obtains the user name from the request.
+My current thinking leads me to believe the AuthenticationProcessingFilter is at fault, and it should perform the trim() on the user name, as allowing trailing or leading white space in user names sounds like a recipe for confusion.
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="602" opendate="2007-11-14 07:37:38" fixdate="2008-04-04 13:47:38" resolution="Fixed">
+		<buginformation>
+			<summary>Acl (Acls) class ObjectIdentityRetrievalStrategyImpl doesn&amp;apos;t work well with proxied objects</summary>
+			<description>When using the AclEntryAfterInvocationProvider to check acl access on an object which has been instantiated by (in my case) hibernate, it is possible that hibernate will return a cglib enhanced instance of the object (or it might not).  When  ObjectIdentityRetrievalStrategyImpl then attempts to create an ObjectIdentity for it, that class name it gets is something like "com.mycompany.Foo$$EnhancerByCGLIB$$beb2e4f5", which does not match up with the class reference in the ObjectIdentity database record which is "com.mycompany.Foo", and no corresponding ACL entries will be found for the object.
+I&amp;amp;apos;ve found a couple of solutions for this, the first is to deproxy the object immediately after the query using a method something like:
+public static Object deproxy(Object obj)
+  {
+    Hibernate.initialize(obj);
+    if (obj == null)
+    {
+      return null;
+    }
+
+    if (HibernateProxy.class.isInstance(obj))
+    {
+      HibernateProxy proxy = (HibernateProxy) obj;
+      return proxy.getHibernateLazyInitializer().getImplementation();
+    }
+
+    return obj;
+  } 
+NOTE: Hibernate.initialise(object) doesn&amp;amp;apos;t work, because although it may flesh out the proxied object, it returns void, so we are still left holding onto the proxy.
+I don&amp;amp;apos;t particularly like this approach, because for every factory method we need to remember to deproxy the found object, and where collections are returned, we&amp;amp;apos;d need to deproxy every object in the collection.
+An alternative solution is to write a ProxyAwareObjectIdentityRetrievalStrategy implementation.  This is feasible because all (I think) classes that use an ObjectIdentityRetrievalStrategy  support dependency injection.
+I&amp;amp;apos;ve had a go at this, and got the cglib enhanced case taken care of, but I also thought that the case where a Jdk proxy is returned needs to be addressed also.  I&amp;amp;apos;ve found a simple way to detect a Jdk proxy, but cannot figure how to get the class name we actually want out of it, as Jdk proxies only work on interfaces, and it&amp;amp;apos;s the InvokationHandler that does all the delegation.
+class and tests will be attached.</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.objectidentity.ObjectIdentityImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">532</link>
+		</links>
+	</bug>
+	<bug id="589" opendate="2007-11-05 14:01:15" fixdate="2008-04-04 19:09:47" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy#readAclsById(ObjectIdentity[], Sid[]), throws exception, when a warning log would do</summary>
+			<description>There is a small section of code at the end org.acegisecurity.acls.jdbc.BasicLookupStrategy that iterates through all the supplied ObjectIdentities, and checks that an Acl has been found for each.  If any ObjectIdentity does not have a corresponding Acl an exception is thrown.
+I would assume that in some applications there may not be an Acl for every single domain object under Acl control, as projects using this library may decide to create Acls only as needed, and the absence of an Acl means no access. This  makes an exception too strong.
+I think logging a warning to a commons logger would be more suitable, some thing like
+         // Now we&amp;amp;apos;re done, check every requested object identity was found 
+        // and log it.
+        if (LOG.isWarnEnabled()) {
+          for (int i = 0; i &amp;lt; objects.length; i++) {
+              if (!result.containsKey(objects[i])) 
+{
+                  LOG.warn("Unable to find ACL information for object identity &amp;amp;apos;"
+                      + objects[i].toString() + "&amp;amp;apos;");
+              }
+          }
+        }
+        return result;
+    }
+NOTE: This issue should probably be added to 
+http://opensource.atlassian.com/projects/spring/browse/SEC-532</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.LookupStrategy.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+			<file type="M">org.springframework.security.acls.AclService.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">590</link>
+			<link type="Depends" description="is depended on by">532</link>
+		</links>
+	</bug>
+	<bug id="590" opendate="2007-11-05 14:17:19" fixdate="2008-04-05 09:34:14" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy#readAclsById(ObjectIdentity[], Sid[]) has a loop that sometimes terminates prematurely</summary>
+			<description>The main for loop in 
+org.acegisecurity.acls.jdbc.BasicLookupStrategy#readAclsById(ObjectIdentity[], Sid[])  
+uses &amp;amp;apos;continue;&amp;amp;apos; when an Acl is either found to be already in the results, or is found in the cache.  But the section of code that looks up batches Acls from the database is in the loop, so if the last ObjectIdentity in the in the objects array is found in the results or cache, the loop will terminate without looking up the last batch of Acls from the database.
+I&amp;amp;apos;ve written a unit test to prove this, it should be added to org.acegisecurity.acls.jdbc.LookupStrategyTest
+/**
+
+A test specifically for a bug, where if the LAST 
+{@link ObjectIdentity} in 
+   * the array of of Oids we are getting ACL&amp;amp;apos;s for is in the cache, the 
+   * collection of {@link ObjectIdentity}
+ being collected for a bulk database
+lookup will not be processed due to some inapropriate &amp;lt;code&amp;gt;Continue&amp;lt;/code&amp;gt;
+statements in the loop.
+
+@throws Exception
+   */
+  public void testReadLastIsCachedBugFix() throws Exception
+  {
+    ObjectIdentity grandParentOid = new ObjectIdentityImpl("org.acegisecurity.TargetObject", new Long(104));
+    ObjectIdentity parent1Oid = new ObjectIdentityImpl("org.acegisecurity.TargetObject", new Long(105));
+    ObjectIdentity parent2Oid = new ObjectIdentityImpl("org.acegisecurity.TargetObject", new Long(106));
+    ObjectIdentity childOid = new ObjectIdentityImpl("org.acegisecurity.TargetObject", new Long(107));
+
+    MutableAcl grandParentAcl = jdbcMutableAclService.createAcl(grandParentOid);
+    MutableAcl parent1Acl = jdbcMutableAclService.createAcl(parent1Oid);
+    MutableAcl parent2Acl = jdbcMutableAclService.createAcl(parent2Oid);
+    MutableAcl childAcl = jdbcMutableAclService.createAcl(childOid);
+    // Specify the inheritence hierarchy
+    parent1Acl.setParent(grandParentAcl);
+    parent2Acl.setParent(grandParentAcl);
+    childAcl.setParent(parent1Acl);
+    // Now let&amp;amp;apos;s add a couple of permissions
+    grandParentAcl.insertAce(null, BasePermission.READ, new PrincipalSid(auth), true);
+    // Explictly save the changed ACL
+    jdbcMutableAclService.updateAcl(grandParentAcl);
+    jdbcMutableAclService.updateAcl(parent1Acl);
+    jdbcMutableAclService.updateAcl(parent2Acl);
+    jdbcMutableAclService.updateAcl(childAcl);
+    // fluch cache to make sure we they are retieved from DB
+    cache.removeAll();
+    // first lookup only child
+    Permission[] checkPermision = new Permission[] 
+{BasePermission.READ}
+;
+    Sid[] sids = new Sid[] 
+{ new PrincipalSid(auth)}
+;
+    ObjectIdentity[] childOids = new ObjectIdentity[] 
+{childOid}
+;
+    Map foundAcls = lookupStrategy.readAclsById(childOids, sids);
+    Acl foundChildAcl = (Acl) foundAcls.get(childOid);
+    assertNotNull(foundChildAcl);
+    assertTrue(foundChildAcl.isGranted(checkPermision, sids, false));
+    // we now expect that the acls for child, parent1 and grandparent are cached
+    // if the bug is present and we now search for all for acls, and make sure
+    // that batchsize is greater than 4, and that parent2 is not the last in the 
+    // oid array (it&amp;amp;apos;s the only one not cached), then having an aleady cached
+    // ACL as the last in the oid array to lookup, will cause the BUG we are 
+    // for testing to skip the DB lookup when the last entry to check is 
+    // retireved from the cache.
+    ObjectIdentity[] allOids = new ObjectIdentity[] 
+{grandParentOid, parent1Oid, parent2Oid, childOid}
+;
+    foundAcls = lookupStrategy.readAclsById(allOids, sids);
+    Acl foundParent2Acl = (Acl) foundAcls.get(parent2Oid);
+    assertNotNull(foundParent2Acl);
+    assertTrue(foundParent2Acl.isGranted(checkPermision, sids, false));
+ }
+And rewritten org.acegisecurity.acls.jdbc.BasicLookupStrategy#readAclsById(ObjectIdentity[], Sid[])  to fix it
+/**
+
+The main method.&amp;lt;p&amp;gt;WARNING: This implementation completely disregards the "sids" parameter! Every item
+in the cache is expected to contain all SIDs. If you have serious performance needs (eg a very large number of
+SIDs per object identity), you&amp;amp;apos;ll probably want to develop a custom 
+{@link LookupStrategy}
+ implementation
+instead.&amp;lt;/p&amp;gt;
+&amp;lt;p&amp;gt;The implementation works in batch sizes specfied by 
+{@link #batchSize}
+.&amp;lt;/p&amp;gt;
+     *
+@param objects DOCUMENT ME!
+@param sids DOCUMENT ME!
+     *
+@return DOCUMENT ME!
+     *
+@throws NotFoundException DOCUMENT ME!
+@throws IllegalStateException DOCUMENT ME!
+     */
+    public Map readAclsById(ObjectIdentity[] objects, Sid[] sids)
+        throws NotFoundException {
+        Assert.isTrue(batchSize &amp;gt;= 1, "BatchSize must be &amp;gt;= 1");
+        Assert.notEmpty(objects, "Objects to lookup required");
+
+        // Map&amp;lt;ObjectIdentity,Acl&amp;gt;
+        Map result = new HashMap(); // contains FULLY loaded Acl objects
+        Set currentBatchToLoad = new HashSet(); // contains ObjectIdentitys
+        for (int i = 0; i &amp;lt; objects.length; i++) {
+            // flag to record if we have found the acl for this iteration
+            boolean aclFound = false;
+            // 1.) Check we don&amp;amp;apos;t already have this ACL in the results
+            if (result.containsKey(objects[i])) 
+{
+                aclFound = true; // flag as found
+            }
+
+            // 2.) Check cache for the present ACL entry
+            if (!aclFound) {
+              Acl acl = aclCache.getFromCache(objects[i]);
+              // Ensure any cached element supports all the requested SIDs
+              // (they should always, as our base impl doesn&amp;amp;apos;t filter on SID)
+              if (acl != null) {
+                  if (acl.isSidLoaded(sids)) 
+{
+                      result.put(acl.getObjectIdentity(), acl);
+                      aclFound = true; // flag as found
+                  }
+ else 
+{
+                      throw new IllegalStateException(
+                          "Error: SID-filtered element detected when implementation does not perform SID filtering - have you added something to the cache manually?");
+                  }
+              }
+            }
+            // 3. Load the Acl from the database
+            if (!aclFound) 
+{
+              currentBatchToLoad.add(objects[i]);
+            }
+
+            // Is it time to load from JDBC the currentBatchToLoad?
+            if ((currentBatchToLoad.size() == this.batchSize) || ((i + 1) == objects.length)) {
+                if (currentBatchToLoad.size() &amp;gt; 0) {
+                    Map loadedBatch = lookupObjectIdentities((ObjectIdentity[]) currentBatchToLoad.toArray(
+                                new ObjectIdentity[] {}), sids);
+                    // Add loaded batch (all elements 100% initialized) to results
+                    result.putAll(loadedBatch);
+                    // Add the loaded batch to the cache
+                    Iterator loadedAclIterator = loadedBatch.values().iterator();
+                    while (loadedAclIterator.hasNext()) 
+{
+                        aclCache.putInCache((AclImpl) loadedAclIterator.next());
+                    }
+                }
+                currentBatchToLoad.clear();
+            }
+        }
+        // Now we&amp;amp;apos;re done, check every requested object identity was found 
+        // and log it.
+        if (LOG.isWarnEnabled()) {
+          for (int i = 0; i &amp;lt; objects.length; i++) {
+              if (!result.containsKey(objects[i])) 
+{
+                  LOG.warn("Unable to find ACL information for object identity &amp;amp;apos;"
+                      + objects[i].toString() + "&amp;amp;apos;");
+              }
+          }
+        }
+        return result;
+    }
+Note: This should probably be added to 
+http://opensource.atlassian.com/projects/spring/browse/SEC-532
+NOTE: 2
+This should be fixed after 
+http://opensource.atlassian.com/projects/spring/browse/SEC-547
+(included code contains fix for 547 and 589 also)
+NOTE: 3 This bug was very difficult to replicate in our application, because it is dependent on the last ObjectIdentity being found in the cache AND there being a batch or part batch of Acls to be looked up.</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategyTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclServiceTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="depends on">547</link>
+			<link type="Depends" description="depends on">589</link>
+		</links>
+	</bug>
+	<bug id="670" opendate="2008-02-10 07:55:22" fixdate="2008-04-05 09:57:09" resolution="Fixed">
+		<buginformation>
+			<summary>Deleting from ACL_OBJECT_IDENTITY can cause deadlocks under (load test)</summary>
+			<description>While performing load testing, we found concurrent deletes from the ACL_OBJECT_IDENTITY table by the JdbcMutableAclService would cause deadlocks in the database.  This is potentially only a problem when using MS SQL server 2000, I haven&amp;amp;apos;t tested any other RDBs.
+The deadlocks were found when simulating only 3 concurrent users, so was relatively easy to reproduce.
+The deadlocks are caused for several reasons, I&amp;amp;apos;ll start with the most serious.
+deleteAcl(ObjectIdentity objectIdentity, boolean deleteChildren) does the following:
+1 find all children of the ACL
+2 optionally delete these recursively  // not tested, but would cause deadlocks i think
+call deleteEntries(..)
+    performs a select to find Objectidentity pkey
+    deletes from ACL_Entry
+call deleteObjectIdentityAndOptionallyClass(..)
+    performs a select to find Objectidentity pkey
+    deletes from ACL_OBJECT_IDENTITY
+    selects from ACL_OBJECT_IDENTITY to see if the entry deleted was the last from a particular class
+    deletes from ACL_CLASS (dependent on outcome of previous select)
+
+In MS SQL server the best practise is to perform all selects first, then do deletes, interleaving selects and deletes is a recipe for deadlocks.
+After some reorganisation of the above operations, we also found another deadlock caused by the database this time internally, where 2 concurrent deletes on the ACL_OBJECT_IDENTITY table when the DB was checking the foreign key to &amp;amp;apos;parent object&amp;amp;apos;, which we had to solve with a synchronized.
+I&amp;amp;apos;ve pasted our fixed code below, not that it no longer deletes from the ACL_CLASS table if the ACL_OBJECT_IDENTITY row is that last one that referenced it, as I find this a waste of time (you may not agree?), it this may cause issues with a coinciding insert into ACL_OBJECT_IDENTITY (untested and not fully thought through).  Also if deleteChildren was passed as true, I&amp;amp;apos;m sure the deadlocks would still occur.
+
+/**
+
+Deletes the the ACL for the specified 
+{@link ObjectIdentity}. &amp;lt;br&amp;gt;  
+   * NOTE: Passing deleteChildren as &amp;lt;code&amp;gt;true&amp;lt;/code&amp;gt; can cause deadlocks at
+   * the database, as this uses recursion on this method resulting in 
+   * select, delete, select... sequences of JDBC calls which is a recipe for
+   * deadlocks (at least on MS SQL server) under heavy load.
+   * 
+   * @param objectIdentity
+   * @param deleteChildren
+   * @throws ChildrenExistException
+   */
+  public void deleteAcl(ObjectIdentity objectIdentity, boolean deleteChildren)
+      throws ChildrenExistException
+  {
+    Assert.notNull(objectIdentity, "Object Identity required");
+    Assert.notNull(objectIdentity.getIdentifier(),
+                   "Object Identity doesn&amp;amp;apos;t provide an identifier");
+
+    if (deleteChildren) 
+    {
+      // deadlock territory
+      ObjectIdentity[] children = findChildren(objectIdentity);
+      for (int i = 0; i &amp;lt; children.length; i++) 
+      {
+            deleteAcl(children[i], true);
+      }
+    }
+
+    // we could have placed the find children outside the if and used it to 
+    // check for children, but this has been found to cause the occasional
+    // deadlock in MS SQL server, so we&amp;amp;apos;ll just let the FK do the checking for
+    // us.  After all that&amp;amp;apos;s what it&amp;amp;apos;s for
+
+    Long oidPkey = retrieveObjectIdentityPrimaryKey(objectIdentity);
+
+    // Delete this ACL&amp;amp;apos;s ACEs in the acl_entry table
+    deleteEntries(oidPkey);
+
+    // Delete this ACL&amp;amp;apos;s acl_object_identity row
+    deleteObjectIdentity(oidPkey);
+
+    // Clear the cache
+    aclCache.evictFromCache(objectIdentity);
+  }
+
+  /**
+   * Deletes all ACEs defined in the acl_entry table belonging to the presented
+   * ObjectIdentity
+   * 
+   * @param oid
+   *            the rows in acl_entry to delete
+   */
+  protected void deleteEntries(ObjectIdentity oid)
+  {
+    this.deleteEntries(retrieveObjectIdentityPrimaryKey(oid));
+  }
+
+  private void deleteEntries(Long oidPKey)
+  {
+    jdbcTemplate.update(deleteEntryByObjectIdentityForeignKey,
+                        new Object[] { oidPKey });
+  }
+
+  /**
+   * Deletes a single row from acl_object_identity that is associated with the
+   * presented ObjectIdentity. &amp;lt;br&amp;gt;
+   * Does not delete the from the ACL_CLASS table if 
+   * the {@link ObjectIdentity}
+ deleted is the last of that class, as this would
+require a select after a delete, which can cause deadlocks on some RDB&amp;amp;apos;s,
+and potentially another thread creating an ACL may have checked that
+ACL_CLASS row exist and is waiting to insert would experience problems.&amp;lt;br&amp;gt;
+&amp;lt;br&amp;gt;
+Also note that this method is synchronised, this is yet another deadlock
+avoidance manoeuvre, here&amp;amp;apos;s why:&amp;lt;br&amp;gt;
+The ACL_OBJECT_IDENTITY table has a foreign key back to itself (to support
+hierarchical ACLs), and this can cause the following situation:
+&amp;lt;ol&amp;gt;
+&amp;lt;li&amp;gt;
+Thread 1 (T1) is attempting to delete row X, so obtains an exclusive
+page lock on row X (and some of it close buddies)
+&amp;lt;/li&amp;gt;
+&amp;lt;li&amp;gt;
+Thread 1 (T2) is attempting to delete row Y, so obtains an exclusive
+page lock on row Y (and some of it close buddies)
+&amp;lt;/li&amp;gt;
+&amp;lt;li&amp;gt;
+T2 now performs a table scan to ensure the FK from PARENT_OBJECT back to
+ID (same table remember) is not violated by removal of row Y, but has to
+wait for the exclusive lock held by T1 to be released
+&amp;lt;/li&amp;gt;
+&amp;lt;li&amp;gt;
+T1 now performs a table scan to ensure the FK from PARENT_OBJECT back to
+ID (same table remember) is not violated by removal of row X, but has to
+wait for the exclusive lock held by T2 to be released
+&amp;lt;/li&amp;gt;
+&amp;lt;li&amp;gt;Deadlock!!!  &amp;lt;/li&amp;gt;
+&amp;lt;/ol&amp;gt;
+This has been observed using MS SQL Server, under load testing.
+
+
+@param oidPKey The primary key of the object identity to delete
+that class name if appropriate)
+   */
+  protected synchronized void deleteObjectIdentity(Long oidPKey)
+  Unknown macro: {    // Delete the acl_object_identity row    jdbcTemplate.update(deleteObjectIdentityByPrimaryKey,                        new Object[] { oidPKey });  } 
+
+  /**
+
+Retrieves the primary key from the acl_object_identity table for the passed
+ObjectIdentity. Unlike some other methods in this implementation, this
+method will NOT create a row (use 
+{@link
+   * #createObjectIdentity(ObjectIdentity, Sid)}
+ instead).
+
+@param oid
+to find
+
+@return the object identity or null if not found
+   */
+  protected Long retrieveObjectIdentityPrimaryKey(ObjectIdentity oid)
+  {
+    try
+    Unknown macro: {      return new Long(jdbcTemplate          .queryForLong(selectObjectIdentityPrimaryKey, new Object[] {
+              oid.getJavaType().getName(), oid.getIdentifier() }));    } 
+    catch (DataAccessException notFound)
+    {
+      return null;
+    }
+  }
+
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclServiceTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="527" opendate="2007-08-20 13:46:10" fixdate="2008-06-05 23:02:59" resolution="Fixed">
+		<buginformation>
+			<summary>Serialization Error in ACL cacheing (new acls packages)</summary>
+			<description>A java.io.NotSerializableException is thrown when the ehCache which backs EhCacheBasedAclCache decides that it needs to overflow to disk.
+As a workaround I have configured the ehCache to NOT overflow to disk by setting setOverflowToDisk(boolean) to false in the spring config of the EhCacheFactoryBean.  This hides the problem and stops my logs filling up with not serializable exceptions, but shouldn&amp;amp;apos;t be considered a fix.
+A snippet of the exception is shown below.
+2007-08-14 13:58:55,458 ERROR [net.sf.ehcache.store.DiskStore] - &amp;lt;aclCacheCache: Failed to write element to disk &amp;amp;apos;org.acegisecurity.acls.objectidentity.ObjectIdentityImpl[Java Type: class com.my.code.MyAclProtectedObject; Identifier: 11102]&amp;amp;apos;. Initial cause was org.acegisecurity.acls.domain.AclAuthorizationStrategyImpl&amp;gt;
+java.io.NotSerializableException: org.acegisecurity.acls.domain.AclAuthorizationStrategyImpl
+The exception occurs because AclImpl (the class of the object being cached) implements Serializable, but not all of it&amp;amp;apos;s member variables do, and the member variables which do not implement Serializable are not declared as transient.
+Member var                                                                      Serializable   
+==================
+Acl parentAcl                                                                    yes
+AclAuthorizationStrategy aclAuthorizationStrategy           no
+AuditLogger auditLogger                                                  no
+List aces                                                                           yes  (but contents AccessControlEntry are not)
+ObjectIdentity objectIdentity                                             yes
+Serializable id                                                                    yes
+Sid owner                                                                          no
+Sid[] loadedSids                                                                no
+boolean entriesInheriting                                                  yes
+My thoughts are that the classes of serveral of these member variables (e.g. SID and AccessControlEntry) should implement serializable, but other such as AuditLogger and AclAuthorizationStratagy probably should not, and as such either be removed from the AclImpl class, or declared as transient.  If declared as transient the EhCacheBasedAclCache would need to inject these properties back into AclImpls when they are retrieved from the cache, is this always possible i.e. can we always guarantee that there will be only one AclAuthorizationStrategy being used?
+I&amp;amp;apos;d be happy to help anyone resolve this problem, but will be unavailable from mid September to end October 2007.</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.EhCacheBasedAclCacheTests.java</file>
+			<file type="M">org.springframework.security.acls.Permission.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.EhCacheBasedAclCache.java</file>
+			<file type="M">org.springframework.security.acls.domain.AccessControlEntryImpl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplementationSecurityCheckTests.java</file>
+			<file type="M">org.springframework.security.acls.AccessControlEntry.java</file>
+			<file type="M">org.springframework.security.acls.domain.AccessControlEntryTests.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.acls.sid.Sid.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">532</link>
+			<link type="Related" description="is related to">951</link>
+		</links>
+	</bug>
+	<bug id="547" opendate="2007-09-03 09:28:42" fixdate="2009-10-09 10:30:25" resolution="Fixed">
+		<buginformation>
+			<summary>acls BasicLookupStrategy user too many (&gt; 1) databasse connections</summary>
+			<description>BasicLookupStrategy opens an additional connection to the database for each ACL level of ACL parent that needs to be retrieved from the database.
+The error is in the private inner class ProcessResultSet (implements ResultSetExtractor) in the method extractData(ResultSet), at the end of the method
+// Lookup parents, adding Acls (with StubAclParents) to "acl" map
+if (parentIdsToLookup.size() &amp;gt; 0) {
+    lookupPrimaryKeys(acls, parentIdsToLookup, sids);
+}
+lookupPrimaryKeys(acls, parentIdsToLookup, sids); creates another ProcessResultSet which as per Spring JDBC template classes grabs another connection to the database.  In a round about way this recursively uses one database connection per ACL -&amp;gt; parent ACL relationship to be looked up.
+In our case we have some test data where we have an ACL with a hierarchy of 16 parents, so for each level of the hierarchy a new connection to the DB is used  Our test set up had only 10 connections in the pool, which is how we found it.
+I&amp;amp;apos;m currently trying to fix this, as it&amp;amp;apos;s causing us problems.  As part of the fix I&amp;amp;apos;m writing some unit tests for BasicLookupStrategy (as there currently are none), not sure if I&amp;amp;apos;ll be able to get DB connection checking usage into the unit tests, but will investigate.
+I&amp;amp;apos;ll add my fixes to this Issue when they are ready.
+This issue should probably be added to 
+http://opensource.atlassian.com/projects/spring/browse/SEC-532</description>
+			<version>1.0.3</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">590</link>
+			<link type="Depends" description="is depended on by">532</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,18 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LDAP">
+	<bug id="335" opendate="2015-07-14 16:44:49" fixdate="2015-09-02 14:01:08" resolution="Complete">
+		<buginformation>
+			<summary>NoClassDefFoundError: RepositoryConfigurationExtension</summary>
+			<description>This seems to have been caused by changes for issue LDAP-311.
+When starting up an application that uses Spring LDAP with XML config, the exception is thrown on init:
+org.springframework.beans.FatalBeanException: Invalid NamespaceHandler class [org.springframework.ldap.config.LdapNamespaceHandler] for namespace http://www.springframework.org/schema/ldap: problem with handler class file or dependent class; nested exception is java.lang.NoClassDefFoundError: org/springframework/data/repository/config/RepositoryConfigurationExtension
+Adding spring-data-commons dependency resolves this issue.</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.config.LdapNamespaceHandler.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

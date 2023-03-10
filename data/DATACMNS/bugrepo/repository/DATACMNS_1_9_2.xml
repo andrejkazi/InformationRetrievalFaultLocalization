@@ -1,0 +1,39 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="640" opendate="2015-02-03 23:29:21" fixdate="2015-02-04 02:45:26" resolution="Fixed">
+		<buginformation>
+			<summary>Possible NullPointerException on PageableHandlerMethodArgumentResolver when fallbackPageable is null</summary>
+			<description>If {fallbackPageable}} is set to null, but a specific page is requested without a valid sort parameter, a NullPointerException is thrown as the resolver tries to fetch the default sort from the fallbackPageable in the end (if no sort is determined yet). Case recap: page and size are given, sort is not.
+Problem situated on line 249 in 1.9.1 source of PageableHandlerMethodArgumentResolver. As far as I can tell possible issue is still there in recent code base.
+This is in fact blocking in situations where no valid sort properties are available. There is also no valid workaround to have the SortHandlerMethodArgumentResolver return an "empty" (but not null) sort instance.
+Apart from the bug, possible improvement:
+My case is as follows: for some controllers the paging settings are stored on the user profile.  If no actual pageable is defined, use the default from the user profile.  
+With the current code base there appears to be no way to determine if the pageable you receive is the actual fallback pageable. Since new pageable instances get created, you cannot distinguish between the fallback and a manually selected version with the same parameters. Null would be the only - and acceptable - solution for this, but then you are forced to configure this globally on the resolver level.  An improvement could also be to have a null default pageable configurable on controller parameter.</description>
+			<version>1.9.2 (Evans SR2)</version>
+			<fixedVersion>1.10 RC1 (Fowler), 1.9.3 (Evans SR3), 1.8.6 (Dijkstra SR6)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="648" opendate="2015-02-17 05:26:35" fixdate="2015-06-15 09:12:15" resolution="Fixed">
+		<buginformation>
+			<summary>o.s.d.r.q.Parameters prevents custom classloader from being garbage collected</summary>
+			<description>Parameters creates a static DefaultParameterNameDiscoverer, wich adds a LocalVariableTableParameterNameDiscoverer to its list of ParameterNameDiscoverers.
+This LVTPND holds a Map with a class as a key.
+As I said, I&amp;amp;apos;m using a custom classloaders for a kind of plugin-based application.
+The problem is, since Repository-subclasses stay in the LVTPND&amp;amp;apos;s parameterNamesCache, the custom classloader who loaded the Repository can never be GC&amp;amp;apos;ed.
+Im not sure about if this issue should be fixed in Spring Data Commons or in LocalVariableTableParameterNameDiscoverer by using a WeakHashMap for parameterNamesCache.
+Regards
+Matthias</description>
+			<version>1.9.2 (Evans SR2)</version>
+			<fixedVersion>1.9.3 (Evans SR3), 1.10.1 (Fowler SR1), 1.8.6 (Dijkstra SR6), 1.11 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.Parameters.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

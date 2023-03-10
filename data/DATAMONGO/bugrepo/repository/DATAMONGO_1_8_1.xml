@@ -1,0 +1,228 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1334" opendate="2015-11-23 09:36:14" fixdate="2015-12-16 11:41:04" resolution="Fixed">
+		<buginformation>
+			<summary>MapResultOptions limit not implemented</summary>
+			<description>As I can see in the code and with the behavior I&amp;amp;apos;m currently experiencing, it seems that limit on MapReduceOptions is not working.
+In the source code, there&amp;amp;apos;s no attribute set with the provided param, the limit(int limit) method only return the current instance.
+
+
+
+
+
+
+public MapReduceOptions limit(int limit) {
+
+
+
+
+    return this;
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.8.1 (Gosling SR1)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapreduce.MapReduceOptions.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapreduce.MapReduceOptionsTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1394" opendate="2016-03-09 10:36:46" fixdate="2016-07-27 09:01:01" resolution="Fixed">
+		<buginformation>
+			<summary>References not handled correctly when using QueryDSL</summary>
+			<description>Trying to use eq on reference&amp;amp;apos;s $id, with no luck. 
+This is an example code:
+
+
+
+
+
+
+Book.java
+
+
+
+
+
+
+public class Book {
+
+
+
+
+     @DBRef
+
+
+
+
+     private Library library;
+
+
+
+
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+Library.java
+
+
+
+
+
+
+public class Library {
+
+
+
+
+     @Id
+
+
+
+
+     private String id;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+BookService.java
+
+
+
+
+
+
+String library_id = [SOME_ID];
+
+
+
+
+QBook book = QBook.book;
+
+
+
+
+BooleanExpression exp = book.library.id.eq(library_id);
+
+
+
+
+    
+
+
+
+
+List&amp;lt;Book&amp;gt; list = bookRepository.findAll(exp);  // EMPTY
+
+
+
+
+
+
+Doing:
+
+
+
+
+
+
+BookService.java
+
+
+
+
+
+
+Library library = libraryRepository.findById(library_id);
+
+
+
+
+QBook book = QBook.book;
+
+
+
+
+BooleanExpression exp = book.library.eq(library);
+
+
+
+
+
+
+
+
+
+List&amp;lt;Book&amp;gt; list = bookRepository.findAll(exp);  // EXPECTED ITEMS
+
+
+
+
+
+
+or:
+
+
+
+
+
+
+BookService.java
+
+
+
+
+
+
+List&amp;lt;Book&amp;gt; list = bookRepository.findByLibraryId(library_id) // EXPECTED ITEMS
+
+
+
+
+
+</description>
+			<version>1.8.1 (Gosling SR1)</version>
+			<fixedVersion>1.10 M1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.QuerydslRepositorySupportTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

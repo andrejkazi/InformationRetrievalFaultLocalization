@@ -1,0 +1,128 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="26" master="2223" duplicate="2237" opendate="2013-07-21 12:28:59" fixdate="2013-07-30 07:26:22" resolution="Fixed">
+		<buginformation>
+			<summary>FirewallRequest#reset() has incomplete javadoc API documentation for FirewalledRequest.reset() incomplete</summary>
+			<description> The API documentation of the method FirewalledRequest.reset is incomplete and ends immendiately before giving the most important piece of information:
+Right now, the last setence reads like this:
+"An implementation can thus choose to modify the state of the request for the security infrastructure, while still maintaining the [!]"
+The important information is what is still maintained. This is missing right now.</description>
+			<version>3.2.0.M2</version>
+			<fixedVersion>3.2.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.FirewalledRequest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2237</link>
+			<link type="Duplicate" description="duplicates">2223</link>
+		</links>
+	</bug>
+	<bug id="37" master="2455" duplicate="2457" opendate="2013-12-18 01:35:17" fixdate="2014-01-29 13:36:10" resolution="Fixed">
+		<buginformation>
+			<summary>form@login-processing-url and logout@logout-url produce warnings Warning "Method &amp;apos;setFilterProcessesUrl&amp;apos; is marked deprecated" on http-login and http-logout tag</summary>
+			<description>On upgrading to 3.2.0 RELEASE, we encountered this warning in the &amp;lt;http&amp;gt; block in the namespace configuration. 
+&amp;lt;form-login&amp;gt; and &amp;lt;logout&amp;gt;
+The warning says that setFilterProcessesUrl (which is inherited from AbstractAuthenticationProcessingFilter whose subclass be used by http@form-login and http@logout) is deprecated. Did we miss on replacing the deprecated method with the new method to be used? Can we remove this method altogether? Or is this warning here to stay? What does this warning mean? &amp;lt;security:form-login login-page=&amp;amp;apos;/login&amp;amp;apos; default-target-url="/" authentication-failure-url="/loginfailed" /&amp;gt;
+&amp;lt;security:logout logout-success-url="/" invalidate-session="true" logout-url="/logout" /&amp;gt;
+Warning appear on each line : "Method &amp;amp;apos;setFilterProcessesUrl&amp;amp;apos; is marked deprecated"
+Is there now a new recommended way to do this?
+I have not seen anything in the documentation about it.</description>
+			<version>3.2.0</version>
+			<fixedVersion>3.2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.FormLoginBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.authentication.logout.LogoutFilter.java</file>
+			<file type="M">org.springframework.security.config.http.LogoutBeanDefinitionParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2457</link>
+			<link type="Duplicate" description="duplicates">2455</link>
+		</links>
+	</bug>
+	<bug id="58" master="2078" duplicate="2497" opendate="2012-11-09 01:12:03" fixdate="2015-02-24 14:45:28" resolution="Complete">
+		<buginformation>
+			<summary>Pre-authentication fails when using check for principal change and using non String principals checkForPrincipalChanges limited to String Principal</summary>
+			<description>The problem occurs when using pre-authentication with "check for principal change" set and the class there extends org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter using non String principals but e.g. java.security.Principal.
+The problem is that the authentication manager will always authenticate even the principal has no changed, this can give problems with the authentication provider, and performance in the code.
+The error is in line 145 in the AbstractPreAuthenticatedProcessingFilter class, the code:
+  if (currentUser.getName().equals(principal)) 
+{
+    return false;
+  }
+
+should be changed to something like:
+  if (principal instanceof Principal) 
+{
+    return !currentUser.getName().equals(((Principal)principal).getName());
+  }
+  else 
+{
+    return !currentUser.getName().equals(principal.toString());
+  }
+
+The original code will only function when the passed principal parameter is of the type String. The code suggested will function for all type of objects there either implements the java.security.Principal interface or override the toString method. In AbstractPreAuthenticatedProcessingFilter,
+method requiresAuthentication , Principal are assumed to be String 
+ if (currentUser.getName().equals(principal)) 
+should be
+  if (currentUser.getPrincipal().equals(principal)) </description>
+			<version>3.2.0</version>
+			<fixedVersion>3.2.6, 4.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2497</link>
+			<link type="Duplicate" description="is duplicated by">2751</link>
+			<link type="Duplicate" description="is duplicated by">2794</link>
+			<link type="Relate" description="is related to">3051</link>
+			<link type="Duplicate" description="duplicates">2078</link>
+		</links>
+	</bug>
+	<bug id="65" master="2276" duplicate="2376" opendate="2013-08-22 06:47:55" fixdate="2013-10-24 10:51:19" resolution="Complete">
+		<buginformation>
+			<summary>Delay storing the CsrfToken until the CsrfToken is accessed Document/Fix CSRF behavior with pre-auth</summary>
+			<description>Rather than adding the CsrfToken to the HttpSession immediately, we can delay adding the CsrfToken until the token is accessed on the servlet request. This ensures that only a request that is just prior to CSRF will create the session. 3.2.0.RC1 with &amp;lt;http auto-config="true"&amp;gt;  with &amp;lt;csrf/&amp;gt; and a preauth filter
+When a user first accesses a pre-authed site
+1. the CSRF token is added to the session.
+2. The pre-auth filter creates the Authentication and related security context
+3. The SessionManagementFilter then runs, and since its a new auth and session it calls &amp;amp;apos;CsrfAuthenticationStrategy&amp;amp;apos; which removes the CSRF token from the session.
+4. The return view now has an invalid CSRF token in any forms.
+A 2nd GET creates a new CSRF token, and then everything works normally.
+--------------------------------
+I posted my workaround in the forum, but it would nice to:
+1. Document the behavior/workaround in
+http://docs.spring.io/spring-security/site/docs/3.2.x-SNAPSHOT/reference/html/csrf.html
+so that others don&amp;amp;apos;t have the same issue.
+2. Offer a better way (or workaround) to remove the CsrfAuthenticationStrategy from the session management.
+Is defining my own custom CSRF filter and repository a "cleaner" workaround to defining my own session management filter?
+Or is updating the xsd, and doing something like &amp;lt;csrf auth-strategy="disable"/&amp;gt; a possibility?
+</description>
+			<version>3.2.0.RC1</version>
+			<fixedVersion>3.2.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servlet.support.csrf.CsrfRequestDataValueProcessorTests.java</file>
+			<file type="M">org.springframework.security.web.csrf.CsrfToken.java</file>
+			<file type="D">org.springframework.security.web.csrf.CsrfTokenTests.java</file>
+			<file type="M">org.springframework.security.web.csrf.CsrfTokenRepository.java</file>
+			<file type="M">org.springframework.security.web.csrf.CsrfFilterTests.java</file>
+			<file type="M">org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurerServlet31Tests.java</file>
+			<file type="M">org.springframework.security.web.csrf.HttpSessionCsrfTokenRepositoryTests.java</file>
+			<file type="M">org.springframework.security.web.csrf.CsrfFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2376</link>
+			<link type="Duplicate" description="duplicates">2276</link>
+		</links>
+	</bug>
+</bugrepository>

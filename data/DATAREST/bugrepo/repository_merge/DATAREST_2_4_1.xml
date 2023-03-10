@@ -1,0 +1,584 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="2" master="697" duplicate="716" opendate="2015-10-26 19:40:30" fixdate="2016-01-07 14:23:20" resolution="Fixed">
+		<buginformation>
+			<summary>ProjectionSerializer doesn&amp;apos;t react to unwrapping mode correctly Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts</summary>
+			<description>Previously, it was possible to have a controller method that returned a Resource-wrapped @Projection interface of a domain type. Somewhere between 2.3.2 and 2.4, this functionality was broken. 
+The below code sample works fine in SDR 2.3.2, but in 2.4 and current SNAPSHOTs it results in the following error: 
+
+
+
+
+
+
+Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: Can not start an object, expecting field name; nested exception is com.fasterxml.jackson.core.JsonGenerationException: Can not start an object, expecting field name
+
+
+
+
+
+
+Testing this out, serializing a Resource-wrapped POJO works fine, a Resource-wrapped domain type works fine, a non-wrapped Projection works fine, but a Resource-wrapped projection fails with the above error. Using the SDR repository controller to return the projection works fine, too.
+This feels like a bug? 
+Below is sample code for reproducing this. Tested with Spring Boot 1.2.7 and SDR 2.3.2 (working) and Spring Boot 1.3.1.RC1 and SDR 2.4.0.RELEASE (not working).
+
+
+
+
+
+
+@SpringBootApplication
+
+
+
+
+public class Sandbox {
+
+
+
+
+
+
+
+
+
+    public static void main(String[] args) {
+
+
+
+
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Sandbox.class);
+
+
+
+
+        builder.run(args);
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public interface PersonRepository extends CrudRepository&amp;lt;Person,Long&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Projection(types=Person.class,name="test")
+
+
+
+
+public interface PersonProjection {
+
+
+
+
+
+
+
+
+
+    String getName();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Getter
+
+
+
+
+@Setter
+
+
+
+
+public class Person {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+    private String name;
+
+
+
+
+
+
+
+
+
+    private String phone;
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@BasePathAwareController
+
+
+
+
+public class TestController {
+
+
+
+
+
+
+
+
+
+    private final ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test/{id}", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; getProjection(@PathVariable Long id){
+
+
+
+
+        Person one = personRepository.findOne(id);
+
+
+
+
+        PersonProjection projection = projectionFactory.createProjection(PersonProjection.class, one);
+
+
+
+
+        return ResponseEntity.ok(new Resource&amp;lt;&amp;gt;(projection));
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt;&amp;gt; getProjections(){
+
+
+
+
+        Set&amp;lt;Person&amp;gt; people = Sets.newHashSet(personRepository.findAll());
+
+
+
+
+        Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; wrap = Resources.wrap(people.stream().map(o -&amp;gt; projectionFactory.createProjection(PersonProjection.class, o)).collect(Collectors.toSet()));
+
+
+
+
+        return ResponseEntity.ok(wrap);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+@WebAppConfiguration
+
+
+
+
+@SpringApplicationConfiguration(classes = Sandbox.class)
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+public class TestProjection {
+
+
+
+
+
+
+
+
+
+    private MockMvc mockMvc;
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private WebApplicationContext webApplicationContext;
+
+
+
+
+    
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @Before
+
+
+
+
+    public void before(){
+
+
+
+
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+
+
+
+        Person person = new Person();
+
+
+
+
+        person.setName("Adam");
+
+
+
+
+        person.setPhone("123456");
+
+
+
+
+        personRepository.save(person);
+
+
+
+
+        
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test 
+
+
+
+
+    public void testProjection() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test/1")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDR() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDRSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons/1?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+ In some cases after application start some rest repositories fail to handle the http request and throw a HttpMessageNotWritableException (see StackOverflow reference)
+
+
+
+
+
+
+2015-11-27 09:56:19.015  WARN 1207 --- [nio-9000-exec-9] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+2015-11-27 09:56:19.024  WARN 1207 --- [nio-9000-exec-2] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+
+</description>
+			<version>2.4.1 (Gosling SR1)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">716</link>
+			<link type="Duplicate" description="duplicates">697</link>
+			<link type="Relate" description="relates to">743</link>
+		</links>
+	</bug>
+</bugrepository>

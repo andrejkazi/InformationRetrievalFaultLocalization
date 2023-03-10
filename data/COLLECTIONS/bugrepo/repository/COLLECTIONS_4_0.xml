@@ -1,0 +1,801 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="474" opendate="2013-06-24 18:22:54" fixdate="2013-06-30 20:10:32" resolution="Fixed">
+		<buginformation>
+			<summary>Exception in ListOrderedMap#putAll if map contains null values</summary>
+			<description>Dear apache developers, thanks for the great project. Recently, I encountered an IndexOutOfBoundsException in ListOrderedMap in the latest revision (r1495998) with the crash stack trace: 
+Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 2, Size: 1
+	at java.util.ArrayList.add(ArrayList.java:367)
+	at org.apache.commons.collections4.map.ListOrderedMap.put(ListOrderedMap.java:448)
+	at org.apache.commons.collections4.map.ListOrderedMap.putAll(ListOrderedMap.java:246)
+	at Test.main(Test.java:15)
+I&amp;amp;apos;ve also attached a test case that can reproduce this crash.
+I think this test case actually reveals the bug reported in COLLECTIONS-411 (https://issues.apache.org/jira/browse/COLLECTIONS-411). However, it seems that the original patch for COLLECTIONS-411 missed a corner case.
+Could you please check if this is indeed a bug? Thanks!</description>
+			<version>4.0</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.ListOrderedMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.ListOrderedMapTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="475" opendate="2013-07-02 21:04:34" fixdate="2013-07-14 19:09:39" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong timeout handling in expiration policies of PassiveExpiringMap</summary>
+			<description>The timeunit parameter in the ctor of ConstantTimeToLiveExpirationPolicy is not used.
+Additionally, the validateAndConvertToMillis method is wrong, it should be changed like this:
+
+    private static long validateAndConvertToMillis(final long timeToLive,
+                                                   final TimeUnit timeUnit) {
+  if (timeUnit == null) {
+    throw new IllegalArgumentException("Time unit must not be null");
+  }
+  return TimeUnit.MILLISECONDS.convert(timeToLive, timeUnit);
+}
+
+</description>
+			<version>4.0-alpha1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.PassiveExpiringMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.PassiveExpiringMapTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="495" opendate="2013-11-11 16:25:17" fixdate="2013-11-11 16:30:27" resolution="Fixed">
+		<buginformation>
+			<summary>UnmodifiableTrie should not decorate an already unmodifiable Trie</summary>
+			<description>An already unmodifiable trie was decorated again.
+To be consistent with the other Unmodifiable wrappers, in this case the object itself shall be returned.
+Also the return type shall be changed to Trie.</description>
+			<version>4.0-alpha1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.trie.UnmodifiableTrieTest.java</file>
+			<file type="M">org.apache.commons.collections4.trie.UnmodifiableTrie.java</file>
+			<file type="M">org.apache.commons.collections4.TrieUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="496" opendate="2013-11-11 16:42:34" fixdate="2013-11-11 16:47:32" resolution="Fixed">
+		<buginformation>
+			<summary>UnmodifiableBoundedCollection does not implement Unmodifiable marker interface</summary>
+			<description>The UnmodifiableBoundedCollection does not implement the Unmodifiable interface.</description>
+			<version>4.0-alpha1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableBoundedCollection.java</file>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableBoundedCollectionTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="500" opendate="2013-11-17 16:02:44" fixdate="2013-11-17 17:10:53" resolution="Fixed">
+		<buginformation>
+			<summary>Rename MultiMap.remove(K, V) to avoid clashes with newly introduced default methods in Java 8</summary>
+			<description>Java 8 will introduce new default methods for the Map interface which clash with the existing method "V remove(K key, V value)" in our MultiMap interface.
+To avoid future problems rename the method to a more specific version and change the return type to be more logical. Brief discussion on the ml favored either:
+
+boolean removeMapping(K key, V value)
+boolean removeValue(K key, V value)
+
+</description>
+			<version>4.0-alpha1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.MultiMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="501" opendate="2013-11-17 16:04:55" fixdate="2013-11-17 18:31:09" resolution="Fixed">
+		<buginformation>
+			<summary>Rename MultiKeyMap.remove(K key1, K key2) to avoid clashes with newly introduced default methods in Java 8</summary>
+			<description>Java 8 will introduce new default methods for the Map interface which clash with the existing method "V remove(K key1, K key2)" in our MultiKeyMap interface.
+To avoid future problems rename the method (and other similar methods with more multi key arguments) to a more specific version:
+
+V removeMultiKey(K key1, K key2, ...)
+V removeKey(K key1, K key2, ...)
+
+</description>
+			<version>4.0-alpha1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.MultiKeyMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiKeyMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="506" opendate="2013-12-22 19:13:10" fixdate="2013-12-31 16:25:11" resolution="Fixed">
+		<buginformation>
+			<summary>Result of CollectionUtils are different between version 3.2.1 and version 4.0</summary>
+			<description>CollectionUtils V3 uses equals to compute results but not CollectionUtils v4 (it seems to use ==)
+The following exemple with subtract method :
+ List&amp;lt;ObjectTest&amp;gt; listA = new ArrayList&amp;lt;ObjectTest&amp;gt;();
+        List&amp;lt;ObjectTest&amp;gt; listB = new ArrayList&amp;lt;ObjectTest&amp;gt;();
+        listA.add(new ObjectTest("Test1"));
+        listA.add(new ObjectTest("Test2"));
+        listA.add(new ObjectTest("Test3"));
+        listB.add(new ObjectTest("Test1"));
+        listB.add(new ObjectTest("Test2"));
+        Collection&amp;lt;?&amp;gt; res1 = org.apache.commons.collections.CollectionUtils.subtract(listA, listB);
+        System.out.println("Res1 size = " +res1.size());
+        Collection&amp;lt;?&amp;gt; res2 =  org.apache.commons.collections4.CollectionUtils.subtract(listA, listB);
+        System.out.println("Res2 size = " +res2.size());
+Produces this : 
+Res1 size = 1
+Res2 size = 3
+The new behaviour is not useful. It would be better to have the V3 behaviour
+</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="507" opendate="2014-02-12 20:29:10" fixdate="2014-02-12 21:18:17" resolution="Fixed">
+		<buginformation>
+			<summary>ComparatorUtils.chainedComparator(..) should not force the objects to implement Comparable</summary>
+			<description></description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.ComparatorUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="516" opendate="2014-04-10 04:39:37" fixdate="2014-05-19 20:38:20" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in MapUtils.toProperties</summary>
+			<description>calling MapUtils.toProperties with a map having null entries results in a NullPointerException. In this case the Map has only entry &amp;lt;null, null&amp;gt;.
+However, javadoc states "A null input will return an empty
+properties object." so (1) this should be clarified as it would
+only apply to the map reference itself, not its contents, or (2)
+an empty property object should be generated for null entries in
+the map as well.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.MapUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="531" opendate="2014-05-27 10:13:18" fixdate="2014-05-29 18:34:40" resolution="Fixed">
+		<buginformation>
+			<summary>Generic Wildcards specified in CollectionUtils#isEqualCollection(Collection, Collection, Equator) may throw ClassCastException in certain cases</summary>
+			<description>CollectionUtils#isEqualCollection(Collection, Collection, Equator) is defined as
+
+
+public static boolean isEqualCollection(final Collection&amp;lt;?&amp;gt; a, final Collection&amp;lt;?&amp;gt; b, final Equator&amp;lt;?&amp;gt; equator) {
+...
+}
+
+
+This makes it possible to invoke it with a code like
+
+
+public static class IntegerEquator implements Equator&amp;lt;Integer&amp;gt; {
+        public boolean equate(Integer o1, Integer o2) {
+            return o1.intValue() == o2.intValue();
+        }
+        public int hash(Integer o) {
+            return o.intValue();
+        }
+    }
+
+    @Test
+    public void test() {
+        List&amp;lt;Long&amp;gt; longList = Arrays.asList(1L, 2L);
+        List&amp;lt;Integer&amp;gt; intList = Arrays.asList(1, 2);
+        assertTrue(CollectionUtils.isEqualCollection(longList, intList, new IntegerEquator()));
+
+    }
+
+
+which compiles perfectly but throws a ClassCastException as Long cannot be cast to an Integer. However, the generics should be defined such that this is stopped at compile time itself.
+If we modify the method to something like
+
+
+public static &amp;lt;E&amp;gt; boolean isEqualCollection(final Collection&amp;lt;? extends E&amp;gt; a, final Collection&amp;lt;? extends E&amp;gt; b, final Equator&amp;lt;? super E&amp;gt; equator) {
+...
+}
+
+
+the above example would give a compile time error. imho we should modify this method with bounded wildcards. I don&amp;amp;apos;t think this change would break any existing binaries if the method is being used correctly, otherwise it is probably throwing ClassCastExceptions anyway.
+Test case attached</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="534" opendate="2014-10-15 21:01:11" fixdate="2014-10-19 12:44:59" resolution="Fixed">
+		<buginformation>
+			<summary>Performance bug in CollectionBag::retainAll</summary>
+			<description>Hi,
+There seems to be a performance bug in the method retainAll in the CollectionBag class.
+The problem is that the code is checking containment over the parameter collection, which could be expensive for some types of collections like ArrayLists.
+One solution could be to convert the Collection into a HashSet and check containment in the HashSet.
+ If this is done, then running retainAll on a 1,000,000 collection would take less than 2 seconds instead of 27 mins, according to my experiments.
+____________________________________________
+Here&amp;amp;apos;s a function to expose the bug:
+ public static void collectionBagRetainAllTest() 
+{
+
+	ArrayList&amp;lt;Integer&amp;gt; coll=new ArrayList&amp;lt;Integer&amp;gt;();
+	for(int i=0;i&amp;lt;=1000000;++i)
+	    coll.add(new Integer(i));
+
+	TreeBag&amp;lt;Integer&amp;gt; treeBag=new TreeBag&amp;lt;Integer&amp;gt;(coll);
+
+	CollectionBag&amp;lt;Integer&amp;gt; bag = new CollectionBag&amp;lt;Integer&amp;gt;(treeBag);
+
+	bag.retainAll(coll);
+     }
+_____________________________________
+Here&amp;amp;apos;s a proposed patch:
+  public boolean retainAll(final Collection&amp;lt;?&amp;gt; coll) {
+        if (coll != null) {
+            boolean modified = false;
+            final Iterator&amp;lt;E&amp;gt; e = iterator();
+	    HashSet&amp;lt;Object&amp;gt; set=new HashSet&amp;lt;Object&amp;gt;(coll);
+            while (e.hasNext()) {
+                if (!set.contains(e.next())) 
+{
+                    e.remove();
+                    modified = true;
+                }
+            }
+            return modified;
+        } else 
+{
+            // let the decorated bag handle the case of null argument
+            return decorated().retainAll(null);
+        }
+    }
+_____________________________________</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.bag.CollectionBag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="537" opendate="2014-11-13 12:47:20" fixdate="2014-12-30 18:25:09" resolution="Fixed">
+		<buginformation>
+			<summary>PredicateUtils (all|any)Predicate type misbehaviour Array vs. Collection</summary>
+			<description>Migrating from collections-generic to collections4 we encountered a type problem with PredicateUtils. When you look at the method anyPredicate(), the signature with array is typed with "Predicate&amp;lt;? super T&amp;gt;" whereas the signature with Collection is typed "? extends Predicate&amp;lt;T&amp;gt;", so the both methods are not equivalent.
+We think both methods should have the same types, so it would not break compatibility with a lot of legacy code.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.functors.ChainedClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NonePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ChainedTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.PredicateUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AllPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.functors.OnePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.ClosureUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.FunctorUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AnyPredicate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="525" opendate="2014-05-08 04:38:28" fixdate="2015-01-01 21:11:08" resolution="Fixed">
+		<buginformation>
+			<summary>PatriciaTrie</summary>
+			<description> the result of trie tree prefixMap function is inconsistent. it would contain a key but the size is 0;
+some unittest codes as below: 
+  PatriciaTrie&amp;lt;String&amp;gt; aTree =
+        new PatriciaTrie&amp;lt;String&amp;gt; ();
+    aTree.put("", "");
+    aTree.put("", "");
+    assertTrue(aTree.prefixMap("").containsKey("")); //pass
+    assertEquals("", aTree.prefixMap("").get("")); //pass
+    assertFalse(aTree.prefixMap("").isEmpty());                 //fail
+    assertEquals(1, aTree.prefixMap("").size());                 //fail actural 0
+    assertEquals(1, aTree.prefixMap("").keySet().size());   //fail actural 0
+    assertEquals(1, aTree.prefixMap("").entrySet().size()); //fail actural 0
+    assertEquals(1, aTree.prefixMap("").values().size()); //fail actural 0</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.trie.AbstractPatriciaTrie.java</file>
+			<file type="M">org.apache.commons.collections4.trie.PatriciaTrieTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is a clone of">526</link>
+		</links>
+	</bug>
+	<bug id="512" opendate="2014-04-10 01:56:30" fixdate="2015-01-02 13:03:08" resolution="Fixed">
+		<buginformation>
+			<summary>equals/hashCode mismatch</summary>
+			<description>We used Randoop on the collection classes, which found several test cases where two objects are equal but their hash code differs.
+I will attach a file containing two test cases that are different; the other tests seem to be longer versions showing the same issue.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.collection.AbstractCollectionDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.comparators.FixedOrderComparator.java</file>
+			<file type="M">org.apache.commons.collections4.comparators.TransformingComparator.java</file>
+			<file type="M">org.apache.commons.collections4.comparators.TransformingComparatorTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">543</link>
+		</links>
+	</bug>
+	<bug id="543" opendate="2015-01-07 22:05:41" fixdate="2015-01-12 15:21:31" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractCollectionDecorator should not delegate equals and hashcode</summary>
+			<description>In order to preserve the symmetry of equals the AbstractCollectionDecorator shall not forward calls to equals and hashcode to the decorated collection.
+The test for equality usually also includes a test for the specific interface, e.g. List, which the collection decorator does not implement.
+The relevant sub-classes like AbstractListDecorator can delegate the calls to safely fulfill the Collections contract.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.list.TransformedList.java</file>
+			<file type="M">org.apache.commons.collections4.set.PredicatedSet.java</file>
+			<file type="M">org.apache.commons.collections4.list.AbstractListDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.set.AbstractSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.AbstractBagDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.queue.AbstractQueueDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.AbstractDualBidiMap.java</file>
+			<file type="M">org.apache.commons.collections4.bag.PredicatedBag.java</file>
+			<file type="M">org.apache.commons.collections4.set.TransformedSet.java</file>
+			<file type="M">org.apache.commons.collections4.list.PredicatedList.java</file>
+			<file type="M">org.apache.commons.collections4.bag.SynchronizedBag.java</file>
+			<file type="M">org.apache.commons.collections4.bag.TransformedBag.java</file>
+			<file type="M">org.apache.commons.collections4.collection.AbstractCollectionDecorator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Incorporates" description="incorporates">553</link>
+			<link type="Reference" description="is related to">512</link>
+		</links>
+	</bug>
+	<bug id="545" opendate="2015-01-12 06:04:16" fixdate="2015-01-23 09:34:34" resolution="Fixed">
+		<buginformation>
+			<summary>Undocumented performance issue in the removeAll method in CollectionUtils</summary>
+			<description>This bug is analogous to https://issues.apache.org/jira/browse/COLLECTIONS-544
+The method removeAll in CollectionUtils is inefficient when the second parameter collection has a slow containment method.
+The following is the current implementation with its documentation:
+============================
+     /**
+
+Removes the elements in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt; from &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;. That is, this
+method returns a collection containing all the elements in &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt;
+that are not in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt;. The cardinality of an element &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+in the returned collection is the same as the cardinality of &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; unless &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt; contains &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;, in which
+case the cardinality is zero. This method is useful if you do not wish to modify
+the collection &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt; and thus cannot call &amp;lt;code&amp;gt;collection.removeAll(remove);&amp;lt;/code&amp;gt;.
+     *
+@param &amp;lt;E&amp;gt;  the type of object the 
+{@link Collection}
+ contains
+@param collection  the collection from which items are removed (in the returned collection)
+@param remove  the items to be removed from the returned &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+@return a &amp;lt;code&amp;gt;Collection&amp;lt;/code&amp;gt; containing all the elements of &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; except
+any elements that also occur in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt;.
+@throws NullPointerException if either parameter is null
+@since 4.0 (method existed in 3.2 but was completely broken)
+     */
+    public static &amp;lt;E&amp;gt; Collection&amp;lt;E&amp;gt; removeAll(final Collection&amp;lt;E&amp;gt; collection, final Collection&amp;lt;?&amp;gt; remove) 
+{
+        return ListUtils.removeAll(collection, remove);
+    }
+
+=======================================
+We can notice the inefficiency by looking at the removeAll method in ListUtils.
+The removeAll method from ListUtils is implemented and documented as follows:
+=======================================
+     /**
+
+Removes the elements in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt; from &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;. That is, this
+method returns a list containing all the elements in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+that are not in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt;. The cardinality of an element &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+in the returned collection is the same as the cardinality of &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; unless &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt; contains &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;, in which
+case the cardinality is zero. This method is useful if you do not wish to modify
+&amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; and thus cannot call &amp;lt;code&amp;gt;collection.removeAll(remove);&amp;lt;/code&amp;gt;.
+&amp;lt;p&amp;gt;
+This implementation iterates over &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;, checking each element in
+turn to see if it&amp;amp;apos;s contained in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt;. If it&amp;amp;apos;s not contained, it&amp;amp;apos;s added
+to the returned list. As a consequence, it is advised to use a collection type for
+&amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt; that provides a fast (e.g. O(1)) implementation of
+{@link Collection#contains(Object)}
+.
+     *
+@param &amp;lt;E&amp;gt;  the element type
+@param collection  the collection from which items are removed (in the returned collection)
+@param remove  the items to be removed from the returned &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+@return a &amp;lt;code&amp;gt;List&amp;lt;/code&amp;gt; containing all the elements of &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt; except
+any elements that also occur in &amp;lt;code&amp;gt;remove&amp;lt;/code&amp;gt;.
+@throws NullPointerException if either parameter is null
+@since 3.2
+     */
+    public static &amp;lt;E&amp;gt; List&amp;lt;E&amp;gt; removeAll(final Collection&amp;lt;E&amp;gt; collection, final Collection&amp;lt;?&amp;gt; remove) {
+        final List&amp;lt;E&amp;gt; list = new ArrayList&amp;lt;E&amp;gt;();
+        for (final E obj : collection) 
+Unknown macro: {            if (!remove.contains(obj)) {
+                list.add(obj);
+            }        } 
+        return list;
+    }
+
+=======================================
+In the case of ListUtils:removeAll, the inefficiency is properly documented.
+Perhaps the disclaimer about potential inefficiencies depending on the type 
+of the parameter collection in ListUtils:removeAll should also be included in CollectionUtils:removeAll.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="558" opendate="2015-03-25 14:46:41" fixdate="2015-03-25 16:03:04" resolution="Fixed">
+		<buginformation>
+			<summary>ListOrderedSet#remove(int) should return E instead of Object</summary>
+			<description>Since List#remove(int) returns E the implementation in ListOrderedSet should also return E.
+Minimal example that fails to compile:
+
+
+ListOrderedSet&amp;lt;String&amp;gt; los = new ListOrderedSet&amp;lt;String&amp;gt;();
+los.add("foo");
+String s = los.remove(0);
+
+</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSet.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="566" opendate="2015-06-04 20:19:09" fixdate="2015-06-04 20:36:34" resolution="Fixed">
+		<buginformation>
+			<summary>IteratorUtils.collatedIterator do not use natural ordering if no comparator was provided</summary>
+			<description>In case a null comparator was provided natural ordering should be used, as stated in the javadoc.
+In fact an exception is thrown the first time the returned iterator is used.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.IteratorUtils.java</file>
+			<file type="M">org.apache.commons.collections4.IteratorUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="570" opendate="2015-06-22 09:50:26" fixdate="2015-06-22 13:02:48" resolution="Fixed">
+		<buginformation>
+			<summary>All decorators shall throw a NullPointerException if the decorated argument is null</summary>
+			<description>To be consistent, the constructor shall throw a NullPointerException instead of a IllegalArgumentException if the argument is null.</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSetTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AnyPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.trie.UnmodifiableTrie.java</file>
+			<file type="M">org.apache.commons.collections4.splitmap.TransformedSplitMap.java</file>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableBoundedCollectionTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableSortedMap.java</file>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableCollectionTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.PredicatedMap.java</file>
+			<file type="M">org.apache.commons.collections4.list.UnmodifiableList.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.PushbackIterator.java</file>
+			<file type="M">org.apache.commons.collections4.functors.FunctorUtils.java</file>
+			<file type="M">org.apache.commons.collections4.PredicateUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.splitmap.AbstractIterableGetMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.collection.TransformedCollection.java</file>
+			<file type="M">org.apache.commons.collections4.bag.AbstractSortedBagDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.list.FixedSizeList.java</file>
+			<file type="M">org.apache.commons.collections4.bag.UnmodifiableBagTest.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.AbstractOrderedMapIteratorDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AllPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableBidiMap.java</file>
+			<file type="M">org.apache.commons.collections4.multiset.AbstractMultiSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.map.FixedSizeMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableOrderedMap.java</file>
+			<file type="M">org.apache.commons.collections4.set.AbstractSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.map.PassiveExpiringMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.list.TransformedList.java</file>
+			<file type="M">org.apache.commons.collections4.bag.PredicatedSortedBagTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NonePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.ClosureUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.MapUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.TransformedPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableSet.java</file>
+			<file type="M">org.apache.commons.collections4.bag.AbstractBagDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.queue.AbstractQueueDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.set.TransformedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections4.TrieUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ClosureTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.queue.PredicatedQueue.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableSortedSet.java</file>
+			<file type="M">org.apache.commons.collections4.map.LazyMap.java</file>
+			<file type="M">org.apache.commons.collections4.bag.UnmodifiableSortedBag.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableOrderedBidiMap.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.AbstractUntypedIteratorDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.collection.AbstractCollectionDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.SetUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.list.LazyList.java</file>
+			<file type="M">org.apache.commons.collections4.TrieUtils.java</file>
+			<file type="M">org.apache.commons.collections4.set.PredicatedSet.java</file>
+			<file type="M">org.apache.commons.collections4.set.TransformedNavigableSet.java</file>
+			<file type="M">org.apache.commons.collections4.functors.SwitchClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AndPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.map.AbstractOrderedMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.PredicatedBag.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableListIterator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.CollectionBag.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.AbstractSortedBidiMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.PredicatedBagTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.DefaultedMap.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.AbstractIteratorDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiKeyMap.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.AbstractMapIteratorDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.queue.UnmodifiableQueue.java</file>
+			<file type="M">org.apache.commons.collections4.functors.AbstractCompositePredicateTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.SwitchTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableListIteratorTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ChainedClosure.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableSortedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateFactory.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.NodeListIteratorTest.java</file>
+			<file type="M">org.apache.commons.collections4.set.AbstractNavigableSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableCollection.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableNavigableSetTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.PredicatedSortedMap.java</file>
+			<file type="M">org.apache.commons.collections4.bag.TransformedSortedBag.java</file>
+			<file type="M">org.apache.commons.collections4.collection.UnmodifiableBoundedCollection.java</file>
+			<file type="M">org.apache.commons.collections4.BagUtils.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableIterator.java</file>
+			<file type="M">org.apache.commons.collections4.ClosureUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NullIsExceptionPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.keyvalue.AbstractMapEntryDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.collection.SynchronizedCollection.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NotPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.QueueUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.SplitMapUtils.java</file>
+			<file type="M">org.apache.commons.collections4.set.AbstractSortedSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSet.java</file>
+			<file type="M">org.apache.commons.collections4.map.LazySortedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.set.TransformedSet.java</file>
+			<file type="M">org.apache.commons.collections4.list.PredicatedList.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableOrderedMapIterator.java</file>
+			<file type="M">org.apache.commons.collections4.functors.TransformerPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections4.list.GrowthList.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstanceofPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NullIsFalsePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableOrderedBidiMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InvokerTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.set.AbstractSerializableSetDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.PredicatedSortedBag.java</file>
+			<file type="M">org.apache.commons.collections4.comparators.FixedOrderComparator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.CollectionSortedBag.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableSetTest.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.ReverseListIterator.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableSortedBidiMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableBidiMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ChainedTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.map.SingletonMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.FixedSizeSortedMap.java</file>
+			<file type="M">org.apache.commons.collections4.set.PredicatedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections4.MapUtils.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.NodeListIterator.java</file>
+			<file type="M">org.apache.commons.collections4.ListUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.set.MapBackedSet.java</file>
+			<file type="M">org.apache.commons.collections4.bag.TransformedBag.java</file>
+			<file type="M">org.apache.commons.collections4.map.PassiveExpiringMap.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableSortedSetTest.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.AbstractOrderedBidiMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.collection.PredicatedCollection.java</file>
+			<file type="M">org.apache.commons.collections4.queue.UnmodifiableQueueTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableOrderedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.AbstractMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.BoundedIterator.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableEntrySet.java</file>
+			<file type="M">org.apache.commons.collections4.SetUtils.java</file>
+			<file type="M">org.apache.commons.collections4.queue.TransformedQueue.java</file>
+			<file type="M">org.apache.commons.collections4.map.ListOrderedMap.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableMapIterator.java</file>
+			<file type="M">org.apache.commons.collections4.map.LazySortedMap.java</file>
+			<file type="M">org.apache.commons.collections4.bag.UnmodifiableSortedBagTest.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.AbstractBidiMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.ListUtils.java</file>
+			<file type="M">org.apache.commons.collections4.functors.OnePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.AbstractListIteratorDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableOrderedMapIteratorTest.java</file>
+			<file type="M">org.apache.commons.collections4.PredicateUtils.java</file>
+			<file type="M">org.apache.commons.collections4.QueueUtils.java</file>
+			<file type="M">org.apache.commons.collections4.map.TransformedMap.java</file>
+			<file type="M">org.apache.commons.collections4.map.AbstractSortedMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.map.AbstractInputCheckedMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.list.UnmodifiableListTest.java</file>
+			<file type="M">org.apache.commons.collections4.list.AbstractSerializableListDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.map.TransformedSortedMap.java</file>
+			<file type="M">org.apache.commons.collections4.functors.IfClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.NullIsTruePredicate.java</file>
+			<file type="M">org.apache.commons.collections4.set.PredicatedNavigableSet.java</file>
+			<file type="M">org.apache.commons.collections4.IteratorUtils.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableIteratorTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.OrPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.trie.UnmodifiableTrieTest.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.PeekingIterator.java</file>
+			<file type="M">org.apache.commons.collections4.iterators.UnmodifiableMapIteratorTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.WhileClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.IdentityPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.functors.IfTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.bag.SynchronizedBag.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.list.AbstractListDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.bag.SynchronizedSortedBag.java</file>
+			<file type="M">org.apache.commons.collections4.map.UnmodifiableMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.BagUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.bidimap.UnmodifiableSortedBidiMap.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ComparatorPredicate.java</file>
+			<file type="M">org.apache.commons.collections4.set.UnmodifiableNavigableSet.java</file>
+			<file type="M">org.apache.commons.collections4.functors.FactoryTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.bag.UnmodifiableBag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="576" opendate="2015-09-03 08:44:11" fixdate="2015-09-28 08:54:20" resolution="Fixed">
+		<buginformation>
+			<summary>MultiKey subclassing has deserialization problem since COLLECTIONS-266: either declare protected readResolve() or MultiKey must be final</summary>
+			<description>MultiKey from collections 4 provides a transient hashCode and a private readResolve to resolve COLLECTIONS-266: Issue with MultiKey when serialized/deserialized via RMI.
+Unfortunately the solution does not work in case of subclassing: readResolve in MultiKey should be declared protected readResolve() to be called during deserialization of the subclass. Otherwise MultiKey must be final to avoid such subclassing.
+Testcase:
+MultiKeySerializationTest.java
+
+package de.ivu.test.common.collections4;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import org.apache.commons.collections4.keyvalue.MultiKey;
+import org.junit.Test;
+
+public class MultiKeySerializationTest {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReadResolveEqualHashCode()
+            throws IOException, ClassNotFoundException {
+        class MultiKey2&amp;lt;A, B&amp;gt;
+                extends MultiKey {
+
+            private static final long serialVersionUID = 1928896152249821416L;
+
+            public MultiKey2(A key1, B key2) {
+                super(key1, key2);
+            }
+
+            public A getFirst() {
+                return (A) getKey(0);
+            }
+
+            public B getSecond() {
+                return (B) getKey(1);
+            }
+            
+            // FIXME: MultiKey should either declare protected readResolve() or must be final.
+        }
+        MultiKey2&amp;lt;String, String&amp;gt; one = new MultiKey2&amp;lt;&amp;gt;("bla", "blub");
+        System.out.println(one.hashCode());
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(byteOut);
+        out.writeObject(one);
+        out.close();
+        byte[] serialized = byteOut.toByteArray();
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(serialized);
+        ObjectInputStream in = new ObjectInputStream(byteIn);
+        MultiKey2&amp;lt;String, String&amp;gt; two = (MultiKey2&amp;lt;String, String&amp;gt;) in.readObject();
+        System.out.println(two.hashCode());
+        assertEquals("hashCode must be equal - please check for protected readResolve in MultiKey*", one.hashCode(),
+            two.hashCode());
+    }
+}
+
+
+Fix:
+MultiKey.java
+
+@@ -274,7 +274,7 @@
+      * only stable for the same process).
+      * @return the instance with recalculated hash code
+      */
+-    private Object readResolve() {
++    protected Object readResolve() {
+         calculateHashCode(keys);
+         return this;
+     }
+
+</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.keyvalue.MultiKeyTest.java</file>
+			<file type="M">org.apache.commons.collections4.keyvalue.MultiKey.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">266</link>
+		</links>
+	</bug>
+	<bug id="577" opendate="2015-09-25 22:27:53" fixdate="2015-09-28 09:45:19" resolution="Duplicate">
+		<buginformation>
+			<summary>PatriciaTrie bugs when only a few bits change</summary>
+			<description>I have a bug report for you, for the class AbstractPatriciaTrie.  
+It has to do with how you handle bits when they are very close to each other.  
+For example, some of your methods seem to think that if the only difference between a prefix and a longer string, is a single additional bit, then they are actually the same data.  Or if the only difference is some number of zero bits, then it also thinks they are the same data.  
+There are also MANY situations where the prefixMap does not return all the strings that start with the prefix.
+Can you also make AbstractPatriciaTrie public, and your other package level methods into protected level, that way I don&amp;amp;apos;t have to copy the entire class and subclasse&amp;amp;apos;s code out into another class just to extend it?
+thank you,
+Chris Duncan (github user: VEQRYN)</description>
+			<version>4.0</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.trie.PatriciaTrieTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="597" opendate="2016-10-20 13:47:22" fixdate="2016-10-21 05:53:34" resolution="Fixed">
+		<buginformation>
+			<summary>Correction of Javadoc for org.apache.commons.collections4.functors.CatchAndRethrowClosure</summary>
+			<description>Correct the javadoc for org.apache.commons.collections4.functors.CatchAndRethrowClosure, replacing:
+CollctionUtils.forAllDo(strList, writer);
+by:
+CollectionUtils.forAllDo(strList, writer);</description>
+			<version>4.0</version>
+			<fixedVersion>4.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.functors.CatchAndRethrowClosure.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

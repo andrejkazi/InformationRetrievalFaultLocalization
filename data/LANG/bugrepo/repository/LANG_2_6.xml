@@ -1,0 +1,190 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="728" opendate="2011-07-16 08:09:49" fixdate="2011-07-19 05:10:17" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeXml(str) does not support supplemental characters.</summary>
+			<description>Hello.
+StringEscapeUtils.escapeXml(str) escapes Unicode characters greater than 0x7f to their numerical u equivalent:
+String str = StringEscapeUtils.escapeXml("\uD84C\uDFB4");
+System.out.println(str);
+//
+But, the output should be .
+According to W3C document "Using character escapes in markup and CSS," We must use the single, code point value for supplemental character.
+http://www.w3.org/International/questions/qa-escapes
+In fact,  is not rendered correctly in some web browsers e.g., Firefox 5.0 and Chrome 12.0.</description>
+			<version>2.6</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="807" opendate="2012-06-10 12:11:51" fixdate="2012-06-10 12:41:58" resolution="Fixed">
+		<buginformation>
+			<summary>RandomStringUtils throws confusing IAE when end &lt;= start</summary>
+			<description>RandomUtils invokes Random#nextInt where n = end - start.
+If end &amp;lt;= start, then Random throws:
+java.lang.IllegalArgumentException: n must be positive
+This is confusing, and does not identify the source of the problem.</description>
+			<version>2.6</version>
+			<fixedVersion>3.2, 2.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.RandomStringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.RandomStringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="693" opendate="2011-04-13 09:04:54" fixdate="2013-05-19 10:37:07" resolution="Fixed">
+		<buginformation>
+			<summary>Method createNumber from NumberUtils doesn&amp;apos;t work for floating point numbers other than Float</summary>
+			<description>Method createNumber from NumberUtils is trying to parse a string with a floating point number always first as a Float, that will cause that if we send a string with a number that will need a Double or even a BigDecimal the number will be truncate to accommodate into the Float without an exception to be thrown, so in fact we will no be returning ever neither a Double nor a BigDecimal.</description>
+			<version>2.6</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1087" opendate="2015-02-28 19:52:12" fixdate="2015-03-01 16:48:54" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils#createNumber() returns positive BigDecimal when negative Float is expected</summary>
+			<description>NumberUtils.createNumber("-0.0") returns BigDecimal with 0 signum.
+Caused by the implementation not checking for sign when extracting mantissa from the input string.
+Expected is that negative Float is returned.</description>
+			<version>3.x</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1152" opendate="2015-07-07 15:11:10" fixdate="2015-07-08 04:16:17" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat seems to behave differently with very large dates than simple date format</summary>
+			<description>Inconsistent behaviour compared to SimpleDateFormat.
+StringIndexOutOfBoundsException using one format and no exception when using another format. (both legal).
+Different results when using another format.
+Testcase:
+import org.apache.commons.lang3.time.FastDateFormat;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+public class FastDateFormatBug {
+    @Test
+    public void testFastFormatWitLongMaxValue()
+{
+        Date date = new Date(Long.MAX_VALUE);
+        String dateAsString = FastDateFormat.getInstance("yyyy-MM-dd").format(date);
+        Assert.assertThat(dateAsString, Matchers.equalTo("292278994-08-17"));
+    }
+
+    @Test
+    public void testWeirdResultWithMaxValue()
+{
+        Date date = new Date(Long.MAX_VALUE);
+        String dateAsString = FastDateFormat.getInstance("dd/MM/yyyy").format(date);
+        Assert.assertThat(dateAsString, Matchers.equalTo("292278994-08-17"));
+    }
+
+    @Test
+    public void testSimpleFormatWithLongMaxValueWithLenientOff()
+{
+        Date date = new Date(Long.MAX_VALUE);
+        SimpleDateFormat fft = new SimpleDateFormat("yyyy-MM-dd");
+        fft.setLenient(false);
+        String dateAsString = fft.format(date);
+        Assert.assertThat(dateAsString, Matchers.equalTo("292278994-08-17"));
+    }
+
+    @Test
+    public void testSimpleFormatWithLongMaxValueWithLenientOn()
+{
+        Date date = new Date(Long.MAX_VALUE);
+        SimpleDateFormat fft = new SimpleDateFormat("yyyy-MM-dd");
+        fft.setLenient(true);
+        String dateAsString = fft.format(date);
+        Assert.assertThat(dateAsString, Matchers.equalTo("292278994-08-17"));
+    }
+
+}</description>
+			<version>3.x</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1209" opendate="2016-02-26 20:04:40" fixdate="2016-03-01 06:48:24" resolution="Duplicate">
+		<buginformation>
+			<summary>FastDateFormat does not support the &amp;apos;u&amp;apos; pattern element</summary>
+			<description>java.lang.IllegalArgumentException: Illegal pattern component: u</description>
+			<version>2.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="D">org.apache.commons.lang3.time.WeekYearTest.java</file>
+			<file type="D">org.apache.commons.lang3.time.CalendarReflection.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1192</link>
+		</links>
+	</bug>
+	<bug id="1215" opendate="2016-03-31 09:18:11" fixdate="2016-06-12 08:25:20" resolution="Duplicate">
+		<buginformation>
+			<summary>NumberUtils.createNumber() method lost precision sometimes</summary>
+			<description>For example:
+    System.out.println(NumberUtils.createNumber("193343.82"));
+The result  is   193343.81
+The bug because of  code in the class  NumberUtils of the org.apache.commons.lang3.math package
+    public static Float createFloat(final String str) {
+        if (str == null) 
+{
+            return null;
+        }
+        return Float.valueOf(str);
+    }</description>
+			<version>2.6</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="1230" opendate="2016-05-16 08:29:17" fixdate="2016-08-21 17:18:40" resolution="Fixed">
+		<buginformation>
+			<summary>Remove unnecessary synchronization from registry lookup in EqualsBuilder and HashCodeBuilder</summary>
+			<description>We&amp;amp;apos;re running into contention issues in registry lookup in EqualsBuilder and HashCodeBuilder. We believe the synchronization for the registry lookup is unnecessary. ThreadLocals are thread safe, each thread gets own value. Therefore no other thread can read or change the value of the current thread. As a consequence access to ThreadLocals does not need to be synchronized.
+Since IDKey uses object identity and the identity hashCode it does use neither EqualsBuilder nor HashCodeBuilder. This means that recursive calls to register and unregister are not possible even if the registered objects use EqualsBuilder or HashCodeBuilder. This also makes re-reading redundant.
+The issue was likely introduced in 2.5 by LANG-586 but 2.6 is the oldest version we can select.</description>
+			<version>2.6</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.EqualsBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.HashCodeBuilder.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

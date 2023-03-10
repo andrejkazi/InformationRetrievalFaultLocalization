@@ -1,0 +1,178 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1519" opendate="2010-07-18 21:32:16" fixdate="2010-07-23 04:00:03" resolution="Complete">
+		<buginformation>
+			<summary>Uninitialized auditLogger and aclAuthorizationStrategy fields in EhCacheBasedAclCache </summary>
+			<description>The "auditLogger" and "aclAuthorizationStrategy" fields of EhCacheBasedAclCache class are initialized by the first "putInCache" method call:
+...
+        if (this.aclAuthorizationStrategy == null) {
+            if (acl instanceof AclImpl) 
+{
+                this.aclAuthorizationStrategy = (AclAuthorizationStrategy) FieldUtils.getProtectedFieldValue("aclAuthorizationStrategy", acl);
+                this.auditLogger = (AuditLogger) FieldUtils.getProtectedFieldValue("auditLogger", acl);
+            }
+        }
+...
+In a clustered EhCache environment, with cache configured for replication, the problem is that if you invoke "initializeTransientFields" (through getFromCache methods) on a node before any "putInCache", both fields are null so a NullPointerException is thrown similarly to SEC-1514.
+I think the solution is very simple: remove the initialization of "auditLogger" and "aclAuthorizationStrategy" from the "putInCache" method and use constructor (or method) injection of both properties.</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.EhCacheBasedAclCache.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1540" opendate="2010-08-16 12:05:09" fixdate="2010-08-18 05:20:08" resolution="Fixed">
+		<buginformation>
+			<summary>Namespace improperly handles method attribute when populating ChannelProcessingFilter.securityMetadataSource</summary>
+			<description>The namespace improperly handles the method attribute when populating ChannelProcessingFilter.securityMetadataSource. The problems differ between 3.0.x and 3.1.x. For 3.0.x the issue is that the method is ignored. The issue for 3.1.x is that if the path is /** the method is ignored. I have attached a patch with tests and a fix for both master and 3.0.x. Note that I included a test for 3.1.x that actually works but was broke in 3.0.x in order to ensure it continues to work. While it might be wise to refactor to reuse the logic in creating the securityMetadataSource, I did not do so to limit the scope of this change.
+PS: I did not look at 2.x to see if it needed corrections.</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.1.0.M1, 3.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.MatcherType.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1578" opendate="2010-09-23 21:09:36" fixdate="2010-10-04 19:34:33" resolution="Complete">
+		<buginformation>
+			<summary>ThreadLocalSecurityContextHolderStrategy.clearContext() should use ThreadLocal.remove()</summary>
+			<description>It appears that calling ThreadLocal.set(null) causes some memory problems that can be fixed as of JDK 1.5 using ThreadLocal.remove() It may be wise to update ThreadLocalSecurityContextHolderStrategy.clearContext() to use remove now that Spring Security relies on JDK 1.5. This is also consistent with other portions of Spring https://jira.springsource.org/browse/SPR-7441</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.0.4, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.context.InheritableThreadLocalSecurityContextHolderStrategy.java</file>
+			<file type="M">org.springframework.security.core.context.ThreadLocalSecurityContextHolderStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1577" opendate="2010-09-23 08:22:50" fixdate="2010-10-15 09:52:57" resolution="Duplicate">
+		<buginformation>
+			<summary>NPE in AuthorityUtils in combination with RoleHierarchy and User with empty authorities collection</summary>
+			<description>If have the following intercept-url defined in my security config (with expressions):
+&amp;lt;security:intercept-url pattern="/.*/$
+{webapp.context}
+/flow/welcome" access="hasRole(&amp;amp;apos;ROLE_USER&amp;amp;apos;)" /&amp;gt;
+I also use role hierarchies.  After authentication the user arrives at the welcome page.  When the user hasn&amp;amp;apos;t got any authorities, I receive a NPE because in RoleHierarchyImpl, which is called by SecurityExpressionRoot, the empty authorities Set is set to null:
+    public Collection&amp;lt;GrantedAuthority&amp;gt; getReachableGrantedAuthorities(Collection&amp;lt;GrantedAuthority&amp;gt; authorities) {
+        if (authorities == null || authorities.isEmpty()) 
+{
+            return null;
+        }
+
+In AuthorityUtils, the size() method is called on the null collection:
+    public static Set&amp;lt;String&amp;gt; authorityListToSet(Collection&amp;lt;GrantedAuthority&amp;gt; userAuthorities) {
+        Set&amp;lt;String&amp;gt; set = new HashSet&amp;lt;String&amp;gt;(userAuthorities.size());
+java.lang.NullPointerException
+	at org.springframework.security.core.authority.AuthorityUtils.authorityListToSet(AuthorityUtils.java:39)
+	at org.springframework.security.access.expression.SecurityExpressionRoot.getAuthoritySet(SecurityExpressionRoot.java:104)
+	at org.springframework.security.access.expression.SecurityExpressionRoot.hasAnyRole(SecurityExpressionRoot.java:44)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.springframework.expression.spel.support.ReflectiveMethodExecutor.execute(ReflectiveMethodExecutor.java:58)
+	at org.springframework.expression.spel.ast.MethodReference.getValueInternal(MethodReference.java:76)
+	at org.springframework.expression.spel.ast.SpelNodeImpl.getTypedValue(SpelNodeImpl.java:102)&amp;lt;security:intercept-url pattern="/.*</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl.java</file>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImplTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1507</link>
+		</links>
+	</bug>
+	<bug id="1583" opendate="2010-10-04 02:01:49" fixdate="2010-10-27 09:43:15" resolution="Fixed">
+		<buginformation>
+			<summary>wrong info in Docs</summary>
+			<description>from Docs http://static.springsource.org/spring-security/site/docs/3.0.x/reference/ns-config.html
+@PreAuthorize("hasAuthority(&amp;amp;apos;ROLE_TELLER&amp;amp;apos;)")
+but "hasAuthority" is wrong. work around is to use "hasRole" instead.
+&amp;lt;intercept-url pattern="/login.jsp*" access="IS_AUTHENTICATED_ANONYMOUSLY"/&amp;gt; also is not working.
+java.lang.IllegalArgumentException: Failed to evaluate expression &amp;amp;apos;IS_AUTHENTICATED_ANONYMOUSLY&amp;amp;apos;
+work around is to use:
+&amp;lt;intercept-url pattern="/login.jsp*" access="permitAll" /&amp;gt;
+</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.0.4, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionRootTests.java</file>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionRoot.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1590" opendate="2010-10-12 06:30:37" fixdate="2010-11-02 12:51:12" resolution="Fixed">
+		<buginformation>
+			<summary>WebAuthenticatonDetails.doPopulateAdditionalInformation should be removed</summary>
+			<description>I have a class that extends org.springframework.security.web.authentication.WebAuthenticationDetails class and implements org.springframework.security.core.authority.GrantedAuthoritiesContainer.
+It overrides the method doPopulateAdditionalInformation to retrieve the additional information from the request headers.
+When running the application I receive an illegalArgumentException thrown from Assert.notNull, with the message "Cannot pass a null GrantedAuthority collection".
+Investigating this showed that the WebAuthenticationDetails constructor calls doPopulateAdditionalInformation as its last step, this does initialize my members with correct values, but after the constructor returns, my derived class constructor gets called, re-initializing the fields again, re-setting my List&amp;lt;GrantedAuthority&amp;gt; back to null.
+</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.WebAuthenticationDetails.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1587" opendate="2010-10-07 01:19:07" fixdate="2010-11-10 05:06:31" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionSecurityContextRepository should clear session context when current context is anonmous or empty</summary>
+			<description>I have written a LogoutFilter which does not redirect to a logout page. It just logs out the user and goes on with the filter chain.
+(it&amp;amp;apos;s needed because we have different areas and the user should be logged out when switching to another "area")
+Before it comes to saving the security context with HttpSessionSecurityContextRepository the anonymousFilter sets an AnonymousAuthentication. So when it comes to saving the context, it is not saved.
+This is because of this code in HttpSessionSecurityContextRepository
+protected void saveContext(SecurityContext context) {
+            // See SEC-776
+   if (authenticationTrustResolver.isAnonymous(context.getAuthentication())) {
+                if (logger.isDebugEnabled()) 
+{
+                    logger.debug("SecurityContext contents are anonymous - context will not be stored in HttpSession. ");
+                }
+                return;
+    }
+BTW my LogoutFilter is configured with invalidateHttpSession=false otherwise this bug wouldn&amp;amp;apos;t occur i guess.
+So imho, there should be another check to see what is actually saved in the session.
+regards
+Janning</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.0.5, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepositoryTests.java</file>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepository.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1545" opendate="2010-08-20 09:10:00" fixdate="2011-01-21 11:26:45" resolution="Fixed">
+		<buginformation>
+			<summary>Missing I18N Keys in messages.properties</summary>
+			<description>spring-security-core&amp;amp;apos;s default message.properties is missing at least one i18n key (LdapAuthenticationProvider.badCredentials).
+I haven&amp;amp;apos;t gotten time to look for others, and it would be nice to address other potentials. Unless the bug assignee beats me to it, in the next couple days I can write a quick script that will get all the missing ones. I will then post a patch for the messages that I can do (i.e. if there isn&amp;amp;apos;t already a translation I probably cannot submit a fix for that language).
+Anyone viewing this bug can easily work around this issue by providing their own message.properties as outlined in the spring security reference [1].
+[1] http://static.springsource.org/spring-security/site/docs/3.0.x/reference/technical-overview.html#localization</description>
+			<version>3.0.3</version>
+			<fixedVersion>3.1.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.web.authentication.session.ConcurrentSessionControlStrategy.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.x509.SubjectDnX509PrincipalExtractor.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityMessageSourceTests.java</file>
+			<file type="M">org.springframework.security.acls.afterinvocation.AclEntryAfterInvocationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.authentication.AccountStatusUserDetailsChecker.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

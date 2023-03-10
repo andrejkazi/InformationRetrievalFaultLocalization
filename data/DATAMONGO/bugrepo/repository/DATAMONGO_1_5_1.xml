@@ -1,0 +1,156 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1002" opendate="2014-07-23 02:48:09" fixdate="2014-07-23 03:46:33" resolution="Fixed">
+		<buginformation>
+			<summary>Update.toString() might throw exception</summary>
+			<description>The toString() method on Update class is breaking when there are custom mappings used for e.g., Joda DateTime. I think this is falling back to driver&amp;amp;apos;s JSON serializer rather than using Spring Data MongoDB mappings. The following is stacktrace. 
+
+
+
+
+
+
+java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class org.joda.time.DateTime
+
+
+
+
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:77)
+
+
+
+
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:317)
+
+
+
+
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+
+
+
+
+	at com.mongodb.util.JSONSerializers$MapSerializer.serialize(JSONSerializers.java:317)
+
+
+
+
+	at com.mongodb.util.ClassMapBasedObjectSerializer.serialize(ClassMapBasedObjectSerializer.java:79)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:55)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:40)
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:83)
+
+
+
+
+	at org.springframework.data.mongodb.core.query.Update.toString(Update.java:375)
+
+
+
+
+	at 
+
+
+
+
+
+</description>
+			<version>1.5.1 (Dijkstra SR1)</version>
+			<fixedVersion>1.5.2 (Dijkstra SR2), 1.6 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.UpdateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.Update.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">953</link>
+		</links>
+	</bug>
+	<bug id="1050" opendate="2014-09-09 03:41:12" fixdate="2014-11-10 07:19:13" resolution="Fixed">
+		<buginformation>
+			<summary>SimpleMongoRepository.findById(id, class)  don&amp;apos;t return ids for nested documents.</summary>
+			<description>SimpleMongoRepository.findById(id, class)  don&amp;amp;apos;t return ids for nested documents.
+E.g. 
+
+
+
+
+
+
+class A {
+
+
+
+
+ private String id; //stored in mongo as "id"
+
+
+
+
+ private String name;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+class B {
+
+
+
+
+  private String id; // stored in mongo as "_id"
+
+
+
+
+  private List&amp;lt;A&amp;gt; innerDocs;
+
+
+
+
+}
+
+
+
+
+
+
+When it return B documents, innerDocs A objects have id == null. If i refactor A.id to A.myId, then it start working correctly.
+Saving data (save, updateFirst, etc) always save fields correctly.
+A and B objects are pojos (only lombok @Data and @NoArgsConstructor is used to provide getters and setters). Ids are created by mongo.
+Could it related somehow  to ids that have 24 characters, but stored not as "_id"?
+Easy workaround is to have different field name (not "id").</description>
+			<version>1.5.1 (Dijkstra SR1)</version>
+			<fixedVersion>1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentPropertyUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentProperty.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,883 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="996" opendate="2014-07-18 08:31:22" fixdate="2014-07-18 10:21:37" resolution="Fixed">
+		<buginformation>
+			<summary>Pagination broken after introduction of the support for top/first</summary>
+			<description>When using MongoRepository and doing a query with pagination support, something like:
+
+
+
+
+
+
+@Query(...)
+
+
+
+
+Page&amp;lt;Event&amp;gt; findByWeekday(int weekday, Pageable pageable);
+
+
+
+
+
+
+Only the first page is displayed (when page=0 in the Pageable object), all other pages return empty result.
+The logic in org.springframework.data.mongodb.repository.query.AbstractMongoQuery$PagedExecution&amp;amp;apos;s execute() method seems having an error.
+When I change the line
+
+
+
+
+
+
+  boolean pageableOutOfScope = pageable.getOffset() &amp;gt; query.getLimit();
+
+
+
+
+
+
+to
+
+
+
+
+
+
+  boolean pageableOutOfScope = pageable.getOffset() &amp;gt; count;
+
+
+
+
+
+
+everything seems to work fine.
+(Note that query.getLimit() defaults to 0, in that case pageableOutOfScope is always true when the page number is greather than 0, and subsequently the method returns an empty list, which is what this issue about)</description>
+			<version>1.6 M1 (Evans)</version>
+			<fixedVersion>1.6 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="995" opendate="2014-07-18 08:05:12" fixdate="2014-07-21 11:21:03" resolution="Fixed">
+		<buginformation>
+			<summary>Parameter binding in String-based query does not bind all parameters</summary>
+			<description>In version 1.5.1, the parameter&amp;amp;apos;s pattern is defined (in org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java) as:
+
+
+
+
+
+
+  Pattern PLACEHOLDER = Pattern.compile("\\?(\\d+)")
+
+
+
+
+
+
+and in 1.6, it has changed to
+
+
+
+
+
+
+  StringBuilder builder = new StringBuilder();
+
+
+
+
+  builder.append("\\?(\\d+)"); // position parameter and parameter index
+
+
+
+
+  builder.append("[^,&amp;amp;apos;\"]*"); // followed by non quotes, non field separators
+
+
+
+
+  builder.append("[,\"&amp;amp;apos;}]?");
+
+
+
+
+  PARAMETER_BINDING_PATTERN = Pattern.compile(builder.toString(), CASE_INSENSITIVE);
+
+
+
+
+
+
+With an annotation query like this:
+@Query(value = "{$where: &amp;amp;apos;return this.date.getUTCMonth() == ?3 &amp;amp;&amp;amp; this.date.getUTCDay() == ?4;&amp;amp;apos;...}")
+In version 1.6, the parameter ?4 gets ignored and it causes a query syntax error (while in 1.5.x, it works as expected).
+The is the error I got in the console:
+org.springframework.data.mongodb.UncategorizedMongoDbException: 
+{ "serverUsed" : "localhost:27017" , "errmsg" : "exception: SyntaxError: Unexpected token ?" , "code" : 16722 , "ok" : 0.0}
+; nested exception is com.mongodb.CommandFailureException: 
+{ "serverUsed" : "localhost:27017" , "errmsg" : "exception: SyntaxError: Unexpected token ?" , "code" : 16722 , "ok" : 0.0}</description>
+			<version>1.6 M1 (Evans)</version>
+			<fixedVersion>1.5.2 (Dijkstra SR2), 1.6 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1049" opendate="2014-09-05 07:07:37" fixdate="2014-09-25 03:50:01" resolution="Fixed">
+		<buginformation>
+			<summary>Reserved field name &amp;apos;language&amp;apos; causes trouble.</summary>
+			<description>With having support for full-text-search there seem to be a problem having MongoDB field names &amp;amp;apos;language&amp;amp;apos;.
+In a legacy project (with legacy data) there are several entities having a member variable &amp;amp;apos;language&amp;amp;apos; with are using the field name &amp;amp;apos;language&amp;amp;apos; in MongoDB.
+This causes the exception
+
+
+
+
+
+
+Caused by: org.springframework.dao.InvalidDataAccessApiUsageException: Cannot set language override on language as it is already defined on language.
+
+
+
+
+	at org.springframework.data.mongodb.core.index.TextIndexDefinition$TextIndexDefinitionBuilder.withLanguageOverride(TextIndexDefinition.java:321)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:234)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.potentiallyCreateTextIndexDefinition(MongoPersistentEntityIndexResolver.java:205)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForEntity(MongoPersistentEntityIndexResolver.java:99)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:79)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:56)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForAndCreateIndexes(MongoPersistentEntityIndexCreator.java:128)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForIndexes(MongoPersistentEntityIndexCreator.java:121)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.onApplicationEvent(MongoPersistentEntityIndexCreator.java:105)
+
+
+
+
+	at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.onApplicationEvent(MongoPersistentEntityIndexCreator.java:46)
+
+
+
+
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:98)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:333)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.addPersistentEntity(AbstractMappingContext.java:307)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:181)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:141)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:67)
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.MongoRepositoryFactory.getEntityInformation(MongoRepositoryFactory.java:141)
+
+
+
+
+
+
+In the current Implementation MongoPersistentEntityIndexResolver checks in line 233 if the persistentProperty is a language property. Each object member variable using a field name &amp;amp;apos;language&amp;amp;apos; is recognized as languageProperty.
+There should be an annotation like @NoLanguage to mark all member variables which have noting to do with the MongoDB full text search.</description>
+			<version>1.6 M1 (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapping.MongoPersistentProperty.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentProperty.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">1053</link>
+		</links>
+	</bug>
+	<bug id="1062" opendate="2014-09-30 03:08:24" fixdate="2014-10-01 00:51:05" resolution="Complete">
+		<buginformation>
+			<summary>Fix failing test in ServerAddressPropertyEditorUnitTests.</summary>
+			<description>The test rejectsAddressConfigWithoutASingleParsableServerAddress fails because the supposedly non-existing hostname "bar" "now" resolves to a real host-address: 
+```
+tom@gauss ~/Documents/dev/repos/spring/spring-data-mongodb (master)$ ping bar
+PING bar (127.0.53.53): 56 data bytes
+Request timeout for icmp_seq 0
+```</description>
+			<version>1.6 GA (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.ServerAddressPropertyEditorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1058" opendate="2014-09-18 11:35:00" fixdate="2014-10-01 01:07:31" resolution="Complete">
+		<buginformation>
+			<summary>Using @Field("foo") with @Dbref breaking behavior.</summary>
+			<description>When transitioning from 1.4.3.RELEASE to 1.6.0.RELEASE, the model below no longer returns with map
+Model
+
+
+
+
+
+
+@Document(collection="model")
+
+
+
+
+class Model {
+
+
+
+
+	@Id
+
+
+
+
+	ObjectId id;
+
+
+
+
+        
+
+
+
+
+/**
+
+
+
+
+* Currently only works without @Field annotation
+
+
+
+
+*/
+
+
+
+
+    @Field("foo")
+
+
+
+
+	@DBRef
+
+
+
+
+	Map&amp;lt;String, Foo&amp;gt; mapOfFoos ; //assume Foo is a class
+
+
+
+
+}
+
+
+
+
+
+
+Repo
+
+
+
+
+
+
+public interface ModelDao extends MongoRepository&amp;lt;Model, ObjectId&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public interface FooDao extends MongoRepository&amp;lt;Foo, ObjectId&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+Snippet of a unit test
+
+
+
+
+
+
+...
+
+
+
+
+Model model = new Model();
+
+
+
+
+Map&amp;lt;String, Foo&amp;gt; mapOfFoos = new HashMap&amp;lt;String, Foo&amp;gt;();
+
+
+
+
+Foo foo = new Foo()
+
+
+
+
+fooDao.save(foo)
+
+
+
+
+mapOfFoo("somestring", foo)
+
+
+
+
+model.setMapOfFoos(mapOfFoo)
+
+
+
+
+modelDao.save(model);
+
+
+
+
+Model  retreivedModel = modelDao.findOne(model.getId());
+
+
+
+
+//retreivedModel.getMapOfFoos() returns null
+
+
+
+
+//EXPECTED (and previous behavior) retreivedModel.getMapOfFoos() not null
+
+
+
+
+
+</description>
+			<version>1.6 GA (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1057" opendate="2014-09-18 10:51:02" fixdate="2014-10-07 22:10:27" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractMongoQuery.SlicedExecution#execute() skips every nth element</summary>
+			<description>AbstractMongoQuery.SlicedExecution#execute() skips every nth element. Say the page size is 20, every 21st element is skipped. This is because of the pageSize increment</description>
+			<version>1.6 GA (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1053" opendate="2014-09-12 12:14:49" fixdate="2014-10-10 02:32:22" resolution="Fixed">
+		<buginformation>
+			<summary>In 1.6, any field in a mapped object named "language" will fail to map if it is a type other than String</summary>
+			<description>In 1.6, there is now a restriction that a field named "language" must be a String.  So, in 1.5, the following will map but will not map in 1.6:
+
+
+
+
+
+
+package com.instantly.pipeline.engine.model;
+
+
+
+
+
+
+
+
+
+import javax.persistence.Id;
+
+
+
+
+
+
+
+
+
+public class Foobar {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    String id;
+
+
+
+
+    
+
+
+
+
+    private Number language;
+
+
+
+
+
+
+
+
+
+    public String getId() {
+
+
+
+
+        return id;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setId(String id) {
+
+
+
+
+        this.id = id;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public Number getLanguage() {
+
+
+
+
+        return language;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setLanguage(Number language) {
+
+
+
+
+        this.language = language;
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.6 M1 (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentEntity.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentEntityUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">1049</link>
+		</links>
+	</bug>
+	<bug id="1063" opendate="2014-09-30 12:11:41" fixdate="2014-10-10 02:36:41" resolution="Fixed">
+		<buginformation>
+			<summary>IllegalStateException using any().in() </summary>
+			<description>I am using 1.6.0.RELEASE with querydsl 3.4.3.
+When doing a Predicate based search using 
+
+
+
+
+
+
+entity.listType.any().in(someString)
+
+
+
+
+
+
+I am getting IllegalStateException (see below)
+It looks like the following issue/commit in querydsl is causing this issue:
+https://github.com/querydsl/querydsl/issues/512
+https://github.com/querydsl/querydsl/commit/7e934bed158702392086e200cd6ddb17634c5ce6
+
+
+
+
+
+
+Caused by: java.lang.IllegalStateException: name property not available for path of type COLLECTION_ANY. Use getElement() to access the generic path element.
+
+
+
+
+	at com.mysema.query.types.PathMetadata.getName(PathMetadata.java:73) ~[querydsl-core-3.4.3.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.getPropertyFor(SpringDataMongodbSerializer.java:146) ~[spring-data-mongodb-1.6.0.RELEASE-onshape.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.isReference(SpringDataMongodbSerializer.java:103) ~[spring-data-mongodb-1.6.0.RELEASE-onshape.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.isReference(MongodbSerializer.java:296) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:113) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:52) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.types.OperationImpl.accept(OperationImpl.java:91) ~[querydsl-core-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.handle(MongodbSerializer.java:55) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:123) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:52) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.types.OperationImpl.accept(OperationImpl.java:91) ~[querydsl-core-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.handle(MongodbSerializer.java:55) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createQuery(MongodbQuery.java:376) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createCursor(MongodbQuery.java:270) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createCursor(MongodbQuery.java:265) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.iterate(MongodbQuery.java:221) ~[querydsl-mongodb-3.4.3.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.QueryDslMongoRepository.findAll(QueryDslMongoRepository.java:118) ~[spring-data-mongodb-1.6.0.RELEASE-onshape.jar:na]
+
+
+
+
+
+</description>
+			<version>1.6 GA (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.QuerydslRepositorySupportUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1076" opendate="2014-10-27 04:43:36" fixdate="2014-10-29 02:19:16" resolution="Fixed">
+		<buginformation>
+			<summary>Finalizer hit db on lazy dbrefs</summary>
+			<description>If we load a Document class that has a lazy annotated DBRef, and we do not navigate through it, the data is not requested to MongoDB as expected, but if we force a GC it seems that the proxy that envelops the attribute with DBRef generates a request to MongoDB.
+You can see this issue in logs if trace logs are enabled:
+Example to a DBRef to MY_DB.PEOPLE with id=18
+
+
+
+
+
+
+2014-10-27 12:24:02.644  INFO 4384 --- [      Finalizer] com.mongodb.TRACE                        : find: MY_DB.PEOPLE { "_id" : 18}
+
+
+
+
+
+
+And this is the trace I get debugging:
+
+
+
+
+
+
+	at com.testapp.model.People$$EnhancerByCGLIB$$c7ff2ba0.finalize(&amp;lt;generated&amp;gt;)
+
+
+
+
+	at java.lang.System$2.invokeFinalize(System.java:1267)
+
+
+
+
+	at java.lang.ref.Finalizer.runFinalizer(Finalizer.java:98)
+
+
+
+
+	at java.lang.ref.Finalizer.access$100(Finalizer.java:34)
+
+
+
+
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:210)
+
+
+
+
+
+
+The problem seems to be at DefaultDbRefResolver creating the LazyLoadingInterceptor inner class.</description>
+			<version>1.6 GA (Evans)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DbRefMappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

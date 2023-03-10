@@ -1,0 +1,110 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="10" master="857" duplicate="862" opendate="2012-11-20 12:36:14" fixdate="2013-05-16 21:35:38" resolution="Fixed">
+		<buginformation>
+			<summary>StringIndexOutOfBoundsException in CharSequenceTranslator CharSequenceTranslator causes StringIndexOutOfBoundsException during translation of unicode codepoints with length &gt; 1 character</summary>
+			<description>I found that there is bad surrogate pair handling in the CharSequenceTranslator
+This is a simple test case for this problem.
+\uD83D\uDE30 is a surrogate pair.
+
+
+@Test
+public void testEscapeSurrogatePairs() throws Exception {
+    assertEquals("\uD83D\uDE30", StringEscapeUtils.escapeCsv("\uD83D\uDE30"));
+}
+
+
+You&amp;amp;apos;ll get the exception as shown below.
+
+
+java.lang.StringIndexOutOfBoundsException: String index out of range: 2
+	at java.lang.String.charAt(String.java:658)
+	at java.lang.Character.codePointAt(Character.java:4668)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+
+
+Patch attached, the method affected:
+
+public final void translate(CharSequence input, Writer out) throws IOException
+
+ When translating a string with unicode characters in, I&amp;amp;apos;ve encountered an index exception:
+
+
+	java.lang.StringIndexOutOfBoundsException: String index out of range: 50
+	at java.lang.String.charAt(String.java:686)
+	at java.lang.Character.codePointAt(Character.java:2335)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+	...
+
+
+The input string was from a twitter status:
+org.apache.commons.lang3.StringEscapeUtils.escapeCsv("pink &amp;amp; black adidas suit for this rainy weather \ud83d\udc4d");
+Both those characters are &amp;amp;apos;Invalid&amp;amp;apos; unicode characters, so presumably there is a conversion error somewhere. However, this shouldn&amp;amp;apos;t cause the translator to crash.
+At line 94, the loop which generates the exception increments the position by the size of the codepoint, which seems to grow faster than the number of characters. I don&amp;amp;apos;t really know how codepoints work, but it looks to me like there are two indexes which are treated as if they are the same one by this loop:
+
+pt is incrementing by one character each iteration
+pos is incrementing by one or more characters each iteration
+pos is being used to index into the character array
+pt is the value actually being tested in the loop test, so pos can be bigger than pt, causing an index problem at the end of the array
+
+My guess would be that the loop should read something like:
+
+
+            for (int pt = 0; pt &amp;lt; consumed;) {
+                int count = Character.charCount(Character.codePointAt(input, pos));
+                pt += count;
+                pos += count;
+            }
+
+
+I&amp;amp;apos;m not sure if that was the intention, hope it makes some sense!
+Stepping through that code with the input string " \ud83d\udc4d":
+
+the input string becomes " \ud83d\udc4d\u008d" (appended &amp;amp;apos;Reverse Line Feed&amp;amp;apos; - no idea why)
+consumed == 4
+Iterating the loop gives pt=0, pos=0 -&amp;gt; pt=1, pos=1 -&amp;gt; pt=2, pos=3 -&amp;gt; pt-3, pos=4 (Index exception)
+
+So \ud83d\udc4d seems to be a codepoint with a width of 2, which puts the index off by one after that.
+Anyway, hope that helps,
+Regards,
+Mike.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.CharSequenceTranslator.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">862</link>
+			<link type="Duplicate" description="duplicates">857</link>
+		</links>
+	</bug>
+	<bug id="11" master="883" duplicate="733" opendate="2011-07-31 11:55:11" fixdate="2014-12-27 16:31:05" resolution="Fixed">
+		<buginformation>
+			<summary>Add StringUtils.containsAny(CharSequence, CharSequence... ) method Add containsAny(CharSequence cs, CharSequence... searchChars) to StringUtils</summary>
+			<description>Presently there is a: public static boolean containsAny(CharSequence cs, char... searchChars). It would be useful to have the: public static boolean containsAny(CharSequence cs, CharSequence... searchCharSequences) which will return true if any of the searchCharSequences are contained within the cs. If you decide to implement it, it would be nice to have an alias method for collections, e.g., public static boolean containsAny(CharSequence cs, Collection&amp;lt;CharSequence&amp;gt; searchCharSequences) This method is missing from StringUtils. The corresponding method: 
+public static boolean containsAny(CharSequence cs, char... searchChars) {
+does exist, so this was probably just forgotten. 
+Also
+public static boolean containsIgnoreCase(CharSequence str, CharSequence... searchStr) {
+needs to be added as well.</description>
+			<version>3.1</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">733</link>
+			<link type="Duplicate" description="is duplicated by">883</link>
+		</links>
+	</bug>
+</bugrepository>

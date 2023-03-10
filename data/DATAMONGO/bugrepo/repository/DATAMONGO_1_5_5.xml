@@ -1,0 +1,65 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1216" opendate="2015-05-07 14:47:17" fixdate="2015-06-01 03:14:49" resolution="Fixed">
+		<buginformation>
+			<summary>Authentication mechanism PLAIN  changes to SCRAM-SHA-1 </summary>
+			<description>We have a mongodb properly configured with plain authentication mechanism, and we can successfully log in using mongodb client. However, if we try to connect using mongo driver + spring data, login is incorrect due to authentication mechanism sent is SCRAM-SHA-1 and not PLAIN.
+We have made a code review and a full debug and the problem seems to be in MongoDbUtils.doGetDB(Mongo, String, UserCredentials, boolean, String) method, in the synchronized block, since the authentication mechanism seems to get lost there.
+Our spring data configuration is:
+
+
+
+
+
+
+&amp;lt;mongo:db-factory uri="mongodb://user:pass@ip1:port1,ip2:port2,/logCenter?authSource=$external&amp;amp;amp;authMechanism=PLAIN" /&amp;gt;
+
+
+
+
+
+
+
+
+
+&amp;lt;bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate"&amp;gt;
+
+
+
+
+	&amp;lt;constructor-arg name="mongoDbFactory" ref="mongoDbFactory"&amp;gt;&amp;lt;/constructor-arg&amp;gt;
+
+
+
+
+&amp;lt;/bean&amp;gt;
+
+
+
+
+	
+
+
+
+
+&amp;lt;mongo:repositories base-package="com.xxx.repositories" /&amp;gt;
+
+
+
+
+
+</description>
+			<version>1.5.5 (Dijkstra SR5)</version>
+			<fixedVersion>1.8 M1 (Gosling), 1.7.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtils.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtilsUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1259</link>
+			<link type="Relate" description="is related to">1218</link>
+		</links>
+	</bug>
+</bugrepository>

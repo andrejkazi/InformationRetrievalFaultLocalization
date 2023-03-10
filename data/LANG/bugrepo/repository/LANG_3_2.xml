@@ -1,0 +1,58 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="961" opendate="2014-01-30 21:43:29" fixdate="2014-01-30 22:08:45" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.lang3.reflect.FieldUtils.removeFinalModifier(Field) does not clean up after itself</summary>
+			<description>FieldUtils.removeFinalModifier(Field) calls setAccessible(true) on the Field it is working on but does not reset it to false when done, after the final modifier has been removed. Also the method does not need to call setAccessible(true) if the field is already accessible.
+
+Only call setAccessible when needed
+Refactor and add a new method removeFinalModifier(Field field, boolean forceAccess)
+
+</description>
+			<version>3.2</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.MemberUtils.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.FieldUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.FieldUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="948" opendate="2014-01-10 11:07:46" fixdate="2015-03-14 12:48:35" resolution="Fixed">
+		<buginformation>
+			<summary>Exception while using ExtendedMessageFormat and escaping braces</summary>
+			<description>Exception while trying to format a string containing escaped braces
+
+
+Exception in thread "main" java.lang.IllegalArgumentException: Invalid format argument index at position 7: }
+	at org.apache.commons.lang3.text.ExtendedMessageFormat.readArgumentIndex(ExtendedMessageFormat.java:357)
+	at org.apache.commons.lang3.text.ExtendedMessageFormat.applyPattern(ExtendedMessageFormat.java:167)
+	at org.apache.commons.lang3.text.ExtendedMessageFormat.&amp;lt;init&amp;gt;(ExtendedMessageFormat.java:128)
+	at org.apache.commons.lang3.text.ExtendedMessageFormat.&amp;lt;init&amp;gt;(ExtendedMessageFormat.java:113)
+	at test.TestExtendedMessageFormat.main(TestExtendedMessageFormat.java:16)
+
+
+I will attach a source</description>
+			<version>3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.ExtendedMessageFormat.java</file>
+			<file type="M">org.apache.commons.lang3.text.ExtendedMessageFormatTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1251" opendate="2016-07-27 05:18:01" fixdate="2016-07-31 17:51:29" resolution="Fixed">
+		<buginformation>
+			<summary>SerializationUtils.ClassLoaderAwareObjectInputStream should use static initializer to initialize primitiveTypes map.</summary>
+			<description>SerializationUtils.ClassLoaderAwareObjectInputStream should use static initializer to initialize primitiveTypes map because initializing the map in the constructor of ClassLoaderAwareObjectInputStream would break thread safety. java.util.HashMap is not thread safe.</description>
+			<version>3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.SerializationUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,1522 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2651" opendate="2014-06-12 14:45:54" fixdate="2014-06-12 14:48:11" resolution="Complete">
+		<buginformation>
+			<summary>Update Thymeleaf to use Spring 4 variants in samples</summary>
+			<description>The update to Spring 4 caused failures in Thymeleaf&amp;amp;apos;s automatic inclusion of Spring Security&amp;amp;apos;s CSRF. We should update the Thymeleaf dependencies to match the Spring version. </description>
+			<version>4.0.0.M1</version>
+			<fixedVersion>4.0.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.samples.mvc.config.CustomMvcConfig.java</file>
+			<file type="M">org.springframework.security.samples.mvc.config.WebMvcConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2698" opendate="2014-08-09 09:03:11" fixdate="2014-08-11 07:09:25" resolution="Duplicate">
+		<buginformation>
+			<summary>@EnableGlobalMethodSecurity is not respecting mode = AdviceMode.ASPECTJ</summary>
+			<description>Long description in link to Stackoverflow.
+XML Configuration like this:
+	&amp;lt;security:global-method-security mode="aspectj" proxy-target-class="false" pre-post-annotations="enabled"&amp;gt;
+		&amp;lt;security:expression-handler ref="expressionHandler" /&amp;gt;
+	&amp;lt;/security:global-method-security&amp;gt;
+The AnnotationSecurityAspect is configured by GlobalMethodSecurityBeanDefinitionParser at line 251
+With a Javaconfig Class like this:
+@Configuration
+@EnableGlobalMethodSecurity(mode = AdviceMode.ASPECTJ, prePostEnabled = true)
+public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration
+{
+	@Override
+	protected MethodSecurityExpressionHandler createExpressionHandler ( )
+	{ 
+          ...
+	}
+}
+The AnnotationSecurityAspect is not configured. Spring-Security will create some AutoProxy AOP Classes which is bad as I wanted to use aspectj with compile-time-weaving
+</description>
+			<version>4.0.0.M1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityAspectJAutoProxyRegistrar.java</file>
+			<file type="M">org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2595</link>
+			<link type="Relate" description="is related to">3005</link>
+			<link type="Relate" description="is related to">3045</link>
+		</links>
+	</bug>
+	<bug id="2719" opendate="2014-09-11 08:00:26" fixdate="2014-09-16 08:58:12" resolution="Fixed">
+		<buginformation>
+			<summary>authenticated().withRoles(...) is order-sensitive</summary>
+			<description>The following test always fails for me.
+
+
+
+
+
+
+	
+
+
+
+
+@Test
+
+
+
+
+	public void usuarioLogadoAcessaPagina() throws Exception {
+
+
+
+
+		mvc.perform(get("/").with(user("fulano").roles("USER", "SELLER")))
+
+
+
+
+			.andExpect(authenticated().withRoles("SELLER", "USER"))
+
+
+
+
+			.andExpect(authenticated().withRoles("USER", "SELLER"));			
+
+
+
+
+	}
+
+
+
+
+
+ </description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2705" opendate="2014-08-18 13:38:34" fixdate="2014-11-19 10:06:56" resolution="Fixed">
+		<buginformation>
+			<summary>ExpressionBasedMessageSecurityMetadataSourceFactory configures null TrustResolver on DefaultMessageSecurityExpressionHandler</summary>
+			<description>
+
+
+
+
+
+15:32:03 [http-nio-8080-exec-9] StompSubProtocolHandler[ERROR] - Failed to send STOMP message from client to application MessageChannel in session 1a2vx7mq. Sending STOMP ERROR to client.
+
+
+
+
+org.springframework.messaging.MessageDeliveryException: Failed to send message to ExecutorSubscribableChannel[clientInboundChannel]
+
+
+
+
+	at org.springframework.messaging.support.AbstractMessageChannel.send(AbstractMessageChannel.java:117)
+
+
+
+
+	at org.springframework.messaging.support.AbstractMessageChannel.send(AbstractMessageChannel.java:94)
+
+
+
+
+	at org.springframework.web.socket.messaging.StompSubProtocolHandler.handleMessageFromClient(StompSubProtocolHandler.java:249)
+
+
+
+
+	at org.springframework.web.socket.messaging.SubProtocolWebSocketHandler.handleMessage(SubProtocolWebSocketHandler.java:307)
+
+
+
+
+	at org.springframework.web.socket.handler.WebSocketHandlerDecorator.handleMessage(WebSocketHandlerDecorator.java:75)
+
+
+
+
+	at org.springframework.web.socket.handler.LoggingWebSocketHandlerDecorator.handleMessage(LoggingWebSocketHandlerDecorator.java:55)
+
+
+
+
+	at org.springframework.web.socket.handler.ExceptionWebSocketHandlerDecorator.handleMessage(ExceptionWebSocketHandlerDecorator.java:69)
+
+
+
+
+	at org.springframework.web.socket.sockjs.transport.session.AbstractSockJsSession.delegateMessages(AbstractSockJsSession.java:218)
+
+
+
+
+	at org.springframework.web.socket.sockjs.transport.session.WebSocketServerSockJsSession.handleMessage(WebSocketServerSockJsSession.java:194)
+
+
+
+
+	at org.springframework.web.socket.sockjs.transport.handler.SockJsWebSocketHandler.handleTextMessage(SockJsWebSocketHandler.java:92)
+
+
+
+
+	at org.springframework.web.socket.handler.AbstractWebSocketHandler.handleMessage(AbstractWebSocketHandler.java:43)
+
+
+
+
+	at org.springframework.web.socket.adapter.standard.StandardWebSocketHandlerAdapter.handleTextMessage(StandardWebSocketHandlerAdapter.java:112)
+
+
+
+
+	at org.springframework.web.socket.adapter.standard.StandardWebSocketHandlerAdapter.access$000(StandardWebSocketHandlerAdapter.java:42)
+
+
+
+
+	at org.springframework.web.socket.adapter.standard.StandardWebSocketHandlerAdapter$3.onMessage(StandardWebSocketHandlerAdapter.java:82)
+
+
+
+
+	at org.springframework.web.socket.adapter.standard.StandardWebSocketHandlerAdapter$3.onMessage(StandardWebSocketHandlerAdapter.java:79)
+
+
+
+
+	at org.apache.tomcat.websocket.WsFrameBase.sendMessageText(WsFrameBase.java:375)
+
+
+
+
+	at org.apache.tomcat.websocket.WsFrameBase.processDataText(WsFrameBase.java:472)
+
+
+
+
+	at org.apache.tomcat.websocket.WsFrameBase.processData(WsFrameBase.java:275)
+
+
+
+
+	at org.apache.tomcat.websocket.WsFrameBase.processInputBuffer(WsFrameBase.java:116)
+
+
+
+
+	at org.apache.tomcat.websocket.server.WsFrameServer.onDataAvailable(WsFrameServer.java:55)
+
+
+
+
+	at org.apache.tomcat.websocket.server.WsHttpUpgradeHandler$WsReadListener.onDataAvailable(WsHttpUpgradeHandler.java:194)
+
+
+
+
+	at org.apache.coyote.http11.upgrade.AbstractServletInputStream.onDataAvailable(AbstractServletInputStream.java:194)
+
+
+
+
+	at org.apache.coyote.http11.upgrade.AbstractProcessor.upgradeDispatch(AbstractProcessor.java:95)
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:650)
+
+
+
+
+	at org.apache.coyote.http11.Http11NioProtocol$Http11ConnectionHandler.process(Http11NioProtocol.java:222)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1566)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1523)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+
+
+
+
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:724)
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Failed to evaluate expression &amp;amp;apos;authenticated&amp;amp;apos;
+
+
+
+
+	at org.springframework.security.access.expression.ExpressionUtils.evaluateAsBoolean(ExpressionUtils.java:13)
+
+
+
+
+	at org.springframework.security.messaging.access.expression.MessageExpressionVoter.vote(MessageExpressionVoter.java:53)
+
+
+
+
+	at org.springframework.security.messaging.access.expression.MessageExpressionVoter.vote(MessageExpressionVoter.java:37)
+
+
+
+
+	at org.springframework.security.access.vote.AffirmativeBased.decide(AffirmativeBased.java:62)
+
+
+
+
+	at org.springframework.security.access.intercept.AbstractSecurityInterceptor.beforeInvocation(AbstractSecurityInterceptor.java:208)
+
+
+
+
+	at org.springframework.security.messaging.access.intercept.ChannelSecurityInterceptor.preSend(ChannelSecurityInterceptor.java:70)
+
+
+
+
+	at org.springframework.messaging.support.AbstractMessageChannel$ChannelInterceptorChain.applyPreSend(AbstractMessageChannel.java:147)
+
+
+
+
+	at org.springframework.messaging.support.AbstractMessageChannel.send(AbstractMessageChannel.java:103)
+
+
+
+
+	... 30 more
+
+
+
+
+Caused by: org.springframework.expression.spel.SpelEvaluationException: EL1021E:(pos 0): A problem occurred whilst attempting to access the property &amp;amp;apos;authenticated&amp;amp;apos;: &amp;amp;apos;Unable to access property &amp;amp;apos;authenticated&amp;amp;apos; through getter&amp;amp;apos;
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:214)
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:92)
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:81)
+
+
+
+
+	at org.springframework.expression.spel.ast.SpelNodeImpl.getTypedValue(SpelNodeImpl.java:126)
+
+
+
+
+	at org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:296)
+
+
+
+
+	at org.springframework.security.access.expression.ExpressionUtils.evaluateAsBoolean(ExpressionUtils.java:11)
+
+
+
+
+	... 37 more
+
+
+
+
+Caused by: org.springframework.expression.AccessException: Unable to access property &amp;amp;apos;authenticated&amp;amp;apos; through getter
+
+
+
+
+	at org.springframework.expression.spel.support.ReflectivePropertyAccessor$OptimalPropertyAccessor.read(ReflectivePropertyAccessor.java:634)
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:209)
+
+
+
+
+	... 42 more
+
+
+
+
+Caused by: java.lang.reflect.InvocationTargetException
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:606)
+
+
+
+
+	at org.springframework.expression.spel.support.ReflectivePropertyAccessor$OptimalPropertyAccessor.read(ReflectivePropertyAccessor.java:630)
+
+
+
+
+	... 43 more
+
+
+
+
+Caused by: java.lang.NullPointerException
+
+
+
+
+	at org.springframework.security.access.expression.SecurityExpressionRoot.isAnonymous(SecurityExpressionRoot.java:88)
+
+
+
+
+	at org.springframework.security.access.expression.SecurityExpressionRoot.isAuthenticated(SecurityExpressionRoot.java:92)
+
+
+
+
+	... 48 more
+
+
+
+
+
+
+
+
+
+
+</description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.messaging.access.expression.DefaultMessageSecurityExpressionHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2768" opendate="2014-11-19 09:56:54" fixdate="2014-11-19 10:07:04" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultMessageSecurityExpressionHandler does not set PermissionEvaluator</summary>
+			<description></description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.messaging.access.expression.DefaultMessageSecurityExpressionHandlerTests.java</file>
+			<file type="M">org.springframework.security.messaging.access.expression.DefaultMessageSecurityExpressionHandler.java</file>
+			<file type="M">org.springframework.security.messaging.access.expression.MessageSecurityExpressionRoot.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2769" opendate="2014-11-19 09:57:40" fixdate="2014-11-19 10:07:12" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultMessageSecurityExpressionHandler does not set RoleHierarchy</summary>
+			<description></description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.messaging.access.expression.DefaultMessageSecurityExpressionHandlerTests.java</file>
+			<file type="M">org.springframework.security.messaging.access.expression.DefaultMessageSecurityExpressionHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2794" opendate="2014-12-16 02:47:18" fixdate="2014-12-16 07:44:33" resolution="Duplicate">
+		<buginformation>
+			<summary>AbstractPreAuthenticatedProcessingFilter requires authentication check failure</summary>
+			<description>In the AbstractPreAuthenticatedProcessingFilter.requiresAuthentication(HttpServletRequest request) method which is private, there is the following code:
+        Object principal = getPreAuthenticatedPrincipal(request);
+        if (currentUser.getName().equals(principal)) 
+{
+            return false;
+        }
+
+This assumes that the overriden method of getPreAuthenticatedPrincipal(request) will always return a String, when in fact it could be any object. This needs to change to either:
+		String principal = request.getUserPrincipal().getName();
+		if (currentUser.getName().equals(principal)) 
+{
+			return false;
+		}
+or provide an abstract method (or at least a protected/public method) in order to do the comparison - see attachment. My getPreAuthenticatedPrincipal(request) returns a FederationPrincipal, and not a String. The only way to deal with it at the moment is to completely copy the AbstractPreAuthenticatedProcessingFilter, and change the tiny bit of code above.</description>
+			<version>4.0.0.RC1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2078</link>
+		</links>
+	</bug>
+	<bug id="2819" opendate="2015-01-17 14:39:10" fixdate="2015-01-21 08:35:15" resolution="Complete">
+		<buginformation>
+			<summary> SimpDestinationMessageMatcher(String pattern, SimpMessageType type) never passes type param to this() constructor</summary>
+			<description>
+
+
+
+
+
+SimpDestinationMessageMatcher.java
+
+
+
+
+
+
+public SimpDestinationMessageMatcher(String pattern, SimpMessageType type) {
+
+
+
+
+        this(pattern, null, new AntPathMatcher());
+
+
+
+
+}
+
+
+
+
+
+
+Always passes null as SimpMessageType parameter instead of type param therefore ignoring it completely.</description>
+			<version>4.0.0.RC1</version>
+			<fixedVersion>4.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.messaging.util.matcher.SimpDestinationMessageMatcherTests.java</file>
+			<file type="M">org.springframework.security.messaging.util.matcher.SimpMessageTypeMatcher.java</file>
+			<file type="M">org.springframework.security.messaging.util.matcher.SimpDestinationMessageMatcher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2845" opendate="2015-02-10 00:42:45" fixdate="2015-02-18 08:02:38" resolution="Complete">
+		<buginformation>
+			<summary>Exception when using AbstractSecurityWebSocketMessageBrokerConfigurer with anonymous authentication</summary>
+			<description>When using an AbstractSecurityWebSocketMessageBrokerConfigurer and trying to use messaging with an anonymous authentication (i.e. not logged in), i see the following exception:
+
+
+
+
+
+
+org.springframework.messaging.MessageDeliveryException: Failed to send message to ExecutorSubscribableChannel[clientInboundChannel];
+
+
+
+
+nested exception is org.springframework.security.authentication.AuthenticationCredentialsNotFoundException: An Authentication object was not found in the SecurityContext
+
+
+
+
+
+
+thrown here: https://github.com/spring-projects/spring-security/blob/master/core/src/main/java/org/springframework/security/access/intercept/AbstractSecurityInterceptor.java#L200
+a wild guess would be that an anonymous authentication is not put into the message headers, so the SecurityContextChannelInterceptor does not populate the SecurityContext and then again AbstractSecurityInterceptor just gets null instead of an anonymous Authentication.
+but i am sure you got a better idea whats going on there (or if i am just missing sth.) 
+thanks, zyro</description>
+			<version>4.0.0.RC1</version>
+			<fixedVersion>4.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.messaging.context.SecurityContextChannelInterceptor.java</file>
+			<file type="M">org.springframework.security.messaging.context.SecurityContextChannelInterceptorTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2882" opendate="2015-02-26 07:11:42" fixdate="2015-03-10 09:52:54" resolution="Complete">
+		<buginformation>
+			<summary>DefaultLoginPageGeneratingFilter grabs /**/login</summary>
+			<description>I have the following Groovy security configuration in a Spring Boot web app:
+
+
+
+
+
+
+@Configuration
+
+
+
+
+@EnableWebSecurity
+
+
+
+
+class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+
+
+
+
+
+
+
+
+    @Override
+
+
+
+
+    protected void configure(HttpSecurity http) throws Exception {
+
+
+
+
+        http.
+
+
+
+
+            authorizeRequests().
+
+
+
+
+                antMatchers("/scratch/secured").hasRole("USER").
+
+
+
+
+                antMatchers("/**").permitAll().
+
+
+
+
+                anyRequest().authenticated().
+
+
+
+
+            and().
+
+
+
+
+            formLogin();
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+This does get me the built-in login form at /login, but it also hijacks /foo/something/login. DefaultLoginPageGeneratingFilter#matches appears to treat the url as a suffix instead of as an absolute path. Even though the context path should be /foo/something/login, the conditional at 262 evaluates to true, and the endsWith comparison is used. I can&amp;amp;apos;t get Eclipse to dump the contents of request.getContextPath() right there during debugging.</description>
+			<version>4.0.0.RC1</version>
+			<fixedVersion>4.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.DefaultLoginPageGeneratingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">2227</link>
+		</links>
+	</bug>
+	<bug id="2919" opendate="2015-03-25 21:24:22" fixdate="2015-04-17 09:12:49" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultLoginGeneratingFilter incorrectly used if login-url="/login"</summary>
+			<description>If an application specifies form-login@login-url="/login" then the DefaultLoginGeneratingFilter is incorrectly used. This means that the custom login page cannot be specified with the URL "/login". For example:
+
+
+
+
+
+
+&amp;lt;http ...&amp;gt;
+
+
+
+
+	&amp;lt;form-login login-page="/login" ... /&amp;gt;
+
+
+
+
+&amp;lt;/http&amp;gt;
+
+
+
+
+
+
+Workaround
+Using a different URL
+One workaround is to use a different URL for the login page. For example, one could use "/authenticate".
+Using a BeanDefinitionRegistryPostProcessor
+Alternatively, the following BeanDefinitionRegistryPostProcessor will fix the issue by removing the DefaultLoginPageGeneratingFilter. To use it simply ensure to register the BeanDefinitionRegistryPostProcessor as a Bean.
+
+
+
+
+
+
+import java.util.Iterator;
+
+
+
+
+import java.util.List;
+
+
+
+
+
+
+
+
+
+import org.springframework.beans.BeansException;
+
+
+
+
+import org.springframework.beans.factory.config.BeanDefinition;
+
+
+
+
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+
+
+
+
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+
+
+
+
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+
+
+
+
+import org.springframework.security.web.DefaultSecurityFilterChain;
+
+
+
+
+import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
+
+
+
+
+
+
+
+
+
+public class Sec2919PostProcessor implements BeanDefinitionRegistryPostProcessor {
+
+
+
+
+	@Override
+
+
+
+
+	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry)
+
+
+
+
+			throws BeansException {
+
+
+
+
+		String[] beanDefinitionNames = registry.getBeanDefinitionNames();
+
+
+
+
+		for(String name : beanDefinitionNames) {
+
+
+
+
+			BeanDefinition beanDefinition = registry.getBeanDefinition(name);
+
+
+
+
+			if(beanDefinition.getBeanClassName().equals(DefaultSecurityFilterChain.class.getName())) {
+
+
+
+
+				List&amp;lt;Object&amp;gt; filters = (List&amp;lt;Object&amp;gt;) beanDefinition.getConstructorArgumentValues().getArgumentValue(1, List.class).getValue();
+
+
+
+
+				Iterator&amp;lt;Object&amp;gt; iFilters = filters.iterator();
+
+
+
+
+				while(iFilters.hasNext()) {
+
+
+
+
+					Object f = iFilters.next();
+
+
+
+
+					if(f instanceof BeanDefinition) {
+
+
+
+
+						BeanDefinition bean = (BeanDefinition) f;
+
+
+
+
+						if(bean.getBeanClassName().equals(DefaultLoginPageGeneratingFilter.class.getName())) {
+
+
+
+
+							iFilters.remove();
+
+
+
+
+						}
+
+
+
+
+					}
+
+
+
+
+				}
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+	@Override
+
+
+
+
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
+
+
+
+
+			throws BeansException {
+
+
+
+
+	}
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>4.0.0</version>
+			<fixedVersion>4.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2949</link>
+		</links>
+	</bug>
+	<bug id="2930" opendate="2015-04-06 04:39:46" fixdate="2015-04-21 07:21:46" resolution="Fixed">
+		<buginformation>
+			<summary>Review hasRole/hasAuthority documentation in SecurityExpressionOperations</summary>
+			<description>1. After the changes from SEC-2758 the hasRole/hasAuthority methods are not 100% synonyms.
+2. hasAuthority(String) is described as a synonym for itself</description>
+			<version>4.0.0.RC2</version>
+			<fixedVersion>4.0.1</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionOperations.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">2758</link>
+		</links>
+	</bug>
+	<bug id="2935" opendate="2015-04-08 11:54:05" fixdate="2015-04-22 14:14:27" resolution="Complete">
+		<buginformation>
+			<summary>Security context held between multiple MVC requests in one test</summary>
+			<description>I&amp;amp;apos;m using the new Spring Security test integration features in my Mock MVC tests and noticed that in tests where there are two MVC calls but with different Authentication, the Authentication set in the first MVC call is still present on the second MVC call.
+For example, the first call has only the required update permission and the second call has only the required read permission. The second still has the update permission and can&amp;amp;apos;t do the read.
+In order to work around this I created a ResultHandler that will call TestSecurityContext.clearContext().</description>
+			<version>4.0.0</version>
+			<fixedVersion>4.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessorsTestSecurityContextTests.java</file>
+			<file type="M">org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">2941</link>
+			<link type="Relate" description="is related to">3083</link>
+		</links>
+	</bug>
+	<bug id="2949" opendate="2015-04-28 04:40:07" fixdate="2015-04-28 18:53:46" resolution="Duplicate">
+		<buginformation>
+			<summary>Custom Login not working in Spring 4.0</summary>
+			<description>i created a simple spring mvc project and added a custom login page. The custom login works fine with 3.2.7 but the same custom login does not work when i upgrade to 4.0.0.Release. </description>
+			<version>4.0.0</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2919</link>
+		</links>
+	</bug>
+	<bug id="2988" opendate="2015-05-28 02:05:06" fixdate="2015-07-13 20:52:15" resolution="Complete">
+		<buginformation>
+			<summary>OnMissingBeanCondition is defined in OnBeanCondition.java</summary>
+			<description>OnBeanCondition.java defines a class named OnMissingBeanCondition
+github source</description>
+			<version>4.0.0</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.config.annotation.web.configuration.OnBeanCondition.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="3034" opendate="2015-07-10 01:05:22" fixdate="2015-07-13 21:59:38" resolution="Complete">
+		<buginformation>
+			<summary>AclPermissionEvaluator.resolvePermission fails with Turkish Locale</summary>
+			<description>When a permission name like "write" is passed into AclPermissionEvaluator.resolvePermission method, it first tries to resolve it as is. If not, it then calls permString.toUpperCase() and tries so. However, lowercase "write" is changed into "WRTE" (I with dotted above) when system&amp;amp;apos;s default Locale is tr_TR. Hence, it is not resolved among BasePermissions.
+Obvious solution is calling permString.toUpperCase() with Locale.US input parameter.</description>
+			<version>4.0.0</version>
+			<fixedVersion>3.2.7, 4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.AclPermissionEvaluator.java</file>
+			<file type="M">org.springframework.security.acls.AclPermissionEvaluatorTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2709" opendate="2014-08-24 09:04:53" fixdate="2015-08-20 08:41:39" resolution="Complete">
+		<buginformation>
+			<summary>WithSecurityContextTestExecutionListener should override getOrder() instead of using @Order</summary>
+			<description>WithSecurityContextTestExecutionListener currently declares @Order; however, since AbstractTestExecutionListener implements Ordered, providing a default value of Ordered.LOWEST_PRECEDENCE for getOrder(), WithSecurityContextTestExecutionListener&amp;amp;apos;s @Order declaration will be ignored by the AnnotationAwareOrderComparator.
+Thus, WithSecurityContextTestExecutionListener should override getOrder() with an appropriate value in order to ensure proper ordering within the set of all default TestExecutionListeners.</description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2757" opendate="2014-10-30 03:30:03" fixdate="2015-10-01 21:18:50" resolution="Complete">
+		<buginformation>
+			<summary>AD attribute &amp;apos;sn&amp;apos; required when creating LdapUserDetails</summary>
+			<description>Does &amp;amp;apos;sn&amp;amp;apos; need to be required when creating LdapUserDetails?
+We have a few test users in Active Directory that does not have this attribute set. When those users try to login, it fails on this method in Person.java:
+
+
+
+
+
+
+Person.java
+
+
+
+
+
+
+public LdapUserDetails createUserDetails() {
+
+
+
+
+    Person p = (Person) super.createUserDetails();
+
+
+
+
+    Assert.hasLength(p.sn);
+
+
+
+
+    Assert.notNull(p.cn);
+
+
+
+
+    Assert.notEmpty(p.cn);
+
+
+
+
+    // TODO: Check contents for null entries
+
+
+
+
+    return p;
+
+
+
+
+}
+
+
+
+
+
+
+https://github.com/spring-projects/spring-security/blob/master/ldap/src/main/java/org/springframework/security/ldap/userdetails/Person.java#L129
+It is this line that is causing us problem:
+
+
+
+
+
+
+Assert.hasLength(p.sn);
+
+
+
+
+
+
+There might be a good reason that &amp;amp;apos;sn&amp;amp;apos; is required that I&amp;amp;apos;m not aware of, but if not it would be great if this assert could be removed.
+This is the stacktrace we get. We&amp;amp;apos;re using spring-security-ldap indirectly through Grails spring-security-ldap plugin (v2.0-RC2):
+
+
+
+
+
+
+2014-10-29 15:17.02,875 [ajp-nio-8021-exec-3] ERROR StackTrace - Full Stack Trace:java.lang.IllegalArgumentException: [Assertion failed] - this String argument must have length; it must not be null or empty
+
+
+
+
+        at org.springframework.util.Assert.hasLength(Assert.java:136)
+
+
+
+
+        at org.springframework.util.Assert.hasLength(Assert.java:148)
+
+
+
+
+        at org.springframework.security.ldap.userdetails.Person$Essence.createUserDetails(Person.java:129)
+
+
+
+
+        at org.springframework.security.ldap.userdetails.InetOrgPersonContextMapper.mapUserFromContext(InetOrgPersonContextMapper.java:37)
+
+
+
+
+        at org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider.authenticate(AbstractLdapAuthenticationProvider.java:63)
+
+
+
+
+        at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:156)
+
+
+
+
+        at org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.attemptAuthentication(UsernamePasswordAuthenticationFilter.java:94)
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter.attemptAuthentication(RequestHolderAuthenticationFilter.java:76)
+
+
+
+
+        at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:211)
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter.doFilter(RequestHolderAuthenticationFilter.java:49)
+
+
+
+
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.logout.MutableLogoutFilter.doFilter(MutableLogoutFilter.java:82)
+
+
+
+
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+        at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87)
+
+
+
+
+        at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+        at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192)
+
+
+
+
+        at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160)
+
+
+
+
+        at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:344)
+
+
+
+
+        at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:261)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+        at org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.doFilterInternal(GrailsWebRequestFilter.java:69)
+
+
+
+
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+        at org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:67)
+
+
+
+
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88)
+
+
+
+
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+        at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:344)
+
+
+
+
+        at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:261)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:219)
+
+
+
+
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106)
+
+
+
+
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:142)
+
+
+
+
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79)
+
+
+
+
+        at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:610)
+
+
+
+
+        at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:676)
+
+
+
+
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88)
+
+
+
+
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:537)
+
+
+
+
+        at org.apache.coyote.ajp.AbstractAjpProcessor.process(AbstractAjpProcessor.java:827)
+
+
+
+
+        at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:658)
+
+
+
+
+        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1566)
+
+
+
+
+        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1523)
+
+
+
+
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+
+
+
+
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+
+
+
+
+        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+
+
+
+
+        at java.lang.Thread.run(Thread.java:745)2014-10-29 15:17.02,928 [ajp-nio-8021-exec-3] ERROR StackTrace - Full Stack Trace:java.lang.IllegalArgumentException: [Assertion failed] - this String argument must have length; it must not be null or empty
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter.attemptAuthentication(RequestHolderAuthenticationFilter.java:76)
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter.doFilter(RequestHolderAuthenticationFilter.java:49)
+
+
+
+
+        at grails.plugin.springsecurity.web.authentication.logout.MutableLogoutFilter.doFilter(MutableLogoutFilter.java:82)
+
+
+
+
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+
+
+
+
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+
+
+
+
+        at java.lang.Thread.run(Thread.java:745)
+
+
+
+
+
+</description>
+			<version>4.0.0.M2</version>
+			<fixedVersion>4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.userdetails.Person.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2941" opendate="2015-04-22 13:59:41" fixdate="2015-10-21 21:11:11" resolution="Complete">
+		<buginformation>
+			<summary>Default RequestPostProcessor overrides additional DefaultRequestPostProcessor</summary>
+			<description>Spring Security&amp;amp;apos;s Default RequestPostProcessor implementations override additional RequestPostProcessor implementations.
+For example the following fails:
+
+
+
+
+
+
+mvc = MockMvcBuilders.webAppContextSetup(context)
+
+
+
+
+		.apply(springSecurity())
+
+
+
+
+		.defaultRequest(get("/").with(user("default")))
+
+
+
+
+		.build();
+
+
+
+
+
+
+
+
+
+mvc
+
+
+
+
+	.perform(get("/admin/abc").with(user("user1").roles("ADMIN","USER")))
+
+
+
+
+	.andExpect(status().isNotFound())
+
+
+
+
+	.andExpect(authenticated().withUsername("user1"));
+
+
+
+
+
+
+
+
+
+mvc
+
+
+
+
+	.perform(get("/admin/abc"))
+
+
+
+
+	.andExpect(status().isForbidden())
+
+
+
+
+	.andExpect(authenticated().withUsername("default"));
+
+
+
+
+
+</description>
+			<version>4.0.0</version>
+			<fixedVersion>4.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.test.web.servlet.request.Sec2935Tests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">12945</link>
+			<link type="Relate" description="relates to">2935</link>
+		</links>
+	</bug>
+	<bug id="3159" opendate="2015-11-22 00:38:42" fixdate="2015-11-29 03:00:53" resolution="Complete">
+		<buginformation>
+			<summary>Java doc inaccurate on HttpSecurity#headers</summary>
+			<description></description>
+			<version>4.0.0</version>
+			<fixedVersion>4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.web.builders.HttpSecurity.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

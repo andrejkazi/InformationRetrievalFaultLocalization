@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="640" opendate="2016-09-29 15:03:27" fixdate="2016-10-07 20:08:29" resolution="Fixed">
+		<buginformation>
+			<summary>Colon in properties file value no longer unescaped in commons configuration 2</summary>
+			<description>A properties file create with java escape a colon in for example a path like 
+C:\test as 
+
+C\:\\test
+
+When reading this property value in commons configuration the colon is unescaped, C:\test
+When reading the property value in commons configuration 2 the colon is no longer unescaped, C\:\test.
+Snipped of the code I used for reading the property
+
+
+
+final ConfigurationBuilder&amp;lt;PropertiesConfiguration&amp;gt; builder =                            new FileBasedConfigurationBuilder&amp;lt;&amp;gt;(PropertiesConfiguration.class).configure(new Parameters().properties().setFile(path.toFile());
+
+final PropertiesConfiguration propertiesConfiguration = builder.getConfiguration();
+Assert.assertEquals("C:\\test", propertiesConfiguration.getString("test2"));
+
+
+
+I&amp;amp;apos;ve read this section so I&amp;amp;apos;m aware of the changes to escaping, but I&amp;amp;apos;m not sure how the escaping of the colon fits into this and if there is a way around this.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration2.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration2.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

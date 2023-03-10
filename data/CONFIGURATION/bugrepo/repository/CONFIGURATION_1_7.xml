@@ -1,0 +1,205 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="397" opendate="2009-09-27 21:58:40" fixdate="2011-08-21 02:06:35" resolution="Fixed">
+		<buginformation>
+			<summary>Schema validation exceptions in a combined configuration often result in an empty configuration being include with no exception or error message.</summary>
+			<description>When using DefaultConfigurationBuilder to construct a combined configuration using MultiFileHierarchicalConfiguration (the override file) followed by XMLConfiguration (the default file), if one of the override files has a schema validation error the exception is not thrown nor is an error logged. Instead, an empty configuration is returned.
+If schema violation exceptions occur they should always throw exceptions, regardless of whether a file is optional or not.</description>
+			<version>1.7</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestWebdavConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestMultiFileHierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.DynamicCombinedConfiguration.java</file>
+			<file type="D">org.apache.commons.configuration.reloading.TestVFSFileMonitorReloadingStrategy.java</file>
+			<file type="M">org.apache.commons.configuration.reloading.FileChangedReloadingStrategy.java</file>
+			<file type="M">org.apache.commons.configuration.DefaultFileSystem.java</file>
+			<file type="M">org.apache.commons.configuration.TestCatalogResolver.java</file>
+			<file type="M">org.apache.commons.configuration.reloading.TestFileChangedReloadingStrategy.java</file>
+			<file type="M">org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+			<file type="D">org.apache.commons.configuration.reloading.VFSFileMonitorReloadingStrategy.java</file>
+			<file type="M">org.apache.commons.configuration.MultiFileHierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestVFSConfigurationBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="476" opendate="2012-01-15 21:21:05" fixdate="2012-01-15 21:33:33" resolution="Fixed">
+		<buginformation>
+			<summary>Possible ClassCastException in CompositeConfiguration if a special in-memory configuration is used</summary>
+			<description>Some methods of CompositeConfiguration expect that the in-memory configuration is of type BaseConfiguration (a configuration of this type is created if no specific in-memory configuration was provided).
+However, there are constructors accepting an arbitrary Configuration object as in-memory configuration. If here a configuration is specified which does not extend BaseConfiguration, the casts performed by these methods will fail. The casts should only be performed if possible.
+The following methods are affected:
+
+setListDelimiter()
+setDelimiterParsingDisabled()
+
+</description>
+			<version>1.7</version>
+			<fixedVersion>1.8</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCompositeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CompositeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="471" opendate="2011-11-10 09:14:07" fixdate="2012-01-18 20:55:11" resolution="Fixed">
+		<buginformation>
+			<summary>CompositeConfiguration delivers value from wrong child</summary>
+			<description>I create a composite configuration with two PropertyConfigurations: a user configuration and a default configuration, with the userConfiguration as inMemoryConfiguration.
+If both configurations contain the same key, the value from defaultConfiguration is returned although the user configuration was added first. If no inMemoryConfiguration is specified, it&amp;amp;apos;s working ok:
+Configuration defaultConf = new PropertiesConfiguration();
+defaultConf.addProperty("prop1", "fromDefaultConfig");
+Configuration userConf = new PropertiesConfiguration();
+userConf.addProperty("prop1", "fromUserConfig");
+CompositeConfiguration noMemoryConfig = new CompositeConfiguration();
+noMemoryConfig.addConfiguration(userConf);
+noMemoryConfig.addConfiguration(defaultConf);
+System.out.println("noMemoryConfig: " + noMemoryConfig.getString("prop1")); // Shows "fromUserConfig" 
+CompositeConfiguration withMemoryConfig = new CompositeConfiguration(userConf);
+withMemoryConfig.addConfiguration(userConf);
+withMemoryConfig.addConfiguration(defaultConf);
+System.out.println("withMemoryConfig: " + withMemoryConfig.getString("prop1")); // Shows "fromDefaultConfig"</description>
+			<version>1.7</version>
+			<fixedVersion>1.8</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCompositeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CompositeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="474" opendate="2012-01-06 18:27:58" fixdate="2012-01-21 17:05:10" resolution="Fixed">
+		<buginformation>
+			<summary>Lists don&amp;apos;t seem to work whean loading INI files</summary>
+			<description>After loading an INI file with HierarchicalINIConfiguration, getList() and getStringArray() alaways return 1-size sets even if the parameter is in the right form in the file. To reproduce one only need to create a small INI file with the following content :
+key=val1,val2,val3
+The following code returns a 1-sized list :
+
+
+HierarchicalINIConfiguration c = new HierarchicalINIConfiguration();
+c.load("test.ini");
+List&amp;lt;?&amp;gt; l = c.getList("val");
+
+
+=&amp;gt; l = ["val1,val2,val3"] instead of ["val1","val2","val3"]
+I tried to change the list delimiter, but it didn&amp;amp;apos;t work. Maybe it&amp;amp;apos;s expected, but I haven&amp;amp;apos;t found anything in the doc.</description>
+			<version>1.7</version>
+			<fixedVersion>1.8</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="465" opendate="2011-10-03 17:28:04" fixdate="2012-01-22 16:25:04" resolution="Fixed">
+		<buginformation>
+			<summary>OSGI issue - configuration depends on Jexl 1.0 which does not have OSGI release</summary>
+			<description>I updated to use commons-configuration 1.7 (from 1.6) and am running into the following resolution error under Eclipse Equinox OSGi framework.
+        An Import-Package could not be resolved. Caused by missing constraint in bundle &amp;lt;org.apache.commons.configuration_1.7.0&amp;gt;
+             constraint: &amp;lt;Import-Package: org.apache.commons.jexl; version="0.0.0"&amp;gt;
+According to the Import-Package header in 1.7&amp;amp;apos;s MANIFEST.MF, commons-configuration now has a required dependency on org.apache.commons.jexl.  Problem is, there is no OSGi enabled version of Apache Commons jexl that exports this package.
+In jexl 2.0 the packages were renamed and org.apache.commons.jexl2 is exported.  The 1.x codeline, although using org.apache.commons.jexl, does not have the appropriate MANIFEST.MF headers to be used as an OSGi bundle.
+As such, you cannot consume commons-configuration 1.7 in an OSGi environment.</description>
+			<version>1.7</version>
+			<fixedVersion>1.8</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.interpol.ExprLookup.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="481" opendate="2012-02-26 20:27:46" fixdate="2012-02-29 21:15:55" resolution="Fixed">
+		<buginformation>
+			<summary>Variable interpolation across files broken in 1.7 &amp; 1.8</summary>
+			<description>With Commons Configuration 1.6, I was able to declare a variable in a properties file, and then reference it in a XML file using the ${myvar} syntax.
+For example:
+global.properties:
+
+myvar=abc
+
+test.xml:
+
+
+&amp;lt;products&amp;gt;
+  &amp;lt;product name="abc"&amp;gt;
+    &amp;lt;desc&amp;gt;${myvar}-product&amp;lt;/desc&amp;gt;
+  &amp;lt;/product&amp;gt;
+&amp;lt;/products&amp;gt;
+
+
+config.xml:
+
+
+&amp;lt;properties fileName="global.properties"/&amp;gt;
+&amp;lt;xml fileName="test.xml" config-name="test"&amp;gt;
+  &amp;lt;expressionEngine config-class="org.apache.commons.configuration.tree.xpath.XPathExpressionEngine"/&amp;gt;
+&amp;lt;/xml&amp;gt;
+
+
+When I try to retrieve the value, like so:
+
+combinedConfig.getConfiguration("test").configurationAt("products/product[@name=&amp;amp;apos;abc&amp;amp;apos;]", true).getString("desc")
+
+I get "${myvar}-product" instead of "abc-product".
+This was working in Commons Configuration 1.6, but seems to be broken in 1.7 and 1.8.</description>
+			<version>1.7</version>
+			<fixedVersion>1.9</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestDefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.DefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.interpol.ConfigurationInterpolator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="547" opendate="2013-06-19 14:05:13" fixdate="2013-06-29 19:17:56" resolution="Duplicate">
+		<buginformation>
+			<summary>Handling of backslashes</summary>
+			<description>Consider the following Unit Test:
+
+
+    @Test
+    public void properlyProcessesBackslash() throws Exception
+    {
+        final String key = "key";
+        final String value = "\\\\";
+
+        final XMLConfiguration xmlConfig = new XMLConfiguration();
+        xmlConfig.addProperty(key, value);
+        final StringWriter stringWriter = new StringWriter();
+        xmlConfig.save(stringWriter);
+
+        final String xml = stringWriter.toString();
+
+        final XMLConfiguration roundTrippedXmlConfig = new XMLConfiguration();
+        roundTrippedXmlConfig.load(new StringReader(xml));
+
+        assertEquals(xmlConfig.getString(key), roundTrippedXmlConfig.getString(key));
+    }
+
+
+The test case fails and I think it shouldn&amp;amp;apos;t. The version that introduced this behaviour was 1.7, 1.6 works fine.</description>
+			<version>1.7</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">418</link>
+		</links>
+	</bug>
+</bugrepository>

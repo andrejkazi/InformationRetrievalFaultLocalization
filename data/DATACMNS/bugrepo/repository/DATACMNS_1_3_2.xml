@@ -1,0 +1,657 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="226" opendate="2012-09-03 04:24:57" fixdate="2012-09-03 04:43:23" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurableTypeInformationMapper caches too aggressively</summary>
+			<description>If ConfigurableTypeInformationMapper is used with a MappingContext the TypeInformation and aliases managed are looked up eagerly. As types can be added later on we need to fall back to another PersistentEntity lookup in case we don&amp;amp;apos;t find a cached value. </description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.TypeInformationMapper.java</file>
+			<file type="M">org.springframework.data.convert.DefaultTypeMapper.java</file>
+			<file type="M">org.springframework.data.mapping.MappingMetadataTests.java</file>
+			<file type="M">org.springframework.data.convert.TypeAliasAccessor.java</file>
+			<file type="M">org.springframework.data.convert.ConfigurableTypeInformationMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.convert.ConfigurableTypeInformationMapper.java</file>
+			<file type="M">org.springframework.data.convert.SimpleTypeInformationMapper.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">523</link>
+		</links>
+	</bug>
+	<bug id="221" opendate="2012-09-02 21:24:06" fixdate="2012-09-04 00:15:31" resolution="Fixed">
+		<buginformation>
+			<summary>Parsing of method names with non-ascii characters fails in some cases</summary>
+			<description>Parsing of query methods with special characters fails in some cases. For instance, given this class:
+
+
+
+
+
+
+class DomainObjectWithSpecialChars {
+
+
+
+
+        Long id;
+
+
+
+
+        String r;
+
+
+
+
+        String re;
+
+
+
+
+}
+
+
+
+
+
+
+And the following repository:
+
+
+
+
+
+
+interface DomainObjectWithSpecialChars Repository extends JpaRepository&amp;lt;DomainObjectWithSpecialChars , Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+	DomainObjectWithSpecialChars findByreAndr(String re, String r);
+
+
+
+
+}
+
+
+
+
+
+
+Initialization then fails with the following exception:
+
+
+
+
+
+
+org.springframework.data.mapping.PropertyReferenceException: No property reAndr found for type org.springframework.data.repository.query.parser.PartTreeUnitTests$DomainObjectWithSpecialChars
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:74)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:326)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:306)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:270)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:244)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:73)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:71)
+
+
+
+
+
+
+The reason for this problem is the use of US-ASCII-based regex matchers (i.e. [a-z], \p
+{Uppper}
+, etc.) when creating the PartTree. Changing to unicode character matches (\p
+{Lu}
+ and \p
+{Ll}
+) solves the issue.</description>
+			<version>1.4 RC1</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PropertyPath.java</file>
+			<file type="M">org.springframework.data.repository.query.parser.PartTree.java</file>
+			<file type="M">org.springframework.data.repository.query.parser.OrderBySource.java</file>
+			<file type="M">org.springframework.data.repository.query.parser.PartTreeUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="228" opendate="2012-09-10 02:05:09" fixdate="2012-09-10 06:29:13" resolution="Fixed">
+		<buginformation>
+			<summary>Mapping sub-system should exclude Groovy introduced properties from persistent properties</summary>
+			<description>When using Groovy classes with the mapping metadata sub-system, the Groovy compiler introduced fields like metaClass should not be considered a persistent property.</description>
+			<version>1.4 RC1</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">531</link>
+		</links>
+	</bug>
+	<bug id="233" opendate="2012-09-14 07:38:12" fixdate="2012-09-17 01:05:34" resolution="Fixed">
+		<buginformation>
+			<summary>DomainClassConverter should gracefully return null for null sources or empty strings</summary>
+			<description>I&amp;amp;apos;ve noticed an important issue related to automatic web binding of String id to Domain class.
+Imagine the use case where you have an Order domain class which has a ManyToOne reference to Customer.
+When posting a new Order where Order.customer == "" then a converter exception is thrown:
+
+
+
+
+
+
+Failed to convert property value of type java.lang.String to required type org.mycomp.domain.Customer for property customer; nested exception is org.springframework.core.convert.ConversionFailedException: Failed to convert from type java.lang.String to type @javax.validation.constraints.NotNull @javax.persistence.ManyToOne org.mycomp.domain.Customer for value &amp;amp;apos;; nested exception is org.springframework.dao.InvalidDataAccessApiUsageException: The given id must not be null!; nested exception is java.lang.IllegalArgumentException: The given id must not be null!
+
+
+
+
+
+
+I think it should not try to convert to Domain class if id is null or empty.
+And note that for optional references this even might even cause a complete blocker?
+This is the code I used:
+
+
+
+
+
+
+&amp;lt;form:select path="customer"&amp;gt;
+
+
+
+
+	&amp;lt;form:option value="" label="Select" /&amp;gt;
+
+
+
+
+	&amp;lt;form:options items="${customers}" itemValue="id"&amp;gt;&amp;lt;/form:options&amp;gt;
+
+
+
+
+&amp;lt;/form:select&amp;gt;
+
+
+
+
+
+
+</description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverter.java</file>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverterUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="239" opendate="2012-10-04 00:51:43" fixdate="2012-10-09 02:02:58" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractRepositoryPopulatorFactoryBean handling of ContextRefreshedEvent doesn&amp;apos;t work</summary>
+			<description>The code in https://github.com/SpringSource/spring-data-commons/blob/master/spring-data-commons-core/src/main/java/org/springframework/data/repository/init/AbstractRepositoryPopulatorFactoryBean.java assumes that the ApplicationContext is the BeanFactory.
+Something like to following seems to be required for a ConfigurableApplicationContext.
+
+
+
+
+
+
+ApplicationContext source = event.getApplicationContext();
+
+
+
+
+if (source instanceof ConfigurableApplicationContext &amp;amp;&amp;amp;
+
+
+
+
+	((ConfigurableApplicationContext)source).getBeanFactory().equals(beanFactory)) {
+
+
+
+
+
+</description>
+			<version>1.4 RC1</version>
+			<fixedVersion>1.4 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.init.AbstractRepositoryPopulatorFactoryBean.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="257" opendate="2012-11-29 02:29:27" fixdate="2012-12-12 23:20:27" resolution="Fixed">
+		<buginformation>
+			<summary>PropertyPath cannot deal with all uppercase fields</summary>
+			<description>Cannot execute MongoOperations.findOne method if my model entity contains @Id field which name is uppercase, like UID.
+Here an example:
+
+
+
+
+
+
+class Foo{
+
+
+
+
+  
+
+
+
+
+  @Id
+
+
+
+
+  private String UID;
+
+
+
+
+
+
+
+
+
+  //code omitted
+
+
+
+
+}
+
+
+
+
+
+
+Steps to reproduce:
+1) create an entity like in example code snippet in MongoDb
+2) try to perform find by id operation by calling MongoOperations.findOne
+3) at this step you will get an exception
+
+
+
+
+
+
+java.lang.IllegalArgumentException: No property uID found on com.xxxxxxxxxxxxx.TemplateDefinitionObject!
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentPropertyPath(AbstractMappingContext.java:225)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getPath(QueryMapper.java:202)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.determineKey(QueryMapper.java:221)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:87)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFindOne(MongoTemplate.java:1307)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.findById(MongoTemplate.java:516)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.findById(MongoTemplate.java:509)
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.SimpleMongoRepository.findOne(SimpleMongoRepository.java:99)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:616)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.executeMethodOn(RepositoryFactorySupport.java:334)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:319)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+
+
+
+
+	at $Proxy37.findOne(Unknown Source)
+
+
+
+
+	at com.xxxxxxxx.ShortTest.testFoo(ShortTest.java:65)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:616)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestMethodCallbacks.evaluate(RunBeforeTestMethodCallbacks.java:74)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestMethodCallbacks.evaluate(RunAfterTestMethodCallbacks.java:83)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.SpringRepeat.evaluate(SpringRepeat.java:72)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:231)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:50)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:71)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:174)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+
+
+
+
+
+</description>
+			<version>1.4 Final</version>
+			<fixedVersion>1.4.1, 1.5 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PropertyPath.java</file>
+			<file type="M">org.springframework.data.mapping.PropertyPathUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="263" opendate="2012-12-08 11:44:09" fixdate="2013-01-16 09:24:53" resolution="Fixed">
+		<buginformation>
+			<summary>CDI integration with openEJB fails</summary>
+			<description>
+provided an EntityManager Producer
+create context: context = EJBContainer.createEJBContainer(p).getContext();
+log says:
+
+OpenEJB.cdi - OpenWebBeans Container is starting...
+org.springframework.data.jpa.repository.cdi.JpaRepositoryExtension - Activating CDI extension for Spring Data JPA repositories.
+org.springframework.data.jpa.repository.cdi.JpaRepositoryExtension - Discovered &amp;amp;apos;javax.persistence.EntityManager&amp;amp;apos; with qualifiers [@javax.enterprise.inject.Any(), @javax.enterprise.inject.Default()].
+and then:
+Unable to resolve a bean for &amp;amp;apos;javax.persistence.EntityManager&amp;amp;apos; with qualifiers [@javax.enterprise.inject.Any(), @javax.enterprise.inject.Default()].
+see also attached log</description>
+			<version>1.4 Final</version>
+			<fixedVersion>1.5 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="272" opendate="2013-01-28 05:12:05" fixdate="2013-01-28 07:28:34" resolution="Duplicate">
+		<buginformation>
+			<summary>Cache Annotations in AnnotationBasedPersistentProperty</summary>
+			<description>Looking up annotations every time from Java reflection is prohibitively expensive.
+So please cache them.
+Read annotations from getters, setters and the field and store them in a map with the same precendence rules as findAnnotation(type)
+use that cache in isAnnotationPresent() and findAnnotation().
+Also provide a getAnnotations() method that returns all annotations on that property. This collection would be used for Bean-Validation (JSR-303) and other methods that have to check meta-annotations.</description>
+			<version>1.4 Final</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">271</link>
+		</links>
+	</bug>
+	<bug id="271" opendate="2013-01-28 05:10:37" fixdate="2013-01-28 07:28:43" resolution="Fixed">
+		<buginformation>
+			<summary>AnnotationBasedPersistentProperty should cache annotation lookups</summary>
+			<description></description>
+			<version>1.4 Final</version>
+			<fixedVersion>1.5 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">272</link>
+		</links>
+	</bug>
+	<bug id="276" opendate="2013-01-29 04:06:23" fixdate="2013-01-29 06:06:19" resolution="Fixed">
+		<buginformation>
+			<summary>ParameterizedTypeInformation is missing hashCode() method</summary>
+			<description></description>
+			<version>1.4 Final</version>
+			<fixedVersion>1.4.1, 1.5 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.ParameterizedTypeInformation.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

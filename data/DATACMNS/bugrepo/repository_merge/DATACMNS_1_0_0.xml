@@ -1,0 +1,257 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="13" master="69" duplicate="70" opendate="2011-08-30 02:50:32" fixdate="2011-09-07 03:13:57" resolution="Fixed">
+		<buginformation>
+			<summary>Performance issues with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional RepositoryInterfaceAwareBeanPostProcessor predicting a wrong bean type</summary>
+			<description>There is a major performance issue with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional support in application&amp;amp;apos;s service classes. The problem is that the method RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) is relatively slow due to a usage of ClassUtils.resolveClassName(...). The actual problem is that the method in question is called whenever someone calls BeanFactoryUtils.beansOfTypeIncludingAncestors(...) and that someone happens to be TransactionAspectUtils.getTransactionManager(...) method, which is called before a call of any method annotated with @Transactional annotation. These calls happens because RepositoryInterfaceAwareBeanPostProcessor implements SmartInstantiationAwareBeanPostProcessor.
+Can RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) method be optimized? I have two repositories
+
+
+
+
+
+
+
+
+
+
+
+public interface UserRepository extends MongoRepository&amp;lt;User, ObjectId&amp;gt; {
+
+
+
+
+    public User findByUsername(String username);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public interface FeedbackRepository extends MongoRepository&amp;lt;Feedback, ObjectId&amp;gt; {
+
+
+
+
+    public Feedback findById(ObjectId id);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+which I inject into a service class
+
+
+
+
+
+
+@Service("myService")
+
+
+
+
+public class MyService  {
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private FeedbackRepository feedbackRepository;
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private UserRepository userRepository;
+
+
+
+
+    ...
+
+
+
+
+}
+
+
+
+
+
+
+My application fails to start throwing 
+"Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No matching bean of type [com.space.repository.mongo.FeedbackRepository]"
+When I debugged further I noticed RepositoryInterfaceAwareBeanPostProcessor.predictBeanType() returning a cached bean type of UserRepository for FeedbackRepository
+
+
+
+
+
+
+RepositoryInterfaceAwareBeanPostProcessor.java
+
+
+
+
+
+
+public Class&amp;lt;?&amp;gt; predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) {
+
+
+
+
+
+
+
+
+
+		if (null == context || !REPOSITORY_TYPE.isAssignableFrom(beanClass)) {
+
+
+
+
+			return null;
+
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+		BeanDefinition definition = context.getBeanDefinition(beanName);
+
+
+
+
+		PropertyValue value =
+
+
+
+
+				definition.getPropertyValues().getPropertyValue(
+
+
+
+
+						"repositoryInterface");
+
+
+
+
+		
+
+
+
+
+		if (cache.containsKey(beanClass)) {
+
+
+
+
+			return cache.get(beanClass);
+
+
+
+
+		}
+
+
+
+
+		
+
+
+
+
+		Class&amp;lt;?&amp;gt; resolvedBeanClass = getClassForPropertyValue(value);
+
+
+
+
+		cache.put(beanClass, resolvedBeanClass);
+
+
+
+
+
+
+
+
+
+		return resolvedBeanClass;
+
+
+
+
+	}
+
+
+
+
+
+
+In the above code predicting the bean type a cache is being maintained with beanClass as the key.
+For all repository instances  "MongoRepositoryFactoryBean" is the bean class and hence for feedbackRepository bean predictBeanType is picking up a cached userRepository as the type.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">70</link>
+			<link type="Duplicate" description="duplicates">69</link>
+		</links>
+	</bug>
+</bugrepository>

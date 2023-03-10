@@ -1,0 +1,1552 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="931" opendate="2016-11-02 08:56:34" fixdate="2016-11-03 08:44:04" resolution="Fixed">
+		<buginformation>
+			<summary>PATCH for non-resource associations doesn&amp;apos;t work as expected</summary>
+			<description>User has a repository and Phone has not. [id and some other fields are pruned in below examples for brevity, see full entities in example code]
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class User {
+
+
+
+
+
+
+
+
+
+        private String name;
+
+
+
+
+
+
+
+
+
+	@Column(nullable = false)
+
+
+
+
+	@Temporal(value = TemporalType.TIMESTAMP)
+
+
+
+
+	private Calendar creationDate;
+
+
+
+
+
+
+
+
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+
+
+
+
+	private List&amp;lt;Phone&amp;gt; phones;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Phone extends BaseEntity {
+
+
+
+
+
+
+
+
+
+	@Column(nullable = false)
+
+
+
+
+	@Temporal(value = TemporalType.TIMESTAMP)
+
+
+
+
+	private Calendar creationDate;
+
+
+
+
+
+
+
+
+
+	@ManyToOne(fetch = FetchType.EAGER)
+
+
+
+
+	private User user;
+
+
+
+
+}
+
+
+
+
+
+
+In this case patch for /users/1 with following data works:
+
+
+
+
+
+
+{
+
+
+
+
+   "name":"John Doe X",
+
+
+
+
+   "phones":[
+
+
+
+
+      {
+
+
+
+
+         "id":1,
+
+
+
+
+         "creationDate":"2016-11-02T07:34:02.806+0000",
+
+
+
+
+         "label":"work",
+
+
+
+
+         "number":"00000000"
+
+
+
+
+      }
+
+
+
+
+   ]
+
+
+
+
+}
+
+
+
+
+
+
+but following data fails with not-null-constraint error for creationDate:
+
+
+
+
+
+
+{
+
+
+
+
+   "name":"John Doe X",
+
+
+
+
+   "phones":[
+
+
+
+
+      {
+
+
+
+
+         "id":1,
+
+
+
+
+         "label":"work",
+
+
+
+
+         "number":"00000000"
+
+
+
+
+      }
+
+
+
+
+   ]
+
+
+
+
+}
+
+
+
+
+
+
+PATCH works selectively on resources however doesn&amp;amp;apos;t work as expected for inline data which is not a resource (in this case "phone")</description>
+			<version>2.5.4 (Hopper SR4)</version>
+			<fixedVersion>2.6 M1 (Ingalls), 2.4.7 (Gosling SR7), 2.5.5 (Hopper SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.JsonPatchHandler.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="919" opendate="2016-10-11 21:57:53" fixdate="2016-11-03 19:23:52" resolution="Fixed">
+		<buginformation>
+			<summary>PUT/PATCH of Entity object that is a Map silently dropping elements of Map</summary>
+			<description>When one has an Entity that has an attribute that is a Map, performing a PUT/PATCH to apply an update the Map will silently throw away any first-level sub-elements of the Map that are themselves a JSON object. 
+For example, if I have an entity like:
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Person
+
+
+
+
+{
+
+
+
+
+    @Id
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+     private String name;
+
+
+
+
+
+
+
+
+
+     private HashMap&amp;lt;String, Object&amp;gt; attributes;
+
+
+
+
+}
+
+
+
+
+
+
+And I create the initial record with the following JSON using POST /api/persons:
+
+
+
+
+
+
+{
+
+
+
+
+    "name" : "person1",
+
+
+
+
+    "attributes" : {
+
+
+
+
+          "sub1" : "ok",
+
+
+
+
+          "sub2" : [ "ok1", "ok2" ],
+
+
+
+
+          "sub3" : [ { "childOk1" : "ok" }],
+
+
+
+
+          "sub4" : {
+
+
+
+
+               "c1" : "v1"
+
+
+
+
+          }
+
+
+
+
+     }
+
+
+
+
+}
+
+
+
+
+
+
+Everything works fine. If I then try to update using PATCH or PUT /api/persons/1:
+
+
+
+
+
+
+{
+
+
+
+
+    "attributes" : {
+
+
+
+
+          "sub1" : "ok",
+
+
+
+
+          "sub2" : [ "ok1", "ok2" ],
+
+
+
+
+          "sub3" : [ { "childOk1" : "ok" }],
+
+
+
+
+          "sub4" : {
+
+
+
+
+               "c1" : "v1",
+
+
+
+
+               "c2" : "new"
+
+
+
+
+          }
+
+
+
+
+     }
+
+
+
+
+}
+
+
+
+
+
+
+Not only will the attributes.sub4.c2 value not be saved, the entire attributes.sub4 element will disappear. The rest of the items, including attributes.sub3 will remain, since its value is an array of objects instead of just an object. 
+If I then submit the exact same REST call, everything will return. In fact, if you just keep doing PUT or PATCH over and over, it will keep flipping back and forth from the two states.
+It appears the issue is somewhere in DomainObjectReader.java, but I haven&amp;amp;apos;t been able to fully track it down as of yet. I wanted to get this logged since I suspect this could be a major bug for people, and given that it only appears during the PATCH/PUT phase, its possible this could be missed for awhile.</description>
+			<version>2.5.4 (Hopper SR4)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.4.7 (Gosling SR7), 2.5.5 (Hopper SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="925" opendate="2016-10-19 13:52:17" fixdate="2016-12-02 19:19:01" resolution="Fixed">
+		<buginformation>
+			<summary>ResourceProcessor not used for nested Projection</summary>
+			<description>There seems to be an issue with how ResourceProcessors are being applied to a Projection in certain case. I&amp;amp;apos;ve linked to a repo that demonstrates the issue.
+There are two entities, Person and Address. The Person is the parent in a @ManyToOne relationship to the Address. There is also a PersonProjection that shows a subset of the Person, most importantly it does not include the Set&amp;lt;Address&amp;gt; of the child Address entities. There is also a AddressProjection that includes the{{PersonProjection}} of the parent. The goal is to be able to retrieve the list of Address objects and their associated key Person information in a single call. 
+Now, I also have ResourceProcessor implementations that add some links to each of the entities. That includes ResourceProcessor implementations on the projections. Everything works as described and expected when using the normal SDR endpoints to get the Person and Address collections. The custom links are correctly added to each entity. Also, when I query for the Person collection with the projection, that too adds the appropriate link to the Person representation. However, when I query the Address collection with the projection, the embedded PersonProjection has the normal SDR-generated links for self and the object itself person in this case, it does not have the custom links. 
+The listing of the Person collection. Notice the google link, which is the custom link for this demonstration:
+
+
+
+
+
+
+curl http://localhost:8080/persons; echo
+
+
+
+
+{
+
+
+
+
+  "_embedded" : {
+
+
+
+
+    "persons" : [ {
+
+
+
+
+      "firstName" : "Bob",
+
+
+
+
+      "lastName" : "Bobby",
+
+
+
+
+      "quote" : "Likes to Bob",
+
+
+
+
+      "_links" : {
+
+
+
+
+        "self" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1"
+
+
+
+
+        },
+
+
+
+
+        "person" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1{?projection}",
+
+
+
+
+          "templated" : true
+
+
+
+
+        },
+
+
+
+
+        "google" : {
+
+
+
+
+          "href" : "http://www.google.com"
+
+
+
+
+        },
+
+
+
+
+        "addresses" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1/addresses"
+
+
+
+
+        }
+
+
+
+
+      }
+
+
+
+
+    } ]
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/persons"
+
+
+
+
+    },
+
+
+
+
+    "profile" : {
+
+
+
+
+      "href" : "http://localhost:8080/profile/persons"
+
+
+
+
+    }
+
+
+
+
+  },
+
+
+
+
+  "page" : {
+
+
+
+
+    "size" : 20,
+
+
+
+
+    "totalElements" : 1,
+
+
+
+
+    "totalPages" : 1,
+
+
+
+
+    "number" : 0
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+Now the listing of the Person collection with the projection enabled. Notice that the quote field is not returned, but the google link is still there.
+
+
+
+
+
+
+curl http://localhost:8080/persons?projection=simple; echo
+
+
+
+
+{
+
+
+
+
+  "_embedded" : {
+
+
+
+
+    "persons" : [ {
+
+
+
+
+      "firstName" : "Bob",
+
+
+
+
+      "lastName" : "Bobby",
+
+
+
+
+      "_links" : {
+
+
+
+
+        "self" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1"
+
+
+
+
+        },
+
+
+
+
+        "person" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1{?projection}",
+
+
+
+
+          "templated" : true
+
+
+
+
+        },
+
+
+
+
+        "google" : {
+
+
+
+
+          "href" : "http://www.google.com"
+
+
+
+
+        },
+
+
+
+
+        "addresses" : {
+
+
+
+
+          "href" : "http://localhost:8080/persons/1/addresses"
+
+
+
+
+        }
+
+
+
+
+      }
+
+
+
+
+    } ]
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/persons"
+
+
+
+
+    },
+
+
+
+
+    "profile" : {
+
+
+
+
+      "href" : "http://localhost:8080/profile/persons"
+
+
+
+
+    }
+
+
+
+
+  },
+
+
+
+
+  "page" : {
+
+
+
+
+    "size" : 20,
+
+
+
+
+    "totalElements" : 1,
+
+
+
+
+    "totalPages" : 1,
+
+
+
+
+    "number" : 0
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+{
+
+
+
+
+
+
+The listing of the Address collection. Notice the microsoft link which is the custom link for this demonstration:
+
+
+
+
+
+
+curl http://localhost:8080/addresses; echo
+
+
+
+
+{
+
+
+
+
+  "_embedded" : {
+
+
+
+
+    "addresses" : [ {
+
+
+
+
+      "line1" : "1234 Line 1 Street",
+
+
+
+
+      "line2" : "Apt Line 2",
+
+
+
+
+      "city" : "Somewhere",
+
+
+
+
+      "state" : "NY",
+
+
+
+
+      "country" : "USA",
+
+
+
+
+      "zipcode" : "12345",
+
+
+
+
+      "_links" : {
+
+
+
+
+        "self" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1"
+
+
+
+
+        },
+
+
+
+
+        "address" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1{?projection}",
+
+
+
+
+          "templated" : true
+
+
+
+
+        },
+
+
+
+
+        "microsoft" : {
+
+
+
+
+          "href" : "http://www.microsoft.com"
+
+
+
+
+        },
+
+
+
+
+        "person" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1/person"
+
+
+
+
+        }
+
+
+
+
+      }
+
+
+
+
+    } ]
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/addresses"
+
+
+
+
+    },
+
+
+
+
+    "profile" : {
+
+
+
+
+      "href" : "http://localhost:8080/profile/addresses"
+
+
+
+
+    }
+
+
+
+
+  },
+
+
+
+
+  "page" : {
+
+
+
+
+    "size" : 20,
+
+
+
+
+    "totalElements" : 1,
+
+
+
+
+    "totalPages" : 1,
+
+
+
+
+    "number" : 0
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+And finally the listing of the Address projection, without the expected google link for the embedded Person. However, the Person is missing the quote field, so it is processing the rest of the projection.
+
+
+
+
+
+
+curl http://localhost:8080/addresses?projection=simple; echo
+
+
+
+
+{
+
+
+
+
+  "_embedded" : {
+
+
+
+
+    "addresses" : [ {
+
+
+
+
+      "state" : "NY",
+
+
+
+
+      "line" : "1234 Line 1 Street Apt Line 2",
+
+
+
+
+      "city" : "Somewhere",
+
+
+
+
+      "person" : {
+
+
+
+
+        "firstName" : "Bob",
+
+
+
+
+        "lastName" : "Bobby",
+
+
+
+
+        "_links" : {
+
+
+
+
+          "self" : {
+
+
+
+
+            "href" : "http://localhost:8080/persons/1{?projection}",
+
+
+
+
+            "templated" : true
+
+
+
+
+          },
+
+
+
+
+          "addresses" : {
+
+
+
+
+            "href" : "http://localhost:8080/persons/1/addresses"
+
+
+
+
+          }
+
+
+
+
+        }
+
+
+
+
+      },
+
+
+
+
+      "zipcode" : "12345",
+
+
+
+
+      "_links" : {
+
+
+
+
+        "self" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1"
+
+
+
+
+        },
+
+
+
+
+        "address" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1{?projection}",
+
+
+
+
+          "templated" : true
+
+
+
+
+        },
+
+
+
+
+        "microsoft" : {
+
+
+
+
+          "href" : "http://www.microsoft.com"
+
+
+
+
+        },
+
+
+
+
+        "person" : {
+
+
+
+
+          "href" : "http://localhost:8080/addresses/1/person"
+
+
+
+
+        }
+
+
+
+
+      }
+
+
+
+
+    } ]
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/addresses"
+
+
+
+
+    },
+
+
+
+
+    "profile" : {
+
+
+
+
+      "href" : "http://localhost:8080/profile/addresses"
+
+
+
+
+    }
+
+
+
+
+  },
+
+
+
+
+  "page" : {
+
+
+
+
+    "size" : 20,
+
+
+
+
+    "totalElements" : 1,
+
+
+
+
+    "totalPages" : 1,
+
+
+
+
+    "number" : 0
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+It is not clear why the additional links are not being added. For all I can tell, it should be. There are no errors or warnings or any other indication of an issue that I can see.
+</description>
+			<version>2.5.4 (Hopper SR4)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.tests.shop.ShopConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.tests.shop.LineItem.java</file>
+			<file type="M">org.springframework.data.rest.tests.shop.Order.java</file>
+			<file type="M">org.springframework.data.rest.tests.shop.Product.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.tests.shop.ShopIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.tests.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="938" opendate="2016-11-11 21:33:16" fixdate="2016-12-07 17:57:17" resolution="Fixed">
+		<buginformation>
+			<summary>Nested entities are replaced with new instances instead of being updated when merging</summary>
+			<description>When using the repository domain object update end point (via the PATCH method with JSON data), nested objects are replaced with new instances instead of updates being applied to the existing instance.
+For example, given these classes:
+
+
+
+
+
+
+
+
+
+
+
+@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+
+
+
+
+static class Outer {
+
+
+
+
+
+
+
+
+
+	String name;
+
+
+
+
+	String prop;
+
+
+
+
+	Inner inner;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+
+
+
+
+static class Inner {
+
+
+
+
+
+
+
+
+
+	String name;
+
+
+
+
+	String prop;
+
+
+
+
+}
+
+
+
+
+
+
+Let there be an instance of Outer like this:
+
+
+
+
+
+
+Inner inner = new Inner();
+
+
+
+
+inner.name = "inner name";
+
+
+
+
+inner.prop = "something";
+
+
+
+
+Outer outer = new Outer();
+
+
+
+
+outer.prop = "else";
+
+
+
+
+outer.name = "outer name";
+
+
+
+
+outer.inner = inner;
+
+
+
+
+
+
+Then make an HTTP PATCH request to update that object with this request body:
+
+
+
+
+
+
+{ "inner" : { "name" : "new inner name" } }
+
+
+
+
+
+
+the resulting Outer object should have inner.prop="something" but inner.prop is actually null.</description>
+			<version>2.5.4 (Hopper SR4)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.5.6 (Hopper SR6), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">953</link>
+			<link type="Relate" description="is related to">944</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,91 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="42" master="525" duplicate="1277" opendate="2007-08-14 03:41:20" fixdate="2009-11-03 02:01:00" resolution="Fixed">
+		<buginformation>
+			<summary>[PATCH] Add AccessCheckerTag based on URL resource access permissions. The authorization tag libraries are totally wrong!</summary>
+			<description>I have developed a tag (AccessCheckerTag) based on URL and not in roles, which reuse objectDefinitionSource (urls + roles) and accessDecisionManager (voters) of the filterInvocationInterceptor bean, inspired in AuthorizeTag and AccessControlListTag.
+jsp looks like this:
+&amp;lt;authz:accesschecker url="/deletePerson.do"&amp;gt;
+    &amp;lt;A HREF="&amp;lt;c:out value="$
+{request.contextPath}
+" /&amp;gt;/deletePerson.do?id=&amp;lt;c:out value="$
+{person.id}
+" /&amp;gt;"&amp;gt;Del&amp;lt;/A&amp;gt;
+&amp;lt;/authz:accesschecker&amp;gt;
+I consider that this tag can be useful for some cases in which before printing the html link or button it is necessary to verify if required access is had to url resource.
+see: http://forum.springframework.org/showthread.php?t=42550 &amp;lt;security:authorize ifAllGranted="ROLE_SUPERVISOR"&amp;gt;
+&amp;lt;td&amp;gt;
+  &amp;lt;a href="del.htm?id=&amp;lt;c:out value="$
+{contact.id}"/&amp;gt;"&amp;gt;Del&amp;lt;/a&amp;gt;
+&amp;lt;/td&amp;gt;
+&amp;lt;/security:authorize&amp;gt;
+
+I think it is more reasonable to protect a resource like this
+&amp;lt;security:authorize ifAllAuthorised="del.htm"&amp;gt;
+&amp;lt;td&amp;gt;
+  &amp;lt;a href="del.htm?id=&amp;lt;c:out value="${contact.id}
+"/&amp;gt;"&amp;gt;Del&amp;lt;/a&amp;gt;
+&amp;lt;/td&amp;gt;
+&amp;lt;/security:authorize&amp;gt;
+Because the relationship between resources and roles may change in the future,
+even more,the role name may change.</description>
+			<version>1.0.5</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTag.java</file>
+			<file type="D">org.springframework.security.web.access.WebInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagTests.java</file>
+			<file type="M">org.springframework.security.web.access.WebInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1277</link>
+			<link type="Duplicate" description="duplicates">525</link>
+		</links>
+	</bug>
+	<bug id="53" master="572" duplicate="597" opendate="2007-10-11 01:35:45" fixdate="2008-04-13 17:42:07" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot set ACL&amp;apos;s parent to null AclImpl.setParent() throws Exception when changing parent to null</summary>
+			<description>The setParent() method in AclImpl throws an exception if I try to set the parent to null. I cannot see why I shouldn&amp;amp;apos;t be able to do this. After all, the constructor allows me to set parent to null. 
+In our app we have a tree like structure of objects which are secured using Acegi&amp;amp;apos;s ACL package (the new implementation). Permissions are inherited throughout the tree. Nodes in the tree can be moved around and can become top level nodes. This is why we would like to be able to set parent to null. The work around is to use an invisible super root node for all top level nodes. We would prefer not to have to do that. I think it should be possible to change the parent of a directory to null:
+Sample Scenario:
+Filebrowser that manages a directory structure (the directories are secured by acegi). Now i want to move a nested directory to Root-Level. The parent-property of the corresponding ACL has to be changed to NULL.
+Solution:
+Simply change:
+    public void setParent(Acl newParent) 
+{
+        aclAuthorizationStrategy.securityCheck(this, AclAuthorizationStrategy.CHANGE_GENERAL);
+        Assert.notNull(newParent, "New Parent required");
+        Assert.isTrue(!newParent.equals(this), "Cannot be the parent of yourself");
+        this.parentAcl = newParent;
+    }
+
+to
+    public void setParent(Acl newParent) 
+{
+        aclAuthorizationStrategy.securityCheck(this, AclAuthorizationStrategy.CHANGE_GENERAL);
+        Assert.isTrue(newParent == null || !newParent.equals(this), "Cannot be the parent of yourself");
+        this.parentAcl = newParent;
+    }
+</description>
+			<version>1.0.5</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.springframework.security.ui.webapp.AuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">532</link>
+			<link type="Duplicate" description="is duplicated by">597</link>
+			<link type="Duplicate" description="duplicates">572</link>
+		</links>
+	</bug>
+</bugrepository>

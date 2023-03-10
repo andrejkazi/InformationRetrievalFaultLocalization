@@ -1,0 +1,33 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="220" opendate="2009-10-23 20:32:20" fixdate="2010-08-04 00:37:05" resolution="Fixed">
+		<buginformation>
+			<summary>FileCleaningTracker Vector performs badly under load</summary>
+			<description>When subjected to heavy load, the performance of org.apache.commons.io.FileCleaningTracker degrades and becomes a bottleneck to the system.  In our case, we had over 2 millions entries on the "trackers" Vector.  Under these conditions, the call to trackers.remove(tracker) on line 214 becomes very inefficient as it causes the Vector to shift and reindex the remaining data.  In addition, calls to trackers.add are forced to wait on the inefficient remove operation.  With the application idle, it took several hours for the File Reaper thread to finish processing the entries on the trackers Vector.
+The solution for use was to implement trackers as a HashSet instead of a Vector.  Thus line 52 was changed from:
+    final Collection /* Tracker */ trackers = new Vector();  // synchronized
+to
+    final Collection /* Tracker */ trackers = Collections.synchronizedSet(new HashSet());  // synchronized
+Imports were also change appropriately.</description>
+			<version>1.0</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileCleaningTracker.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="243" opendate="2010-04-03 00:35:50" fixdate="2010-09-08 17:16:40" resolution="Fixed">
+		<buginformation>
+			<summary>SwappedDataInputStream readBoolean is inverted</summary>
+			<description>The method readBoolean in SwappedDataInputStream returns true when the byte is zero, false otherwise. In accordance with the contract in java.io.DataInput, true should indicate a non-zero byte. SwappedDataInputStream is for reading Little Endian formats, it should not change the boolean value of individual bytes.</description>
+			<version>1.0</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.SwappedDataInputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.input.SwappedDataInputStream.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

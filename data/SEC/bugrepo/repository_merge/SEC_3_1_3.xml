@@ -1,0 +1,134 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="30" master="1998" duplicate="2067" opendate="2012-07-08 20:35:03" fixdate="2012-12-03 09:37:58" resolution="Complete">
+		<buginformation>
+			<summary>Support for Servlet 3.0/3.1 asynchronous request processing Security context incorrectly removed from session when asynchronous servlet used</summary>
+			<description>Similar to SPR-8517 Spring Security should support Asynch Servlet request processing
+Note: SEC-2067 has a sample application that should be validated against when fixing this issue Take the following sample servlet:
+
+
+
+
+
+
+@Override
+
+
+
+
+protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+
+
+
+
+	req.startAsync();
+
+
+
+
+	new Thread("AsyncThread") {
+
+
+
+
+		@Override
+
+
+
+
+		public void run() {
+
+
+
+
+			try {
+
+
+
+
+				TimeUnit.SECONDS.sleep(1);
+
+
+
+
+				resp.getOutputStream().flush();
+
+
+
+
+			} catch (Exception e) {
+
+
+
+
+				e.printStackTrace();
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+	}.start();
+
+
+
+
+}
+
+
+
+
+
+
+As you can see it does nothing except flushing after one second in a separate thread. However this servlet is secured by Spring Security so the resp.getOutputStream() stream is actually an instance of org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.SaveContextServletOutputStream.
+This class calls org.springframework.security.web.context.HttpSessionSecurityContextRepository.SaveToSessionResponseWrapper.saveContext() on flush(). That&amp;amp;apos;s where the bug is  This method under certain conditions removes security context from session:
+
+
+
+
+
+
+httpSession.removeAttribute(springSecurityContextKey)
+
+
+
+
+
+
+This method was heavily rewritten lately (see: See SEC-776, SEC-1587 and SEC-1735) so I can&amp;amp;apos;t tell where the actually bug lies. All I see is that since it can&amp;amp;apos;t find security context in thread local holder (we are flushing from a different thread), it removes the context from the session as well. Basically asynchronous servlet logs me out from the application.
+I extracted the error and prepared sample, simplistic application exposing that bug (attached). I actually run into it when using Atmosphere Comet library together with Spring Security, but this application shows exact same error.
+Extract and call mvn tomcat7:run. Only one Java class, browse to localhost:8080, login using admin/admin and follow instructions to reproduce.</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.2.0.M1</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.HttpServlet3RequestFactory.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.web.FilterInvocation.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilterTests.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptor.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptorTests.java</file>
+			<file type="M">org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.java</file>
+			<file type="M">org.springframework.security.config.http.SecurityFilters.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequest.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServicesTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">2077</link>
+			<link type="Duplicate" description="is duplicated by">2067</link>
+			<link type="Relate" description="is related to">2111</link>
+			<link type="Duplicate" description="duplicates">1998</link>
+		</links>
+	</bug>
+</bugrepository>

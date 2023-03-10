@@ -1,0 +1,76 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="828" opendate="2016-03-15 14:00:02" fixdate="2016-03-15 14:06:42" resolution="Fixed">
+		<buginformation>
+			<summary>Potential NullPointerException in ResultProcessor</summary>
+			<description>According to the JavaDoc ResultProcessor.processResult() allows null to be handed as result, which makes sense as a query result to be processed can be null. However, null is not handled implicitly or explicitly and will yield an exception being thrown from ProjectionFactory as a projection is attempted downstream.
+We should handle null explicitly and eagerly return the value as is.</description>
+			<version>1.12 M1 (Hopper)</version>
+			<fixedVersion>1.12 RC1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.ResultProcessorUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.query.ResultProcessor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="934" opendate="2016-11-11 13:26:41" fixdate="2016-12-05 16:07:55" resolution="Fixed">
+		<buginformation>
+			<summary>BasicPersistentEntity.addAssociations() must not add null values to the collection of associations</summary>
+			<description>The issue happens when use the same class to define an entity of Spring Data MongoDB and Spring Data Solr, and also have a field with annotation in MongoDB as @DBRef. @DBRef adds the annotation @Reference, when mapping the object to SimpleSolrPersistentEntity, this sets to null the property association on AbstractPersistentProperty. Then, when you make a search with Spring Data Solr and try to get the hasScoreProperty() this throws a NullPointerException.
+
+
+
+
+
+
+        at org.springframework.data.mapping.model.BasicPersistentEntity.getPersistentProperty(BasicPersistentEntity.java:266)
+
+
+
+
+	at org.springframework.data.solr.core.mapping.SimpleSolrPersistentEntity.getScoreProperty(SimpleSolrPersistentEntity.java:133)
+
+
+
+
+	at org.springframework.data.solr.core.mapping.SimpleSolrPersistentEntity.hasScoreProperty(SimpleSolrPersistentEntity.java:124)
+
+
+
+
+	at org.springframework.data.solr.core.SolrTemplate.query(SolrTemplate.java:497)
+
+
+
+
+	at org.springframework.data.solr.core.SolrTemplate.doQueryForPage(SolrTemplate.java:338)
+
+
+
+
+	at org.springframework.data.solr.core.SolrTemplate.queryForPage(SolrTemplate.java:350)
+
+
+
+
+	at com.mycompany.engine.solr.repositories.bc.SolrBCDaoImpl.selectObject(SolrBCDaoImpl.java:104)
+
+
+
+
+
+</description>
+			<version>1.11.6 (Gosling SR6)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 1.11.7 (Gosling SR7), 1.12.6 (Hopper SR6), 2.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.BasicPersistentEntity.java</file>
+			<file type="M">org.springframework.data.mapping.model.BasicPersistentEntityUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">341</link>
+		</links>
+	</bug>
+</bugrepository>

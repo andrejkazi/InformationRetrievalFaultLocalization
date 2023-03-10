@@ -1,0 +1,133 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="18" master="1038" duplicate="1199" opendate="2008-11-25 18:55:32" fixdate="2009-08-23 00:12:54" resolution="Fixed">
+		<buginformation>
+			<summary>Error in JdbcMutableAclService with Postgres JdbcMutableAclService can&amp;apos;t create acl_object_identity entry in PostgreSQL</summary>
+			<description>When I use the Spring Security&amp;amp;apos;s ACL services with a Postgres database, I am getting the following error when I call the createAcl method in the JdbcMutableAclService class  :
+Caused by: org.postgresql.util.PSQLException: ERROR: column "object_id_identity" is of type bigint but expression is of type character varying
+The problem is caused in the createObjectIdentity method by object.getIdentifier().toString() because the parameter is a string or the column is a bigint in the database. 
+To solve the problem, you must cast to long : 
+protected void createObjectIdentity(ObjectIdentity object, Sid owner) {
+  Long sidId = createOrRetrieveSidPrimaryKey(owner, true);
+  Long classId = createOrRetrieveClassPrimaryKey(object.getJavaType(), true);
+  jdbcTemplate.update(insertObjectIdentity,
+      new Object[] 
+{classId, new Long(object.getIdentifier().toString()), sidId, new Boolean(true)}
+);
+}
+There is a thread in the forum about this problem : http://forum.springframework.org/showthread.php?t=56889
+Thomas The JdbcMutableAclService fails to create acl_object_identity entry in Postgresql, because it passes string as the object_id_identity where an integer (long) type is expected (in method JdbcMutableAclService.createObjectIdentity() ). 
+The result is:
+org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [insert into acl_object_identity (object_id_class, object_id_identity, owner_sid, entries_inheriting) values (?, ?, ?, ?)]; nested exception is org.postgresql.util.PSQLException: ERROR: column "object_id_identity" is of type bigint but expression is of type character varying
+  Hint: You will need to rewrite or cast the expression.
+  Position: 51
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.translate(SQLErrorCodeSQLExceptionTranslator.java:276)
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607)
+	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792)
+	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850)
+	at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:858)
+	at org.springframework.security.acls.jdbc.JdbcMutableAclService.createObjectIdentity(JdbcMutableAclService.java:157)
+	at org.springframework.security.acls.jdbc.JdbcMutableAclService.createAcl(JdbcMutableAclService.java:108)
+</description>
+			<version>2.0.5</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.acls.jdbc.AclPermissionInheritanceTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclServiceTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1199</link>
+			<link type="Duplicate" description="duplicates">1038</link>
+		</links>
+	</bug>
+	<bug id="20" master="925" duplicate="1308" opendate="2008-07-16 05:43:27" fixdate="2009-11-30 08:11:03" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy - support for schema qualifier Jdbc[Mutable]AclService  can allow (all) sql statements to be configured</summary>
+			<description>The current impl of this class works great - I would like to avoid writing my own custom strategy wherever possible.  The JavaDocs for BasicLookupStrategy state that it&amp;amp;apos;s not design for extension which I understand.
+It would be great, however, if a property could be set in the bean config that would allow the referenced tables in the SQL to be qualified by a schema.  Projects often run into such requirements based on the conventions used by a DBA group.  In our particular case, we&amp;amp;apos;re using DB2 and the ACL tables are being created in a schema that is not the default schema. I&amp;amp;apos;m providing a candidate patch for consideration. It&amp;amp;apos;s an enhancement to jdbc acl service that allows all sql statement strings to be configured by via spring. Please review and incorporate if desired.
+The attached patch contains:
+1) Interface for AclSQLSource (not sure if setters should really be part of this or not. I decided to include them.)
+2) DefaultAclSQLSource - contains the usual Postgres SQL statements and setters for Spring configuration. Additional constructor takes a map with property and sql map entries.
+3) Changes to JdbcAclService and JdbcMutableAclService to read statements from the AclSQLSource.
+===
+Sample configuration:
+	&amp;lt;bean id="sqlSource"
+		class="org.springframework.security.acls.jdbc.DefaultAclSQLSource"&amp;gt;
+		&amp;lt;constructor-arg&amp;gt;
+			&amp;lt;map&amp;gt;
+				&amp;lt;entry key="classIdentityQuery" value="SELECT ACL_CLASS_ID_SEQ.CURRVAL FROM DUAL" /&amp;gt;
+				&amp;lt;entry key="sidIdentityQuery" value="SELECT ACL_SID_ID_SEQ.CURRVAL FROM DUAL" /&amp;gt;
+				&amp;lt;entry key="selectSidPrimaryKey"
+					value="select id from acl_sid where principal=DECODE(?,&amp;amp;apos;TRUE&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;Y&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;FALSE&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;N&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;) and sid=?" /&amp;gt;
+				&amp;lt;entry key="insertSid"
+					value="insert into acl_sid (principal, sid) values (DECODE(?,&amp;amp;apos;TRUE&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;Y&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;1&amp;amp;apos;,&amp;amp;apos;FALSE&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;N&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;,&amp;amp;apos;0&amp;amp;apos;), ?)" /&amp;gt;
+			&amp;lt;/map&amp;gt;
+		&amp;lt;/constructor-arg&amp;gt;
+	&amp;lt;/bean&amp;gt;
+	&amp;lt;bean id="aclService"
+		class="org.springframework.security.acls.jdbc.JdbcMutableAclService"&amp;gt;
+		&amp;lt;constructor-arg ref="secDataSource" index="0"/&amp;gt;
+		&amp;lt;constructor-arg ref="lookupStrategy" index="1"/&amp;gt;
+		&amp;lt;constructor-arg ref="aclCache" index="2"/&amp;gt;
+		&amp;lt;constructor-arg ref="sqlSource" index="3"/&amp;gt;
+	&amp;lt;/bean&amp;gt;
+===</description>
+			<version>2.0.5</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1224</link>
+			<link type="Duplicate" description="is duplicated by">1308</link>
+			<link type="Duplicate" description="duplicates">925</link>
+		</links>
+	</bug>
+	<bug id="40" master="1151" duplicate="1300" opendate="2009-05-04 01:35:05" fixdate="2009-11-29 22:53:47" resolution="Fixed">
+		<buginformation>
+			<summary>Check on acl bounds not correct ArrayIndex out of bounds in AclImpl</summary>
+			<description>On line 130 of AclImpl.java in trunk (line number is different in other releases) a check is performed on the upper bound of the list of access control entries.
+Code is:
+        if (aceIndex &amp;gt; this.aces.size()) {
+should be:
+        if (aceIndex &amp;gt;= this.aces.size()) {
+Result is that exception out of underlying list impl is thrown.  Minor. In AclImpl#verifyAceIndexExists(...)
+I think this is an "off by one" bug. I may be wrong but shouldn&amp;amp;apos;t 
+this:
+        if (aceIndex &amp;gt; this.aces.size()) 
+{
+        	throw new NotFoundException("aceIndex must correctly refer to an index of the AccessControlEntry collection");
+        }
+
+be this:
+
+        if (aceIndex &amp;gt; this.aces.size() - 1) {        	throw new NotFoundException("aceIndex must correctly refer to an index of the AccessControlEntry collection");        }
+
+Since I&amp;amp;apos;m getting the exception but wondered how it passed verifyAceIndexExists?:
+eption Handler execution resulted in exception - forwarding to resolved error view
+                                 java.lang.IndexOutOfBoundsException: Index: 2, Size: 2
+        at java.util.ArrayList.RangeCheck(ArrayList.java:572)
+        at java.util.ArrayList.remove(ArrayList.java:415)
+        at org.springframework.security.acls.domain.AclImpl.deleteAce(AclImpl.java:131)
+        at com.acme.app.springframework.security.AclSecurityServiceImpl.replaceUserPermissions(AclSecurityServiceImpl.jav</description>
+			<version>2.0.5</version>
+			<fixedVersion>3.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1300</link>
+			<link type="Duplicate" description="duplicates">1151</link>
+		</links>
+	</bug>
+</bugrepository>

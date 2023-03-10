@@ -1,0 +1,734 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="302" opendate="2007-12-14 12:37:52" fixdate="2007-12-25 19:06:52" resolution="Fixed">
+		<buginformation>
+			<summary>FileChangedReloadingStrategy.reloadingRequired() can fail</summary>
+			<description>If reloadingRequired() returns true and you call it again before calling reloadingPerformed(), the 2nd time it can return false (but you have not yet reloaded!) because it doesn&amp;amp;apos;t check the file system again until the refresh delay is expired.
+Of course this is a very unusual test case (usually you reload immediately) but the behaviour of the method should be consistent in this case too: if reloadingRequired() returns true any subsequent call to this method should return true until reloadingPerformed() is called.
+In my project I have fixed the method by promoting the flag called "reloading" to class scope so I that can check whether the previous call returned true or false:
+protected boolean reloading = false;
+public boolean reloadingRequired()
+{
+	if (!reloading)
+	{
+		long now = System.currentTimeMillis();
+		if (now &amp;gt; lastChecked + refreshDelay)
+		{
+			lastChecked = now;
+			if (hasChanged())
+			{
+				reloading = true;
+			}
+		}
+	}
+	return reloading;
+}
+Of course I reset this flag in init() and reloadingPerformed().</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.reloading.FileChangedReloadingStrategy.java</file>
+			<file type="M">org.apache.commons.configuration.reloading.TestFileChangedReloadingStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="306" opendate="2008-02-01 19:23:54" fixdate="2008-02-09 16:53:15" resolution="Fixed">
+		<buginformation>
+			<summary>INIConfiguration: Quoted values should not be trimmed</summary>
+			<description>I am reading in .ini files with quoted strings.  Here is an example of a line:
+CmdPrompt="[sdog@rosco ~]$ "
+In Commons Configuration 1.4, this incorrectly reads in as "[sdog@rosco ~]$ ".  When I saw that this had been addressed in 1.5, I was excited... until I started using 1.5.  Now I don&amp;amp;apos;t get quotes, but I also don&amp;amp;apos;t get my trailing space, which is the reason I&amp;amp;apos;m using quotes in the first place.  I expect the offending line is the final line in the parseValue(String) method of INIConfiguration:
+line 403:
+        return result.toString().trim();
+Expected behavior: INIConfiguration should read in the exact string between the quotes, not a trimmed version.
+I&amp;amp;apos;m going back to 1.4 and my own code to strip the quotes.  Please address this as I cannot move to future versions without it.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.INIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="315" opendate="2008-02-27 06:53:08" fixdate="2008-03-02 21:09:10" resolution="Fixed">
+		<buginformation>
+			<summary>CombinedConfiguration fire EVENT_COMBINED_INVALIDATE even before the contained configuration is updated</summary>
+			<description>CombinedConfiguration.configurationChanged doesn&amp;amp;apos;t check the !event.isBeforeUpdate() and trigger the invalidate call. The invalidate call fire the EVENT_COMBINED_INVALIDATE. so now when a contained config is changed, EVENT_COMBINED_INVALIDATE is fired twice by the CombinedConfiguration. However it should only fire it after the contained FileConfiguration is updated.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="316" opendate="2008-03-12 13:40:31" fixdate="2008-03-23 19:31:18" resolution="Fixed">
+		<buginformation>
+			<summary>Constructor XMLConfiguration(HierarchicalConfiguration) invalidates text in singular top element</summary>
+			<description>When using the XMLConfiguration(HierarchicalConfiguration) constructor for copying an XMLConfiguration e.g. originally read from the XML string &amp;lt;e a="v"&amp;gt;example&amp;lt;/e&amp;gt;, the "example" text can still be retrieved from the copy using getString(""). When saving the copy to an XML file, however, the text is not written; the resulting XML string is just &amp;lt;configuration a="v"/&amp;gt;. I will attach sample code that illustrates this.
+Whether it is intended that the name of the top-level element gets lost as well, I don&amp;amp;apos;t know (but that is not my focus here).</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="318" opendate="2008-03-23 19:10:10" fixdate="2008-03-24 16:37:39" resolution="Fixed">
+		<buginformation>
+			<summary>Constructor XMLConfiguration(HierarchicalConfiguration) loses the name of the root element</summary>
+			<description>When creating an XMLConfiguration from another one using the copy constructor the name of the root element (i.e. the document element) is dropped. When the configuration is saved, the default root name ("configuration") is used.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfigurationXMLReader.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="320" opendate="2008-04-06 15:32:06" fixdate="2008-04-07 15:50:37" resolution="Fixed">
+		<buginformation>
+			<summary>XMLPropertyListConfiguration is limited to 32 bits integers</summary>
+			<description>XMLPropertyListConfiguration parses integers as 32 bits values, but the plist spec doesn&amp;amp;apos;t limit the size of the integers. It should at least support Long values, and maybe BigIntegers.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.plist.XMLPropertyListConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.plist.TestXMLPropertyListConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="322" opendate="2008-04-30 09:30:14" fixdate="2008-04-30 11:02:35" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationDynaBean doesn&amp;apos;t work with indexed properties stored internally as arrays</summary>
+			<description>ConfigurationDynaBean is not fully tested for properties stored in the configuration as arrays. This case is rare because any array added to a configuration is automatically transformed into a List. To reproduce this issue the configuration must be a wrapper of a source that already contains an array, such as a MapConfiguration or a JNDIConfiguration.
+</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.ConfigurationDynaBean.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.TestConfigurationDynaBean.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="328" opendate="2008-05-17 21:49:04" fixdate="2008-05-20 12:11:53" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration addNodes() not behaving correctly</summary>
+			<description>Things used to work fine in 1.3, but now when I&amp;amp;apos;m trying 1.5 my JUnit test suite is breaking when adding new properties. Here is what I&amp;amp;apos;m doing,
+1) I already have a configuration as following,
+
+ &amp;lt;test&amp;gt;
+  &amp;lt;property name="isOk"&amp;gt;
+    &amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+    &amp;lt;default&amp;gt;false&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property name="intProperty"&amp;gt;
+    &amp;lt;value&amp;gt;900&amp;lt;/value&amp;gt;
+    &amp;lt;default&amp;gt;500&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property extra="0" name="stringProperty"&amp;gt;
+    &amp;lt;default&amp;gt;Bye&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+&amp;lt;/test&amp;gt;
+
+
+2) Now I need to add two new properties under &amp;lt;test&amp;gt;,
+
+&amp;lt;property  name="newFirst"&amp;gt;
+  &amp;lt;value&amp;gt;first&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&amp;lt;property name="newSecond"&amp;gt;
+  &amp;lt;value&amp;gt;second&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+
+3) Here is the code I&amp;amp;apos;m using,
+        a) First create a new HierarchicalConfiguration.Node
+
+private HierarchicalConfiguration.Node createNode(String name, Object value)  {
+    HierarchicalConfiguration.Node node = new HierarchicalConfiguration.Node(name);
+    node.setValue(value);
+    return node;
+}
+
+
+       b) Add the node to the list
+
+List&amp;lt;HierarchicalConfiguration.Node&amp;gt; attrNodes = new ArrayList&amp;lt;HierarchicalConfiguration.Node&amp;gt;();
+Node attrNode = createNode(attrName, newPropertyName);
+attrNode.setAttribute(true);
+attrNodes.add(attrNode);
+
+
+       c) Call addNodes on XMLConfiguration,
+
+    conf.addNodes(attrPath, attrNodes);
+
+
+I run this in a look for each new property I need to add. For first property, I get element count for the test.property as 3 (conf.getMaxIndex(key)) - so I insert at test.property(3), which is right, but for the second property I get element count as 5 --&amp;gt; This is wrong, it should have been 4 (because I just added 1). 
+I check the saved the configuration file after adding those two new properties and it looks wrong too. Here is what I get,
+
+&amp;lt;test&amp;gt;
+  &amp;lt;property name="isOk"&amp;gt;
+    &amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+    &amp;lt;default&amp;gt;false&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property name="intProperty"&amp;gt;
+    &amp;lt;value&amp;gt;900&amp;lt;/value&amp;gt;
+    &amp;lt;default&amp;gt;500&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property extra="0" name="stringProperty"&amp;gt;
+    &amp;lt;value&amp;gt;Hi&amp;lt;/value&amp;gt;
+    default&amp;gt;Bye&amp;lt;/default&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property&amp;gt;
+    &amp;lt;name&amp;gt;newFirst&amp;lt;/name&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property&amp;gt;
+    &amp;lt;value&amp;gt;first&amp;lt;/value&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property&amp;gt;
+    &amp;lt;name&amp;gt;newSecond&amp;lt;/name&amp;gt;
+  &amp;lt;/property&amp;gt;
+  &amp;lt;property&amp;gt;
+    &amp;lt;value&amp;gt;second&amp;lt;/value&amp;gt;
+  &amp;lt;/property&amp;gt;
+&amp;lt;/test&amp;gt;
+
+
+The total element count for test.property gives me 7 ==&amp;gt; I was expecting 5.
+There seems to have some code change in 1.5 releated to addNodes (for ex., CONFIGURATION-287). I&amp;amp;apos;m not sure if I need to change the way I was calling addNodes before. It works fine with 1.3, but 1.5 completely fails on adding new properties. 
+I do need 1.5 for other bug fixes ( CONFIGURATION-268 and some other), but I can&amp;amp;apos;t use it until the addNodes behave correctly. 
+Marking this as blocker as I&amp;amp;apos;m blocked because of this issue. If there is a workaround then please let me know.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="332" opendate="2008-07-04 15:54:10" fixdate="2008-08-01 19:48:30" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration.save() doesn&amp;apos;t persist properties added through a DataConfiguration</summary>
+			<description>There is a regression in Commons Configuration with PropertiesConfiguration wrapped into a DataConfiguration. The properties added through a DataConfiguration aren&amp;amp;apos;t persisted when the configuration is saved, but they can be queried normally. Commons Configuration 1.4 wasn&amp;amp;apos;t affected by this issue.
+The following test fails on the last assertion :
+
+public void testSaveWithDataConfiguration() throws ConfigurationException
+{
+    File file = new File("target/testsave.properties");
+    if (file.exists()) {
+        assertTrue(file.delete());
+    }
+
+    PropertiesConfiguration config = new PropertiesConfiguration(file);
+
+    DataConfiguration dataConfig = new DataConfiguration(config);
+
+    dataConfig.setProperty("foo", "bar");
+    assertEquals("bar", config.getProperty("foo"));
+    config.save();
+
+    // reload the file
+    PropertiesConfiguration config2 = new PropertiesConfiguration(file);
+    assertFalse("empty configuration", config2.isEmpty());
+}
+
+</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DataConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="334" opendate="2008-08-11 19:14:12" fixdate="2008-08-12 09:41:47" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent parent nodes in HierarchicalConfiguration when using setRootNode()</summary>
+			<description>HierarchicalConfiguration allows setting a root node explicitly using either setRootNode() or setRoot(). The latter exists for backwards compatibility only and operates on the type HierarchicalConfiguration.Node rather than ConfigurationNode. To support a corresponding getRoot() method a new instance of HierarchicalConfiguration.Node is created, and the child nodes of the root node are added to it. Thus these nodes become child nodes of this new node.
+If now addProperty() is called for adding new properties to the configuration, the nodes created for the new properties are added to the node passed to the setRootNode() method. So they have a different parent node than the existing nodes.
+As long as only methods of the Configuration interface are used for querying or manipulating the configuration, this does not seem to have any strange effects. But when working with the nodes directly it is certainly confusing.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="339" opendate="2008-10-13 20:10:34" fixdate="2008-10-16 20:21:48" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationConverter does not handle CompositeConfiguration correctly</summary>
+			<description>ConfigurationConverter doesn&amp;amp;apos;t seem to respect the ordering of a composite configuration. I am having problems describing the behavior, but I thinks the following test case illustrates it best:
+	@Test
+	public void showBug() {
+		PropertiesConfiguration p = new PropertiesConfiguration();
+		p.addProperty("foo", "initial");
+		p.addProperty("bar", "$
+{foo}
+");
+		p.addProperty("prefix.foo", "override");
+		CompositeConfiguration cfg = new CompositeConfiguration();
+		cfg.addConfiguration(p.subset("prefix"));
+		cfg.addConfiguration(p);
+		// this assertion passes as expected since the subset
+		// was added first to the composite configuration
+		Assert.assertEquals("override", cfg.getString("bar"));
+		// after converting to properties, this assertion fails and
+		// reports that the value is &amp;amp;apos;initial&amp;amp;apos;
+		Properties properties = ConfigurationConverter.getProperties(cfg);
+		Assert.assertEquals("override", properties.getProperty("bar"));
+	}</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCompositeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CompositeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="341" opendate="2008-10-17 18:59:07" fixdate="2008-10-20 19:57:13" resolution="Fixed">
+		<buginformation>
+			<summary>FileChangedReloadingStrategy not working for SubnodeConfiguration with a CombinedConfiguration parent</summary>
+			<description>A SubnodeConfiguration that has a CombinedConfiguration as its parent, doesn&amp;amp;apos;t "hot" reload properties even if the combined configuration consists of XMLConfigurations that have the FileChangedReloadingStrategy set, the combined configuration has the setForceReloadCheck flag set and the SubnodeConfiguration was obtained by calling configurationAt method and passing in true for the "supportUpdates" flag.  
+Here&amp;amp;apos;s some code that shows the problem where the final assertion will fail.
+ @Test
+  public void testSubnodeReadload() throws ConfigurationException 
+{
+    XMLConfiguration xmlConfiguration = new XMLConfiguration("service.xml");
+    FileChangedReloadingStrategy fileReloadStrategy = new FileChangedReloadingStrategy();
+    fileReloadStrategy.setRefreshDelay(1000);
+    xmlConfiguration.setReloadingStrategy(fileReloadStrategy);
+    XMLConfiguration config2 = new XMLConfiguration("environment.xml");
+    FileChangedReloadingStrategy fileReloadStrategy2 = new FileChangedReloadingStrategy();
+    fileReloadStrategy2.setRefreshDelay(1000);
+    xmlConfiguration.setReloadingStrategy(fileReloadStrategy2);
+
+    CombinedConfiguration combinedConfig = new CombinedConfiguration();
+    combinedConfig.setForceReloadCheck(true);
+    combinedConfig.addConfiguration(xmlConfiguration);
+    combinedConfig.addConfiguration(config2);
+    int queue0threads2 = xmlConfiguration.getInt("messaging-new.queue(0).threads");
+    assert 2 == queue0threads2;
+
+    //change the value in service.xml to 4
+    int queue0threads4 = xmlConfiguration.getInt("messaging-new.queue(0).threads");
+    assert 4 == queue0threads4;
+
+
+    SubnodeConfiguration subConfigHier = xmlConfiguration.configurationAt("messaging-new.queue(0)", true);
+    int queue0threadsCombinedSub4 = subConfigHier.getInt("threads");
+    assert queue0threadsCombinedSub4 == 4;
+
+    //change the value service.xml to 8
+    int queue0threadsCombinedSub8 = subConfigHier.getInt("threads");
+    assert queue0threadsCombinedSub8 == 8;
+
+
+    SubnodeConfiguration subNodeConfigParentIsCombinedConfig = combinedConfig.configurationAt("messaging-new.queue(0)", true);
+    int queue0threadsSub8 = subNodeConfigParentIsCombinedConfig.getInt("threads");
+    assert queue0threadsSub8 == 8;
+
+    //change the value service.xml file to 16
+    int queue0threadsSub16 = subNodeConfigParentIsCombinedConfig.getInt("threads");
+    assert queue0threadsSub16 == 16;         //THIS TEST FAILS
+
+  }
+</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="346" opendate="2008-11-03 20:51:22" fixdate="2008-11-03 21:12:09" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationUtils.convertToHierarchical() does not correctly handle properties with multiple values</summary>
+			<description>If a property has multiple values, the resulting hierarchical configuration will contain a node whose value is a list with these values. There should, however, be a single node for each value. Some queries, especially those containing indices, do not work on such structures.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="336" opendate="2008-09-29 07:49:06" fixdate="2008-11-04 21:19:45" resolution="Fixed">
+		<buginformation>
+			<summary>Brackets in property key causes NumberFormatException</summary>
+			<description>Hi,
+When using brackets in property key we get an exception every time.
+Escaping brackets with \ doesn&amp;amp;apos;t help.
+Example
+#property in property file
+test(ef)=false
+causes 
+java.lang.NumberFormatException: For input string: "ef" at
+java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+        at java.lang.Integer.parseInt(Integer.java:447)
+        at java.lang.Integer.parseInt(Integer.java:497)
+        at org.apache.commons.configuration.tree.DefaultConfigurationKey
+$KeyIterator.checkIndex(DefaultConfigurationKey.java:834)
+        at org.apache.commons.configuration.tree.DefaultConfigurationKey
+$KeyIterator.nextKey(DefaultConfigurationKey.java:511) at
+org.apache.commons.configuration.tree.DefaultExpressionEngine.findNodesForKey(DefaultExpressionEngine.java:462) at
+org.apache.commons.configuration.tree.DefaultExpressionEngine.query(DefaultExpressionEngine.java:286) at
+org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:925 at
+org.apache.commons.configuration.HierarchicalConfiguration.setProperty(HierarchicalConfiguration.java:735) at
+org.apache.commons.configuration.ConfigurationUtils.copy(ConfigurationUtils.java:143) at
+org.apache.commons.configuration.ConfigurationUtils.convertToHierarchical(ConfigurationUtils.java:199)  at org.apache.commons.configuration.CombinedConfiguration
+$ConfigData.getTransformedRoot(CombinedConfiguration.java:794)  at
+org.apache.commons.configuration.CombinedConfiguration.constructCombinedNode(CombinedConfiguration.java:653) at
+org.apache.commons.configuration.CombinedConfiguration.getRootNode(CombinedConfiguration.java:504) at
+org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:925) at
+org.apache.commons.configuration.HierarchicalConfiguration.getProperty(HierarchicalConfiguration.java:327) at
+org.apache.commons.configuration.CombinedConfiguration.getProperty(CombinedConfiguration.java:578) at
+org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1155) at
+org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1034)  at
+org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1017) 
+Explanation i got in mailing list from Oliver Heger
+I guess you use DefaultConfigurationBuilder for loading a combined 
+configuration?
+The exception is due to the fact that brackets have a special meaning in 
+the query syntax for hierarchical configurations. 
+(DefaultConfigurationBuilder transforms all configuration sources into 
+hierarchical configurations, so also for properties, which are not 
+hierarchical by default, the same rules apply.)
+So far escaping brackets or other specific characters in property keys 
+is not supported. It seems to be rather unusual to use brackets in 
+property keys, so you may well be the first one who noticed this problem.
+Unfortunately I don&amp;amp;apos;t have a working solution for this problem right 
+now.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is cloned by">404</link>
+		</links>
+	</bug>
+	<bug id="347" opendate="2008-11-05 21:06:22" fixdate="2008-11-06 07:29:11" resolution="Fixed">
+		<buginformation>
+			<summary>Iterating over the keys of a file-based configuration can cause a ConcurrentModificationException</summary>
+			<description>Some implementations of FileConfiguration return an iterator in their getKeys() method that is directly connected to the underlying data store. When now a reload is performed (which can happen at any time) the data store is modified, and the iterator becomes invalid.
+This behavior is very confusing because ConcurrentModificationExceptions are typically related to multi-threading access. But even if the code performing the iteration is the only instance that accesses the configuration, the exception can be thrown.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="344" opendate="2008-10-30 11:46:39" fixdate="2008-11-08 15:53:53" resolution="Fixed">
+		<buginformation>
+			<summary>Deadlock during refresh properties</summary>
+			<description>Hi
+Commons configurations get itself stuck in deadlock when refreshing
+properties using Managed reloading strategy. It seems to me it get stuck
+because of fireEvent in reload method. Another access grabs lock on
+synchronized (getNodeCombiner()) when trying to rebuild but Combined
+configuration is one of the listeners for event es well and it gets
+stuck when processing invalidate. Can anyone suggest quick fix please?
+Relevant information follows.
+Thanks
+Pavel
+Configuration:
+
+
+&amp;lt;configuration&amp;gt; 
+  &amp;lt;override&amp;gt;
+    &amp;lt;system/&amp;gt;    
+    &amp;lt;properties fileName="gsxweb.properties" throwExceptionOnMissing="false"
+       config-name="gsxweb" config-optional="false" listDelimiter="|"&amp;gt;
+       &amp;lt;reloadingStrategy config-class="org.apache.commons.configuration.reloading.ManagedReloadingStrategy"/&amp;gt;      
+    &amp;lt;/properties&amp;gt;    
+  &amp;lt;/override&amp;gt; 
+&amp;lt;/configuration&amp;gt;
+
+
+Our Reload code:
+
+
+        int ln = combinedConfiguration.getNumberOfConfigurations();
+        int reloaded = 0;
+        for (int i = 0; i &amp;lt; ln; i++) {
+            Configuration conf = combinedConfiguration.getConfiguration(i);
+            if (conf instanceof PropertiesConfiguration) {
+                ManagedReloadingStrategy strat = null;
+                ReloadingStrategy strategy = ((PropertiesConfiguration) conf).getReloadingStrategy();
+                //refresh if managed strategy
+                if (strategy instanceof ManagedReloadingStrategy) {
+                    ((ManagedReloadingStrategy) strategy).refresh();
+                //reload if file changed strategy    
+                } else if (strategy instanceof FileChangedReloadingStrategy) {                    
+                    ((PropertiesConfiguration) conf).reload();
+                }
+                reloaded++;
+            }
+        }
+
+
+
+
+Stack trace of deadlock threads
+Name: http-10980-1
+State: BLOCKED on
+org.apache.commons.configuration.tree.OverrideCombiner@8511bb owned by:
+http-10980-6
+Total blocked: 154  Total waited: 2
+
+Stack trace: 
+org.apache.commons.configuration.CombinedConfiguration.invalidate(CombinedConfiguration.java:474)
+org.apache.commons.configuration.CombinedConfiguration.configurationChanged(CombinedConfiguration.java:488)
+org.apache.commons.configuration.event.EventSource.fireEvent(EventSource.java:249)
+org.apache.commons.configuration.AbstractFileConfiguration.fireEvent(AbstractFileConfiguration.java:911)
+org.apache.commons.configuration.AbstractFileConfiguration.reload(AbstractFileConfiguration.java:828)
+   - locked java.lang.Object@127e34c
+org.apache.commons.configuration.AbstractFileConfiguration.isEmpty(AbstractFileConfiguration.java:927)
+org.apache.commons.configuration.reloading.ManagedReloadingStrategy.refresh(ManagedReloadingStrategy.java:91)
+com.gsx.properties.PropertyProviderImpl.reset(PropertyProviderImpl.java:203)
+   - locked java.lang.Class@109bcda
+org.apache.jsp.test.testPropertyProvider_jsp._jspService(testPropertyProvider_jsp.java:60)
+org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:70)
+javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:374)
+org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:342)
+org.apache.jasper.servlet.JspServlet.service(JspServlet.java:267)
+javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+
+
+Name: http-10980-6
+State: BLOCKED on java.lang.Object@127e34c owned by: http-10980-1
+Total blocked: 115  Total waited: 2
+
+Stack trace: 
+org.apache.commons.configuration.AbstractFileConfiguration.reload(AbstractFileConfiguration.java:814)
+org.apache.commons.configuration.AbstractFileConfiguration.getKeys(AbstractFileConfiguration.java:939)
+org.apache.commons.configuration.ConfigurationUtils.copy(ConfigurationUtils.java:139)
+org.apache.commons.configuration.ConfigurationUtils.convertToHierarchical(ConfigurationUtils.java:199)
+org.apache.commons.configuration.CombinedConfiguration
+$ConfigData.getTransformedRoot(CombinedConfiguration.java:794)
+org.apache.commons.configuration.CombinedConfiguration.constructCombinedNode(CombinedConfiguration.java:653)
+org.apache.commons.configuration.CombinedConfiguration.getRootNode(CombinedConfiguration.java:504)
+   - locked
+org.apache.commons.configuration.tree.OverrideCombiner@8511bb
+org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:925)
+org.apache.commons.configuration.HierarchicalConfiguration.getProperty(HierarchicalConfiguration.java:327)
+org.apache.commons.configuration.CombinedConfiguration.getProperty(CombinedConfiguration.java:578)
+org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1155)
+org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1034)
+org.apache.jsp.test.testPropertyProvider_jsp._jspService(testPropertyProvider_jsp.java:69)
+org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:70)
+javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:374)
+org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:342)
+org.apache.jasper.servlet.JspServlet.service(JspServlet.java:267)
+javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+
+</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">390</link>
+		</links>
+	</bug>
+	<bug id="348" opendate="2008-11-08 16:29:36" fixdate="2008-11-08 16:39:13" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractHierarchicalFileConfiguration does not trigger a reload for the getKeys() method</summary>
+			<description>In getKeys() the obligatory call to reload() was forgotten.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="345" opendate="2008-11-03 10:45:49" fixdate="2008-11-08 21:17:02" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration does not use the default encoding to load files</summary>
+			<description>The piece of code
+PropertiesConfiguration.java
+    // initialization block to set the encoding before loading the file in the constructors
+    {
+        setEncoding(DEFAULT_ENCODING);
+    }
+
+
+seems to set correctly the default encoding, but this block is called after "super()" in constructors.
+So when using either PropertiesConfiguration(java.io.File file), PropertiesConfiguration(java.lang.String fileName) or PropertiesConfiguration(java.net.URL url), the super() statement is called, and it loads the file without the default encoding.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="349" opendate="2008-11-10 08:27:54" fixdate="2008-11-11 21:25:39" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfigurationProvider cannot create a class that extends XMLConfiguration</summary>
+			<description>XMLConfigurationProvider in DefaultConfigurationBuilder has default scope. When configuring a new ConfigurationProvider to use a class that extends XMLConfiguration an Exception is raised because the setConfigurationClass method cannot be called from the bean utility classes.</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.TestDefaultConfigurationBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="335" opendate="2008-08-14 17:27:13" fixdate="2008-11-30 21:13:58" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration: Can&amp;apos;t disable attribute splitting </summary>
+			<description>My XML configuration has the following attribute:
+&amp;lt;some-element some-attribute="
+" /&amp;gt;
+But XML Configuration is trying to split this string and trims it after splitting. I don&amp;amp;apos;t need this behaviour, but setting setDelimiterParsingDisabled() just changing delimeter to "|" and not disables attribute trimming.
+Need either to disable trimming/splitting if setDelimiterParsingDisabled() is set to TRUE (incompatible change), or add something like setParseAttributesAsIs() that will prevent attributes to be trimmed and splitted</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is cloned by">400</link>
+		</links>
+	</bug>
+	<bug id="321" opendate="2008-04-13 22:39:21" fixdate="2008-12-01 21:30:55" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractHierarchicalConfiguration.getKeys(key) doesn&amp;apos;t return the key</summary>
+			<description>The getKeys(String prefix) implementation of AbstractHierarchicalConfiguration doesn&amp;amp;apos;t return anything if the prefix used is the key of an existing property. The iterator returned should at least contain the key used as the prefix.
+Here is the test method for TestHierarchicalConfiguration, currently the first assertion fails:
+
+public void testGetKeysWithKeyAsPrefix()
+{
+    Iterator&amp;lt;?&amp;gt; it = config.getKeys("order.key1");
+    assertTrue("no key found", it.hasNext());
+    assertEquals("1st key", "order.key1", it.next());
+    assertFalse("more keys than expected", it.hasNext());
+}
+
+</description>
+			<version>1.5</version>
+			<fixedVersion>1.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="357" opendate="2008-12-30 17:19:05" fixdate="2009-01-02 16:47:15" resolution="Fixed">
+		<buginformation>
+			<summary>ConversionException message is incorrect for AbstractConfiguration.getBigInteger(String,BigInteger)</summary>
+			<description>The message in the ConfigurationException thrown from AbstractConfiguration.getBigInteger(String,BigInteger) reads "BigDecimal" but should read "BigInteger".</description>
+			<version>1.5</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="404" opendate="2010-01-15 05:13:40" fixdate="2010-01-27 07:07:44" resolution="Fixed">
+		<buginformation>
+			<summary>Revisit - Brackets in property key causes NumberFormatException</summary>
+			<description>Hi,
+When using brackets in property key we get an exception every time.
+Escaping brackets with \ doesn&amp;amp;apos;t help.
+Example
+#property in property file
+test(ef)=false
+causes 
+java.lang.NumberFormatException: For input string: "ef" at
+java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+        at java.lang.Integer.parseInt(Integer.java:447)
+        at java.lang.Integer.parseInt(Integer.java:497)
+        at org.apache.commons.configuration.tree.DefaultConfigurationKey
+$KeyIterator.checkIndex(DefaultConfigurationKey.java:834)
+        at org.apache.commons.configuration.tree.DefaultConfigurationKey
+$KeyIterator.nextKey(DefaultConfigurationKey.java:511) at
+org.apache.commons.configuration.tree.DefaultExpressionEngine.findNodesForKey(DefaultExpressionEngine.java:462) at
+org.apache.commons.configuration.tree.DefaultExpressionEngine.query(DefaultExpressionEngine.java:286) at
+org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:925 at
+org.apache.commons.configuration.HierarchicalConfiguration.setProperty(HierarchicalConfiguration.java:735) at
+org.apache.commons.configuration.ConfigurationUtils.copy(ConfigurationUtils.java:143) at
+org.apache.commons.configuration.ConfigurationUtils.convertToHierarchical(ConfigurationUtils.java:199)  at org.apache.commons.configuration.CombinedConfiguration
+$ConfigData.getTransformedRoot(CombinedConfiguration.java:794)  at
+org.apache.commons.configuration.CombinedConfiguration.constructCombinedNode(CombinedConfiguration.java:653) at
+org.apache.commons.configuration.CombinedConfiguration.getRootNode(CombinedConfiguration.java:504) at
+org.apache.commons.configuration.HierarchicalConfiguration.fetchNodeList(HierarchicalConfiguration.java:925) at
+org.apache.commons.configuration.HierarchicalConfiguration.getProperty(HierarchicalConfiguration.java:327) at
+org.apache.commons.configuration.CombinedConfiguration.getProperty(CombinedConfiguration.java:578) at
+org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1155) at
+org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1034)  at
+org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1017) 
+Explanation i got in mailing list from Oliver Heger
+I guess you use DefaultConfigurationBuilder for loading a combined 
+configuration?
+The exception is due to the fact that brackets have a special meaning in 
+the query syntax for hierarchical configurations. 
+(DefaultConfigurationBuilder transforms all configuration sources into 
+hierarchical configurations, so also for properties, which are not 
+hierarchical by default, the same rules apply.)
+So far escaping brackets or other specific characters in property keys 
+is not supported. It seems to be rather unusual to use brackets in 
+property keys, so you may well be the first one who noticed this problem.
+Unfortunately I don&amp;amp;apos;t have a working solution for this problem right 
+now.</description>
+			<version>1.5</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.tree.DefaultConfigurationKey.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.tree.TestDefaultConfigurationKey.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is a clone of">336</link>
+		</links>
+	</bug>
+</bugrepository>

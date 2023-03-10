@@ -1,0 +1,1706 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="22" opendate="2005-06-25 15:25:28" fixdate="2005-06-26 13:06:38" resolution="Fixed">
+		<buginformation>
+			<summary>JBossAcegiLoginModule - Bug when identity is created</summary>
+			<description>Currently the code used to create the PrincipalAcegiUserToken is the following:
+identity = new PrincipalAcegiUserToken(this.key,
+                     response.getPrincipal().toString(),
+                     response.getCredentials().toString()
+                     response.getAuthorities());
+This means that the PrincipalAcegiUserToken is passed a serialized response principal NOT the username which is the method signature for PrincipalAcegiUserToken.
+I would suggest that the code should look like this:
+identity = new PrincipalAcegiUserToken(this.key,
+                     response.getPrincipal().getName(), //&amp;lt;-- CHANGED
+                     response.getCredentials().toString()
+                     response.getAuthorities());
+Cheers,
+Dan.</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.adapters.jboss.JbossAcegiLoginModule.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="27" opendate="2005-06-29 00:55:00" fixdate="2005-07-08 08:21:14" resolution="Fixed">
+		<buginformation>
+			<summary>RememberMeProcessingFilter should not fire InteractiveAuthenticationSuccesEvent in case of unsucessful authentication</summary>
+			<description>I have tried to start my application with the latest (from CVS) version of acegi and get following exception:
+java.lang.IllegalArgumentException: null source
+  java.util.EventObject.&amp;lt;init&amp;gt;(EventObject.java:34)
+  org.springframework.context.ApplicationEvent.&amp;lt;init&amp;gt;(ApplicationEvent.java:37)
+  net.sf.acegisecurity.ui.InteractiveAuthenticationSuccesEvent.&amp;lt;init&amp;gt;(InteractiveAuthenticationSuccesEvent.java:45)
+  net.sf.acegisecurity.ui.rememberme.RememberMeProcessingFilter.doFilter(RememberMeProcessingFilter.java:136)
+After some investigation I have found reason. In RememberMeProcessingFilter.java InteractiveAuthenticationSuccesEvent is fired even in case of unsucessful authentication.
+            SecurityContextHolder.getContext().setAuthentication(rememberMeServi
+                .autoLogin(httpRequest, httpResponse));
+            if (logger.isDebugEnabled()) 
+{
+                logger.debug(
+                    "Replaced SecurityContextHolder with remember-me token: &amp;amp;apos;"
+                    + SecurityContextHolder.getContext().getAuthentication()
+                    + "&amp;amp;apos;");
+            }
+
+            // Fire event
+            if (this.context != null) 
+{
+                context.publishEvent(new InteractiveAuthenticationSuccesEvent(
+                        SecurityContextHolder.getContext().getAuthentication(),
+                        this.getClass()));
+            }
+
+Fix would be quite easy: check that after autoLogin authentication in security context is not null.
+</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="20" opendate="2005-06-24 14:17:57" fixdate="2005-07-11 16:46:19" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionContextIntegrationFilter must set to null irrespective of exception</summary>
+			<description>http://forum.springframework.org/viewtopic.php?t=6223
+HttpSessionContextIntegrationFilter must set the ContextHolder to null irrespective of exceptions thrown inside the filter chain. ie use a finally {} block to set to null and re-throw exception.</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.8.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="48" opendate="2005-08-18 02:27:12" fixdate="2005-08-23 02:16:13" resolution="Fixed">
+		<buginformation>
+			<summary>Improve JaasNameCallbackHandler handling of string </summary>
+			<description>I submitted this via the listserv on 7/21/2005, and one of the developers said it would be looked into immediately, so I didnt file a JIRA issue on it, but since it apparently hasn&amp;amp;apos;t been touched in CVS, I&amp;amp;apos;m going to submit it here.  I&amp;amp;apos;m pasting in the email contents below:
+I&amp;amp;apos;m also going to submit a patch, which is my version of the fix.
+================================
+I&amp;amp;apos;ll double check but I&amp;amp;apos;m pretty sure that&amp;amp;apos;s a bug. If so I&amp;amp;apos;ll get it committed either tonight or tomorrow. US time that is  -Ray
+On 7/21/05, Tim Kettering &amp;lt;tim.kettering@vivakos.com&amp;gt; wrote:
+&amp;gt;  
+&amp;gt;  
+&amp;gt; 
+&amp;gt;   
+&amp;gt; 
+&amp;gt; I was tracking down some issues that came up after we started using our own
+&amp;gt; UserDetails object in the principal of Authentication.    This method in
+&amp;gt; JaasNameCallbackHandler seems to be calling the incorrect method.  In 
+&amp;gt; AbstractAuthenticationHandler, the methods called are 
+&amp;gt; &amp;amp;apos;authentication.getPrincipal().getUsername()&amp;amp;apos;  not
+&amp;gt; &amp;amp;apos;toString()&amp;amp;apos;  like it appears below.   Is there any reason for this?  The
+&amp;gt; problem we are facing is that our JAAS handler is trying to 
+&amp;gt; authenticate on the entire toString() output of our UserDetails 
+&amp;gt; object, instead of just the username, at this point, when the Acegi 
+&amp;gt; API/source seems to indicate that
+&amp;gt; toString() is to be used for debug output.  
+&amp;gt; 
+&amp;gt;   
+&amp;gt; 
+&amp;gt;     public void handle(Callback callback, Authentication 
+&amp;gt; authentication)
+&amp;gt; 
+&amp;gt;         throws IOException, UnsupportedCallbackException {
+&amp;gt; 
+&amp;gt;         if (callback instanceof NameCallback) 
+{
+&amp;gt; 
+&amp;gt;             NameCallback ncb = (NameCallback) callback;
+&amp;gt; 
+&amp;gt;             ncb.setName(authentication.getPrincipal().toString());
+&amp;gt; 
+&amp;gt;         }
+&amp;gt; 
+&amp;gt;     }
+-------------------------------------------------------
+SF.Net email is sponsored by: Discover Easy Linux Migration Strategies from IBM. Find simple to follow Roadmaps, straightforward articles, informative Webcasts and more! Get everything you need to get up to speed, fast. http://ads.osdn.com/?ad_idt77&amp;amp;alloc_id492&amp;amp;op=ick
+_______________________________________________
+Home: http://acegisecurity.sourceforge.net
+Acegisecurity-developer mailing list
+Acegisecurity-developer@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/acegisecurity-developer</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.jaas.JaasNameCallbackHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="43" opendate="2005-07-26 07:50:53" fixdate="2005-10-20 18:32:44" resolution="Fixed">
+		<buginformation>
+			<summary>JdbcExtendedDaoImpl doesn&amp;apos;t work with Postgres</summary>
+			<description>Using JdbcExtendedDaoImpl together with PostgreSQL and the following acl tables fails when inserting new identities or permissions:
+create table acl_object_identity (
+     id serial primary key,
+     object_identity varchar(250) not null unique,
+     parent_object integer references acl_object_identity,
+     acl_class varchar(250) not null
+);
+create table acl_permission (
+     id serial primary key,
+     acl_object_identity integer not null references acl_object_identity(id),
+     recipient varchar(100) not null,
+     mask integer not null,
+     constraint unique_recipient unique(acl_object_identity, recipient)
+);
+This is due to the fact that JdbcExtendedDaoImpl explicitly sets the id to null. Postgres will naturally give an error as this is a primary key and thus cannot be null. Either set it to the value you want or leave it out of the statement.
+It doesn&amp;amp;apos;t seem to be possible to override this by injecting new sql statements for AclObjectIdentityInsertStatement and AclPermissionInsertStatement. AclObjectIdentityInsert and AclPermissionInsert classes declares four parameters, the first of which is hardcoded to null.</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.acl.basic.jdbc.JdbcExtendedDaoImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="60" opendate="2005-09-29 22:58:34" fixdate="2005-10-20 18:52:56" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractSecurityInterceptor does not work with detached Hibernate collections</summary>
+			<description>The beforeInvocation method in AbstractSecurityInterceptor class has the following line:
+        Assert.isTrue(getSecureObjectClass().isAssignableFrom(object.getClass()), "Security invocation attempted for object " + object
+                    + " but AbstractSecurityInterceptor only configured to support secure objects of type: "
+                    + getSecureObjectClass());
+where the implicit object.toString() causes problems for us with detached Hibernate 3.0
+collections. Our code passes an detached org.hibernate.collection.PersistentSet to a DAO
+object which initializes it. This works fine in 0.8.0 but is broken in 0.8.3. The root cause
+is that it is not safe to call toString() for lazily loaded Hibernate collection that is detached.
+I don&amp;amp;apos;t think this is a Hibernate bug as it mimics java.util.Collection toString() behavior. It
+would be unsafe for Hibernate to return different values depending on whether the object is
+detached or not.
+Suggested fix is to either remove the above or make the check configurable so we can
+disable it.</description>
+			<version>0.8.3</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.AbstractSecurityInterceptor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="63" opendate="2005-10-10 22:48:17" fixdate="2005-10-20 19:00:49" resolution="Fixed">
+		<buginformation>
+			<summary>Absolute URL redirection may cause problems in load-balanced environments</summary>
+			<description>When re-directing a non-authenticated user, class AuthenticationProcessingFilterEntryPoint builds an absolute URL. 
+This is designed this way becuase it may need to replace the protocol (http to https).
+In Load-Balanced environments this may lead to loss of the load balancer, as the redirection will use the server as part of the URL. Load balancers / app servers have settings to avoid this, but these entail special configuration and may limit other applications on same server.
+Use of relative redirection is much better for most scenarios.</description>
+			<version>0.8.2</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPointTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="64" opendate="2005-10-15 20:45:56" fixdate="2005-11-02 19:48:51" resolution="Fixed">
+		<buginformation>
+			<summary>FilterChainProxy does not work on Orion Web Application Server</summary>
+			<description>Setting up the contacts example on Orion does not work out of the box.
+This is because of a bug/feature in Orion where the &amp;amp;apos;getServletPath&amp;amp;apos; method returns null when called from within a filter.  The FilterInvocation class makes use of this method and therefore fails to do the redirects to the &amp;amp;apos;j_acegi_security_check&amp;amp;apos;.  Everything works fine if you configure Acegi longhand via the web.xml.
+I realise this is more of a bug with Orion (and I have raised it with them) but it would be good if you guys could put a workaround into the framework.  In my investigations I got it work by putting something similar to the following in the &amp;amp;apos;getRequestUrl()&amp;amp;apos; method of FilterInvocation, but I obviously havn&amp;amp;apos;t done a full impact analysis of this change.
+ String uri = request.getServletPath();
+    if (uri == null) 
+{
+      uri = request.getRequestURI();
+      uri = uri.substring(request.getContextPath().length());
+    }
+
+Thanks
+Paul</description>
+			<version>0.8.3</version>
+			<fixedVersion>0.9.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.web.FilterInvocation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="111" opendate="2005-11-23 02:05:54" fixdate="2005-11-23 02:39:58" resolution="Fixed">
+		<buginformation>
+			<summary>ContextPropagatingRemoteInvocation fails to reset the context if an exception is thrown during the invocation</summary>
+			<description>The context is normally emptied after the invocation but this isn&amp;amp;apos;t done if an exception occurs. So the same context could potentially be used for another call if a thread pool is in use.
+http://acegisecurity.sourceforge.net/multiproject/acegi-security/xref/org/acegisecurity/context/rmi/ContextPropagatingRemoteInvocation.html#120</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.acegisecurity.context.rmi.ContextPropagatingRemoteInvocation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="105" opendate="2005-11-18 01:26:15" fixdate="2005-11-24 14:29:38" resolution="Fixed">
+		<buginformation>
+			<summary>Mis-named method signature in n.s.a.util.PortMapperImpl</summary>
+			<description>Forum discussion :
+http://forum.springframework.org/showthread.php?t=19903
+yielded a little problem with PortMappingImpl.  The javadocs state that use the following in a spring config file
+   &amp;lt;property name="httpsPortMapping"&amp;gt;
+     &amp;lt;map&amp;gt;
+       &amp;lt;entry key="80"&amp;gt;&amp;lt;value&amp;gt;443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+       &amp;lt;entry key="8080"&amp;gt;&amp;lt;value&amp;gt;8443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+     &amp;lt;/map&amp;gt;
+   &amp;lt;/property&amp;gt;
+Looking into the source of PortMappingImpl and there&amp;amp;apos;s no corresponding setHttpsPortMapping for spring to inject.  Spring falls over.  
+Solution : either update the javadocs or better in my opinion change the existing method from setPortMapping(Map m) to setHttpsPortMapping(Map m) </description>
+			<version>0.8.3</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.util.PortMapperImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">109</link>
+		</links>
+	</bug>
+	<bug id="109" opendate="2005-11-22 00:45:22" fixdate="2005-11-24 14:30:10" resolution="Fixed">
+		<buginformation>
+			<summary>PortMapperImpl property mistake</summary>
+			<description>In accordance wuth Acegi Security System Platform Documentation, you can set a custom definition of socket port mapping (by default this is set in this way HTTP: 80/8080, HTTPS: 443/8443).
+The definition of the setter method public void setPortMappings(Map newMappings) set this property httpsPortMapping. 
+But this definition cause an Exception on the property writing. 
+To allow the settings the property in applicationContext must be set as "portMapping".
+Again, API&amp;amp;apos;s report this specifics for method setPortMappiungs:
+public void setPortMappings(Map newMappings)
+Set to override the default HTTP port to HTTPS port mappings of 80:443, 
+and 8080:8443. In a Spring XML ApplicationContext, a definition would look something like 
+this:
+   &amp;lt;property name="httpsPortMapping"&amp;gt;
+     &amp;lt;map&amp;gt;
+       &amp;lt;entry key="80"&amp;gt;&amp;lt;value&amp;gt;443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+       &amp;lt;entry key="8080"&amp;gt;&amp;lt;value&amp;gt;8443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+     &amp;lt;/map&amp;gt;
+   &amp;lt;/property&amp;gt;
+Parameters:
+newMappings - A Map consisting of String keys and String values, where 
+for each entry the key is the string representation of an integer HTTP port 
+number, and the value is the string representation of the corresponding 
+integer HTTPS port number. 
+Throws:
+IllegalArgumentException - if input map does not consist of String 
+keys and values, each representing an integer port number in the range 
+1-65535 for that mapping.
+Thanks for attention.
+Kind Regards
+</description>
+			<version>0.8.3</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.util.PortMapperImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">105</link>
+		</links>
+	</bug>
+	<bug id="110" opendate="2005-11-22 09:39:13" fixdate="2005-11-24 14:33:50" resolution="Fixed">
+		<buginformation>
+			<summary>ProviderManager does not properly handle ConcurrentLoginException</summary>
+			<description>The ProviderManager will incorrectly return an authentication object and fire AuthenticationSuccessEvent when a ConcurrentLoginException is thrown. </description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.ProviderManager.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="112" opendate="2005-11-23 03:52:28" fixdate="2005-11-24 14:37:45" resolution="Fixed">
+		<buginformation>
+			<summary>Infinite loop when SecurityEnforcementFilter doesn&amp;apos;t clear SecurityContextHolder</summary>
+			<description>http://forum.springframework.org/showthread.php?t=19895
+If a user is disabled midway through a session, and anonymous authentication is being used to authorize the login form URL, an infinite loop will occur. This is because a DisabledException is thrown by the AuthenticationManager, which SecurityEnforcementFilter will catch and then launch AuthenticationEntryPoint. However, the protected login form URL (ie generally marked as ROLE_ANONYMOUS) will not be authorized, because the AnonymousProcessingFilter will not replace the SecurityContextHolder contents as the SecurityContextHolder already contains an Authentication object (albeit one that is disabled).
+The fix is for SecurityEnforcementFilter to clear the SecurityContextHolder before loading any AuthenticationEntryPoint.</description>
+			<version>0.8.3</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.web.SecurityEnforcementFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="106" opendate="2005-11-19 00:07:04" fixdate="2005-11-24 14:40:08" resolution="Fixed">
+		<buginformation>
+			<summary>NoSuchMethodException in AuthenticationTag</summary>
+			<description>There&amp;amp;apos;s a problem with a property not found in case of custom UserDetails implementation if this property is defined in a superclass.
+The solution is to change getDeclaredMethod() call to getMethod() which searches also the superclass if no matching method&amp;amp;apos;s found in the specified class (patch provided).</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthenticationTag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="108" opendate="2005-11-21 21:53:15" fixdate="2005-11-28 12:44:06" resolution="Fixed">
+		<buginformation>
+			<summary>Change JdbcDaoImpl fields to be protected (not private)</summary>
+			<description>In the previous version we were able to get to the authoritiesByUsernameMapping via a getter. As of version 0.9.0 this getter is no longer available. We need this in the subclasses of JdbcDaoImpl.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.jdbc.JdbcDaoImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">117</link>
+		</links>
+	</bug>
+	<bug id="116" opendate="2005-12-01 22:14:23" fixdate="2005-12-01 22:14:46" resolution="Fixed">
+		<buginformation>
+			<summary>Authentication LoggerListener JavaDocs incorrect</summary>
+			<description>The LoggerListener JavaDocs incorrect advise different logging levels are used for different ApplicationEvents. It should specify that all events are logged with warning severity.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.event.authentication.LoggerListener.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="117" opendate="2005-12-02 22:17:25" fixdate="2005-12-02 22:24:12" resolution="Fixed">
+		<buginformation>
+			<summary>JdbcDaoImpl not properly extensible</summary>
+			<description>While the javadoc for JdbcDaoImpl suggests that it is possible to override the initMappingSqlQueries() if the default strategy for customizing the SQL queries doesn&amp;amp;apos;t provide enough flexibility, this is in fact impossible because authoritiesByUsernameMapping and usersByUsernameMapping are declared private while they should be protected.
+This as far as I can see prevents using this class against an Oracle database that doesn&amp;amp;apos;t support boolean fields.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.jdbc.JdbcDaoImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">108</link>
+		</links>
+	</bug>
+	<bug id="118" opendate="2005-12-02 23:38:25" fixdate="2005-12-03 21:11:19" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong logger class in JdbcDaoImpl</summary>
+			<description>The logger used by JdbcDaoImpl is strangely declared as "private static final Log logger = LogFactory.getLog(JdbcDaoSupport.class);"
+Shouldn&amp;amp;apos;t it be "private static final Log logger = LogFactory.getLog(JdbcDaoImpl.class);"?</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.jdbc.JdbcDaoImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="143" opendate="2006-01-12 10:42:44" fixdate="2006-01-16 09:56:46" resolution="Fixed">
+		<buginformation>
+			<summary>NPE in JaasAuthenticationProvider</summary>
+			<description>Servlet containers often destroy sessions before an Acegi SecurityContext has been attached to them. This ends up causing a NullPointerException in JaasAuthenticationProvider.handleLogout() line 424.
+java.lang.NullPointerException
+	at net.sf.acegisecurity.providers.jaas.JaasAuthenticationProvider.handleLogout(JaasAuthenticationProvider.java:424)
+	at net.sf.acegisecurity.providers.jaas.JaasAuthenticationProvider.onApplicationEvent(JaasAuthenticationProvider.java:413)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:45)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:224)
+	at net.sf.acegisecurity.ui.session.HttpSessionEventPublisher.sessionDestroyed(HttpSessionEventPublisher.java:107)
+	at com.ibm.ws.webcontainer.httpsession.SessionContext.sessionDestroyedEvent(SessionContext.java:3417)
+.....</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.jaas.JaasAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="125" opendate="2005-12-13 11:54:09" fixdate="2006-01-25 19:23:54" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthenticationToken requires hashCode() method</summary>
+			<description>http://forum.springframework.org/showthread.php?t=20516
+hashCode() method required because equals() is implemented and HttpSessionContextIntegration relies on hash codes now for comparison purposes (see SecurityContextImpl.hashCode() which delegates to Authentication.hashCode()).</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationTokenTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="137" opendate="2006-01-02 05:19:15" fixdate="2006-01-25 19:29:08" resolution="Fixed">
+		<buginformation>
+			<summary>StackOverFlowError when calling MethodInvocation.createFromClass(clazz, method)</summary>
+			<description>     public static MethodInvocation createFromClass(Class clazz,
+        String methodName) 
+{
+        return createFromClass(clazz, methodName);
+    }
+
+this causes a stack overflow.
+Maybe something like:
+     public static MethodInvocation createFromClass(Class clazz,
+        String methodName) 
+{
+        return createFromClass(clazz, methodName, null);
+    }</description>
+			<version>0.8.3</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.util.MethodInvocationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="154" opendate="2006-01-25 11:07:53" fixdate="2006-01-25 20:29:22" resolution="Fixed">
+		<buginformation>
+			<summary>NamedEntityObjectIdentity must support CGLIB (Hibernate) modified domain objects</summary>
+			<description>CGLIB-generated classes have names such as foo.DomainObject$$EnhancerByCGLIB, which are incompatible with the NamedEntityObjectIdentity&amp;amp;apos;s internal representation of the classname as a String.
+A workaround is to use BasicAclProvider.defaultAclObjectIdentityClass to provide a new instance of AclObjectIdentity which can correctly handle the names. Another workaround is for your domain objects to implement AclObjectIdentityAware and return the AclObjectIdentity that represents the instance.</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.acl.basic.NamedEntityObjectIdentity.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="156" opendate="2006-01-25 13:21:59" fixdate="2006-01-26 14:53:10" resolution="Fixed">
+		<buginformation>
+			<summary>AuthenticationSimpleHttpInvokerRequestExecutor should use getName() instead of toString()</summary>
+			<description>http://forum.springframework.org/showthread.php?t=21664</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.httpinvoker.AuthenticationSimpleHttpInvokerRequestExecutor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="162" opendate="2006-01-27 11:24:24" fixdate="2006-01-27 11:25:57" resolution="Fixed">
+		<buginformation>
+			<summary>MethodInvocationPrivilegeEvaluator incorrectly throws exception with null Authentication</summary>
+			<description>MethodInvocationPrivilegeEvaluation should not throw an exception if a null Authentication is passed, but instead return false to indicate the current user does not have permission to the requested MethodInvocation.</description>
+			<version>1.0.0 RC1</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.method.MethodInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="163" opendate="2006-01-28 07:29:31" fixdate="2006-01-28 07:33:52" resolution="Fixed">
+		<buginformation>
+			<summary>MethodInvocationUtils.create(Object, String, Object[]) causes ClassCastException</summary>
+			<description>In RC1, the MethodInvocationUtils.create(Object, String, Object[]) caused a ClassCastException at line 84.
+In addition, there was no unit test to pick up this issue.</description>
+			<version>1.0.0 RC1</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.util.MethodInvocationUtils.java</file>
+			<file type="M">org.acegisecurity.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="134" opendate="2005-12-27 16:12:07" fixdate="2006-02-07 12:36:05" resolution="Fixed">
+		<buginformation>
+			<summary>Authentication.getAuthorities should return a collection rather than an array.</summary>
+			<description>Currently Authentication.getAuthorities returns a GrantedAuthority[]. This is dangerous because calling code can accidentaly or deliberatly modify elements of the array to anything.
+This method should really return an unmodifiable collection. Alternatly class instances could return a clone of the array.</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.adapters.AuthByAdapterTests.java</file>
+			<file type="M">org.acegisecurity.providers.TestingAuthenticationTokenTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousAuthenticationTokenTests.java</file>
+			<file type="M">org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.cas.CasAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.MockRunAsAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.adapters.AbstractAdapterAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.runas.RunAsUserToken.java</file>
+			<file type="M">org.acegisecurity.providers.smb.NtlmAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.cas.CasAuthenticationTokenTests.java</file>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.rememberme.RememberMeAuthenticationTokenTests.java</file>
+			<file type="M">org.acegisecurity.runas.RunAsUserTokenTests.java</file>
+			<file type="M">org.acegisecurity.providers.x509.X509AuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.TestingAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.Authentication.java</file>
+			<file type="M">org.acegisecurity.providers.UsernamePasswordAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationTokenTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="168" opendate="2006-02-03 08:28:45" fixdate="2006-02-07 14:41:49" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionFilter breaks authenticate with: Authentication.getDetails() required</summary>
+			<description>Acegi works fine for me in my environment. 
+Now i wanted to avoid concurrent logins and followed the steps described at: http://acegisecurity.org/docbook/acegi.html#security-authentication-concurrent-login
+Now, when I try to login with the same code that worked before, I get an exception:
+Caused by: java.lang.IllegalArgumentException: Authentication.getDetails() required
+	at org.springframework.util.Assert.notNull(Assert.java:90)
+	at org.acegisecurity.concurrent.SessionRegistryUtils.obtainSessionIdFromAuthentication(SessionRegistryUtils.java:48)
+	at org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.checkAuthenticationAllowed(ConcurrentSessionControllerImpl.java:100)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:209)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:49)
+Here is the code snippet:
+		Authentication lAuthReq = new UsernamePasswordAuthenticationToken(pUsername, pPassword);
+		Authentication lAuth = null;
+		lAuth = getAuthenticationManager().authenticate(lAuthReq);
+Without the concurrent session filter it works perfectly...</description>
+			<version>1.0.0 RC1</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="174" opendate="2006-02-07 06:45:42" fixdate="2006-02-07 14:58:55" resolution="Fixed">
+		<buginformation>
+			<summary>IE6 redirect bug in AuthenticationProcessingFilterEntryPoint</summary>
+			<description>An application using the attached config files has redirect problems for Windows clients using IE (but not FireFox) if the server is configured to use ports other than 80 and 443 for HTTP and HTTPS respectively. This issue has been addressed in Acegi in other places (such as ExceptionTranslationFilter, RetryWithHttpsEntryPoint ... etc). A patch for AuthenticationProcessingFilterEntryPoint is attached which resolves this issue (tested with Tomcat 5.5 running on a Linux box with IE/Win, FireFox 1.5/Win, FireFox 1.5 Linux as clients).
+It should be noted that this bit of code appears in multiple places - and they aren&amp;amp;apos;t all exactly the same.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPointTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="164" opendate="2006-01-30 01:51:42" fixdate="2006-02-07 15:32:26" resolution="Fixed">
+		<buginformation>
+			<summary>X509AuthenticationProvider does not keep authentication details</summary>
+			<description>When the provider authenticates a principal, that last statement reads
+  return new X509AuthenticationToken(user, clientCertificate,
+                user.getAuthorities());
+whereas the AbstractUserDetailsAuthenticationProvider does
+   result.setDetails((authentication.getDetails() != null)
+            ? authentication.getDetails() : null);
+The X509AuthenticationProvider should &amp;amp;apos;copy&amp;amp;apos; the authentication details to the returned object.</description>
+			<version>1.0.0 RC1</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.x509.X509AuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="159" opendate="2006-01-25 23:04:40" fixdate="2006-02-08 09:56:53" resolution="Fixed">
+		<buginformation>
+			<summary>SecurityContextHolder may cause a memory leak on app re-deployment</summary>
+			<description>The context thread local reference may prevent an application classloader from being garbage collected
+http://forum.springframework.org/showthread.php?t=21144</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.taglibs.velocity.AuthzImplAuthorizeTagTest.java</file>
+			<file type="M">org.acegisecurity.ui.digestauth.DigestProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTagAttributeTests.java</file>
+			<file type="M">org.acegisecurity.context.SecurityContextHolder.java</file>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTagCustomGrantedAuthorityTests.java</file>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTagExpressionLanguageTests.java</file>
+			<file type="M">org.acegisecurity.ui.ExceptionTranslationFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.basicauth.BasicProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.context.rmi.ContextPropagatingRemoteInvocation.java</file>
+			<file type="M">org.acegisecurity.providers.jaas.SecurityContextLoginModuleTests.java</file>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTagTests.java</file>
+			<file type="M">org.acegisecurity.ui.rememberme.RememberMeProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.intercept.web.FilterSecurityInterceptorTests.java</file>
+			<file type="M">org.acegisecurity.captcha.CaptchaChannelProcessorTemplateTests.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.taglibs.velocity.AuthzImplAttributeTest.java</file>
+			<file type="M">samples.contacts.src.main.java.sample.contact.ClientApplication.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="158" opendate="2006-01-25 22:57:12" fixdate="2006-02-08 14:25:33" resolution="Fixed">
+		<buginformation>
+			<summary>X.509 Auth token should adopt standard behaviour w.r.t. authenticated property</summary>
+			<description>http://forum.springframework.org/showthread.php?t=21453</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.x509.X509AuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="183" opendate="2006-02-09 08:58:38" fixdate="2006-02-09 09:02:01" resolution="Fixed">
+		<buginformation>
+			<summary>Avoid unnecessary HttpSession creation when using Anonymous and Remember-Me authentication</summary>
+			<description>A small number of users use HttpSessionContextIntegrationFilter.allowSessionCreation = false, as they are using an authentication mechanism (such as BASIC) which relies upon the user agent for representing authentication information on each web request. For such users, changes made as part of SEC-168 and SEC-182 will cause issues because these changes will always create a HttpSession (in order to obtain a Session ID that in turn was needed by the concurrent session capabilities).</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">233</link>
+		</links>
+	</bug>
+	<bug id="188" opendate="2006-02-11 16:27:33" fixdate="2006-02-11 16:29:39" resolution="Fixed">
+		<buginformation>
+			<summary>SecurityContextHolder JavaDoc error</summary>
+			<description>From acegisecurity-developer:
+Javadoc for org.acegisecurity.context.SecurityContextHolder: "Associates a
+given SecurityContext with the current execution thread and any new threads
+the current execution thread may spawn." It can confuse users, as I know
+InheritableThreadLocal no longer used in SecurityContextHolder, so
+SecurityContext will not be associated with new threads which current
+execution thread may spawn.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.SecurityContextHolder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="192" opendate="2006-02-19 08:42:38" fixdate="2006-02-19 10:38:29" resolution="Fixed">
+		<buginformation>
+			<summary>Concurrent login checking fails with CAS</summary>
+			<description>http://forum.springframework.org/showthread.php?t=22422
+The CAS authentication provider should call setDetails on the newly created CASAuthenticationToken. Alternatively, this could be done somewhere like AbstractAuthenticationProvider.authenticate, since it is probably common to all providers. Something like:
+    public final Authentication authenticate(Authentication authentication)
+        throws AuthenticationException {
+        try {
+            Authentication result = doAuthentication(authentication);
+            if(result.getDetails() == null) 
+{
+               result.setDetails(authenitication.getDetails());
+            }
+        } catch (AuthenticationException e) 
+{
+            e.setAuthentication(authentication);
+            throw e;
+        }
+    }</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.digestauth.DigestProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImplTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.switchuser.SwitchUserProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.cas.CasProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.SiteminderAuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="215" opendate="2006-03-09 20:29:55" fixdate="2006-04-16 03:11:52" resolution="Fixed">
+		<buginformation>
+			<summary>FilterBasedLdapUserSearch creates invalid DN</summary>
+			<description>The current Implementation of FilterBasedLdapUserSearch in HEAD will create create DNs that have a invalid comma character at the end of the final DN. E.g. "cn=Stefan Podkowinski,ou=people,dc=my,dc=org,"
+Please change the following lines in
+acegisecurity/acegisecurity/core/src/main/java/org/acegisecurity/providers/ldap/search/FilterBasedLdapUserSearch.java
+from
+userDn.append(",");
+userDn.append(ctx.getNameInNamespace());
+to
+String nameInNS = ctx.getNameInNamespace();
+if(nameInNS != null &amp;amp;&amp;amp; nameInNS.length() &amp;gt; 0) {
+   userDn.append(",");
+   userDn.append(nameInNS);
+}
+</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ldap.search.FilterBasedLdapUserSearch.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="202" opendate="2006-02-28 03:17:24" fixdate="2006-04-16 03:14:11" resolution="Fixed">
+		<buginformation>
+			<summary>Failing to set manager password on DefaultInitialDirContextFactory causes NullPointerException</summary>
+			<description>The password should be set to some default value in the class, e.g. "manager_password_not_set"</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.ldap.DefaultInitialDirContextFactory.java</file>
+			<file type="M">org.acegisecurity.providers.ldap.DefaultInitialDirContextFactoryTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="230" opendate="2006-03-15 08:07:20" fixdate="2006-04-23 22:38:27" resolution="Duplicate">
+		<buginformation>
+			<summary>ExceptionTranslationFilter does not catch AccessDeniedException with Spring MVC M2/M3</summary>
+			<description>I am writing a SpringMVC-based web application with Acegi Security.  I have a Spring Controller object that invokes a method that is protected by an Acegi MethodSecurityInterceptor.  When the MethodSecurityInterceptor throws an AccessDeniedException, it is getting wrapped by the Spring FrameworkServlet in a org.springframework.web.util.NestedServletException.  Because of this wrapping, the ExceptionTranslationFilter never catches an AccessDeniedException, thus causing a 500 server error to bubble up instead of a 403/redirect to authenticationEntryPoint. 
+I&amp;amp;apos;m not sure whose problem this is - the Acegi code could inspect the root cause of the NestedServletException, or the FrameworkServlet could pass on RuntimeExceptions without wrapping. </description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.ExceptionTranslationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">199</link>
+		</links>
+	</bug>
+	<bug id="233" opendate="2006-03-22 05:57:18" fixdate="2006-04-23 23:32:22" resolution="Duplicate">
+		<buginformation>
+			<summary>AnonymousProcessingFilter - redundant creation of Authentication object causes IllegalStateException</summary>
+			<description>In the finally block of the doFilter method, it seems the WebAuthenticationDetails object is created again in order to compare against the current Security Context&amp;amp;apos;s Authentication object to see that it has not changed over the course of the request.  This rendundant creation can potentially cause an IllegalStateException: a session cannot be created sine the response is commited.  The response may be commited anytime down the filter pipeline.  Why create another Authentication object just to check for equality.   A references should be held before the filter chain is invoked since this is the only safe time to create a session and that reference should be used for comparison after the filter chain returns.  This will avoid the unnessary and invalid creation of a session.  </description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">183</link>
+		</links>
+	</bug>
+	<bug id="222" opendate="2006-03-13 17:45:24" fixdate="2006-04-25 12:21:07" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthenticationToken Hashcode computation</summary>
+			<description>The hashCode implementations in User as well as AbstractAuthenticationToken uses the MOD operator with the value 7. 
+    public int hashCode() {
+        int code = 2305;
+        if (this.getAuthorities() != null) {
+            for (int i = 0; i &amp;lt; this.getAuthorities().length; i++) 
+{
+                code = code * (this.getAuthorities()[i].hashCode() % 7);
+            }
+        }
+        ...
+This has the unfortunate result that when the hashCode of say a GrantedAuthority is dividable by 7, the result of the MOD will be zero. Since it multiplies all other results with itself, the hashCode will evaluate to zero.
+I&amp;amp;apos;m not sure of the consequences of this, but since HttpSessionContextIntegrationFilter compares the hashCode of the SecurityContext before and after the filter chain, this could cause some unexpected behaviour.
+The obvious question is how often a hashCode of a String evaluates to something dividable by 7. Well, it&amp;amp;apos;s actually pretty common. An empty password in the principal does, for example. So does "ROLE_General.ITS" and many others.</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="218" opendate="2006-03-12 20:37:57" fixdate="2006-04-25 12:28:38" resolution="Fixed">
+		<buginformation>
+			<summary>RememberMeProcessingFilter adds Authentication token to SecurityContextHolder after AuthenticationException</summary>
+			<description>The RememberMeProcessingFilter always adds a valid Authentication Token to the SecurityContextHolder, even after a AuthenticationException.  For example :
+
+user &amp;amp;apos;joebob&amp;amp;apos; can only have 1 login session at any time (via the ConcurrentSessionController)
+person A logs in with &amp;amp;apos;joebob&amp;amp;apos; on his machine, and sets a cookie on his machine to remember his Authentication details
+person A closes his browser and after 30 minutes his session in the acegi SessionRegistry times out
+person B logs in with &amp;amp;apos;joebob&amp;amp;apos; on his machine - a valid login attempt as there are no other sessions for &amp;amp;apos;joebob&amp;amp;apos; at the moment
+person A opens his browser and attempts to log in automatically with the cookie - and is granted access.  Even though his cookie is invalidated (rememberMeServices.loginFail(httpRequest, httpResponse) - he is still granted a valid authentication token for his session.
+
+A fix is to return from doFilter before exiting the AuthenticationException catch block in RememberMeProcessingFilter, before the SecurityContextHolder is updated with a valid AuthenticationToken.
+In general there seems to be a lot of potential overlap here with AbstractProcessingFilter, which seems to offer a lot more with successful and unsuccessful authentication attempts - such as offering a failure url to redirect to, and storing the AuthenticationException in the session.
+I kinda get the feeling that the RememberMeProcesssingFilter should extend the AbstractProcessingFilter because of this, its just lacks the right hooks - attemptAuthentication only provides the HttpServletRequest, and both the request and response are required for the rememberMeServices.autoLogin() method.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="223" opendate="2006-03-13 18:16:08" fixdate="2006-04-25 12:31:41" resolution="Fixed">
+		<buginformation>
+			<summary>Performance of hashCode in AbstractAuthenticationToken</summary>
+			<description>The hashCode implementation in AbstractAuthenticationToken calculates the hashCode of its authorities:
+    public int hashCode() {
+        int code = 2305;
+        if (this.getAuthorities() != null) {
+            for (int i = 0; i &amp;lt; this.getAuthorities().length; i++) 
+{
+                code = code * (this.getAuthorities()[i].hashCode() % 7);
+            }
+        }
+        ...
+There will be two calls to getAuthorities() for each GrantedAuthority. And this would happen every time hashCode is called on an AuthenticationToken that extends AbstractAuthenticationToken.
+This would be fine if getAuthorities() simply returned a value, but it does more than that:
+    public GrantedAuthority[] getAuthorities() {
+        if (authorities == null) 
+{
+            return null;
+        }
+
+        GrantedAuthority[] copy = new GrantedAuthority[authorities.length];
+        System.arraycopy(authorities, 0, copy, 0, authorities.length);
+        return copy;
+    }
+The obvious fix for this unnecessary array copying is:
+    public int hashCode() {
+        int code = 2305;
+        GrantedAuthority[] authorities = this.getAuthorities();
+        if (authorities != null) {
+            for (int i = 0; i &amp;lt; authorities.length; i++) 
+{
+                code = code * (authorities[i].hashCode() % 7);
+            }
+        }
+        ...</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="190" opendate="2006-02-15 10:32:21" fixdate="2006-04-25 12:42:16" resolution="Fixed">
+		<buginformation>
+			<summary>CaptchaSecurityContextImpl needs to override hashcode()</summary>
+			<description>The HttpSessionContextIntegrationFilter only stores the SecurityContext into the session if the context has "changed" during the filter chain. It uses the hashcode() method to determine if the context has "changed". However, CapchaSecurityContextImpl does not override the default hashcode implementation from SecurityContextImpl, and therefore always returns -1 (assuming the authentication is null), even though the context is human.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.captcha.CaptchaSecurityContextImplTests.java</file>
+			<file type="M">org.acegisecurity.captcha.CaptchaSecurityContextImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="219" opendate="2006-03-13 00:59:22" fixdate="2006-04-25 13:23:45" resolution="Fixed">
+		<buginformation>
+			<summary>FilterInvocationDefinitionSourceEditor tokenizing of URLs</summary>
+			<description>there is unable to process url like this one:
+/useraction.do?action=register=ROLE_ANONYMOUS 
+after proccesing acegi treat register as role name.
+this
+      // Tokenize the line into its name/value tokens
+       String[] nameValue = StringUtils.delimitedListToStringArray(line,
+                        "=");
+       String name = nameValue[0];
+       String value = nameValue[1];
+change to this
+    String name = StringUtils.substringBeforeLast( line, "=" );
+    String value = StringUtils.substringAfterLast( line, "=" );
+where is StringUtils - is apache commons lang 2.0 class
+here is source of this methods
+public static String substringBeforeLast(String str, String separator) {
+    if (str == null || separator == null || str.length() == 0 ||
+separator.length() == 0) 
+{
+        return str;
+    }
+    int pos = str.lastIndexOf(separator);
+    if (pos == -1) {        return str;    }
+    return str.substring(0, pos);
+}
+public static String substringAfterLast(String str, String separator) {
+    if (str == null || str.length() == 0) 
+{
+        return str;
+    }
+    if (separator == null || separator.length() == 0) 
+{
+        return EMPTY;
+    }
+    int pos = str.lastIndexOf(separator);
+    if (pos == -1 || pos == (str.length() - separator.length())) {        return EMPTY;    }
+    return str.substring(pos + separator.length());
+}</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.web.FilterInvocationDefinitionSourceEditor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="243" opendate="2006-04-05 08:56:40" fixdate="2006-04-25 13:37:01" resolution="Fixed">
+		<buginformation>
+			<summary>SessionRegistryImpl.getAllSessions(Object) incorrectly includes expired and destroyed sessions</summary>
+			<description>The function SessionRegistryImpl.getAllSessions(principal) returns all session associated with the principal, even it is marked as expired. This is in violation of the SessionRegistry interface contract.
+The fix is to filter out any expired session information return by function sessionRegistry.getAllSessions(principal)</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImplTests.java</file>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistry.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">197</link>
+		</links>
+	</bug>
+	<bug id="208" opendate="2006-03-06 01:34:54" fixdate="2006-04-25 13:54:47" resolution="Fixed">
+		<buginformation>
+			<summary>SessionRegistryImpl giving java.util.ConcurrentModificationException</summary>
+			<description>When we load-tested the application, the following exception was produced:
+java.util.ConcurrentModificationException
+at java.util.HashMap$HashIterator.nextEntry(HashMap.j ava:787)
+at java.util.HashMap$KeyIterator.next(HashMap.java:82 3)
+at org.acegisecurity.concurrent.SessionRegistryImpl.g etAllSessions(SessionRegistryImpl.java:72)
+at org.acegisecurity.concurrent.ConcurrentSessionCont rollerImpl.checkAuthenticationAllowed(ConcurrentSe ssionControllerImpl.java:103)
+at org.acegisecurity.providers.ProviderManager.doAuth entication(ProviderManager.java:209)
+at org.acegisecurity.AbstractAuthenticationManager.au thenticate(AbstractAuthenticationManager.java:49)
+org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.maximumSessions is set to 100,
+and we used grinder (http://grinder.sourceforge.net/) to do the load testing.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="252" opendate="2006-04-21 02:15:08" fixdate="2006-04-25 14:00:30" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthenticationToken NullPointerException</summary>
+			<description>On line 144 in method getName() the return statement produces a NullPointerException when trying to use X509 Authenticaito.  Whenever doFilter in X509ProcessingFilter is called and I do not have a certificate in the request (i.e. I am not on SSL) this code throws a NullPointerException which then causes a site error.
+public String getName() {
+        if (this.getPrincipal() instanceof UserDetails) 
+{
+            return ((UserDetails) this.getPrincipal()).getUsername();
+        }
+
+        return this.getPrincipal().toString(); 
+    }
+If the return statement is changed to check if the principal is null first we no longer have this issue. Example: return this.getPrincipal() == null ? "" : this.getPrincipal().toString();
+Also, I have security degrade to LDAP with a form entry point for users that do not have a certificate set up.  As you can imagine this also produces a NullPointerException because there is no certificate.</description>
+			<version>0.8.2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.AbstractAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="197" opendate="2006-02-21 17:41:01" fixdate="2006-04-25 14:05:59" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionController should count non-expired Sessions only</summary>
+			<description>With ConcurrentSession support enabled, its very common for a user to close their browser without logging out, thereby locking themselves out of the app until their session expires.  
+I have added a function to my admin to "logout" an active user, bascially calling SessionInformation.expireNow() for each session beloging to him.  
+But, after doing this the user still can&amp;amp;apos;t logon because ConcurrentSessionController just counts how many SessionInformation objects are returned from getAllSessions.  Until the HttpSession expires or the logged out user hits the site again (triggering a HttpSession invalidation) the user cannot login again.  
+If the ConcurrentSessionController.checkAuthenticationAllowed method counted non-expired sessions instead of all sessions, this would allow the user to log back in (even though he has an abondonded HttpSession) and continue to use the system.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImplTests.java</file>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistry.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">243</link>
+		</links>
+	</bug>
+	<bug id="199" opendate="2006-02-23 16:04:59" fixdate="2006-04-25 15:11:27" resolution="Fixed">
+		<buginformation>
+			<summary>Contacts sample throws NestedServletException (500) instead of Access denied! (403) page</summary>
+			<description>Logged on as 
+Manually entered URL http://localhost:8080/contacts/secure/del.htm?contactId=2
+NB - You have to manually enter the URL, but still, the behaviour doesn&amp;amp;apos;t appear to be as intended
+Tomcat throws:
+org.springframework.web.util.NestedServletException: Request processing failed; nested exception is org.acegisecurity.AccessDeniedException: Access is denied
+...
+root cause
+org.acegisecurity.AccessDeniedException: Access is denied</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.ExceptionTranslationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">220</link>
+			<link type="Duplicate" description="is duplicated by">230</link>
+		</links>
+	</bug>
+	<bug id="253" opendate="2006-04-26 01:12:21" fixdate="2006-04-26 03:24:23" resolution="Fixed">
+		<buginformation>
+			<summary>UserDetails JdbcDaoImpl should check for no auths after calling addCustomAuthorities</summary>
+			<description>In org.acegisecurity.userdetails.jdbc.JdbcDaoImpl the code checks for the user having no GrantedAuthorites before ever calling addCustomAuthorities. That check should be made after subclasses have had an opprotunity to grant custom authorities.
+Begining with Line 183:
+        List dbAuths = authoritiesByUsernameMapping.execute(user.getUsername());
+        if (dbAuths.size() == 0) 
+{
+            throw new UsernameNotFoundException("User has no GrantedAuthority");
+        }
+
+        GrantedAuthority[] arrayAuths = {};
+
+        addCustomAuthorities(user.getUsername(), dbAuths);
+
+
+Should be:
+
+        List dbAuths = authoritiesByUsernameMapping.execute(user.getUsername());
+
+        addCustomAuthorities(user.getUsername(), dbAuths);
+
+        if (dbAuths.size() == 0) {            throw new UsernameNotFoundException("User has no GrantedAuthority");        }
+
+        GrantedAuthority[] arrayAuths = {};</description>
+			<version>1.0.0 RC1</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.jdbc.JdbcDaoImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="256" opendate="2006-04-27 17:42:26" fixdate="2006-04-27 17:43:09" resolution="Fixed">
+		<buginformation>
+			<summary>Contacts Sample does not use AcegiMessageSource</summary>
+			<description>AcegiSecurityExceptions thrown by the Contacts sample fail to localize, due to a missing messageSource in the middle-tier application context.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.AcegiMessageSource.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="258" opendate="2006-04-30 06:44:56" fixdate="2006-04-30 06:47:17" resolution="Fixed">
+		<buginformation>
+			<summary>Use of URI class in LdapUtils is not compatible with JDK 1.3</summary>
+			<description>URI is used to parse the Ldap url, but is not available in Java 1.3.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ldap.LdapUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="268" opendate="2006-05-15 22:32:27" fixdate="2006-05-19 08:40:22" resolution="Fixed">
+		<buginformation>
+			<summary>Uninitialized app context problem in HttpSessionEventPublisher </summary>
+			<description>We&amp;amp;apos;re having a problem on some particular versions of Oracle app server (but not on others, e.g. OC4J 9.0.4) where the application context hasn&amp;amp;apos;t been initialized when the contextInitialized method is called. According to the Javadocs for ServletContextListener, listeners will be notified before servlets and filters have been created. We&amp;amp;apos;re using a ContextLoaderServlet so it probably shouldn&amp;amp;apos;t work at all.
+I&amp;amp;apos;d like to change the class to modify the way the app context reference is set, since it isn&amp;amp;apos;t actually needed until session initialization/destruction events are generated. This would perhaps mean calling getWebApplicationContext, rather than getRequiredWebApplicationContext in the contextInitialized method (logging a warning if the app context is null), caching the servlet context  and changing getContext from
+    ApplicationContext getContext() 
+{
+       Assert.notNull(context, "setContext(...) never called, ApplicationContext must not be null");
+        return context;
+    }
+
+to 
+    ApplicationContext getContext() {
+       if(context == null) 
+{
+            setContext( WebApplicationContextUtils.getRequiredWebApplicationContext(cachedServletContext) );       
+       }
+       return context;
+    }
+I guess the alternative would be to write a servlet version, similar to the Spring context loader, but that seems unnecessary.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.session.HttpSessionEventPublisherTests.java</file>
+			<file type="M">org.acegisecurity.ui.session.HttpSessionEventPublisher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="267" opendate="2006-05-11 08:42:47" fixdate="2006-05-22 21:42:20" resolution="Fixed">
+		<buginformation>
+			<summary>NamedEntityObjectIdentity not stripping cglib ehanced class names.</summary>
+			<description>There is a bug in NamedEntityObjectIdentity that is causing me problems. I checked with the version in head and it still exists there.  Assuming your class has the cglib enhanced name 
+    model.Site$$EnhancerByCGLIB$$378957af  
+The ClassNameUtils.getShortName methids is called turning the above into  
+   model.Site$$EnhancerByCGLIB$$378957af.Site 
+Before its gets passed into the getPackageName method, which then just drops off the .Site giving you back  your original class name.
+The problem, after chaseing my tail for a while, turns out to be the call to getPackageName(object.getClass().getName()) is not  closed.
+This 
+ public NamedEntityObjectIdentity(Object object)
+        throws IllegalAccessException, InvocationTargetException {
+        Assert.notNull(object, "object cannot be null");
+        this.classname = (getPackageName(object.getClass().getName()) == null)
+            ? ClassUtils.getShortName(object.getClass())
+            : getPackageName(object.getClass().getName() + "."
+                + ClassUtils.getShortName(object.getClass()));
+Should be
+ public NamedEntityObjectIdentity(Object object)
+        throws IllegalAccessException, InvocationTargetException {
+        Assert.notNull(object, "object cannot be null");
+        this.classname = (getPackageName(object.getClass().getName()) == null)
+            ? ClassUtils.getShortName(object.getClass())
+            : getPackageName(object.getClass().getName()) + "."
+                + ClassUtils.getShortName(object.getClass());</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.acl.basic.NamedEntityObjectIdentity.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="266" opendate="2006-05-09 12:32:21" fixdate="2006-05-22 21:49:51" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionControllerImpl doesn&amp;apos;t permit unlimited sessions</summary>
+			<description>a value of -1 for maximumSessions in class ConcurrentSessionControllerImpl will throw a ConcurrentLoginException
+code fragement  should also check for -1    
+if (sessionCount &amp;lt; allowableSessions) {
+                    return;</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="281" opendate="2006-05-30 12:46:18" fixdate="2006-05-31 03:41:01" resolution="Fixed">
+		<buginformation>
+			<summary>Acegi 1.0 final - not compatible with Spring 1.2.8</summary>
+			<description>Hi - Luke suggested we raise a ticket about this.
+When creating a bean of class org.acegisecurity.ldap.search.FilterBasedLdapUserSearch with Spring 1.2.8, I receive the following error:
+org.springframework.beans.factory.BeanDefinitionStoreException: Error registering bean with name &amp;amp;apos;userSearch&amp;amp;apos; defined in ServletContext resource [/WEB-INF/applicationContext-acegi-security-omj.xml]: Class that bean class [org.acegisecurity.ldap.search.FilterBasedLdapUserSearch] depends on not found; nested exception is java.lang.NoClassDefFoundError: org/springframework/dao/EmptyResultDataAccessEx
+ception
+java.lang.NoClassDefFoundError: org/springframework/dao/EmptyResultDataAccessException
+        at java.lang.Class.forName0(Native Method)..
+Reference Matt Raible&amp;amp;apos;s forum post about the same issue: http://forum.springframework.org/showthread.php?t=25430&amp;amp;highlight=EmptyResultDataAccessException
+Thank you</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ldap.search.FilterBasedLdapUserSearch.java</file>
+			<file type="M">org.acegisecurity.ldap.LdapTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="303" opendate="2006-06-14 03:42:12" fixdate="2006-06-14 10:09:10" resolution="Fixed">
+		<buginformation>
+			<summary>LdapUserDetailsMapper should check that an attribute has actually been retrieved before attempting to map it to a role</summary>
+			<description>If a particular attribute has not been retrieved from the directory (e.g. because it doesn&amp;amp;apos;t exist, or the user doesn&amp;amp;apos;t have permissions to read it), then in the code
+            Attribute roleAttribute = attributes.get(roleAttributes[i]);
+            NamingEnumeration attributeRoles = roleAttribute.getAll();
+roleAttribute may be null and the second line will cause  a NullPointerException. A check should be made that the value isn&amp;amp;apos;t null and a debug message logged if it is.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.ldap.LdapUserDetailsMapper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="308" opendate="2006-06-29 03:03:56" fixdate="2006-07-11 21:30:57" resolution="Fixed">
+		<buginformation>
+			<summary>Lookup of headers in SavedRequestAwareWrapper is not case insensitive</summary>
+			<description>According to the servlet spec, lookups using HttpServletRequest.getHeader and getHeaders should be case insensitive.  The current implementation of SavedRequest uses a HashMap to store saved headers.  The result is that the lookup of headers by name is case sensitive when SavedRequestAwareWrapper delegates to a SavedRequest.
+We use a library that relies on the User-Agent header for rendering.  We experienced problems with rendering on the first page after login.  After debugging we found that the library was not able to get the correct value for the User-Agent due to the case sensitivity of the SavedRequest implementation.  I am attaching a patch that fixes this problem.  The patch is against the 1.0.1 tag.
+After redirect after login:
+request.getHeader("User-Agent") returns null;
+request.getHeader("user-agent") returns the correct value;
+Normal Request:
+request.getHeader("User-Agent") returns the correct value;
+request.getHeader("user-agent") returns the correct value;</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.acegisecurity.ui.savedrequest.SavedCookieTest.java</file>
+			<file type="M">org.acegisecurity.ui.savedrequest.SavedRequest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">315</link>
+		</links>
+	</bug>
+	<bug id="311" opendate="2006-07-05 00:18:13" fixdate="2006-09-14 14:09:22" resolution="Fixed">
+		<buginformation>
+			<summary>equals(Object object) in SecurityConfig does not obey symmetry requirement of the interface contract</summary>
+			<description>The SecurityConfig.equals(Object object) method violates the symmetry requirement imposed by the Object.equals(Object object) contract. If the &amp;amp;apos;other&amp;amp;apos; Object is a String, it compares that String to the attribute String stored in the SecurityConfig.
+Consider the following situation:
+[code]
+String myString = "CONFIG";
+SecurityConfig myConfig = new SecurityConfig("CONFIG");
+[/code]
+While [code]myConfig.equals(myString)[/code] will return true, [code]myString.equals(myConfig)[/code] will return false, violating the equals symmetry.
+I&amp;amp;apos;ve checked the 1.1-SNAPSHOT (via http://www.acegisecurity.org/multiproject/acegi-security/clover/org/acegisecurity/SecurityConfig.html) and the equals method of SecurityConfig apparently has not changed.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.securechannel.ChannelDecisionManagerImplTests.java</file>
+			<file type="M">org.acegisecurity.SecurityConfigTests.java</file>
+			<file type="M">org.acegisecurity.SecurityConfig.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="293" opendate="2006-06-02 01:06:56" fixdate="2006-09-14 14:20:27" resolution="Fixed">
+		<buginformation>
+			<summary>BasicAclEntryAfterInvocationCollectionFilteringProvider causes ConcurrentModificationExceptio</summary>
+			<description>The BasicAclEntryAfterInvocationCollectionFilteringProvider.CollectionFilterer has been modified is may 2005 to gain performance at the cost of risking a ConcurrentModificationException. The current version now unnecessary complex. In addition, the debug message no longer prints the correct original size.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.afterinvocation.BasicAclEntryAfterInvocationCollectionFilteringProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="341" opendate="2006-08-25 01:31:48" fixdate="2006-09-14 14:22:00" resolution="Duplicate">
+		<buginformation>
+			<summary>Retrieving User after AuthenticationException</summary>
+			<description>In AbstractUserDetailsAuthenticationProvider the authenticate() method calls the additionalAuthenticationChecks() method in a try block and can catch an AuthenticationException.  The code in the catch block (line 147 for rel 1.0.1) calls the retrieveUser() and additionalAuthenticationChecks() methods.  If the user details used for the call in the try block came from the cache, I understand why this makes sense.  However, if cacheWasUsed is false, the call to retrieve the user details obtains the exact same user details.
+Perhaps the catch block should only repeat those method calls if cacheWasUsed is true, and throws the caught AuthenticationException if cacheWasUsed is false.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">328</link>
+		</links>
+	</bug>
+	<bug id="297" opendate="2006-06-05 19:27:55" fixdate="2006-09-28 19:46:36" resolution="Fixed">
+		<buginformation>
+			<summary>defaultTargetUrl Scheme</summary>
+			<description>Documentation regarding inclusion of http://or https:// scheme in the defaultTargetUrl :
+defaultTargetUrl indicates the URL that should be used for redirection if the HttpSession attribute named ACEGI_SAVED_REQUEST_KEY does not indicate the target URL once authentication is completed successfully. eg: /. The defaultTargetUrl will be treated as relative to the web-app&amp;amp;apos;s context path, and should include the leading /. Alternatively, inclusion of a scheme name (eg http:// or https://) as the prefix will denote a fully-qualified URL and this is also supported.
+Snippet of acegi configuration file:
+    &amp;lt;bean id="authenticationProcessingFilter" class="org.acegisecurity.ui.webapp.AuthenticationProcessingFilter"&amp;gt;
+        &amp;lt;property name="authenticationManager"&amp;gt;&amp;lt;ref local="authenticationManager"/&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="authenticationFailureUrl"&amp;gt;&amp;lt;value&amp;gt;/login.do?error=true&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="defaultTargetUrl"&amp;gt;&amp;lt;value&amp;gt;https://bpz.fluxweb.com/ctxroot/home.do?method=home&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="filterProcessesUrl"&amp;gt;&amp;lt;value&amp;gt;/j_security_check&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+However the defaultTargetUrl is always prefixed with the context root (based on the debugging information below):
+[app] DEBUG [TP-Processor2] AbstractProcessingFilter.successfulAuthentication(384) | Redirecting to target URL from HTTP Session (or default): /ctxroothttps://bpz.fluxweb.com/ctxroot/home.do?method=home</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.SiteminderAuthenticationProcessingFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">355</link>
+		</links>
+	</bug>
+	<bug id="382" opendate="2006-11-07 16:07:02" fixdate="2006-11-13 12:30:01" resolution="Fixed">
+		<buginformation>
+			<summary>messages.properties error in contacts samples</summary>
+			<description>In acegisecurity\samples\contacts\src\main\resources, there is messages.properties file.Following is the content:
+err.name.webContact.name=Name 3-50 characters is required.
+err.name.webContact.email=Email 3-50 characters is required.
+Here, the second name should be "email":
+err.name.webContact.name=Name 3-50 characters is required.
+err.email.webContact.email=Email 3-50 characters is required.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">samples.contacts.src.main.java.sample.contact.WebContactValidator.java</file>
+			<file type="M">samples.contacts.src.main.java.sample.contact.AddPermissionValidator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="353" opendate="2006-09-18 09:56:06" fixdate="2006-11-13 15:19:29" resolution="Duplicate">
+		<buginformation>
+			<summary>Acegi only checks current class interfaces against rules</summary>
+			<description>A implements I
+B extends A
+If method definition specifies I methods ( eg. I.myMethod() ) and the invoked class is B then method is not securited.
+MethodDefinitionMap 201-202
+        // Add attributes explicitly defined for this method invocation&amp;amp;apos;s interfaces
+        Class[] interfaces = method.getDeclaringClass().getInterfaces();</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditorTests.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.intercept.method.MethodDefinitionMap.java</file>
+			<file type="M">org.springframework.security.util.SimpleMethodInvocation.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributesTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditor.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.MockMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.OtherTargetObject.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisorTests.java</file>
+			<file type="M">org.springframework.security.config.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.ConfigAttributeDefinition.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.aspectj.AspectJSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.springframework.security.annotation.MethodDefinitionSourceEditorTigerTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.MockJoinPoint.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.springframework.security.util.MethodInvocationUtils.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributes.java</file>
+			<file type="M">org.springframework.security.vote.BasicAclEntryVoterTests.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributesTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">99</link>
+		</links>
+	</bug>
+	<bug id="274" opendate="2006-05-24 07:20:52" fixdate="2006-11-16 12:16:59" resolution="Fixed">
+		<buginformation>
+			<summary>Generic Superclass Overridden Annotation Attribute not found</summary>
+			<description>AdvisorChainFactoryUtils does not return a SecurityConfig for a method security via annotation attribute source for a bridge method using generics when the annotation is on the subclass.
+Here is an example, complete with source and JUnit test.
+Department extends Entity
+BusinessServiceImpl implements BusinessService and takes a generic type that extends Entity
+there is a method: public E someUserMethod3(final E entity) with no annotation
+DepartmentService extends BusinessService with the method: Department someUserMethod3(final Department dept) with an annotation @Secured(
+{"ROLE_USER"})
+DepartmentServiceImpl extends BusinessServerImpl with the generic type Department and implements DepartmentService, it also has a method: public Department someUserMethod3(final Department dept) with a different annotation of @Secured({"ROLE_ADMIN"})
+
+AdvisorChainFactoryUtils finds the bridge method that Java 1.5 creates to adhere to the interface BusinessService this method is: public Entity someUserMethod3(final Entity entity)
+the utility does not find the annotation (because it&amp;amp;apos;s not on this class) but this means that any class that uses this class via an interface will not have security applied to it.  I have all of these classes and the JUnit test to add to SecurityAnnotationAttributesTests.  I will try to post them here, but if you need the files you can e-mail me
+
+/********************************************************************/
+New classes start here:
+
+/********************************************************************/
+
+
+package org.acegisecurity.annotation;
+
+import org.acegisecurity.Entity;
+
+/**
+ * Notes:&amp;lt;br/&amp;gt;
+ *
+ * @author joes.checkernet.com
+ * @version 0.0.1
+ */
+public class BusinessServiceImpl&amp;lt;E extends Entity&amp;gt; implements BusinessService {
+
+    @Secured({"ROLE_USER"}
+)
+    public void someUserMethod1() {
+    }
+    @Secured(
+{"ROLE_USER"})
+    public void someUserMethod2() {
+    }
+
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public void someUserAndAdminMethod() {
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    public void someAdminMethod() {
+    }
+
+    public E someUserMethod3(final E entity) {
+        return entity;
+    }
+}
+
+package org.acegisecurity.annotation;
+
+import org.acegisecurity.Entity;
+
+/**
+ * Notes:&amp;lt;br/&amp;gt;
+ *
+ * @author joes.checkernet.com
+ * @version 0.0.1
+ */
+public class Department extends Entity {
+    //~ Instance fields ========================================================
+
+    private boolean active = true;
+
+    //~ Constructors ===========================================================
+
+    public Department(String name) {
+        super(name);
+    }
+
+    //~ Methods ================================================================
+
+    public boolean isActive() {
+        return this.active;
+    }
+
+    void deactive() {
+        this.active = true;
+    }
+
+}
+
+
+package org.acegisecurity.annotation;
+
+/**
+ * Notes:&amp;lt;br/&amp;gt;
+ *
+ * @author joes.checkernet.com
+ * @version 0.0.1
+ */
+public interface DepartmentService extends BusinessService {
+
+    @Secured({"ROLE_USER"}
+)
+    Department someUserMethod3(Department dept);
+}
+package org.acegisecurity.annotation;
+import org.acegisecurity.Entity;
+/**
+
+Notes:&amp;lt;br/&amp;gt;
+ *
+@author joes.checkernet.com
+@version 0.0.1
+ */
+public class DepartmentServiceImpl extends BusinessServiceImpl &amp;lt;Department&amp;gt; implements DepartmentService {
+
+    @Secured(
+{"ROLE_ADMIN"}
+)
+    public Department someUserMethod3(final Department dept) 
+{
+        return super.someUserMethod3(dept);
+    }
+}
+/********************************************************************/
+Changes start here
+/********************************************************************/
+Changes to SecurityAnnotationAttributesTests for the JUnit test.  The first part checks that we can find the security annotation on the implementation class, the second part fails because it doesn&amp;amp;apos;t find it for the bridge method signature.
+    private Log logger = LogFactory.getLog(SecurityAnnotationAttributesTests.class);
+    public void testGenericsSuperclassDeclarationsAreIncludedWhenSubclassesOverride() {
+        Method method = null;
+        try {
+            method = DepartmentServiceImpl.class.getMethod("someUserMethod3", new Class[]
+{Department.class}
+);
+        } catch (NoSuchMethodException unexpected) 
+{
+            fail("Should be a superMethod called &amp;amp;apos;someUserMethod3&amp;amp;apos; on class!");
+        }
+        Collection attrs = this.attributes.getAttributes(method);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("attrs: ");
+            logger.debug(attrs);
+        }
+        assertNotNull(attrs);
+
+        // expect 1 attribute
+        assertTrue("Did not find 1 attribute", attrs.size() == 1);
+
+        // should have 1 SecurityConfig
+        for (Object obj : attrs) {
+            assertTrue(obj instanceof SecurityConfig);
+            SecurityConfig sc = (SecurityConfig) obj;
+            assertEquals("Found an incorrect role", "ROLE_ADMIN", sc.getAttribute());
+        }
+
+        Method superMethod = null;
+        try {
+            superMethod = DepartmentServiceImpl.class.getMethod("someUserMethod3", new Class[]{Entity.class});
+        } catch (NoSuchMethodException unexpected) {            fail("Should be a superMethod called &amp;amp;apos;someUserMethod3&amp;amp;apos; on class!");        }
+        Collection superAttrs = this.attributes.getAttributes(superMethod);
+        if (logger.isDebugEnabled()) 
+{
+            logger.debug("superAttrs: ");
+            logger.debug(superAttrs);
+        }
+        assertNotNull(superAttrs);
+        // expect 1 attribute
+        assertTrue("Did not find 1 attribute", superAttrs.size() == 1);
+        // should have 1 SecurityConfig
+        for (Object obj : superAttrs) 
+{
+            assertTrue(obj instanceof SecurityConfig);
+            SecurityConfig sc = (SecurityConfig) obj;
+            assertEquals("Found an incorrect role", "ROLE_ADMIN", sc.getAttribute());
+        }
+    }</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.acegisecurity.annotation.SecurityAnnotationAttributes.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="395" opendate="2006-11-20 05:06:38" fixdate="2006-11-20 05:43:54" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionEventPublisher causes a NullPointerException</summary>
+			<description>As explained in...
+http://forum.springframework.org/showthread.php?t=30766
+The code naively assumes that one intance of the HttpSessionEventPublisher will be created by the container. In Websphere 5.1.1 at least, this is not true.
+The code will be modified to get the ApplicationContext in an as needed basis rather than storing it in a field.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.session.HttpSessionEventPublisherTests.java</file>
+			<file type="M">org.acegisecurity.ui.session.HttpSessionEventPublisher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="357" opendate="2006-09-20 05:15:31" fixdate="2007-04-23 17:44:23" resolution="Fixed">
+		<buginformation>
+			<summary>SwitchUserProcessingFilter allows a null j_username</summary>
+			<description>The SwitchUserProcessingFilter contains the following code.  
+I can&amp;amp;apos;t see any way that the filter could do something reasonable with a null user name.   The username should be a required parameter.  If the username parameter is not supplied, then the request is malformed and should be rejected. 
+ 195     protected Authentication attemptSwitchUser(HttpServletRequest request)
+  196         throws AuthenticationException {
+  197         UsernamePasswordAuthenticationToken targetUserRequest = null;
+  199         String username = request.getParameter(ACEGI_SECURITY_SWITCH_USERNAME_KEY);
+  201         if (username == null) 
+{
+  202             username = "";
+  203         }
+  209         // load the user by name
+  210         UserDetails targetUser = this.userDetailsService.loadUserByUsername(username);</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.switchuser.SwitchUserProcessingFilterTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="305" opendate="2006-06-23 10:21:23" fixdate="2007-05-23 13:05:02" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionContextIntegrationFilter to retain SecurityContext when rendering error pages</summary>
+			<description>This happens when you want to set up error pages as described in SRV.9.9.2 Error Pages in Java Servlet Specification
+Version 2.4.
+If for example want to display the current user name on an error page, the security context does not contain the authenticated user.
+The reason is believed to be that HttpSessionContextIntegrationFilter is only applied once per request.
+Seehttp://forum.springframework.org/showthread.php?t=21534</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">361</link>
+		</links>
+	</bug>
+	<bug id="584" opendate="2007-10-26 09:45:47" fixdate="2007-12-01 14:20:56" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentSessionControllerImpl shouldn&amp;apos;t have a default sessionRegistry set internally</summary>
+			<description>It contains the code
+    private SessionRegistry sessionRegistry = new SessionRegistryImpl();
+which is a bad idea, since SessionRegistryImpl must be registered through the application context in order to receive "session destroyed" events. If the user fails to set the sessionRegistry property then things won&amp;amp;apos;t work properly. The ConcurrentSessionFilter may also be using a different session registry instance.</description>
+			<version>1.0.0</version>
+			<fixedVersion>1.0.6, 2.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.concurrent.ConcurrentSessionControllerImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="717" opendate="2008-03-15 14:59:35" fixdate="2008-03-15 16:04:04" resolution="Fixed">
+		<buginformation>
+			<summary>Issue with User.getAuthorities() returning GrantedAuthority[]s in varying order and User.equals(Object) test failures as a result</summary>
+			<description>JdbcUserDetailsManagerTests would fail during the createUserInsertsCorrectData and updateUserChangesDataCorrectlyAndClearsCache tests on certain platforms.
+This was due to issues with the GrantedAuthority[] iteration order as returned by User. This problem was caused because the tests included:
+private static final UserDetails joe = new User("joe", "password", true, true, true, true, AuthorityUtils.stringArrayToAuthorityArray(new String[]
+{"A","C","B"}
+));
+In turn JdbcDaoImpl.loadUserByUsername(String) is internally using a HashSet to manage the merging of GrantedAuthority[] instances from groups, those directly-assigned to the user, and any provided via the addCustomAuthorities(String username, List authorities) method. Because HashSet does not guarantee the order in which elements are returned, some platforms would return the above authorities as A, C, B (as required by the User.equals(Object) method and tests such as JdbcUserDetailsManagerTests which use User.equals(Object)) whereas others would reorder it (to A, B, C, although other variants were possible):
+java.lang.AssertionError: expected:&amp;lt;org.springframework.security.userdetails.User@234c9000: Username: joe; Password: [PROTECTED]; Enabled: true; AccountNonExpired: true; credentialsNonExpired: true; AccountNonLocked: true; Granted Authorities: A, C, B&amp;gt; but was:&amp;lt;org.springframework.security.userdetails.User@234c9000: Username: joe; Password: [PROTECTED]; Enabled: true; AccountNonExpired: true; credentialsNonExpired: true; AccountNonLocked: true; Granted Authorities: A, B, C&amp;gt;
+The issue is not so much with JdbcDaoImpl or its corresponding test, but rather that the User.equals(Object) method and/or User.getAuthorities() should more predictably operate when the GrantedAuthority[] array ordering varies. I am unaware of any users depending on GrantedAuthority[] ordering logic, as this has never been specified in the UserDetails contract as predictable. Therefore the most appropriate solution to this issue is to specify that UserDetails.getAuthorities() must consistently return GrantedAuthority[]s in the order of their natural key, irrespective of the order in which the GrantedAuthority[]s were added to the UserDetails instance. The UserDetails.equals(Object) should ensure it uses UserDetails.getAuthorities() in its evaluations, thus simplifying implementation of the symmetry requirements associated with Object.hashCode(). The GrantedAuthority interface should also extend Comparable, to ensure implementations have a simple way of implementing the required logic.</description>
+			<version>1.0.0</version>
+			<fixedVersion>2.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagCustomGrantedAuthorityTests.java</file>
+			<file type="M">org.springframework.security.adapters.jboss.JbossSpringSecurityLoginModuleTests.java</file>
+			<file type="M">org.springframework.security.adapters.jetty.JettyAcegiUserRealmTests.java</file>
+			<file type="M">org.springframework.security.providers.portlet.populator.ContainerPortletAuthoritiesPopulatorTests.java</file>
+			<file type="M">org.springframework.security.adapters.resin.ResinAcegiAuthenticatorTests.java</file>
+			<file type="M">org.springframework.security.adapters.catalina.CatalinaSpringSecurityUserRealmTests.java</file>
+			<file type="M">org.springframework.security.userdetails.UserTests.java</file>
+			<file type="M">org.springframework.security.GrantedAuthorityImpl.java</file>
+			<file type="M">org.springframework.security.GrantedAuthority.java</file>
+			<file type="M">org.springframework.security.userdetails.UserDetails.java</file>
+			<file type="M">org.springframework.security.GrantedAuthorityImplTests.java</file>
+			<file type="M">org.springframework.security.userdetails.User.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="99" opendate="2005-11-14 14:27:20" fixdate="2008-03-24 11:45:11" resolution="Fixed">
+		<buginformation>
+			<summary>MethodDefinitionMap must support superclass declared methods</summary>
+			<description>As reported by Tom Dunstan, MethodDefinitionMap line 168 by default will only locate methods declared for the class, and not for superclasses (ie uses clazz.getMethods() instead of clazz.getDeclaredMethods()). Whilst this is consistent with Spring&amp;amp;apos;s transaction handling, it does present an issue for those relying on generic superclasses and wanting to define authorization configuration attributes against them. It is proposed to add a new keyword to the property editor to direct MethodDefinitionMap to use getDeclaredMethods() vs getMethods(), such that by default the existing behaviour is preserved (to be consistent with transaction services) but the superclass search behaviour can be used instead. Alternatively, we could introduce an optional prefix the method name, such as "+", which denotes "locate the matching methods in the superclass". This would have the added advantage of ensuring only patterns where you deliberately want to use getDeclaredMethods() will use that method.</description>
+			<version>1.0.0</version>
+			<fixedVersion>2.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditorTests.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.intercept.method.MethodDefinitionMap.java</file>
+			<file type="M">org.springframework.security.util.SimpleMethodInvocation.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributesTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditor.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.MockMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.OtherTargetObject.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisorTests.java</file>
+			<file type="M">org.springframework.security.config.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.ConfigAttributeDefinition.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.aspectj.AspectJSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.springframework.security.annotation.MethodDefinitionSourceEditorTigerTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.MockJoinPoint.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.springframework.security.util.MethodInvocationUtils.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributes.java</file>
+			<file type="M">org.springframework.security.vote.BasicAclEntryVoterTests.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributesTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">428</link>
+			<link type="Duplicate" description="is duplicated by">424</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+			<link type="Related" description="is related to">734</link>
+		</links>
+	</bug>
+</bugrepository>

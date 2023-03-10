@@ -1,0 +1,592 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="66" opendate="2004-12-18 09:09:13" fixdate="2007-10-12 22:13:25" resolution="Duplicate">
+		<buginformation>
+			<summary>[IO] FilenameFilter that uses regular expressions (upload)</summary>
+			<description>I was in need of a FilenameFilter that observed case-sensetivity and couldn&amp;amp;apos;t
+find anything in the existing commons-io library to meet this requirement. So,
+I&amp;amp;apos;ve thrown together RegexFileFilter and an accompanying unit test to fill the
+void. Please add/apply to commons-io as necessary.
+-sp
+I don&amp;amp;apos;t see a way to attach files so heres the cut-n-paste:
+================================================================================
+/*
+
+Copyright 2002-2004 The Apache Software Foundation.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
+package org.apache.commons.io.filefilter;
+
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.apache.regexp.RE;
+import org.apache.regexp.RESyntaxException;
+/**
+
+Filters files based on a regular expression that is matched against the
+entire filename (including drive, path, and name). Of particular note about
+this filter is the ability to express case-sensetivity.
+
+&amp;lt;p&amp;gt;
+For example, to retrieve and print all files that contain the string
+&amp;lt;code&amp;gt;"xyz"&amp;lt;/code&amp;gt; in the current directory, the regular expression
+&amp;lt;code&amp;gt;".xyz."&amp;lt;/code&amp;gt; can be used:
+ *
+&amp;lt;pre&amp;gt;
+File dir = new File(".");
+String[] files = dir.list(new RegexFileFilter(".xyz.", true));
+for (int i = 0; i &amp;lt; files.length; i++) 
+{
+ *     System.out.println(files[i]);
+ * }
+&amp;lt;/pre&amp;gt;
+
+To match using case-insensetivity,
+&amp;lt;code&amp;gt;new RegexFileFilter(".xyz.", false)&amp;lt;/code&amp;gt; would be appropriate.
+
+@author Semir Patel
+ */
+public class RegexFileFilter extends AbstractFileFilter {
+
+    //--------------------------------------------------------------------------
+    // Fields
+    //--------------------------------------------------------------------------
+    /** 
+
+Regular expression matcher.
+     */
+    private RE regExp;
+
+    //--------------------------------------------------------------------------
+    // Constructors
+    //--------------------------------------------------------------------------
+    /**
+
+Creates a file filter that applies a regular expression to the entire
+path + name of a file&amp;amp;apos;s absolute location.
+
+@param regExp Regular expression to match.
+@param matchCase Set to true to match using case sensetivity, false
+otherwise.
+@throws RESyntaxException if the regular expression is invalid.
+     */
+    public RegexFileFilter(String regExp, boolean matchCase)
+        throws RESyntaxException 
+{
+        
+        this.regExp = new RE(regExp, 
+            matchCase ? RE.MATCH_NORMAL: RE.MATCH_CASEINDEPENDENT);        
+    }
+
+    //--------------------------------------------------------------------------
+    // Overrides AbstractFileFilter
+    //--------------------------------------------------------------------------
+    /**
+
+Accepts by matching the filename against a regular expression.
+
+@throws RuntimeException if an IOException occurs.
+@see org.apache.commons.io.filefilter.AbstractFileFilter#accept(
+java.io.File)
+     */
+    public boolean accept(File file) {
+
+        try 
+{
+            return regExp.match(file.getCanonicalPath());
+        }
+        catch (IOException e) 
+{
+            
+            // TODO: Follow commons-io existing practice...
+            throw new RuntimeException(e);
+        }
+    }
+}
+==========================================================================
+/*
+
+Copyright 2002-2004 The Apache Software Foundation.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
+package org.apache.commons.io.filefilter;
+
+import java.io.File;
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+import org.apache.commons.io.FileUtils;
+import org.apache.regexp.RESyntaxException;
+/**
+
+Unit test for 
+{@link RegexFileFilterTest}
+.
+
+@author Semir Patel
+ */
+public class RegexFileFilterTest extends TestCase {
+
+    //--------------------------------------------------------------------------
+    // Constants
+    //--------------------------------------------------------------------------
+    /**
+
+Temporary file names that unit tests will use for verification.
+     */
+    private static final String[] FILENAMES = new String[] 
+{
+        "EVENT.java",
+    }
+;
+
+    //--------------------------------------------------------------------------
+    // Fields
+    //--------------------------------------------------------------------------
+    /** 
+
+Test directory for filtering files.
+     */
+    private File testDir;
+
+    //--------------------------------------------------------------------------
+    // Main
+    //--------------------------------------------------------------------------
+    /** 
+
+Entrypoint.
+
+@param args None recognized.
+     */
+    public static void main(String[] args)
+    {
+        TestRunner.run(RegexFileFilterTest.class);
+    }
+
+    //--------------------------------------------------------------------------
+    // Overrides TestCase
+    //--------------------------------------------------------------------------
+    /** 
+
+Create a temporary directory with files to use for testing.
+     */
+    protected void setUp() throws Exception 
+{
+        
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        testDir = File.createTempFile("temp", "", tmpDir);
+        testDir.delete();
+        
+        assertTrue(
+            "test dir creation failed for " + testDir.getCanonicalPath(), 
+            testDir.mkdirs()); 
+        
+        for (int i = 0; i &amp;lt; FILENAMES.length; i++)
+            FileUtils.writeStringToFile(
+                new File(testDir, FILENAMES[i]), "testing" + i, "UTF-8");
+    }
+
+    /**
+
+Clean up temporary directory.
+     */
+    protected void tearDown() throws Exception 
+{
+        FileUtils.forceDelete(testDir);
+        super.tearDown();
+    }
+
+    //--------------------------------------------------------------------------
+    // Case Insensetive 
+    //--------------------------------------------------------------------------
+    public void testAccept_CaseInsensetive_NotFound() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("bogus", false);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("No matches should have been found", 0, matches.length);
+    }
+ 
+    public void testAccept_CaseInsensetive_CaseMatch() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("EVENT", false);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("One match should have been found", 1, matches.length);
+        assertEquals("One match should have been found", "EVENT.java", matches[0]);
+    }
+ 
+    public void testAccept_CaseInsensetive_CaseMismatch() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("event", false);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("One match should have been found", 1, matches.length);
+        assertEquals("One match should have been found", "EVENT.java", matches[0]);
+    }
+
+    //--------------------------------------------------------------------------
+    // Case Sensetive 
+    //--------------------------------------------------------------------------
+    public void testAccept_CaseSensetive_NotFound() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("bogus", true);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("No matches should have been found", 0, matches.length);
+    }
+ 
+    public void testAccept_CaseSensetive_ExactMatch() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("EVENT", true);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("One match should have been found", 1, matches.length);
+        assertEquals("One match should have been found", "EVENT.java", matches[0]);
+    }
+ 
+    public void testAccept_CaseSensetive_CaseMismatch() throws Exception 
+{
+        IOFileFilter filter = new RegexFileFilter("event", true);
+        
+        String matches[] = testDir.list(filter);
+        assertEquals("No matches should have been found", 0, matches.length);
+    }
+ 
+    //--------------------------------------------------------------------------
+    // Negative Unit Tests
+    //--------------------------------------------------------------------------
+    /**
+
+Make sure constructor blows up on invalid regular expressions.
+     */
+    public void testConstructor_Invalid_RegExp() {
+
+        try 
+{
+            RegexFileFilter filter = new RegexFileFilter("*", true);
+            fail("Expected exception on invalid regular expression");
+        }
+        catch (RESyntaxException rese) 
+{
+            // Success
+        }
+    }
+}</description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterUtils.java</file>
+			<file type="D">org.apache.commons.io.filefilter.RegexFilter.java</file>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">74</link>
+		</links>
+	</bug>
+	<bug id="74" opendate="2006-01-30 20:35:37" fixdate="2007-10-13 01:37:54" resolution="Fixed">
+		<buginformation>
+			<summary>Regular expression file name filter implementation</summary>
+			<description>I&amp;amp;apos;ve written a RegexFilter for commons-io. I&amp;amp;apos;d like to share it with other&amp;amp;apos;s.
+Hope there&amp;amp;apos;ll be a JDK 1.4+ branch soon, so this can be applied.</description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterUtils.java</file>
+			<file type="D">org.apache.commons.io.filefilter.RegexFilter.java</file>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">150</link>
+			<link type="Duplicate" description="is duplicated by">66</link>
+			<link type="dependent" description="depends upon">127</link>
+		</links>
+	</bug>
+	<bug id="136" opendate="2007-11-20 12:08:09" fixdate="2007-11-20 12:36:43" resolution="Fixed">
+		<buginformation>
+			<summary>HexDump&amp;apos;s use of static StringBuffers isn&amp;apos;t thread-safe</summary>
+			<description>HexDump has two private static dump() method&amp;amp;apos;s that alter static instances of StringBuffer:
+dump(long) modifies static StringBuffer variable _lbuffer returning _lbuffer 
+dump(char) modifies static StringBuffer variable _cbuffer returning _cbuffer
+Both these methods are called by the public static dump(byte[], long, OutputStream, int) method. Multiple threads calling the public dump method at the same time could cause these StringBuffer to contain mixed up data and result in a bug.</description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.HexDump.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="150" opendate="2007-12-27 21:34:13" fixdate="2007-12-28 11:02:58" resolution="Duplicate">
+		<buginformation>
+			<summary>Add a RegexpFilenameFilter</summary>
+			<description>It&amp;amp;apos;d be nice to have a filter like this:
+RegexpFileFilter reff = new RegexpFileFilter("^did
+{1,3}
+,+");
+WildcardFilter is nice but insufficent.</description>
+			<version>1.3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterUtils.java</file>
+			<file type="D">org.apache.commons.io.filefilter.RegexFilter.java</file>
+			<file type="M">org.apache.commons.io.filefilter.FileFilterTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">74</link>
+		</links>
+	</bug>
+	<bug id="147" opendate="2007-12-18 13:04:55" fixdate="2008-01-04 12:32:51" resolution="Fixed">
+		<buginformation>
+			<summary>Deletion of orphaned Softlinks does not work</summary>
+			<description>If there is an orphaned softlink a -&amp;gt; b, but b does not exists anymore than the softlink will not be removed. This happens when you call FileUtils.deleteDirectory() and when the linked target b is deleted earlier than the link.
+This is caused by the "ugly" file.exists() call in forceDelete()
+if (!file.exists()) {
+         throw new FileNotFoundException("File does not exist: " + file);
+}
+if this check is not done, everything works as expected. I think this test is not neccessery, cause file.delete will test this better.
+Please discuss and change this.
+thanx
+Stefan </description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="141" opendate="2007-11-30 22:09:59" fixdate="2008-01-05 15:15:36" resolution="Fixed">
+		<buginformation>
+			<summary>Infinite loop on FileUtils.copyDirectory when the destination directory is within the source directory</summary>
+			<description>When you attempt to copy a directory and the destination directory is inside the source directory an inifinite loop occurs in the copyDirectory causing Commons-IO to create a folder w/o stopping until its reaches OS limitation.
+This code will recreate the bug:
+FileUtils.copyDirectory(new File("C:\\temp\\test-io\\a."), new File("C:\\temp\\test-io\\a." + File.separator + new Date().getTime()));
+Make sure C:\temp\test-io\a exists</description>
+			<version>1.3.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="160" opendate="2008-03-28 15:38:29" fixdate="2008-05-30 11:14:26" resolution="Fixed">
+		<buginformation>
+			<summary>[patch] FileSystemUtils.freeSpace fails on solaris </summary>
+			<description>FileSystemUtils.freeSpace fails its tests on Solaris.  The following patch fixes it, and with it all tests pass on:
+RedHat (FC7, EL3, EL4, CentOS4, CentOS5) and Solaris (8, 9-sparc, 9-i386, 10-sparc, 10-i386).
+The fix is to force the use of /usr/xpg4/bin/df on Solaris, which is the posix version.  This then means that the output-parsing works as expected.
+Index: src/java/org/apache/commons/io/FileSystemUtils.java
+===================================================================
+RCS file: /cvsroot/upstream/jpackage/jakarta-commons-io/src/java/org/apache/commons/io/FileSystemUtils.java,v
+retrieving revision 1.1.1.1
+retrieving revision 1.1.1.1.2.3
+diff -u -r1.1.1.1 -r1.1.1.1.2.3
+ src/java/org/apache/commons/io/FileSystemUtils.java 2 Mar 2007 06:31:03 -0000       1.1.1.1
++++ src/java/org/apache/commons/io/FileSystemUtils.java 28 Mar 2008 11:56:06 -0000      1.1.1.1.2.3
+@@ -64,6 +64,10 @@
+     /** The operating system flag. */
+     private static final int OS;
++
++    /** The path to df */
++    private static String dfPath = "df";
++
+     static {
+         int os = OTHER;
+         try {
+@@ -76,9 +80,6 @@
+             if (osName.indexOf("windows") != -1) 
+{
+                 os = WINDOWS;
+             }
+ else if (osName.indexOf("linux") != -1 ||
+
+osName.indexOf("sun os") != -1 ||
+osName.indexOf("sunos") != -1 ||
+osName.indexOf("solaris") != -1 ||
+                 osName.indexOf("mpe/ix") != -1 ||
+                 osName.indexOf("freebsd") != -1 ||
+                 osName.indexOf("irix") != -1 ||
+@@ -86,6 +87,11 @@
+                 osName.indexOf("unix") != -1 ||
+                 osName.indexOf("mac os x") != -1) 
+{
+                 os = UNIX;
++            }
+ else if (osName.indexOf("sun os") != -1 ||
++                osName.indexOf("sunos") != -1 ||
++                osName.indexOf("solaris") != -1) 
+{
++                os = POSIX_UNIX;
++                dfPath = "/usr/xpg4/bin/df";
+             }
+ else if (osName.indexOf("hp-ux") != -1 ||
+                 osName.indexOf("aix") != -1) {
+                 os = POSIX_UNIX;
+@@ -116,7 +122,7 @@
+
+
+of 
+{@link #freeSpaceKb(String)}
+ which returns a result in kilobytes.
+&amp;lt;p&amp;gt;
+Note that some OS&amp;amp;apos;s are NOT currently supported, including OS/390,
+
+
+* OpenVMS and and SunOS 5. (SunOS is supported by &amp;lt;code&amp;gt;freeSpaceKb&amp;lt;/code&amp;gt;.)
++     * OpenVMS. 
+
+
+&amp;lt;pre&amp;gt;
+FileSystemUtils.freeSpace("C:");       // Windows
+FileSystemUtils.freeSpace("/volume");  // *nix
+@@ -317,14 +323,14 @@
+             flags += "P";
+         }
+         String[] cmdAttribs = 
+
+
+(flags.length() &amp;gt; 1 ? new String[] 
+{"df", flags, path}
+ : new String[] 
+{"df", path}
+);
++            (flags.length() &amp;gt; 1 ? new String[] 
+{dfPath, flags, path}
+ : new String[] 
+{dfPath, path}
+);
+
+         // perform the command, asking for up to 3 lines (header, interesting, overflow)
+         List lines = performCommand(cmdAttribs, 3);
+         if (lines.size() &amp;lt; 2) 
+{
+             // unknown problem, throw exception
+             throw new IOException(
+-                    "Command line &amp;amp;apos;df&amp;amp;apos; did not return info as expected " +
++                    "Command line &amp;amp;apos;" + dfPath + "&amp;amp;apos; did not return info as expected " +
+                     "for path &amp;amp;apos;" + path + "&amp;amp;apos;- response was " + lines);
+         }
+         String line2 = (String) lines.get(1); // the line we&amp;amp;apos;re interested in
+@@ -338,7 +344,7 @@
+                 tok = new StringTokenizer(line3, " ");
+             } else 
+{
+                 throw new IOException(
+-                        "Command line &amp;amp;apos;df&amp;amp;apos; did not return data as expected " +
++                        "Command line &amp;amp;apos;" + dfPath + "&amp;amp;apos; did not return data as expected " +
+                         "for path &amp;amp;apos;" + path + "&amp;amp;apos;- check path is valid");
+             }
+         } else {
+@@ -364,14 +370,14 @@
+             long bytes = Long.parseLong(freeSpace);
+             if (bytes &amp;lt; 0) 
+{
+                 throw new IOException(
+-                        "Command line &amp;amp;apos;df&amp;amp;apos; did not find free space in response " +
++                        "Command line &amp;amp;apos;" + dfPath + "&amp;amp;apos; did not find free space in response " +
+                         "for path &amp;amp;apos;" + path + "&amp;amp;apos;- check path is valid");
+             }
+             return bytes;
+         } catch (NumberFormatException ex) 
+{
+             throw new IOException(
+-                    "Command line &amp;amp;apos;df&amp;amp;apos; did not return numeric data as expected " +
++                    "Command line &amp;amp;apos;" + dfPath + "&amp;amp;apos; did not return numeric data as expected " +
+                     "for path &amp;amp;apos;" + path + "&amp;amp;apos;- check path is valid");
+         }
+     }
+Index: src/test/org/apache/commons/io/FileSystemUtilsTestCase.java
+===================================================================
+RCS file: /cvsroot/upstream/jpackage/jakarta-commons-io/src/test/org/apache/commons/io/FileSystemUtilsTestCase.java,v
+retrieving revision 1.1.1.1
+retrieving revision 1.1.1.1.2.6
+diff -u -r1.1.1.1 -r1.1.1.1.2.6
+ src/test/org/apache/commons/io/FileSystemUtilsTestCase.java 2 Mar 2007 06:30:58 -0000       1.1.1.1
++++ src/test/org/apache/commons/io/FileSystemUtilsTestCase.java 28 Mar 2008 15:26:43 -0000      1.1.1.1.2.6
+@@ -68,8 +68,13 @@
+             // have to figure out unix block size
+             String[] cmd = null;
+             String osName = System.getProperty("os.name");
++            osName = osName.toLowerCase();
++
+             if (osName.indexOf("hp-ux") &amp;gt;= 0 || osName.indexOf("aix") &amp;gt;= 0) {
+                 cmd = new String[] 
+{"df", "-P", "/"}
+;
++            } else if (osName.indexOf("sunos") &amp;gt;= 0 || osName.indexOf("sun os") &amp;gt;= 0
++                       || osName.indexOf("solaris") &amp;gt;= 0) {
++                cmd = new String[] 
+{"/usr/xpg4/bin/df", "-P", "/"}
+;
+             } else {
+                 cmd = new String[] 
+{"df", "/"}
+;
+             }</description>
+			<version>1.3.2</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="179" opendate="2008-08-21 10:09:59" fixdate="2008-11-29 01:51:49" resolution="Fixed">
+		<buginformation>
+			<summary>StringIndexOutOfBounds exception on FilenameUtils.getPathNoEndSeparator</summary>
+			<description>public void testFilenameUtils() 
+{
+ String path = "/foo.xml";
+ org.apache.commons.io.FilenameUtils.getPathNoEndSeparator(path);
+ }
+
+
+Leads to:
+java.lang.StringIndexOutOfBoundsException: String index out of range: -1
+	at java.lang.String.substring(String.java:1768)
+	at org.apache.commons.io.FilenameUtils.doGetPath(FilenameUtils.java:705)
+	at org.apache.commons.io.FilenameUtils.getPathNoEndSeparator(FilenameUtils.java:683)
+</description>
+			<version>1.3.2</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

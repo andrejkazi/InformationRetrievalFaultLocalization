@@ -1,0 +1,822 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2656" opendate="2014-06-17 12:52:05" fixdate="2014-06-18 07:12:25" resolution="Complete">
+		<buginformation>
+			<summary>Exception on using &lt;sec:frame-options&gt; with strategy whitelist</summary>
+			<description>Using &amp;lt;sec:frame-options&amp;gt; does not work at all with strategy whitelist or regexp. It end up with an exception like:
+
+
+
+
+
+
+17-Jun-2014 21:30:40.113 SEVERE [localhost-startStop-1] org.springframework.web.context.ContextLoader.initWebApplicationContext Context initialization failed
+
+
+
+
+ org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.filterChains&amp;amp;apos;: Cannot resolve reference to bean &amp;amp;apos;org.springframework.security.web.DefaultSecurityFilterChain#0&amp;amp;apos; while setting bean property &amp;amp;apos;sourceList&amp;amp;apos; with key [0]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.web.DefaultSecurityFilterChain#0&amp;amp;apos;: Cannot create inner bean &amp;amp;apos;(inner bean)#7696e4d2&amp;amp;apos; of type [org.springframework.security.web.header.HeaderWriterFilter] while setting constructor argument with key [2]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#7696e4d2&amp;amp;apos;: Cannot create inner bean &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos; of type [org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter] while setting constructor argument with key [0]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos;: Could not resolve matching constructor (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:336)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveManagedList(BeanDefinitionValueResolver.java:359)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:157)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1456)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1197)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:537)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:304)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:300)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:195)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:684)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:760)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:482)
+
+
+
+
+	at org.springframework.web.context.ContextLoader.configureAndRefreshWebApplicationContext(ContextLoader.java:403)
+
+
+
+
+	at org.springframework.web.context.ContextLoader.initWebApplicationContext(ContextLoader.java:306)
+
+
+
+
+	at org.springframework.web.context.ContextLoaderListener.contextInitialized(ContextLoaderListener.java:106)
+
+
+
+
+	at org.apache.catalina.core.StandardContext.listenerStart(StandardContext.java:4750)
+
+
+
+
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:5170)
+
+
+
+
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:150)
+
+
+
+
+	at org.apache.catalina.core.ContainerBase.addChildInternal(ContainerBase.java:724)
+
+
+
+
+	at org.apache.catalina.core.ContainerBase.addChild(ContainerBase.java:700)
+
+
+
+
+	at org.apache.catalina.core.StandardHost.addChild(StandardHost.java:697)
+
+
+
+
+	at org.apache.catalina.startup.HostConfig.deployWAR(HostConfig.java:919)
+
+
+
+
+	at org.apache.catalina.startup.HostConfig$DeployWar.run(HostConfig.java:1704)
+
+
+
+
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+
+
+
+
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:744)
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.web.DefaultSecurityFilterChain#0&amp;amp;apos;: Cannot create inner bean &amp;amp;apos;(inner bean)#7696e4d2&amp;amp;apos; of type [org.springframework.security.web.header.HeaderWriterFilter] while setting constructor argument with key [2]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#7696e4d2&amp;amp;apos;: Cannot create inner bean &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos; of type [org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter] while setting constructor argument with key [0]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos;: Could not resolve matching constructor (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:290)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:129)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveManagedList(BeanDefinitionValueResolver.java:359)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:157)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:632)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:140)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1114)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1017)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:504)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:304)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:300)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:195)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:328)
+
+
+
+
+	... 30 more
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#7696e4d2&amp;amp;apos;: Cannot create inner bean &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos; of type [org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter] while setting constructor argument with key [0]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos;: Could not resolve matching constructor (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:290)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:129)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveManagedList(BeanDefinitionValueResolver.java:359)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:157)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:632)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:140)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1114)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1017)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:504)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:276)
+
+
+
+
+	... 44 more
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;(inner bean)#2c88d3d1&amp;amp;apos;: Could not resolve matching constructor (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:239)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1114)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1017)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:504)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475)
+
+
+
+
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:276)
+
+
+
+
+	... 54 more
+
+
+
+
+
+
+because of an error in HeadersBeanDefinitionParser.
+A war file is attached to reproduce it.</description>
+			<version>3.2.4</version>
+			<fixedVersion>3.2.5, 4.0 Backlog</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HeadersBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2697" opendate="2014-08-07 03:28:01" fixdate="2014-08-15 12:28:40" resolution="Complete">
+		<buginformation>
+			<summary>Invalid warning logged when using Spring 3.2.10.RELEASE</summary>
+			<description>I&amp;amp;apos;m using Spring Framework (version 3.2.10.RELEASE).
+During application startup I&amp;amp;apos;m getting following warning:
+
+org.springframework.security.core.SpringSecurityCoreVersion - **** You are advised to use Spring 3.2.8.RELEASE or later with this version. You are running: 3.2.10.RELEASE
+It seems that versions are compared using String.compareTo().
+Using this method "3.2.10.RELEASE" is lower then "3.2.8.RELEASE".</description>
+			<version>3.2.4</version>
+			<fixedVersion>3.2.5, 4.0.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersionTests.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2727</link>
+		</links>
+	</bug>
+	<bug id="2727" opendate="2014-09-26 07:05:25" fixdate="2014-09-26 07:11:30" resolution="Duplicate">
+		<buginformation>
+			<summary>Spring security version check reports incorrectly.</summary>
+			<description>When using spring core version 3.2.10 or greater the spring security version check reports a warning message about minimum version incorrectly.
+To recreate run spring core 3.2.11 with spring security 3.2.4.
+The issue is in the compare statement of:
+
+
+
+
+
+
+if (springVersion.compareTo(MIN_SPRING_VERSION) &amp;lt; 0) {
+
+
+
+
+     logger.warn("**** You are advised to use Spring " + MIN_SPRING_VERSION +  " or later with this version. You are running: " + springVersion);
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>3.2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersionTests.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2697</link>
+		</links>
+	</bug>
+	<bug id="2956" opendate="2015-04-30 15:59:07" fixdate="2015-08-19 14:08:02" resolution="Complete">
+		<buginformation>
+			<summary>Improve AnnotationParameterNameDiscoverer Performance</summary>
+			<description>Hi
+After profiling (well sampling) my code I have noticed that AnnotationParameterNameDiscoverer taking up a large portion of time is taken up by 
+
+
+
+
+
+AnnotationParameterNameDiscoverer.ParameterNameFactory.findAnnotationsAt()
+
+
+
+
+
+
+For 10k requests which takes 24seconds, about 5.7 seconds was spent in that method 
+Here is an example of a method that will take a long time to run
+
+
+
+
+
+
+@RequestMapping(value = "/c/{c}/bar", method = RequestMethod.PUT, params = {"!redirectTarget"})
+
+
+
+
+  @PreAuthorize("hasPermission(#c, &amp;amp;apos;c&amp;amp;apos;) and hasRole(&amp;amp;apos;sec.awsome&amp;amp;apos;)")
+
+
+
+
+  public Response something(
+
+
+
+
+      @PathVariable String c,
+
+
+
+
+      @RequestParam("k") String k,
+
+
+
+
+      @RequestBody byte[] content,
+
+
+
+
+      @RequestParam(value="f", required=false) String f,
+
+
+
+
+      @RequestHeader(value="Content-Type", required=false, defaultValue="application/octet-stream") String mimeType,
+
+
+
+
+      @RequestHeader(required=false) Map&amp;lt;String, String&amp;gt; headers
+
+
+
+
+      ) throws Exception {
+
+
+
+
+         //do almost nothing.
+
+
+
+
+      }
+
+
+
+
+
+
+while here is an example of something that runs quickly.
+
+
+
+
+
+
+    @RequestMapping(value = "/c/{c}/s", method = RequestMethod.GET)
+
+
+
+
+    @PreAuthorize("hasPermission(#c, &amp;amp;apos;c&amp;amp;apos;) and hasRole(&amp;amp;apos;sec.can.dance&amp;amp;apos;)")
+
+
+
+
+    public AnnotatedStateResponse getState(
+
+
+
+
+        @PathVariable String collection) throws Exception {
+
+
+
+
+        //not much stuff
+
+
+
+
+    }
+
+
+
+
+
+
+That takes considerably less time and almost not time (less than a second ) is spent in that findAnnotationsAt method.
+Looking at the code I realise what the problem is I will guid you though it now:
+
+
+
+
+
+
+    private static final ParameterNameFactory&amp;lt;Method&amp;gt; METHOD_METHODPARAM_FACTORY = new ParameterNameFactory&amp;lt;Method&amp;gt;() {
+
+
+
+
+       .......
+
+
+
+
+        public Annotation[] findAnnotationsAt(Method method, int index) {
+
+
+
+
+            //THIS TAKES A LONG TIME AND IS CALLED MANY TIMES!
+
+
+
+
+            return method.getParameterAnnotations()[index];
+
+
+
+
+        }
+
+
+
+
+    };
+
+
+
+
+
+
+Now the part that calls it:
+
+
+
+
+
+
+/**
+
+
+
+
+     * Gets the parameter names or null if not found.
+
+
+
+
+     *
+
+
+
+
+     * @param parameterNameFactory the {@link ParameterNameFactory} to use
+
+
+
+
+     * @param t the {@link AccessibleObject} to find the parameter names on (i.e. Method or Constructor)
+
+
+
+
+     * @return the parameter names or null
+
+
+
+
+     */
+
+
+
+
+    private &amp;lt;T extends AccessibleObject&amp;gt; String[] lookupParameterNames(
+
+
+
+
+            ParameterNameFactory&amp;lt;T&amp;gt; parameterNameFactory, T t) {
+
+
+
+
+        int parameterCount = parameterNameFactory.getParamCount(t);
+
+
+
+
+        String[] paramNames = new String[parameterCount];
+
+
+
+
+        boolean found = false;
+
+
+
+
+        for (int i = 0; i &amp;lt; parameterCount; i++) {
+
+
+
+
+            //HERE is the part of the problem!
+
+
+
+
+            Annotation[] annotations = parameterNameFactory.findAnnotationsAt(t, i);
+
+
+
+
+            String parameterName = findParameterName(annotations);
+
+
+
+
+            if (parameterName != null) {
+
+
+
+
+                found = true;
+
+
+
+
+                paramNames[i] = parameterName;
+
+
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+        return found ? paramNames : null;
+
+
+
+
+    }
+
+
+
+
+
+
+the problem is if we have say 6 parameters we will call 
+
+
+
+
+
+findAnnotationsAt(t, i)
+
+
+
+
+
+ 6 times, each time it calls that it will use reflection to get the annotations on the methods 
+
+
+
+
+
+method.getParameterAnnotations()
+
+
+
+
+
+. Of course the more methods the more costly 
+
+
+
+
+
+method.getParameterAnnotations()
+
+
+
+
+
+ is.
+Lets look at it in big O notations. If 
+
+
+
+
+
+method.getParameterAnnotations()
+
+
+
+
+
+ costs the number of parameters lets call that n, the complexity is:
+O(n*n)
+I would recommend that we avoid calling 
+
+
+
+
+
+method.getParameterAnnotations()
+
+
+
+
+
+ multiple times.
+I think we should also consider caching the result of 
+
+
+
+
+
+method.getParameterAnnotations()
+
+
+
+
+
+</description>
+			<version>3.2.4</version>
+			<fixedVersion>4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.parameters.AnnotationParameterNameDiscoverer.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

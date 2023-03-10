@@ -1,0 +1,2775 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="19" opendate="2011-02-28 02:07:47" fixdate="2011-03-02 00:11:20" resolution="Fixed">
+		<buginformation>
+			<summary>Invalid entity metadata when domain class implements persistable</summary>
+			<description>Latest snapshot (spring-data-jpa-1.0.0.BUILD-20110227.093237-171.jar) introduced a bug which makes find queries (with Specification API) to fail for domain objects which implement Persistable. I believe issue is either in JpaRepositoryFactory stragery for creating entity information - if domain class implements Persistable, PersistableEntityMetadata fixes domain class to Persistable.class which looses actual domain class. Here is relevant stack trace snippet:
+
+
+
+
+
+
+java.lang.IllegalArgumentException: Not an entity: interface org.springframework.data.domain.Persistable
+
+
+
+
+	at org.hibernate.ejb.metamodel.MetamodelImpl.entity(MetamodelImpl.java:160)
+
+
+
+
+	at org.hibernate.ejb.criteria.QueryStructure.from(QueryStructure.java:138)
+
+
+
+
+	at org.hibernate.ejb.criteria.CriteriaQueryImpl.from(CriteriaQueryImpl.java:179)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.applySpecificationToCriteria(SimpleJpaRepository.java:450)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.getQuery(SimpleJpaRepository.java:385)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.findAll(SimpleJpaRepository.java:267)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:597)
+
+
+
+
+	at org.springframework.data.repository.support.RepositoryFactorySupport$QueryExecuterMethodInterceptor.executeMethodOn(RepositoryFactorySupport.java:268)
+
+
+
+
+	at org.springframework.data.repository.support.RepositoryFactorySupport$QueryExecuterMethodInterceptor.invoke(RepositoryFactorySupport.java:249)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:110)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:155)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+
+
+
+
+	at $Proxy60.findAll(Unknown Source)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:597)
+
+
+
+
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:309)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:183)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
+
+
+
+
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:110)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+
+
+
+
+	at $Proxy61.findAll(Unknown Source)
+
+
+
+
+
+</description>
+			<version>1.0 M3</version>
+			<fixedVersion>1.0 M4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.PagingAndSortingRepository.java</file>
+			<file type="M">org.springframework.data.repository.Repository.java</file>
+			<file type="M">org.springframework.data.repository.support.PersistableEntityMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.support.PersistableEntityMetadata.java</file>
+			<file type="D">org.springframework.data.repository.support.PersistableEntityInformationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="23" opendate="2011-03-25 03:17:27" fixdate="2011-03-31 23:41:16" resolution="Fixed">
+		<buginformation>
+			<summary>PageImpl can not be constructed with empty content</summary>
+			<description>When passing empty list to PageImpl constructor (e.g. in a test, when mocking repository method which returns Page), PageRequest is instantiated with "content.size()" as page size, but 0 size is not allowed argument value in PageRequest.
+BTW, 1.0 M5 DATACMNS is not marked as released in JIRA, but it is, as part of or together with DATAJPA 1.0 M2 release.</description>
+			<version>1.0 M5</version>
+			<fixedVersion>1.0 M6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.PageImpl.java</file>
+			<file type="M">org.springframework.data.domain.PageImplUnitTests.java</file>
+			<file type="M">org.springframework.data.domain.Page.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="38" opendate="2011-05-05 22:05:54" fixdate="2011-05-18 10:15:43" resolution="Fixed">
+		<buginformation>
+			<summary>StackOverflowError on self-referencing Objects</summary>
+			<description>Hi, i get the following error when starting a testcase:
+
+
+
+
+
+
+06:55:19,554 ERROR TestContextManager:324 - Caught exception while allowing TestExecutionListener [org.springframework.test.context.support.DependencyInjectionTestExecutionListener@49198ff2] to prepare test instance [null(example.SiteServiceTest)]
+
+
+
+
+java.lang.IllegalStateException: Failed to load ApplicationContext
+
+
+
+
+	at org.springframework.test.context.TestContext.getApplicationContext(TestContext.java:308)
+
+
+
+
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.injectDependencies(DependencyInjectionTestExecutionListener.java:109)
+
+
+
+
+	at org.springframework.test.context.support.DependencyInjectionTestExecutionListener.prepareTestInstance(DependencyInjectionTestExecutionListener.java:75)
+
+
+
+
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:321)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.createTest(SpringJUnit4ClassRunner.java:220)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner$1.runReflectiveCall(SpringJUnit4ClassRunner.java:301)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.methodBlock(SpringJUnit4ClassRunner.java:303)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:240)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:50)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:70)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:180)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:49)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;siteService&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.StackOverflowError
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1429)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:190)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:580)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:895)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:425)
+
+
+
+
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:84)
+
+
+
+
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:1)
+
+
+
+
+	at org.springframework.test.context.TestContext.loadApplicationContext(TestContext.java:280)
+
+
+
+
+	at org.springframework.test.context.TestContext.getApplicationContext(TestContext.java:304)
+
+
+
+
+	... 24 more
+
+
+
+
+Caused by: java.lang.StackOverflowError
+
+
+
+
+	at java.util.HashMap$HashIterator.&amp;lt;init&amp;gt;(HashMap.java:795)
+
+
+
+
+	at java.util.HashMap$EntryIterator.&amp;lt;init&amp;gt;(HashMap.java:849)
+
+
+
+
+	at java.util.HashMap$EntryIterator.&amp;lt;init&amp;gt;(HashMap.java:849)
+
+
+
+
+	at java.util.HashMap.newEntryIterator(HashMap.java:863)
+
+
+
+
+	at java.util.HashMap$EntrySet.iterator(HashMap.java:967)
+
+
+
+
+	at java.util.AbstractMap.hashCode(AbstractMap.java:492)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:230)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+	at org.springframework.util.ObjectUtils.nullSafeHashCode(ObjectUtils.java:286)
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.hashCode(TypeDiscoverer.java:231)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.hashCode(ClassTypeInformation.java:79)
+
+
+
+
+
+
+Here is my applicationContext.xml:
+
+
+
+
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+
+
+
+
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans"
+
+
+
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+
+
+
+    xmlns:context="http://www.springframework.org/schema/context"
+
+
+
+
+    xmlns:spring-data="http://www.springframework.org/schema/data/mongo"
+
+
+
+
+    xsi:schemaLocation="
+
+
+
+
+        http://www.springframework.org/schema/beans
+
+
+
+
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+
+
+        http://www.springframework.org/schema/context
+
+
+
+
+        http://www.springframework.org/schema/context/spring-context.xsd
+
+
+
+
+        http://www.springframework.org/schema/data/mongo
+
+
+
+
+        http://www.springframework.org/schema/data/mongo/spring-mongo.xsd"&amp;gt;
+
+
+
+
+    
+
+
+
+
+    &amp;lt;spring-data:mongo id="mongo" host="localhost" port="27017"/&amp;gt;
+
+
+
+
+    
+
+
+
+
+    &amp;lt;bean id="mongoTemplate" class="org.springframework.data.document.mongodb.MongoTemplate"&amp;gt;
+
+
+
+
+        &amp;lt;constructor-arg ref="mongo"/&amp;gt;
+
+
+
+
+        &amp;lt;constructor-arg value="testdb"/&amp;gt;
+
+
+
+
+        &amp;lt;constructor-arg value="testcollection"/&amp;gt;
+
+
+
+
+        &amp;lt;constructor-arg&amp;gt;
+
+
+
+
+            &amp;lt;spring-data:mapping-converter/&amp;gt;
+
+
+
+
+        &amp;lt;/constructor-arg&amp;gt;
+
+
+
+
+    &amp;lt;/bean&amp;gt;
+
+
+
+
+    
+
+
+
+
+    &amp;lt;spring-data:repositories base-package="example.service"&amp;gt;
+
+
+
+
+        &amp;lt;spring-data:repository id="siteService"/&amp;gt;
+
+
+
+
+    &amp;lt;/spring-data:repositories&amp;gt;
+
+
+
+
+    
+
+
+
+
+    &amp;lt;context:annotation-config/&amp;gt;
+
+
+
+
+	
+
+
+
+
+&amp;lt;/beans&amp;gt;
+
+
+
+
+
+
+The Testcase:
+
+
+
+
+
+
+package example.service;
+
+
+
+
+
+
+
+
+
+import java.util.List;
+
+
+
+
+
+
+
+
+
+import javax.inject.Inject;
+
+
+
+
+
+
+
+
+
+import junit.framework.TestCase;
+
+
+
+
+
+
+
+
+
+import org.junit.Assert;
+
+
+
+
+import org.junit.Test;
+
+
+
+
+import org.junit.runner.RunWith;
+
+
+
+
+import org.springframework.test.context.ContextConfiguration;
+
+
+
+
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+
+
+
+
+
+
+
+
+import example.Site;
+
+
+
+
+import example.query.SiteQuery;
+
+
+
+
+
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@ContextConfiguration(locations = "classpath:/applicationContext.xml")
+
+
+
+
+public class SiteServiceTest extends TestCase {
+
+
+
+
+    
+
+
+
+
+    @Inject
+
+
+
+
+    protected SiteService siteService;
+
+
+
+
+    
+
+
+
+
+    public SiteService getSiteService() {
+
+
+
+
+        return siteService;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public void setSiteService(SiteService newSiteService) {
+
+
+
+
+        siteService = newSiteService;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    @Test
+
+
+
+
+    public void test() {
+
+
+
+
+        List&amp;lt;Site&amp;gt; sites = null;
+
+
+
+
+        
+
+
+
+
+        sites = siteService.findAll(SiteQuery.getForAlias("/"));
+
+
+
+
+        Assert.assertNull(sites);
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+The classes:
+
+
+
+
+
+
+package example.site;
+
+
+
+
+
+
+
+
+
+import java.util.*;
+
+
+
+
+
+
+
+
+
+import org.springframework.data.document.mongodb.mapping.DBRef;
+
+
+
+
+import org.springframework.data.document.mongodb.mapping.Document;
+
+
+
+
+
+
+
+
+
+import com.google.code.morphia.annotations.Entity;
+
+
+
+
+
+
+
+
+
+@Document
+
+
+
+
+@Entity
+
+
+
+
+public class Site {
+
+
+
+
+    
+
+
+
+
+    private static final long serialVersionUID = -6751151047717976403L;
+
+
+
+
+    
+
+
+
+
+    @Id
+
+
+
+
+    protected String id;
+
+
+
+
+    protected List&amp;lt;String&amp;gt; aliases = new ArrayList&amp;lt;String&amp;gt;();
+
+
+
+
+    protected Boolean eligibleForSitemap = Boolean.TRUE;
+
+
+
+
+    @DBRef
+
+
+
+
+    protected Site parent;
+
+
+
+
+    
+
+
+
+
+    public List&amp;lt;String&amp;gt; getAliases() {
+
+
+
+
+        return aliases;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public void setAliases(List&amp;lt;String&amp;gt; newAliases) {
+
+
+
+
+        aliases = newAliases;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public Boolean getEligibleForSitemap() {
+
+
+
+
+        return eligibleForSitemap;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public void setEligibleForSitemap(Boolean newEligibleForSitemap) {
+
+
+
+
+        eligibleForSitemap = newEligibleForSitemap;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public Site getParent() {
+
+
+
+
+        return parent;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    public void setParent(Site newParent) {
+
+
+
+
+        parent = newParent;
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+package example.query;
+
+
+
+
+
+
+
+
+
+import com.mysema.query.types.Predicate;
+
+
+
+
+
+
+
+
+
+import example.QSite;
+
+
+
+
+
+
+
+
+
+public class SiteQuery {
+
+
+
+
+    
+
+
+
+
+    public static Predicate getForAlias(String alias) {
+
+
+
+
+        return QSite.site.aliases.contains(alias);
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+my Dependencies:
+
+
+
+
+
+
+&amp;lt;dependency&amp;gt;
+
+
+
+
+	&amp;lt;groupId&amp;gt;org.springframework.data&amp;lt;/groupId&amp;gt;
+
+
+
+
+	&amp;lt;artifactId&amp;gt;spring-data-mongodb&amp;lt;/artifactId&amp;gt;
+
+
+
+
+	&amp;lt;version&amp;gt;1.0.0.M2&amp;lt;/version&amp;gt;
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+&amp;lt;dependency&amp;gt;
+
+
+
+
+	&amp;lt;groupId&amp;gt;cglib&amp;lt;/groupId&amp;gt;
+
+
+
+
+	&amp;lt;artifactId&amp;gt;cglib&amp;lt;/artifactId&amp;gt;
+
+
+
+
+	&amp;lt;version&amp;gt;2.2&amp;lt;/version&amp;gt;
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+&amp;lt;dependency&amp;gt;  
+
+
+
+
+	&amp;lt;groupId&amp;gt;com.mysema.querydsl&amp;lt;/groupId&amp;gt;  
+
+
+
+
+	&amp;lt;artifactId&amp;gt;querydsl-mongodb&amp;lt;/artifactId&amp;gt;  
+
+
+
+
+	&amp;lt;version&amp;gt;2.1.2&amp;lt;/version&amp;gt;  
+
+
+
+
+&amp;lt;/dependency&amp;gt;
+
+
+
+
+
+
+I&amp;amp;apos;ve found out, that if I comment the parent out, everything is fine ... so I guess the introspection-process of the spring-data library got a bug.</description>
+			<version>1.0 Final</version>
+			<fixedVersion>1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.AbstractMappingContext.java</file>
+			<file type="D">org.springframework.data.util.ArrayTypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.TypeVariableTypeInformation.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.ClassTypeInformation.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscovererUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.RepositoryProxy.java</file>
+			<file type="M">org.springframework.data.repository.support.AnnotationRepositoryMetadata.java</file>
+			<file type="M">org.springframework.data.util.ClassTypeInformationUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="40" opendate="2011-05-23 02:44:13" fixdate="2011-05-24 08:34:56" resolution="Fixed">
+		<buginformation>
+			<summary>Rename @RepositoryProxy to @RepositoryDefinition</summary>
+			<description></description>
+			<version>1.0 Final</version>
+			<fixedVersion>1.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.AnnotationRepositoryMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.sample.SampleAnnotatedRepository.java</file>
+			<file type="M">org.springframework.data.repository.config.AbstractRepositoryConfigDefinitionParser.java</file>
+			<file type="D">org.springframework.data.repository.RepositoryProxy.java</file>
+			<file type="M">org.springframework.data.repository.support.DefaultRepositoryMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.support.AnnotationRepositoryMetadata.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="42" opendate="2011-06-03 20:44:13" fixdate="2011-06-06 15:52:18" resolution="Complete">
+		<buginformation>
+			<summary>MappingContext does not map BigDecimal correctly</summary>
+			<description></description>
+			<version>1.1 M1</version>
+			<fixedVersion>1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.BeanWrapper.java</file>
+			<file type="M">org.springframework.data.mapping.MappingBeanHelper.java</file>
+			<file type="M">org.springframework.data.mapping.AbstractMappingContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="44" opendate="2011-06-05 11:19:52" fixdate="2011-06-07 12:44:49" resolution="Fixed">
+		<buginformation>
+			<summary>ParametersParameterAccessor iterator will never iterate...</summary>
+			<description>In the ParametersParameterAccessor class, the BindableParameterIterator is invalid : 
+The hasNext() method test "values.length &amp;lt;= currentIndex;" instead of "values.length &amp;gt;= currentIndex;" ...</description>
+			<version>1.1 M1</version>
+			<fixedVersion>1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.ParametersParameterAccessor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="45" opendate="2011-06-07 09:26:52" fixdate="2011-06-08 14:46:07" resolution="Fixed">
+		<buginformation>
+			<summary>Property check for repository methods fails for properties starting with _</summary>
+			<description>If you have a class
+
+
+
+
+
+
+class Person {
+
+
+
+
+  private int _age;
+
+
+
+
+  
+
+
+
+
+  public int getAge() {
+
+
+
+
+    return _age;
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+and a repository interface
+
+
+
+
+
+
+interface PersonRepository extends Repository&amp;lt;Person, Long&amp;gt; {
+
+
+
+
+  Person findByAge(int age);
+
+
+
+
+}
+
+
+
+
+
+
+creating a proxy instance for the interface will fail with an exception claiming that no property age is found. This is due to the fact that TypeDiscoverer is currently only considering fields right now and we should think about if it makes sense to make it really property aware.
+A workaround to simply use findBy_Age fails as well as {} is used as custom delimiter to manually define property paths. So we should at least guard the code to correctly resolve _age in case there&amp;amp;apos;s no content in front of the {}.</description>
+			<version>1.1 M1</version>
+			<fixedVersion>1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.parser.Property.java</file>
+			<file type="M">org.springframework.data.repository.query.parser.PropertyUnitTests.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.ClassTypeInformationUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="52" opendate="2011-06-06 06:49:07" fixdate="2011-07-13 11:40:52" resolution="Fixed">
+		<buginformation>
+			<summary>Declaring an intermediate base repository does not work correctly</summary>
+			<description>I have cases where I want to group together several query methods, but they don&amp;amp;apos;t seem to fit on any entity-typed repository. I realize I could just use an arbitrary entity for the repository type, but it seems architecturally wrong, and I don&amp;amp;apos;t want to leave an option for client code to call methods inherited from GenericDao.
+Therefore I suggest adding an option to create a repository that has no type and does not inherit any methods. I think the best way to configure such a repository interface is with annotations/XML, and not require inheriting from a marker interface. Such repository mechanism would not require the ability to add custom implementation, since it just groups together JPQL queries instead of placing them at the entity sources, and any "custom implementation" should be placed in other beans.</description>
+			<version>1.1 M2</version>
+			<fixedVersion>1.1 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupportUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">76</link>
+		</links>
+	</bug>
+	<bug id="55" opendate="2011-07-18 03:13:42" fixdate="2011-07-28 08:31:29" resolution="Fixed">
+		<buginformation>
+			<summary>java.util.Properties cannot be stored to mongodb</summary>
+			<description>When a field is of type java.util.Properties, the MongoMappingContext reports a ClassCastException.
+
+
+
+
+
+
+Caused by: java.lang.ClassCastException: java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType
+
+
+
+
+	at org.springframework.data.util.TypeDiscoverer.getMapValueType(TypeDiscoverer.java:201)
+
+
+
+
+	at org.springframework.data.util.ClassTypeInformation.getMapValueType(ClassTypeInformation.java:29)
+
+
+
+
+	at org.springframework.data.mapping.AbstractMappingContext.getNestedTypeToAdd(AbstractMappingContext.java:253)
+
+
+
+
+	...
+
+
+
+
+
+</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscovererUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="57" opendate="2011-07-26 08:39:54" fixdate="2011-07-28 08:48:21" resolution="Fixed">
+		<buginformation>
+			<summary>Use of parameterized type in constructor arguments is not supported</summary>
+			<description>When an object contains a List of another object (no simple types), the MongoMappingConverter finds correct generic type for the field, but when this field is used in the PersistenceConstructor, the type is considered to be the raw type and then no information is available to convert batck the DBObject instances for this list.
+In the TypeDiscover class, the method getParameterTypes(Constructor&amp;lt;?&amp;gt;) use the reflection method Class&amp;lt;?&amp;gt;[] Constructor.getParameterTypes() that give no hint on the generic parameter types. I replaced this call with Type[] Constructor::getGenericParameterTypes(), that has solved my problem.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscovererUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="65" opendate="2011-08-23 00:48:49" fixdate="2011-08-23 11:19:12" resolution="Fixed">
+		<buginformation>
+			<summary>BasicPersistentEntity potentially suffers from ConcurrentModificationException</summary>
+			<description>BasicPersistentEntity exposes an addPersistentEntity(...) method to allow adding properties and essentially makes it mutable. This potentially opens it up to a concurrency problem given the following scenario:
+1. We concurrently use MongoTemplate for inserting objects of a type not already known to the MappingContext.
+2. Thread A enters getPersistentEntity(...) which discovers the entity not mapped already and thus calls addPersistentEntity(...). The algorithm in there eagerly adds the PersistentEntity object to the map of PersistentEntities to allow type self-references be detected. No or some properties might have been discovered already.
+3. Thread B enters getPersistentEntity(...) which now discovers the semi-parsed PersistentEntity and thus returns it. This thread continues and at some point doWithProperties(...) gets invoked, iterating over the PersistentProperties already registered.
+4. Meanwhile Thread A wants to add additional PersistentProperties and thus causes a ConcurrentModificationException in thread B.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="68" opendate="2011-08-26 08:05:09" fixdate="2011-08-31 12:08:41" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in AbstractPersistentProperty::getComponentType()</summary>
+			<description>
+
+
+
+
+
+class TestClassSet extends TreeSet&amp;lt;Object&amp;gt; { }
+
+
+
+
+
+
+
+
+
+class TestClassComplex {
+
+
+
+
+    private String id;
+
+
+
+
+    private TestClassSet testClassSet;
+
+
+
+
+
+
+
+
+
+    public String getId() {
+
+
+
+
+        return id;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public TestClassSet getTestClassSet() {
+
+
+
+
+        return testClassSet;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setTestClassSet(TestClassSet testClassSet) {
+
+
+
+
+        this.testClassSet = testClassSet;
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+The following code appears to work fine:
+
+
+
+
+
+
+List&amp;lt;TestClassSet&amp;gt; o = mongoTemplate.findAll(TestClassSet.class);
+
+
+
+
+
+
+But this fails with the NPE below:
+
+
+
+
+
+
+List&amp;lt;TestClassComplex&amp;gt; o = mongoTemplate.findAll(TestClassComplex.class);
+
+
+
+
+
+
+
+
+
+
+
+
+java.lang.NullPointerException: null
+
+
+
+
+        at org.springframework.data.mapping.model.AbstractPersistentProperty.getComponentType(AbstractPersistentProperty.java:147) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.model.AbstractPersistentProperty.isComplexType(AbstractPersistentProperty.java:136) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.model.AbstractPersistentProperty.isEntity(AbstractPersistentProperty.java:143) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getNestedTypeToAdd(AbstractMappingContext.java:316) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.access$100(AbstractMappingContext.java:65) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext$1.doWith(AbstractMappingContext.java:267) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.util.ReflectionUtils.doWithFields(ReflectionUtils.java:513) ~[spring-core-3.0.5.RELEASE.jar:3.0.5.RELEASE]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.addPersistentEntity(AbstractMappingContext.java:244) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:165) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:140) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:65) ~[spring-data-commons-core-1.2.0.BUILD-20110826.083456-44.jar:na]
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.determineCollectionName(MongoTemplate.java:1105) ~[spring-data-mongodb-1.0.0.BUILD-20110826.114729-388.jar:na]
+
+
+
+
+        at org.springframework.data.mongodb.core.MongoTemplate.findAll(MongoTemplate.java:786) ~[spring-data-mongodb-1.0.0.BUILD-20110826.114729-388.jar:na]
+
+
+
+
+        ...
+
+
+
+
+
+</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.ClassTypeInformation.java</file>
+			<file type="M">org.springframework.data.mapping.model.AbstractPersistentProperty.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="69" opendate="2011-08-30 02:50:32" fixdate="2011-08-31 12:33:08" resolution="Fixed">
+		<buginformation>
+			<summary>Performance issues with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional</summary>
+			<description>There is a major performance issue with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional support in application&amp;amp;apos;s service classes. The problem is that the method RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) is relatively slow due to a usage of ClassUtils.resolveClassName(...). The actual problem is that the method in question is called whenever someone calls BeanFactoryUtils.beansOfTypeIncludingAncestors(...) and that someone happens to be TransactionAspectUtils.getTransactionManager(...) method, which is called before a call of any method annotated with @Transactional annotation. These calls happens because RepositoryInterfaceAwareBeanPostProcessor implements SmartInstantiationAwareBeanPostProcessor.
+Can RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) method be optimized?</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">70</link>
+		</links>
+	</bug>
+	<bug id="70" opendate="2011-09-01 22:40:13" fixdate="2011-09-07 03:13:57" resolution="Duplicate">
+		<buginformation>
+			<summary>RepositoryInterfaceAwareBeanPostProcessor predicting a wrong bean type</summary>
+			<description>I have two repositories
+
+
+
+
+
+
+
+
+
+
+
+public interface UserRepository extends MongoRepository&amp;lt;User, ObjectId&amp;gt; {
+
+
+
+
+    public User findByUsername(String username);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public interface FeedbackRepository extends MongoRepository&amp;lt;Feedback, ObjectId&amp;gt; {
+
+
+
+
+    public Feedback findById(ObjectId id);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+which I inject into a service class
+
+
+
+
+
+
+@Service("myService")
+
+
+
+
+public class MyService  {
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private FeedbackRepository feedbackRepository;
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private UserRepository userRepository;
+
+
+
+
+    ...
+
+
+
+
+}
+
+
+
+
+
+
+My application fails to start throwing 
+"Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No matching bean of type [com.space.repository.mongo.FeedbackRepository]"
+When I debugged further I noticed RepositoryInterfaceAwareBeanPostProcessor.predictBeanType() returning a cached bean type of UserRepository for FeedbackRepository
+
+
+
+
+
+
+RepositoryInterfaceAwareBeanPostProcessor.java
+
+
+
+
+
+
+public Class&amp;lt;?&amp;gt; predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) {
+
+
+
+
+
+
+
+
+
+		if (null == context || !REPOSITORY_TYPE.isAssignableFrom(beanClass)) {
+
+
+
+
+			return null;
+
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+		BeanDefinition definition = context.getBeanDefinition(beanName);
+
+
+
+
+		PropertyValue value =
+
+
+
+
+				definition.getPropertyValues().getPropertyValue(
+
+
+
+
+						"repositoryInterface");
+
+
+
+
+		
+
+
+
+
+		if (cache.containsKey(beanClass)) {
+
+
+
+
+			return cache.get(beanClass);
+
+
+
+
+		}
+
+
+
+
+		
+
+
+
+
+		Class&amp;lt;?&amp;gt; resolvedBeanClass = getClassForPropertyValue(value);
+
+
+
+
+		cache.put(beanClass, resolvedBeanClass);
+
+
+
+
+
+
+
+
+
+		return resolvedBeanClass;
+
+
+
+
+	}
+
+
+
+
+
+
+In the above code predicting the bean type a cache is being maintained with beanClass as the key.
+For all repository instances  "MongoRepositoryFactoryBean" is the bean class and hence for feedbackRepository bean predictBeanType is picking up a cached userRepository as the type.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">69</link>
+		</links>
+	</bug>
+	<bug id="98" opendate="2011-11-15 08:25:01" fixdate="2011-11-23 00:10:08" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException on getReturnedDomainClass for variable types</summary>
+			<description>ClassCastException on getReturnedDomainClass for variable types.
+The base interface:
+
+
+
+
+
+
+@NoRepositoryBean
+
+
+
+
+public interface BaseRepository&amp;lt;T extends BaseEntity&amp;gt; extends JpaRepository&amp;lt;T, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+    List&amp;lt;T&amp;gt; findByExternalIdIn(List&amp;lt;String&amp;gt; externalIds);
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+The repository interface:
+
+
+
+
+
+
+public interface FooRepository extends BaseRepository&amp;lt;Foo&amp;gt; {
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+The class where the exception is thrown:
+
+
+
+
+
+
+org.springframework.data.repository.util.ClassUtils
+
+
+
+
+
+
+The line where the exception is thrown:
+
+
+
+
+
+
+return componentType instanceof ParameterizedType ? (Class&amp;lt;?&amp;gt;) ((ParameterizedType) componentType).getRawType()
+
+
+
+
+					: (Class&amp;lt;?&amp;gt;) componentType;
+
+
+
+
+
+
+The exception:
+
+
+
+
+
+
+Caused by: java.lang.ClassCastException: sun.reflect.generics.reflectiveObjects.TypeVariableImpl cannot be cast to java.lang.Class
+
+
+
+
+	at org.springframework.data.repository.util.ClassUtils.getReturnedDomainClass(ClassUtils.java:64) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.query.QueryMethod.getDomainClass(QueryMethod.java:124) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.query.QueryMethod.getNamedQueryName(QueryMethod.java:115) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$DeclaredQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:118) ~[spring-data-jpa-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:157) ~[spring-data-jpa-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71) ~[spring-data-jpa-1.0.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:303) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:157) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:120) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:39) ~[spring-data-commons-core-1.1.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142) ~[spring-beans-3.0.6.RELEASE.jar:3.0.6.RELEASE]
+
+
+
+
+	... 35 common frames omitted
+
+
+
+
+
+ </description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.RepositoryMetadata.java</file>
+			<file type="M">org.springframework.data.repository.util.ClassUtilsUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.AnnotationRepositoryMetadata.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryMetadata.java</file>
+			<file type="M">org.springframework.data.repository.util.ClassUtils.java</file>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.TypeInformation.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.query.QueryMethod.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">128</link>
+		</links>
+	</bug>
+	<bug id="99" opendate="2011-11-23 02:49:05" fixdate="2011-11-23 03:10:50" resolution="Fixed">
+		<buginformation>
+			<summary>SimpleTypeHolder does not consider complex enum values as simple</summary>
+			<description>If an enum implements abstract methods of some kind the Class object returned by {{$
+{ENUM}
+.getClass()}} does not return true for an isEnum() call anymore. This is why the call to SimpleTypeHolder.isSimpleType(Class&amp;lt;?&amp;gt; type) will return false in such cases. We should rather enlist Enum into the set of default simple types so that the ....isAssignableFrom(...) check discovers enums already.</description>
+			<version>1.0 Final</version>
+			<fixedVersion>1.2 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.SimpleTypeHolder.java</file>
+			<file type="M">org.springframework.data.mapping.SimpleTypeHolderUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="153" opendate="2012-04-17 08:18:46" fixdate="2012-04-20 04:06:42" resolution="Fixed">
+		<buginformation>
+			<summary>OSGi issue when using a Repository that extends QueryDslPredicateExecutor (Spring Data + QueryDsl</summary>
+			<description>Hi,
+I am currently testing Spring Data JPA + QueryDsl in a OSGi environment (Virgo 3.0.2.RELASE + see Environnment section of the ticket). 
+When declaring a JPARepository that also extends org.springframework.data.querydsl.QueryDslPredicateExecutor&amp;lt;PortalUser&amp;gt;, I&amp;amp;apos;ve got the following stacktrace:
+
+
+
+
+
+
+[2012-04-17 16:14:27.919] start-signalling-5           &amp;lt;DE0006E&amp;gt; Start failed for bundle &amp;amp;apos;org.my-repository&amp;amp;apos; version &amp;amp;apos;0.0.1.BUILD-SNAPSHOT&amp;amp;apos;. org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.osgi.service.exporter.support.OsgiServiceFactoryBean#1&amp;amp;apos;: Invocation of init method failed; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;portalUserRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Did not find a query class org.my.domain.QPortalUser for domain class org.my.domain.PortalUser!
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1420)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:519)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:456)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:291)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:288)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:190)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:563)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:895)
+
+
+
+
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.access$1600(AbstractDelegatedExecutionApplicationContext.java:69)
+
+
+
+
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext$4.run(AbstractDelegatedExecutionApplicationContext.java:355)
+
+
+
+
+	at org.springframework.osgi.util.internal.PrivilegedUtils.executeWithCustomTCCL(PrivilegedUtils.java:85)
+
+
+
+
+	at org.springframework.osgi.context.support.AbstractDelegatedExecutionApplicationContext.completeRefresh(AbstractDelegatedExecutionApplicationContext.java:320)
+
+
+
+
+	at org.springframework.osgi.extender.internal.dependencies.startup.DependencyWaiterApplicationContextExecutor$CompleteRefreshTask.run(DependencyWaiterApplicationContextExecutor.java:132)
+
+
+
+
+	at org.eclipse.virgo.kernel.agent.dm.ContextPropagatingTaskExecutor$2.run(ContextPropagatingTaskExecutor.java:95)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:662)
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;portalUserRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Did not find a query class org.my.domain.QPortalUser for domain class org.my.domain.PortalUser!
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1429)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:245)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:190)
+
+
+
+
+	at org.springframework.osgi.service.exporter.support.OsgiServiceFactoryBean.afterPropertiesSet(OsgiServiceFactoryBean.java:167)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1477)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1417)
+
+
+
+
+	... 17 common frames omitted
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Did not find a query class org.my.domain.QPortalUser for domain class org.my.domain.PortalUser!
+
+
+
+
+	at org.springframework.data.querydsl.SimpleEntityPathResolver.createPath(SimpleEntityPathResolver.java:70)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.QueryDslJpaRepository.&amp;lt;init&amp;gt;(QueryDslJpaRepository.java:80)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.QueryDslJpaRepository.&amp;lt;init&amp;gt;(QueryDslJpaRepository.java:64)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactory.getTargetRepository(JpaRepositoryFactory.java:86)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactory.getTargetRepository(JpaRepositoryFactory.java:66)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:146)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:120)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:39)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+	... 24 common frames omitted
+
+
+
+
+Caused by: org.eclipse.virgo.kernel.osgi.framework.ExtendedClassNotFoundException: org.my.domain.QPortalUser in KernelBundleClassLoader: [bundle=org.springframework.data.commons_1.1.0.RELEASE]
+
+
+
+
+	at org.eclipse.virgo.kernel.userregion.internal.equinox.KernelBundleClassLoader.loadClass(KernelBundleClassLoader.java:138)
+
+
+
+
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
+
+
+
+
+	at org.springframework.util.ClassUtils.forName(ClassUtils.java:257)
+
+
+
+
+	at org.springframework.data.querydsl.SimpleEntityPathResolver.createPath(SimpleEntityPathResolver.java:56)
+
+
+
+
+	... 32 common frames omitted
+
+
+
+
+Caused by: java.lang.ClassNotFoundException: org.my.domain.QPortalUser
+
+
+
+
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClassInternal(BundleLoader.java:513)
+
+
+
+
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:429)
+
+
+
+
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:417)
+
+
+
+
+	at org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.loadClass(DefaultClassLoader.java:107)
+
+
+
+
+	at org.eclipse.virgo.kernel.userregion.internal.equinox.KernelBundleClassLoader.loadClass(KernelBundleClassLoader.java:134)
+
+
+
+
+	... 35 common frames omitted
+
+
+
+
+
+
+It looks like to be an issue of classloader: in the method org.springframework.data.querydsl.SimpleEntityPathResolver.createPath(.), the classloader of the class SimpleEntityPathResolver is passed to the method ClassUtils.forName(.).
+
+
+
+
+
+
+@SuppressWarnings("unchecked")
+
+
+
+
+public &amp;lt;T&amp;gt; EntityPath&amp;lt;T&amp;gt; createPath(Class&amp;lt;T&amp;gt; domainClass) {
+
+
+
+
+
+
+
+
+
+    String pathClassName = getQueryClassName(domainClass);
+
+
+
+
+    try {
+
+
+
+
+		Class&amp;lt;?&amp;gt; pathClass = ClassUtils.forName(pathClassName, SimpleEntityPathResolver.class.getClassLoader());
+
+
+
+
+                       ...
+
+
+
+
+	} catch (ClassNotFoundException e) {
+
+
+
+
+		throw new IllegalArgumentException(String.format(NO_CLASS_FOUND_TEMPLATE, pathClassName, SimpleEntityPathResolver.class.getClassLoader()), e);
+
+
+
+
+        }
+
+
+
+
+}
+
+
+
+
+
+
+To fix this issue, the classloader of the domainClass need to be used instead:
+
+
+
+
+
+
+Class&amp;lt;?&amp;gt; pathClass = ClassUtils.forName(pathClassName, domainClass.getClassLoader());
+
+
+
+
+
+
+Please, do find a patch file in attachment.
+For JPA, as workaround, man can create a "copy-paste" of the class SimpleEntityPathResolver with the fix and then use a JpaRepositoryFactoryBean that creates JpaRepositoryFactory, which overrides org.springframework.data.jpa.repository.support.JpaRepositoryFactory.getTargetRepository(RepositoryMetadata, EntityManager) to use the new EntityPathResolver:
+
+
+
+
+
+
+@Override
+
+
+
+
+@SuppressWarnings({ "unchecked", "rawtypes" })
+
+
+
+
+protected &amp;lt;T, ID extends Serializable&amp;gt; JpaRepository&amp;lt;?, ?&amp;gt; getTargetRepository(final RepositoryMetadata metadata,
+
+
+
+
+                                                                                   final EntityManager entityManager) {
+
+
+
+
+
+
+
+
+
+   Class&amp;lt;?&amp;gt; repositoryInterface = metadata.getRepositoryInterface();
+
+
+
+
+   JpaEntityInformation&amp;lt;?, Serializable&amp;gt; entityInformation = getEntityInformation(metadata.getDomainClass());
+
+
+
+
+
+
+
+
+
+   if (isQueryDslExecutor(repositoryInterface)) {
+
+
+
+
+       return new QueryDslJpaRepository(entityInformation, entityManager, new OsgiEntityPathResolver());
+
+
+
+
+   } else {
+
+
+
+
+       return new SimpleJpaRepository(entityInformation, entityManager);
+
+
+
+
+   }
+
+
+
+
+}
+
+
+
+
+    
+
+
+
+
+// Also copy / paste of the parent method which is private
+
+
+
+
+protected boolean isQueryDslExecutor(final Class&amp;lt;?&amp;gt; repositoryInterface) {
+
+
+
+
+       return QUERY_DSL_PRESENT &amp;amp;&amp;amp; QueryDslPredicateExecutor.class.isAssignableFrom(repositoryInterface);
+
+
+
+
+}
+
+
+
+
+
+
+The workaround has been tested in the described environment.
+Hope this helps.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.3 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="158" opendate="2012-04-20 08:54:40" fixdate="2012-04-23 10:11:01" resolution="Duplicate">
+		<buginformation>
+			<summary>Stack overflow caused by digits in unknown property names</summary>
+			<description>When org.springframework.data.mapping.PropertyPath tries to find a non-existent property that contains any digit (e.g. when a finder method with a mistyped property name and a digit has been added to repository interface) PropertyPath.create() method goes into a long recursion which causes StackOverflowError.
+Removing digits from the finder method causes IllegalArgumentException with a helpful error message (property not found etc.) as expected.
+Attaching stack-trace and a sample test project that uses a JPA repository.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PropertyUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">139</link>
+		</links>
+	</bug>
+</bugrepository>

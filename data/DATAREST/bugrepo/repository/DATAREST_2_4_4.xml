@@ -1,0 +1,357 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="798" opendate="2016-04-04 13:07:33" fixdate="2016-04-06 15:13:01" resolution="Fixed">
+		<buginformation>
+			<summary>Nested validation errors reported as top level ones </summary>
+			<description>ValidationErrors doesn&amp;amp;apos;t consider the nested path of fields correctly.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.5 GA (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage.java</file>
+			<file type="M">org.springframework.data.rest.core.context.ValidatorIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.core.event.ValidatingRepositoryEventListener.java</file>
+			<file type="M">org.springframework.data.rest.core.ValidationErrors.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supersede" description="is superseded by">801</link>
+		</links>
+	</bug>
+	<bug id="805" opendate="2016-04-09 00:08:16" fixdate="2016-04-14 18:12:47" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryConstraintViolationExceptionMessage produces inaccurate output</summary>
+			<description>The invalidValue field of RepositoryConstraintViolationExceptionMessage.ValidationError is a string even if the failed member is of another type because it is being string formatted. By maintaining the original type we allow better debugging by expressing more closely the true type input and not just its toString()  and also allow the original marshaller/unmarshaller to express the object as is more appropriate. 
+Example input:
+
+
+
+
+
+
+{
+
+
+
+
+    "givenName" : "null",
+
+
+
+
+    "familyName" : "Bongiorno",
+
+
+
+
+    "dob" : "2007-12-03",
+
+
+
+
+    "nationalId" : "12345687",
+
+
+
+
+    "photo" : null
+
+
+
+
+    
+
+
+
+
+}
+
+
+
+
+
+
+or
+
+
+
+
+
+
+{
+
+
+
+
+    "givenName" : null,
+
+
+
+
+    "familyName" : "Bongiorno",
+
+
+
+
+    "dob" : "2007-12-03",
+
+
+
+
+    "nationalId" : "12345687",
+
+
+
+
+    "photo" : null
+
+
+
+
+    
+
+
+
+
+}
+
+
+
+
+
+
+example output
+
+
+
+
+
+
+{
+
+
+
+
+    "errors": [
+
+
+
+
+        {
+
+
+
+
+            "entity": "Worker",
+
+
+
+
+            "message": "may not be null",
+
+
+
+
+            "invalidValue": "null",
+
+
+
+
+            "property": "givenName"
+
+
+
+
+        }
+
+
+
+
+    ]
+
+
+
+
+}
+
+
+
+
+
+
+Entity:
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Worker {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+    @NotNull
+
+
+
+
+    @Pattern(regexp = "[^null]", message = "may not be null")
+
+
+
+
+    private String givenName;
+
+
+
+
+
+
+
+
+
+    @NotNull
+
+
+
+
+    private String familyName;
+
+
+
+
+
+
+
+
+
+    private LocalDate dob;
+
+
+
+
+
+
+
+
+
+    private String nationalId;
+
+
+
+
+
+
+
+
+
+    private byte[] photo;
+
+
+
+
+}
+
+
+
+
+
+
+I intentionally added a silly validation constraint to demonstrate</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.5.2 (Hopper SR2), 2.6 M1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="863" opendate="2016-07-30 07:55:49" fixdate="2016-08-05 04:22:00" resolution="Fixed">
+		<buginformation>
+			<summary>REST calls to /api always redirect to HAL Browser if no accept header is specified</summary>
+			<description>After updating 2 projects to Spring Boot 1.4 (and Spring Data Rest 2.5.2) all REST calls to /api  that don&amp;amp;apos;t specify a header like "accept: application/json" redirect to /api/browser/index.html#/api/. In previous versions this was only the case when the accept header was text/html, but now the redirect happens with empty accept header.
+This may have nothing to do with Spring Data Rest directly, I just put it here because HAL Browser is involved.
+But as a result, the default HAL browser itself cannot get the /api and shows its own index.html.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.4.5 (Gosling SR5), 2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowserIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">870</link>
+		</links>
+	</bug>
+	<bug id="870" opendate="2016-08-08 12:45:44" fixdate="2016-08-08 13:00:11" resolution="Duplicate">
+		<buginformation>
+			<summary>CustomAcceptHeaderHttpServletRequest doesn&amp;apos;t work as intended with Spring Framework 4.3.2</summary>
+			<description>CustomAcceptHeaderHttpServletRequest tries to provide a custom view of the request&amp;amp;apos;s Accept header by overriding getHeader(String). It works with Spring Framework 4.2.x but doesn&amp;amp;apos;t work with Spring Framework 4.3.2. As a result of SPR-14506, Spring Framework 4.3.2 now calls getHeaderValues(String) rather than getHeader(String) and the original Accept header is returned.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowserIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">863</link>
+		</links>
+	</bug>
+	<bug id="883" opendate="2016-09-01 13:50:43" fixdate="2016-09-19 12:16:15" resolution="Fixed">
+		<buginformation>
+			<summary>Sort mapping does not consider Jackson customizations in field names</summary>
+			<description>Currently the Sort instance derived from an HTTP request gets the fields forwarded to the repository without any Jackson customizations (e.g. field name customizations) applied.
+That means that although you might have customized the field name in the representation, the request parameter for the sort would still expose the underlying property names.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.4.5 (Gosling SR5), 2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappingAwareDefaultedPageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.SortTranslatorUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappingAwareSortArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.support.DomainClassResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.TestDataPopulator.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslator.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappedProperties.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Book.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.BookRepository.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">909</link>
+		</links>
+	</bug>
+</bugrepository>

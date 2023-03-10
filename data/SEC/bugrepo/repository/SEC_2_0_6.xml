@@ -1,0 +1,121 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1606" opendate="2010-11-01 14:46:17" fixdate="2010-11-03 13:48:07" resolution="Complete">
+		<buginformation>
+			<summary>FirewalledRequest.reset() not called when Filters in the FilterChainProxy do not complete the FilterChain</summary>
+			<description>When the FilterChain is not completed within FilterChainProxy, FirewalledRequest.reset() is not called. This can cause the wrong pathInfo and servletPath to be exposed when a forward or include is performed within the FilterChainProxy&amp;amp;apos;s filters and using DefaultHttpFirewall. The reason is because the pathInfo and the servletPath are still cached from the original request and reset was never called.
+The following configuration will demonstrate the issue. When an invalid username/password is submitted, the request is forwarded to /login.jsp?login_error=1. However, when the JspServlet attempts to process the URL it sees the HttpServeltRequest.servletPath as RequestWrapper.strippedServletPath (/j_spring_security_check) instead of the new servletPath /login.jsp. 
+&amp;lt;http auto-config="true"&amp;gt;
+  &amp;lt;intercept-url pattern="/admin/secure.jsp" access="ROLE_ADMIN"/&amp;gt;
+  &amp;lt;form-login login-page="/login.jsp" authentication-failure-handler-ref="afh"/&amp;gt;		
+&amp;lt;/http&amp;gt;	
+&amp;lt;b:bean id="afh" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler"
+  p:defaultFailureUrl="/login.jsp?login_error=1"  
+  p:useForward="true"/&amp;gt;
+&amp;lt;authentication-manager&amp;gt;
+  &amp;lt;authentication-provider&amp;gt;
+    &amp;lt;user-service&amp;gt;
+      &amp;lt;user name="un" password="pwd" authorities="ROLE_ADMIN"/&amp;gt;
+    &amp;lt;/user-service&amp;gt;
+  &amp;lt;/authentication-provider&amp;gt;
+&amp;lt;/authentication-manager&amp;gt;
+I have not yet validated this occurs in 3.1.0.M2 but marked it as impacted to ensure it at least gets looked at.</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.0.5, 3.1.0.M2, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapperTests.java</file>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1633</link>
+			<link type="Relate" description="relates to">1608</link>
+		</links>
+	</bug>
+	<bug id="1633" opendate="2010-12-04 23:15:40" fixdate="2010-12-08 06:01:26" resolution="Duplicate">
+		<buginformation>
+			<summary>jsp:forward goes into a loop</summary>
+			<description>I wanted to upgrade to Spring Security 2.0.6 from Spring Security 2.0.5. That is upgrade one minor version up. I use struts 1.3.10. When I replaced the 4 jar files with the ones from 2.0.6, I started getting strange error messages from Struts saying that no action path could be found. 
+The following are the 4 jars that I replace with the 2.0.6 versions.
+spring-security-acl-2.0.5.RELEASE.jar
+spring-security-core-2.0.5.RELEASE.jar
+spring-security-core-tiger-2.0.5.RELEASE.jar
+spring-security-taglibs-2.0.5.RELEASE.jar
+After trying various things unsuccessfully, I decided to create a bare bones functional project and try my upgrade there.
+What I discovered is that 2.0.6 appears to have problems dealing with jsp forward. In 2.0.5 things work fine but 2.0.6 things go into a loop while running inside of Eclipse/Tomcat 5.5.
+I create a fresh Eclipse Dynamic Web project. I add an index.jsp which has one line to perform a jsp:forward to another .jsp page. I tested with no Spring and it works as expected. I then introduce Spring Security 2.0.5 and Spring 2.5.5 into the mix and things still work as expected. (Index.jsp has intercept-url has filters=none).
+I then replace the above mentioned 4 files with the 2.0.6 versions. Then when I try to navigate to the index.jsp via browser (Fire Fox 3.6.12), the tomcat server goes into a loop spewing out a very large stack trace.
+I&amp;amp;apos;m attaching the eclipse project as well as the tomcat log file.
+The main reason I wanted to upgrade to 2.0.6 is because for some reason, I am not able to get "access-denied-page" attribute to work on the http element.</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapperTests.java</file>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1606</link>
+		</links>
+	</bug>
+	<bug id="1639" opendate="2010-12-16 10:17:17" fixdate="2010-12-17 08:33:37" resolution="Complete">
+		<buginformation>
+			<summary>VirtualFilterChain.resetWrapper does not handle nested FilterChainProxy&amp;apos;s</summary>
+			<description>Since VirtualFilterChain.resetWrapper breaks on the first FirewalledRequest it doesn&amp;amp;apos;t handle nested FilterChainProxy&amp;amp;apos;s (i.e. new RequestWrapper(new RequestWrapper(originalRequest)) ). My current thought on fixing this is to pass in the actual FirewalledRequest into the constructor of the VirtualFilterChain and call reset on it. This would ensure the correct one gets called. It also eliminates the need for looping.
+A workaround is to place a Filter that calls the following reset method as the first filter for forwarded requests.
+public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
+  while (request instanceof ServletRequestWrapper) {
+    if (request instanceof FirewalledRequest) 
+{
+      ((FirewalledRequest)request).reset();
+    }
+    request = ((ServletRequestWrapper)request).getRequest();
+  }
+}
+Example Mapping 
+    &amp;lt;filter-mapping&amp;gt;
+        &amp;lt;filter-name&amp;gt;fixSSFilter&amp;lt;/filter-name&amp;gt;
+        &amp;lt;url-pattern&amp;gt;/*&amp;lt;/url-pattern&amp;gt;
+        &amp;lt;dispatcher&amp;gt;FORWARD&amp;lt;/dispatcher&amp;gt;
+    &amp;lt;/filter-mapping&amp;gt;</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.1.0.M2, 3.0.6, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxyTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1741" opendate="2011-05-12 03:35:44" fixdate="2011-08-19 10:34:05" resolution="Fixed">
+		<buginformation>
+			<summary>ContextPropagatingRemoteInvocation should not be able to pass a SecurityContext object</summary>
+			<description>Various potential attacks have been reported which rely on the deserialization of the SecurityContext/Authentication combination used by this class.
+Realistically, a remote client should be limited to providing simple user/credentials information which is not automatically deserialized into instances of framework classes. The Authentication object should only be created in the server VM.</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.remoting.rmi.ContextPropagatingRemoteInvocation.java</file>
+			<file type="M">org.springframework.security.remoting.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1750" opendate="2011-05-20 12:08:16" fixdate="2011-08-19 10:36:55" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractSecurityInterceptor should replace the SecurityContext when doing RunAs replacement, rather than just the Authentication within the context</summary>
+			<description>Since the SecurityContext may be shared between different threads, there is a limited possibility of escalating permissions when a RunAsManager is used to modify the context.</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.intercept.InterceptorStatusTokenTests.java</file>
+			<file type="M">org.springframework.security.access.intercept.AbstractSecurityInterceptor.java</file>
+			<file type="M">org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.access.intercept.InterceptorStatusToken.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

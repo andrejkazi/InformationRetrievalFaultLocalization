@@ -1,0 +1,515 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="1" master="219" duplicate="222" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils removeAll is actually retainAll</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. The removeAll(Collection collection, Collection remove) method calls ListUtils.retainAll(collection, remove)
+instead of ListUtils.removeAll(Collection collection, Collection remove)
+Should be an easy fix</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="2" master="219" duplicate="437" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll invoke ListUtils.retainAll !!!</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method.     public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="3" master="219" duplicate="349" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. The method CollectionUtils.removeAll() call wrongly ListUtils.retainAll()</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. The method CollectionUtils.removeAll() calls wrongly ListUtils.retainAll() instead of ListUtils.removeAll().</description>
+			<version>3.2</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="4" master="219" duplicate="435" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll() calls ListUtils.retainAll()</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. A snippet from CollectionUtils.java:
+CollectionUtils.java
+
+public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.retainAll(collection, remove);
+}
+
+
+It should call ListUtils.removeAll() instead.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="5" master="219" duplicate="487" opendate="2006-08-02 17:37:52" fixdate="2013-10-21 07:56:23" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll is not work as expected</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. http://svn.apache.org/viewvc/commons/proper/collections/tags/COLLECTIONS_3_2_1/src/java/org/apache/commons/collections/CollectionUtils.java?revision=1211567&amp;amp;view=markup
+Line: 1122
+Problem:
+The method called "removeAll", but call "retainAll" internally.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="6" master="262" duplicate="353" opendate="2007-08-29 04:10:32" fixdate="2013-02-28 19:28:11" resolution="Fixed">
+		<buginformation>
+			<summary>probably apidoc error: firstKey() and lastKey() in AbstractLinkedMap AbstractLinkedMap firstKey/lastKey JavaDoc reversed</summary>
+			<description>In the apidoc or source of org.apache.commons.collections.map.AbstractLinkedMap.firstKey(), it is said that this method "Gets the first key in the map, which is the most recently inserted.", which is exactly the actual behavior of lastKey(), and vice versa. 
+So I think there is a typo with this class&amp;amp;apos; javadoc. According to the Javadoc on AbstractLinkedMap#firstKey and AbstractLinkedMap#lastKey the following test shouldn&amp;amp;apos;t fail:
+    LinkedMap map = new LinkedMap();
+    map.put("one", "one");
+    map.put("two", "two");
+    assertEquals("one", map.lastKey());
+    assertEquals("two", map.firstKey());</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">279</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+			<link type="Duplicate" description="duplicates">262</link>
+		</links>
+	</bug>
+	<bug id="7" master="256" duplicate="288" opendate="2007-06-08 22:43:11" fixdate="2013-04-27 21:42:26" resolution="Duplicate">
+		<buginformation>
+			<summary>ListUtils.transformedList(list, transformer) doesn&amp;apos;t transform Javadoc: incorrect behavior explained for ListUtils.transformedList</summary>
+			<description>The static method ListUtils.transformedList(List list, Transformer trans) does not apply the transformer before returning the list.  I&amp;amp;apos;ve traced into the code and it falls all the way through to the TransformedCollection constructor which has documentation that states that items existing in the list are NOT transformed.  This yields bizarre unexpected behavior for this method.
+Conversely, the ListUtils.predicatedList(List list, Predicate pred) DOES apply the predicate.  These methods are very similar but behave inconsistently.
+If the transformer is not applied to the list, the method&amp;amp;apos;s usefulness is somewhat limited and causes the user to create an extra unwanted list in some circumstances:
+// To transform an existing list
+List myList = ... some list to be transformed ...
+List transformed = ListUtils.transformedList(new ArrayList(), myTransformer);
+transformed.addAll(myList);
+I would expect a much shorter implementation such as:
+List transformed = ListUtils.transformedList(myList, myTransformer) The contract stated for ListUtils.transformedList is wrong. The list is not transformed  it decorates the existing list and transforms NEW objects  EXISTING objects are not transformed. 
+Compare this to the javadoc found in MapUtils.transformedMap:
+"This method returns a new map (decorating the specified map) that will transform any new entries added to it. Existing entries in the specified map will not be transformed. "
+That little missing piece of information messed me up. Just replace "map" with "list" and append it to the existing LilstUtils javadoc.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.bag.TestTransformedBag.java</file>
+			<file type="M">org.apache.commons.collections.SetUtils.java</file>
+			<file type="M">org.apache.commons.collections.set.TestTransformedSet.java</file>
+			<file type="M">org.apache.commons.collections.BufferUtils.java</file>
+			<file type="M">org.apache.commons.collections.bag.TransformedSortedBag.java</file>
+			<file type="M">org.apache.commons.collections.bag.TransformedBag.java</file>
+			<file type="M">org.apache.commons.collections.list.TransformedList.java</file>
+			<file type="M">org.apache.commons.collections.ListUtils.java</file>
+			<file type="M">org.apache.commons.collections.buffer.TestTransformedBuffer.java</file>
+			<file type="M">org.apache.commons.collections.collection.TransformedCollection.java</file>
+			<file type="M">org.apache.commons.collections.set.TestTransformedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections.set.TransformedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections.buffer.TransformedBuffer.java</file>
+			<file type="M">org.apache.commons.collections.list.TestTransformedList.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.BagUtils.java</file>
+			<file type="M">org.apache.commons.collections.set.TransformedSet.java</file>
+			<file type="M">org.apache.commons.collections.collection.TestTransformedCollection.java</file>
+			<file type="M">org.apache.commons.collections.bag.TestTransformedSortedBag.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">288</link>
+			<link type="Duplicate" description="is duplicated by">256</link>
+			<link type="Reference" description="relates to">348</link>
+		</links>
+	</bug>
+	<bug id="8" master="219" duplicate="284" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll() calls ListUtils.retainAll()</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll() calls ListUtils.retainAll().  I believe it should actually be 
+public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.removeAll(collection, remove);
+}</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="9" master="262" duplicate="279" opendate="2007-08-29 04:10:32" fixdate="2013-02-28 19:29:02" resolution="Fixed">
+		<buginformation>
+			<summary>probably apidoc error: firstKey() and lastKey() in AbstractLinkedMap LRUMap: moveToMRU is not invoked for new entry</summary>
+			<description>In the apidoc or source of org.apache.commons.collections.map.AbstractLinkedMap.firstKey(), it is said that this method "Gets the first key in the map, which is the most recently inserted.", which is exactly the actual behavior of lastKey(), and vice versa. 
+So I think there is a typo with this class&amp;amp;apos; javadoc. 
+	@Test
+	public void testFirst() 
+{
+		LRUMap map = new LRUMap();
+
+		String key = "key1";
+		String value = "value1";
+
+		map.put(key, value);
+		Assert.assertEquals(map.get(key), value);
+		Assert.assertEquals(map.get(map.firstKey()), value);
+		
+		key = "key2";
+		value = "value2";
+		map.put(key, value);
+		// here it fails
+		Assert.assertEquals(map.get(map.firstKey()), value);
+	}</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">279</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+			<link type="Duplicate" description="duplicates">262</link>
+		</links>
+	</bug>
+	<bug id="10" master="580" duplicate="583" opendate="2015-11-07 13:28:01" fixdate="2015-12-14 07:47:22" resolution="Fixed">
+		<buginformation>
+			<summary>Arbitrary remote code execution with InvokerTransformer JAVA serialization vulnerability "CVE-2015-4852" in commons-collections*.jar</summary>
+			<description>With InvokerTransformer serializable collections can be build that execute arbitrary Java code. sun.reflect.annotation.AnnotationInvocationHandler#readObject invokes #entrySet and #get on a deserialized collection. If you have an endpoint that accepts serialized Java objects (JMX, RMI, remote EJB, ...) you can combine the two to create arbitrary remote code execution vulnerability.
+I don&amp;amp;apos;t know of a good fix short of removing InvokerTransformer or making it not Serializable. Both probably break existing applications.
+This is not my research, but has been discovered by other people.
+https://github.com/frohoff/ysoserial
+http://foxglovesecurity.com/2015/11/06/what-do-weblogic-websphere-jboss-jenkins-opennms-and-your-application-have-in-common-this-vulnerability/ The vulnerability we are talking about is known under number CVE-2015-4852. As far as we know this is only related to the 
+file commons-collections*.jar. In this jar file is a class that takes care of the deserialization. 
+Currently we are using commons-collections-3.2.1.jar.
+Is there a version of this jar that does not have this vulnerability?</description>
+			<version>3.0</version>
+			<fixedVersion>3.2.2, 4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.collections4.multimap.MultiValuedHashMap.java</file>
+			<file type="D">org.apache.commons.collections4.multimap.MultiValuedHashMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.TransformedMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.UnmodifiableMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractSetValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.MultiMapUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.TransformedMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.package-info.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractListValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.MultiMapUtils.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtils.java</file>
+			<file type="M">org.apache.commons.collections4.ClosureUtils.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtils.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMap.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateFactory.java</file>
+			<file type="M">org.apache.commons.collections4.functors.WhileClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.CloneTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ForClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InvokerTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.PrototypeFactory.java</file>
+			<file type="M">org.apache.commons.collections4.functors.package-info.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateTransformer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">583</link>
+			<link type="Reference" description="relates to">487</link>
+			<link type="Reference" description="relates to">4135</link>
+			<link type="Reference" description="is related to">12579</link>
+			<link type="Reference" description="is related to">4020</link>
+			<link type="dependent" description="is depended upon by">169</link>
+			<link type="Duplicate" description="duplicates">580</link>
+		</links>
+	</bug>
+	<bug id="11" master="488" duplicate="493" opendate="2013-10-25 00:49:00" fixdate="2013-11-05 10:51:52" resolution="Fixed">
+		<buginformation>
+			<summary>Satisfies utility method Satisfies CollectionUtils Method</summary>
+			<description>I recently needed to use something like the CollectionUtils.exists method, but I wanted to know if a given predicate was true for ALL members of a collection, rather than just one.  I cooked up a quick method called satisfies (help would be appreciated on the name - it&amp;amp;apos;s the best that I could come up with) that determines whether a given predicate is true for all members of a collection.
+Been using this library a good deal recently - hoping to get involved in its development! Recently I needed a method to verify that a predicate held true for all members of a collection.  I saw where CollectionUtils had the exists method that checked for a single list element that satisfied a predicate, but not a method for all elements.
+Hoping to get more involved with the project!</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">489</link>
+			<link type="Duplicate" description="is duplicated by">493</link>
+			<link type="Duplicate" description="duplicates">488</link>
+			<link type="Duplicate" description="is duplicated by">490</link>
+			<link type="Duplicate" description="is duplicated by">491</link>
+			<link type="Duplicate" description="is duplicated by">492</link>
+		</links>
+	</bug>
+	<bug id="12" master="219" duplicate="357" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll invokes wrong Listutils method</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. 
+
+    public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.retainAll(collection, remove);
+    }
+
+</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+			<link type="Duplicate" description="is duplicated by">371</link>
+			<link type="Duplicate" description="is duplicated by">386</link>
+			<link type="Duplicate" description="is duplicated by">358</link>
+			<link type="Duplicate" description="is duplicated by">369</link>
+			<link type="Duplicate" description="is duplicated by">376</link>
+		</links>
+	</bug>
+	<bug id="13" master="219" duplicate="371" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. BUG in org.apache.commons.collections.CollectionUtils.removeAll(Collection, Collection)   </summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. line: 1121
+public static Collection removeAll(Collection collection, Collection remove) 
+{
+    return ListUtils.retainAll(collection, remove); //&amp;lt;&amp;lt;&amp;lt;&amp;lt;&amp;lt;-------- here absolutely wrong!
+
+}
+</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+	<bug id="14" master="219" duplicate="358" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll(Collection collection, Collection remove) calls ListUtils.retainAll(collection, remove)</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. Inside CollectionUtils.removeAll(Collection collection, Collection remove) the retainAll() method of ListUtils is called in line 1122.
+It should read ListUtils.removeAll(collection, remove) instead.
+Workaround: use ListUtils.removeAll(Collection collection, Collection remove) instead.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+	<bug id="15" master="219" duplicate="315" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll calls the wrong ListUtils method</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. Using version 3.2.1 as downloaded from maven&amp;amp;apos;s public repository.
+CollectionUtils.removeAll should call ListUtils.removeAll instead of ListUtils.retainAll.
+Currently
+{{public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }
+}}
+Suggested
+{{public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.*removeAll*(collection, remove);
+    }
+}}</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="16" master="219" duplicate="386" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll(Collection, Collection) has an CopyPaste-Failure</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0, Nightly Builds</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+</bugrepository>

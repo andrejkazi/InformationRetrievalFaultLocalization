@@ -1,0 +1,1879 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="655" opendate="2015-08-21 06:59:05" fixdate="2015-08-21 07:01:16" resolution="Fixed">
+		<buginformation>
+			<summary>Typo in exception message in parameter checks for ParameterMetadata</summary>
+			<description></description>
+			<version>2.3.2 (Fowler SR2)</version>
+			<fixedVersion>2.4 GA (Gosling), 2.3.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.mapping.ParameterMetadata.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="662" opendate="2015-08-29 08:55:18" fixdate="2015-08-29 13:46:25" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to post entity with subclassed property (JPA)</summary>
+			<description>Given these entities:
+
+
+
+
+
+
+static class PetOwner {
+
+
+
+
+    private Pet pet;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
+
+
+
+
+static class Pet {}
+
+
+
+
+static class Cat extends Pet {}
+
+
+
+
+
+
+Submitting a post like
+
+
+
+
+
+
+curl -d &amp;amp;apos;{"pet" : "http://localhost:8080/pets/1"}&amp;amp;apos; -H &amp;amp;apos;Content-Type: application/json&amp;amp;apos; &amp;amp;apos;http://localhost:8080/petOwners/&amp;amp;apos;
+
+
+
+
+
+
+fails, because Jackson will try and deserialize "with type".</description>
+			<version>2.3.2 (Fowler SR2)</version>
+			<fixedVersion>2.4 GA (Gosling), 2.3.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2ModuleUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="665" opendate="2015-09-02 06:42:16" fixdate="2015-09-02 13:23:34" resolution="Fixed">
+		<buginformation>
+			<summary>Use consistent scheme for property titles in JSON Schema</summary>
+			<description></description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.1 (Gosling SR1), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JsonSchema.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="699" opendate="2015-11-06 15:28:31" fixdate="2015-11-06 15:40:18" resolution="Fixed">
+		<buginformation>
+			<summary>On Java 8, link templates to search resources using pagination contain pageable variable</summary>
+			<description>When using Java 8 with parameter name discovery added, the links pointing to search methods using a Pageable contain a pageable URI template variable. This is caused by the RepositoryMethodResourceMapping only dropping parameters without names (assuming Pageable and Sort were never annotated with @Param).
+We should explicitly exclude parameters of these types from being exposed as explicit search method parameters.</description>
+			<version>2.3.2 (Fowler SR2)</version>
+			<fixedVersion>2.4.1 (Gosling SR1), 2.5 M1 (Hopper), 2.3.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.mapping.RepositoryMethodResourceMapping.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.RepositoryMethodResourceMappingUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="683" opendate="2015-09-23 13:49:39" fixdate="2015-11-06 15:41:00" resolution="Fixed">
+		<buginformation>
+			<summary>ALPS profile does not reflect jackson customization (e.g. enableEnumTranslation=true)</summary>
+			<description>Found while trying to document the enums of my REST API with ALPS.
+See example including failing test here: https://github.com/otrosien/spring-alps-bug
+The alps profile starts like below, but seems like it uses a differently configured jackson mapper, as the main one is configured to "enableEnumTranslation" ("Payment expected" instead of "PAYMENT_EXPECTED").
+
+
+
+
+
+
+{
+
+
+
+
+  "version" : "1.0",
+
+
+
+
+  "descriptors" : [ {
+
+
+
+
+    "id" : "order-representation",
+
+
+
+
+    "href" : "http://localhost/profile/orders",
+
+
+
+
+    "descriptors" : [ {
+
+
+
+
+      "name" : "status",
+
+
+
+
+      "doc" : {
+
+
+
+
+        "value" : "PAYMENT_EXPECTED, PAID",
+
+
+
+
+        "format" : "TEXT"
+
+
+
+
+      },
+
+
+
+
+      "type" : "SEMANTIC"
+
+
+
+
+    } ]
+
+
+
+
+
+
+</description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.1 (Gosling SR1), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Person.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="701" opendate="2015-11-09 16:01:52" fixdate="2015-11-10 13:09:40" resolution="Fixed">
+		<buginformation>
+			<summary>NPE when updating resource via PUT</summary>
+			<description>I&amp;amp;apos;m not sure if this is a regression, but it is basically the same issue as DATAREST-491 and DATAREST-605. I&amp;amp;apos;m seeing this using spring-boot-starter-data-rest:1.3.0.M5.
+Check out the demo project and do the following to reproduce:
+Create a resource:
+
+
+
+
+
+
+curl -v -X POST http://localhost:8080/tickets -H "Content-Type: application/json" -d &amp;amp;apos;{"properties" : {"a": "1", "b": {"c": "2"}}}&amp;amp;apos;
+
+
+
+
+
+
+Try to update the properties of the resource via PUT:
+
+
+
+
+
+
+curl -v -X PUT http://localhost:8080/tickets/5640c0b6b760828633d03cca -H "Content-Type: application/json" -d &amp;amp;apos;{"properties" : {"a": "3", "b": {"c": "4"}}}&amp;amp;apos;
+
+
+
+
+
+
+The following NPE is observed:
+
+
+
+
+
+
+org.springframework.http.converter.HttpMessageNotReadableException: Could not read an object of type class demo.Ticket from the request!; nested exception is org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:206) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	...
+
+
+
+
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_25]
+
+
+
+
+Caused by: org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:138) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.readPut(DomainObjectReader.java:130) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.JsonPatchHandler.applyPut(JsonPatchHandler.java:134) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:203) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	... 52 common frames omitted
+
+
+
+
+Caused by: java.lang.NullPointerException: null
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.getJacksonProperties(DomainObjectReader.java:254) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:158) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMergeNestedMap(DomainObjectReader.java:238) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:196) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:136) ~[spring-data-rest-webmvc-2.4.0.RELEASE.jar:na]
+
+
+
+
+	... 55 common frames omitted
+
+
+
+
+
+
+</description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.1 (Gosling SR1), 2.5 M1 (Hopper), 2.3.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="690" opendate="2015-09-30 08:52:24" fixdate="2015-11-13 14:33:47" resolution="Fixed">
+		<buginformation>
+			<summary>Invalid JSON Schema for properties pointing to association resources</summary>
+			<description>I am using a Spring Data REST version of Spring Boot&amp;amp;apos;s PetClinic application for playing around with the JSON Schema support. I noticed the following:
+A property which represents a one-to-many association is of type string and format uri. However, it also contains the properties uniqueItems and items, which, according to the JSON Schema validation docs, only exist for array types. Below is an excerpt of the JSON Schema for the Owner class:
+
+
+
+
+
+
+{
+
+
+
+
+  "title": "Owner",
+
+
+
+
+  "properties": {
+
+
+
+
+    "pets": {
+
+
+
+
+      "title": "Pets",
+
+
+
+
+      "readOnly": false,
+
+
+
+
+      "type": "string",
+
+
+
+
+      "format": "uri",
+
+
+
+
+      "uniqueItems": true,
+
+
+
+
+      "items": {
+
+
+
+
+        "type": "object"
+
+
+
+
+      }
+
+
+
+
+    },
+
+
+
+
+    ...
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+I think the correct representation would be the following, do you agree?
+
+
+
+
+
+
+{
+
+
+
+
+  "title": "Owner",
+
+
+
+
+  "properties": {
+
+
+
+
+    "pets": {
+
+
+
+
+      "title": "Pets",
+
+
+
+
+      "readOnly": false,
+
+
+
+
+      "type": "array",
+
+
+
+
+      "uniqueItems": true,
+
+
+
+
+      "items": {
+
+
+
+
+        "type": "string",
+
+
+
+
+        "format": "uri"
+
+
+
+
+      }
+
+
+
+
+    },
+
+
+
+
+    ...
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.1 (Gosling SR1), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JsonSchema.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="705" opendate="2015-11-13 12:10:23" fixdate="2015-11-20 15:58:00" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot PUT versioned entity returned by spring-data-rest</summary>
+			<description>I would expect it to be possible to execute PUT by simply supplying all fields returned by GET. However, this is currently broken as a consequence of DATAREST-160. 
+Now when an entity is exposed via REST API (either as part of a list, or directly), it&amp;amp;apos;s returned without version property. However, when PUT operation is performed, version property can be required, since the whole entity is persisted (as opposed to PATCH logic where only changed fields need to be supplied). This is true, for example, for JPA, which will check version and refuse updating if version is missing.
+This means that REST API client is expected to send a property that it never received. In fact, the client might not even be aware that such property exists, how it&amp;amp;apos;s called, and what value it should contain.</description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper), 2.3.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="697" opendate="2015-10-26 19:40:30" fixdate="2015-12-10 14:07:20" resolution="Fixed">
+		<buginformation>
+			<summary>ProjectionSerializer doesn&amp;apos;t react to unwrapping mode correctly</summary>
+			<description>Previously, it was possible to have a controller method that returned a Resource-wrapped @Projection interface of a domain type. Somewhere between 2.3.2 and 2.4, this functionality was broken. 
+The below code sample works fine in SDR 2.3.2, but in 2.4 and current SNAPSHOTs it results in the following error: 
+
+
+
+
+
+
+Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: Can not start an object, expecting field name; nested exception is com.fasterxml.jackson.core.JsonGenerationException: Can not start an object, expecting field name
+
+
+
+
+
+
+Testing this out, serializing a Resource-wrapped POJO works fine, a Resource-wrapped domain type works fine, a non-wrapped Projection works fine, but a Resource-wrapped projection fails with the above error. Using the SDR repository controller to return the projection works fine, too.
+This feels like a bug? 
+Below is sample code for reproducing this. Tested with Spring Boot 1.2.7 and SDR 2.3.2 (working) and Spring Boot 1.3.1.RC1 and SDR 2.4.0.RELEASE (not working).
+
+
+
+
+
+
+@SpringBootApplication
+
+
+
+
+public class Sandbox {
+
+
+
+
+
+
+
+
+
+    public static void main(String[] args) {
+
+
+
+
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Sandbox.class);
+
+
+
+
+        builder.run(args);
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public interface PersonRepository extends CrudRepository&amp;lt;Person,Long&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Projection(types=Person.class,name="test")
+
+
+
+
+public interface PersonProjection {
+
+
+
+
+
+
+
+
+
+    String getName();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Getter
+
+
+
+
+@Setter
+
+
+
+
+public class Person {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+    private String name;
+
+
+
+
+
+
+
+
+
+    private String phone;
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@BasePathAwareController
+
+
+
+
+public class TestController {
+
+
+
+
+
+
+
+
+
+    private final ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test/{id}", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; getProjection(@PathVariable Long id){
+
+
+
+
+        Person one = personRepository.findOne(id);
+
+
+
+
+        PersonProjection projection = projectionFactory.createProjection(PersonProjection.class, one);
+
+
+
+
+        return ResponseEntity.ok(new Resource&amp;lt;&amp;gt;(projection));
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt;&amp;gt; getProjections(){
+
+
+
+
+        Set&amp;lt;Person&amp;gt; people = Sets.newHashSet(personRepository.findAll());
+
+
+
+
+        Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; wrap = Resources.wrap(people.stream().map(o -&amp;gt; projectionFactory.createProjection(PersonProjection.class, o)).collect(Collectors.toSet()));
+
+
+
+
+        return ResponseEntity.ok(wrap);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+@WebAppConfiguration
+
+
+
+
+@SpringApplicationConfiguration(classes = Sandbox.class)
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+public class TestProjection {
+
+
+
+
+
+
+
+
+
+    private MockMvc mockMvc;
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private WebApplicationContext webApplicationContext;
+
+
+
+
+    
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @Before
+
+
+
+
+    public void before(){
+
+
+
+
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+
+
+
+        Person person = new Person();
+
+
+
+
+        person.setName("Adam");
+
+
+
+
+        person.setPhone("123456");
+
+
+
+
+        personRepository.save(person);
+
+
+
+
+        
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test 
+
+
+
+
+    public void testProjection() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test/1")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDR() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDRSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons/1?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>2.4 GA (Gosling)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">716</link>
+		</links>
+	</bug>
+	<bug id="565" opendate="2015-06-05 14:09:05" fixdate="2016-04-01 10:37:28" resolution="Fixed">
+		<buginformation>
+			<summary>Hal Browser does not seem to work with spring boot with a non-default context-path</summary>
+			<description>if i have server.contextpath=foo in my application.properties 
+and i go to localhost:8080/foo/ i am redirected to localhost:8080/browser/index.html which is 404. It if i navigate to: localhost:8080/foo/browser/index.html it also redirects me to that same place. 
+Hal Browser needs to take context path into account.</description>
+			<version>2.4 M1 (Gosling)</version>
+			<fixedVersion>2.4 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">720</link>
+		</links>
+	</bug>
+	<bug id="720" opendate="2015-12-03 14:01:39" fixdate="2016-04-01 11:00:36" resolution="Fixed">
+		<buginformation>
+			<summary>HAL Browser default URI doesn&amp;apos;t respect context path</summary>
+			<description>If a Spring Data REST application is deployed into a servlet container the HAL browser points to the server root, not the context path under which the the API is deployed.
+We should switch to an absolute URI in the Explorer field.</description>
+			<version>2.3.2 (Fowler SR2)</version>
+			<fixedVersion>2.5 GA (Hopper), 2.4.5 (Gosling SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowser.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowserUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">565</link>
+		</links>
+	</bug>
+	<bug id="847" opendate="2016-06-30 13:34:34" fixdate="2016-07-01 12:46:04" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryEntityController.saveAndReturn calls AfterSaveEvent with wrong domain object</summary>
+			<description>The saveAndReturn method has the following code to handle the Repository Event logic.
+
+
+
+
+
+
+publisher.publishEvent(new BeforeSaveEvent(domainObject));
+
+
+
+
+Object obj = invoker.invokeSave(domainObject);
+
+
+
+
+publisher.publishEvent(new AfterSaveEvent(domainObject));
+
+
+
+
+
+
+but I think this is wrong. It is using the provided domainObject for the AfterSaveEvent, instead of the obj returned by the invoker. From what I can tell, the expectation is that the After events should be supplied the object with its current state (i.e. after the change has been applied). This is further born out by the behavior of the createAndReturn method, which uses:
+
+
+
+
+
+
+publisher.publishEvent(new BeforeCreateEvent(domainObject));
+
+
+
+
+Object savedObject = invoker.invokeSave(domainObject);
+
+
+
+
+publisher.publishEvent(new AfterCreateEvent(savedObject));
+
+
+
+
+
+
+Here it is using the returned object (savedObject in this case). This gets even more confusing in the case of a REST PUT call, since that method first determines if the request should create a new item or update an existing item. Granted, since the contract of PUT is to always supply a complete object, the impact is less then a PATCH case, if one is using Generated fields or has EntityListeners that affect the object, those changes would be hidden to the AfterSaveEvent.</description>
+			<version>2.3.2 (Fowler SR2)</version>
+			<fixedVersion>2.6 M1 (Ingalls), 2.4.5 (Gosling SR5), 2.5.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="575" opendate="2015-06-12 05:57:02" fixdate="2016-10-23 18:54:24" resolution="Fixed">
+		<buginformation>
+			<summary>Insufficient check for the presence of a PersistentProperty in MappedProperties</summary>
+			<description>Hello,
+I just issued a PUT request towards my /rest/variant/564477030778624 and I got the following exception:
+
+
+
+
+
+
+2015-06-12 15:53:28,025 org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler [http-nio-8112-exec-2] ERROR: Could not read an object of type class com.samplestore.core.model.catalog.ProjectVariantProductModel from the request!; nested exception is org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+org.springframework.http.converter.HttpMessageNotReadableException: Could not read an object of type class com.samplestore.core.model.catalog.ProjectVariantProductModel from the request!; nested exception is org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:197)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.read(PersistentEntityResourceHandlerMethodArgumentResolver.java:169)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgumentResolver.java:125)
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77)
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162)
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:129)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:110)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:776)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:705)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:959)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:893)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:879)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:691)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:770)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:303)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:85)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration$ApplicationContextHeaderFilter.doFilterInternal(EndpointWebMvcAutoConfiguration.java:291)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at com.nemesis.platform.core.filter.CorsFilter.doFilterInternal(CorsFilter.java:41)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:77)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter.doFilter(RememberMeAuthenticationFilter.java:146)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:107)
+
+
+
+
+	at org.springframework.session.web.http.SessionRepositoryFilter.doFilterInternal(SessionRepositoryFilter.java:111)
+
+
+
+
+	at org.springframework.session.web.http.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:65)
+
+
+
+
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:112)
+
+
+
+
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:73)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:99)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at com.samplestore.storefront.filter.RequestLoggerFilter.doFilterInternal(RequestLoggerFilter.java:80)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:102)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330)
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118)
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:103)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter.doFilter(RememberMeAuthenticationFilter.java:139)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:154)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:45)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:199)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:50)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.access.channel.ChannelProcessingFilter.doFilter(ChannelProcessingFilter.java:144)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:85)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.springframework.boot.actuate.autoconfigure.MetricFilterAutoConfiguration$MetricsFilter.doFilterInternal(MetricFilterAutoConfiguration.java:90)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:241)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:208)
+
+
+
+
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:220)
+
+
+
+
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:122)
+
+
+
+
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:504)
+
+
+
+
+	at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:683)
+
+
+
+
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:170)
+
+
+
+
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:103)
+
+
+
+
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:116)
+
+
+
+
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:421)
+
+
+
+
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1074)
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:611)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1739)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1698)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+
+
+
+
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:745)
+
+
+
+
+Caused by: org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:138)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.readPut(DomainObjectReader.java:130)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.JsonPatchHandler.applyPut(JsonPatchHandler.java:134)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:194)
+
+
+
+
+	... 114 more
+
+
+
+
+Caused by: java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.getJacksonProperties(DomainObjectReader.java:207)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:158)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:188)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:136)
+
+
+
+
+	... 117 more
+
+
+
+
+
+</description>
+			<version>2.4 M1 (Gosling)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.4.7 (Gosling SR7), 2.5.5 (Hopper SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappedProperties.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">574</link>
+		</links>
+	</bug>
+</bugrepository>

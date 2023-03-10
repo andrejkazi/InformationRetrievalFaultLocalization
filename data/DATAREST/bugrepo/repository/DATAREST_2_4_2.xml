@@ -1,0 +1,102 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="743" opendate="2016-01-07 17:40:32" fixdate="2016-01-07 20:56:05" resolution="Fixed">
+		<buginformation>
+			<summary>Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts</summary>
+			<description>Occasionally, the application throws a HttpMessageNotWritableException on start up.  See #DATAREST-716.  It appears this is still happening in Gosling SR2 (Spring Boot 1.3.1).
+
+
+
+
+
+
+2016-01-06 19:27:54.639  INFO 1783 --- [ost-startStop-1] o.a.catalina.util.SessionIdGenerator     : Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [9,898] milliseconds.
+
+
+
+
+Jan 06, 2016 7:27:54 PM org.apache.coyote.AbstractProtocol start
+
+
+
+
+INFO: Starting ProtocolHandler ["http-bio-8080"]
+
+
+
+
+Jan 06, 2016 7:27:54 PM org.apache.coyote.AbstractProtocol start
+
+
+
+
+INFO: Starting ProtocolHandler ["ajp-bio-8009"]
+
+
+
+
+Jan 06, 2016 7:27:54 PM org.apache.catalina.startup.Catalina start
+
+
+
+
+INFO: Server startup in 59514 ms
+
+
+
+
+Jan 06, 2016 7:27:54 PM org.apache.catalina.core.ApplicationContext log
+
+
+
+
+INFO: Initializing Spring FrameworkServlet &amp;amp;apos;dispatcherServlet&amp;amp;apos;
+
+
+
+
+2016-01-06 19:27:54.817  INFO 1783 --- [bio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : FrameworkServlet &amp;amp;apos;dispatcherServlet&amp;amp;apos;: initialization started
+
+
+
+
+2016-01-06 19:27:54.854  INFO 1783 --- [bio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : FrameworkServlet &amp;amp;apos;dispatcherServlet&amp;amp;apos;: initialization completed in 28 ms
+
+
+
+
+2016-01-06 19:27:58.029  WARN 1783 --- [io-8080-exec-11] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["activities"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["activities"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+
+</description>
+			<version>2.4.2 (Gosling SR2)</version>
+			<fixedVersion>2.5 M1 (Hopper), 2.4.4 (Gosling SR4)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">716</link>
+		</links>
+	</bug>
+	<bug id="747" opendate="2016-01-11 18:14:44" fixdate="2016-01-11 19:03:52" resolution="Fixed">
+		<buginformation>
+			<summary>ProjectionDefinitionConfiguration does not select projection for most concrete type</summary>
+			<description>If two projections of the same name are registered for an inheritance hierarchy, the current projection selection algorithm doesn&amp;amp;apos;t necessarily prefer the projection defined for the most concrete type.</description>
+			<version>2.4.2 (Gosling SR2)</version>
+			<fixedVersion>2.5 M1 (Hopper), 2.4.4 (Gosling SR4)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.config.ProjectionDefinitionConfigurationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">739</link>
+		</links>
+	</bug>
+</bugrepository>

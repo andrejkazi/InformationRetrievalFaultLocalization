@@ -1,0 +1,620 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1397" opendate="2016-03-13 16:19:33" fixdate="2016-03-16 16:56:43" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate.geoNear() do not log the Query</summary>
+			<description>MongoTemplate.geoNear() do not log the queries using class LOGGER instance...</description>
+			<version>1.8.4 (Gosling SR4)</version>
+			<fixedVersion>1.9 RC1 (Hopper), 1.8.4 (Gosling SR4), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1423" opendate="2016-04-20 11:55:44" fixdate="2016-05-25 15:38:40" resolution="Fixed">
+		<buginformation>
+			<summary>Nested document update doesn&amp;apos;t apply converters on embedded maps</summary>
+			<description>When trying to perform a direct update a nested document which is a map by
+
+
+
+
+
+
+ $set : {&amp;amp;apos;metadata.thumbnails&amp;amp;apos; : Map&amp;lt;Enum, String&amp;gt;}
+
+
+
+
+
+
+the the map keys are not converted
+Meanwhile, updating the core level object works properly 
+
+
+
+
+
+
+$set : {a: metadata}
+
+
+
+
+
+
+For example: 
+Entity class
+
+
+
+
+
+
+public class Video {
+
+
+
+
+    ....
+
+
+
+
+    private VideoMetadata metadata;
+
+
+
+
+    ....
+
+
+
+
+}
+
+
+
+
+
+
+Nested object
+
+
+
+
+
+
+public class VideoMetadata {
+
+
+
+
+    ....
+
+
+
+
+ 	private Map&amp;lt;ThumbnailType, String&amp;gt; thumbnails;
+
+
+
+
+    ....
+
+
+
+
+}
+
+
+
+
+
+
+Enum
+
+
+
+
+
+
+public enum ThumbnailType {
+
+
+
+
+	DEFAULT,  MEDIUM, HIGH, STANDARD, MAXRES
+
+
+
+
+}
+
+
+
+
+
+
+Invoked Dao method to update thumbnails
+
+
+
+
+
+
+Query query = Query.query(Criteria.where("_id").is(id);
+
+
+
+
+Update update = new Update()
+
+
+
+
+	.set("metadata.thumbnails", metadata.getThumbnails());
+
+
+
+
+	.set("metadata2", metadata);
+
+
+
+
+}
+
+
+
+
+mongoOps.updateFirst(query, update, Video.class);
+
+
+
+
+
+
+Just after performing the update my objects looks like 
+
+
+
+
+
+
+{ 
+
+
+
+
+    "_id" : ... ,
+
+
+
+
+    "_class" :  ... ,
+
+
+
+
+    ......
+
+
+
+
+    "metadata" : {
+
+
+
+
+        "thumbnails" : {
+
+
+
+
+            "MEDIUM" : "a", 
+
+
+
+
+            "DEFAULT" : "b", 
+
+
+
+
+            "STANDARD" : "c"
+
+
+
+
+        }, 
+
+
+
+
+    "metadata2" : {
+
+
+
+
+        "thumbnails" : {
+
+
+
+
+            "medium" : "a", 
+
+
+
+
+            "default" : "b", 
+
+
+
+
+            "standard" : "c"
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+The only workaround I can find is to call converter manually : 
+
+
+
+
+
+
+	DBObject dbObject = new BasicDBObject();
+
+
+
+
+	mongoOps.getConverter().write(metadata.getThumbnails(), dbObject);
+
+
+
+
+	dbObject.removeField("_class");
+
+
+
+
+	update.set("metadata.thumbnails", dbObject);
+
+
+
+
+
+
+</description>
+			<version>1.8.4 (Gosling SR4)</version>
+			<fixedVersion>1.9.2 (Hopper SR2), 1.10 M1 (Ingalls), 1.8.5 (Gosling SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1486</link>
+		</links>
+	</bug>
+	<bug id="1453" opendate="2016-06-23 08:19:28" fixdate="2016-06-24 12:25:10" resolution="Complete">
+		<buginformation>
+			<summary>Parse error into GeoJsonPoint if coordinates are "integers"</summary>
+			<description>When mapping a document containing a GeoJSON location into a GeoJsonPoint object, if the location coordinates are "round" numbers (e.g. [0,0]) I get a ClassCastException: 
+
+
+
+
+
+
+Failed to convert from type \[com.mongodb.BasicDBObject\] to type \[org.springframework.data.mongodb.core.geo.GeoJsonPoint\] for value &amp;amp;apos;\{ "type" : "Point" , "coordinates" : [ 0 , 0]\}&amp;amp;apos;; nested exception is java.lang.ClassCastException: java.lang.Integer cannot be cast to java.lang.Double
+
+
+
+
+
+</description>
+			<version>1.8.4 (Gosling SR4)</version>
+			<fixedVersion>1.10 M1 (Ingalls), 1.8.5 (Gosling SR5), 1.9.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.geo.GeoJsonTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.GeoConverters.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1485" opendate="2016-09-07 08:59:33" fixdate="2016-09-19 05:03:18" resolution="Fixed">
+		<buginformation>
+			<summary>Querydsl MongodbSerializer does not take registered converters for Enums into account</summary>
+			<description>MongodbSerializer#visit(Constant&amp;lt;?&amp;gt; expr, Void context)
+should check for custom conversions availability to enable typesafe querydsl expressions containing enums. Currently it performs the following:
+
+
+
+
+
+
+if (Enum.class.isAssignableFrom(expr.getType())) {
+
+
+
+
+            @SuppressWarnings("unchecked") //Guarded by previous check
+
+
+
+
+            Constant&amp;lt;? extends Enum&amp;lt;?&amp;gt;&amp;gt; expectedExpr = (Constant&amp;lt;? extends Enum&amp;lt;?&amp;gt;&amp;gt;) expr;
+
+
+
+
+            return expectedExpr.getConstant().name();
+
+
+
+
+        } else {
+
+
+
+
+            return expr.getConstant();
+
+
+
+
+        }
+
+
+
+
+
+
+Assuming the following model:
+
+
+
+
+
+
+class Connection {
+
+
+
+
+  private String id;
+
+
+
+
+  private ConnectionType type;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+enum ConnectionType {
+
+
+
+
+        A(0),
+
+
+
+
+	B(1),
+
+
+
+
+	C(2);
+
+
+
+
+
+
+
+
+
+	private final int value;
+
+
+
+
+
+
+
+
+
+        ConnectionType(int value){
+
+
+
+
+		this.value = value;
+
+
+
+
+	}
+
+
+
+
+}
+
+
+
+
+
+
+and registered conversions: 
+
+
+
+
+
+
+@ReadingConverter
+
+
+
+
+@Component
+
+
+
+
+public class ConnectionTypeReadConverter implements Converter&amp;lt;Integer, ConnectionType&amp;gt; {
+
+
+
+
+    @Override
+
+
+
+
+    public ConnectionType convert(Integer source) {
+
+
+
+
+        return source == null ? null : ConnectionType.getConnectionType((Integer)source);
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@WritingConverter
+
+
+
+
+@Component
+
+
+
+
+public class ConnectionTypeWriteConverter implements Converter&amp;lt;ConnectionType, Integer&amp;gt; {
+
+
+
+
+    @Override
+
+
+
+
+    public Integer convert(ConnectionType source) {
+
+
+
+
+        return source == null ? null : source.getValue();
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+then the following query generates the enum name (A) instead of value(0) as condition:
+
+
+
+
+
+
+ConnectionType type = ConnectionType.A;
+
+
+
+
+QConnection qConnection = QConnection.connection;
+
+
+
+
+Predicate predicate = qConnection.type.eq(type);
+
+
+
+
+
+
+
+
+
+connectionRepository.findOne(predicate);}}
+
+
+
+
+
+</description>
+			<version>1.8.4 (Gosling SR4)</version>
+			<fixedVersion>1.8.5 (Gosling SR5), 1.9.3 (Hopper SR3), 1.10 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializerUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

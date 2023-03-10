@@ -1,0 +1,26 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="3" master="478" duplicate="323" opendate="2007-02-15 09:18:44" fixdate="2009-03-14 09:29:32" resolution="Fixed">
+		<buginformation>
+			<summary>StopWatch does not resist to system time changes StopWatch: increase precision by using System.nanoTime()</summary>
+			<description>org.apache.commons.lang.time.StopWatch seems to be relying on wall clock, i.e. by calling java.lang.System.currentTimeMillis() to sample current time.
+When a system time change occurs (user action, NTP synchronization...) between 2 calls to StopWatch.getTime(), the difference between the 2 samples is wrong: the measured duration may noticeably differ from the real one. Moreover, should the system time change consist in a backward adjustment, the difference could be negative.
+In order to make StopWatch resistant to system time changes, would it be possible to use the process time, i.e. by making implementation calling java.lang.System.nanoTime() -multiplied by appropriate factor, of course.
+Thanks a lot,
+Regis. In Java5, theres a new, more precise way to measure elapsed timespans:
+http://java.sun.com/j2se/1.5.0/docs/api/java/lang/System.html#nanoTime()
+It will probably break the class contract of the current StopWatch class, as the returned timestamps cannot be transformed to Dates etc., but it will add precision to the stopwatch aspect (as opposed to the timewatch aspect) of the class.
+Perhaps the way to go is to introduce a new HighPrecisionStopWatch class.</description>
+			<version>2.3</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.StopWatch.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">323</link>
+			<link type="Duplicate" description="is duplicated by">478</link>
+		</links>
+	</bug>
+</bugrepository>

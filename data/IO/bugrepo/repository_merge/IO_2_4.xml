@@ -1,0 +1,105 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="2" master="466" duplicate="423" opendate="2014-01-30 22:57:15" fixdate="2015-06-23 06:02:09" resolution="Duplicate">
+		<buginformation>
+			<summary>FileUtils.directoryContains returns wrong response due to startsWith comparison FilenameUtils.directoryContains assumes separator at end of parent path</summary>
+			<description>Consider the following:
+
+
+File fooDir = new File("/temp/foo");
+File fooFile = new File("/temp/foo.txt");
+FileUtils.directoryContains(fooDir, fooFile); // returns true, should return false
+
+
+fooFile is a sibling of fooDir.  fooDir does not contain fooFile.
+This is due to the way FilenameUtils.directoryContains is implemented in that this method uses a simple &amp;amp;apos;startsWith&amp;amp;apos; comparison.  A related bug is filed for the FilenameUtils method that I believe should be fixed as well. FilenameUtils.directoryContains("/abc", "/abcd") returns true, while FilenameUtils.directoryContains("/abc/", "/abcd") returns false.
+The implementation does a simple checkStartsWith() without taking the separator into consideration.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsDirectoryContainsTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">423</link>
+			<link type="Duplicate" description="is duplicated by">466</link>
+		</links>
+	</bug>
+	<bug id="7" master="197" duplicate="339" opendate="2009-02-20 17:52:34" fixdate="2013-05-16 14:38:59" resolution="Fixed">
+		<buginformation>
+			<summary>BoundedInputStream MaxBytesInputStream to limit size of bytes read</summary>
+			<description>Apache Jackrabbit has an interesting InputStream implementation that reads up to a specified amount of bytes from an underlying stream, and then acts as if the end of the stream was reached:
+http://svn.apache.org/repos/asf/jackrabbit/trunk/jackrabbit-jcr-server/src/main/java/org/apache/jackrabbit/server/io/BoundedInputStream.java
+Similar classes are also found in other projects:
+http://svn.mucommander.com/cgi-bin/viewvc.cgi/trunk/source/com/mucommander/io/BoundedInputStream.java?content-type=text%2Fplain&amp;amp;view=co
+https://www.sunspotworld.com/docs/Purple/javadoc/com/sun/spot/peripheral/BoundedInputStream.html I wrote an input stream that stops when it reaches a configured size in bytes.  I found it useful for applications that download web pages and images, but want to enforce a max size to avoid memory problems for extremely large pages/images.
+I was thinking that this class is generic and useful enough to include in the commons-io distribution.  Please consider it, and if it isn&amp;amp;apos;t appropriate for inclusion here, please recommend a better place to open source and share it.
+
+
+
+package org.apache.commons.io.input;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * An input stream that will end when the amount of bytes read reaches
+ * the configured amount of maxBytes.
+ * This is useful for preventing OutOfMemoryExceptions when downloading
+ * very large files in cases where getting partial content is acceptable.
+ * @author Ken Weiner
+ */
+public class MaxBytesInputStream extends CountingInputStream {
+    private long maxBytes;
+
+    public MaxBytesInputStream(InputStream is, long maxBytes) {
+        super(is);
+        this.maxBytes = maxBytes;
+    }
+
+    @Override
+    protected void afterRead(int n) {
+        super.afterRead((int) Math.min(n, this.maxBytes - getByteCount()));
+    }
+
+    @Override
+    public int read() throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read();
+        }
+        return -1;
+    }
+
+    @Override
+    public int read(byte[] b) throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read(b);
+        }
+        return -1;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read(b, off, len);
+        }
+        return -1;
+    }
+}
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BoundedInputStream.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">339</link>
+			<link type="Reference" description="is related to">236</link>
+			<link type="Duplicate" description="duplicates">197</link>
+		</links>
+	</bug>
+</bugrepository>

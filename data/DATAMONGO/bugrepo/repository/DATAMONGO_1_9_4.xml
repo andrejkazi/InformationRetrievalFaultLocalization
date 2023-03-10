@@ -1,0 +1,99 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1521" opendate="2016-11-03 13:47:42" fixdate="2016-11-03 14:05:28" resolution="Fixed">
+		<buginformation>
+			<summary>Aggregation.skip(...) expects int but new SkipOperation(...) supports long</summary>
+			<description>Currently the class SkipOperation takes an long as only parameter, the static factory method Aggregation.skip() takes an int. As the skip-operation seems to support long, should the static factory-method also use long?
+
+
+
+
+
+
+public static SkipOperation skip(int elementsToSkip) {
+
+
+
+
+		return new SkipOperation(elementsToSkip);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public SkipOperation(long skipCount) {
+
+
+
+
+		Assert.isTrue(skipCount &amp;gt;= 0, "Skip count must not be negative!");
+
+
+
+
+		this.skipCount = skipCount;
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.9.4 (Hopper SR4)</version>
+			<fixedVersion>1.10 RC1 (Ingalls), 1.8.7 (Gosling SR7), 1.9.5 (Hopper SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.Aggregation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.SkipOperation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1534" opendate="2016-11-23 11:23:10" fixdate="2016-11-28 08:18:25" resolution="Fixed">
+		<buginformation>
+			<summary>Type hint is missing when using BulkOperations.insert</summary>
+			<description>when inserting a list of documents
+
+
+
+
+
+
+mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, FOO.class, collectionName)
+
+
+
+
+  .insert(foos);
+
+
+
+
+
+
+the type info written in _class element is missing.
+as a result, the class cannot be read back.
+This make bulkOps insert method unusable.</description>
+			<version>1.9.4 (Hopper SR4)</version>
+			<fixedVersion>1.10 RC1 (Ingalls), 1.9.6 (Hopper SR6), 2.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperationsIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperations.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

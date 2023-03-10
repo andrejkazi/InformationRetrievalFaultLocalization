@@ -1,0 +1,1052 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="880" opendate="2014-03-17 09:06:21" fixdate="2014-03-20 02:40:50" resolution="Fixed">
+		<buginformation>
+			<summary>Error when trying to persist an object containing a DBRef which was lazy loaded.</summary>
+			<description>When fetching a property which is annotated as DBRef(lazy = true) the object returned is a CGLIB proxy. If we use this proxy as a value for the property of a new object and try to persist it, the object is not found.
+
+
+
+
+
+
+Template.java
+
+
+
+
+
+
+// New object we are trying to persist
+
+
+
+
+public class Template {
+
+
+
+
+
+
+
+
+
+    private String id;
+
+
+
+
+    @DBRef(lazy = true)
+
+
+
+
+    private Content content;
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+If the template object above is loaded from the database and the content property is used for the message below, then the id of the DbRef is not resolved when saved since the target is a proxy.
+
+
+
+
+
+
+Message.java
+
+
+
+
+
+
+// New object we are trying to persist
+
+
+
+
+public class Message {
+
+
+
+
+
+
+
+
+
+    private String id;
+
+
+
+
+    @DBRef
+
+
+
+
+    private Content content;
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+A workaround would be to switch this object back to eager loading.</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.5 M1 (Dijkstra), 1.4.2 (Codd SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DbRefMappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DbRefResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.LazyLoadingTestUtils.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="887" opendate="2014-03-20 21:01:31" fixdate="2014-03-27 04:28:55" resolution="Fixed">
+		<buginformation>
+			<summary>Repository not instantiated when entity contains field of type TreeMap</summary>
+			<description>Repository fails to instantiate when the entity contains a TreeMap with value class that does not have a convertor. I&amp;amp;apos;ve tested with HashMap, HashSet, TreeSet but this only seems to affect TreeMap.
+
+
+
+
+
+
+// Repository
+
+
+
+
+public interface SourceRepository extends PagingAndSortingRepository&amp;lt;MyEntity, ObjectId&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// Entity
+
+
+
+
+@Document("test_collection")
+
+
+
+
+public class MyEntity {
+
+
+
+
+private TreeMap&amp;lt;String,MyClass&amp;gt; treeMap;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// TreeMap value class
+
+
+
+
+public class MyClass {
+
+
+
+
+private String foo = "bar";
+
+
+
+
+}
+
+
+
+
+
+
+This succeeds if i build a convertor for MyClass but it really shouldn&amp;amp;apos;t need one. This is working in 1.4.0.RELEASE but fails in version 1.4.1.RELEASE and beyond.
+
+
+
+
+
+
+Throws: java.lang.ArrayIndexOutOfBoundsException: 0
+
+
+
+
+In: org.springframework.data.util.ParameterizedTypeInformation.getComponentType(ParameterizedTypeInformation.java:148)
+
+
+
+
+
+</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.5 M1 (Dijkstra), 1.4.2 (Codd SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">479</link>
+		</links>
+	</bug>
+	<bug id="884" opendate="2014-03-19 00:24:34" fixdate="2014-03-31 06:22:23" resolution="Fixed">
+		<buginformation>
+			<summary>Potential NullPointerException for lazy DBRefs</summary>
+			<description>Revised upon request by Thomas Darimont:
+NullPointerException occurs when calling overriden Object method of the field with "@DBRef(lazy=true)"
+Assume class B has override toString method as below:
+public class B
+{
+   @Id
+   private String id;
+   private String value;
+   @Override
+   public String toString()
+{
+      return String.format("B[id=&amp;amp;apos;%s&amp;amp;apos;, value=&amp;amp;apos;%s&amp;amp;apos;]",id,value);
+   }
+}
+
+Assume class A contains class B as a field with annotation "DBRef(lazy=true)" as below:
+
+public class A
+{
+   @Id
+   private String id;
+
+   @DBRef(lazy=true)
+   public B b;
+
+   @Override
+   public String toString()
+   {
+      return String.format("A[b=&amp;amp;apos;%s&amp;amp;apos;]",b);
+   }
+}
+
+When a class A object has queried from MongoTemplate and calls to println as below:
+A obj = mongoTemplate().findOne(new Query(...), A.class);
+System.out.println(obj);
+
+The above code raised exception in "LazyLoadingInterceptor" class within "DefaultDbRefResolver" class:
+@Override
+public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+   return ReflectionUtils.isObjectMethod(method) ? method.invoke(obj, args) : method.invoke(ensureResolved(), args);
+}
+
+It seems that ReflectionUtils.isObjectMethod(method) returns "true" for even the method is an overriden method, so results to call
+method.invoke(obj, args); // which result NullPointerException since obj is null.
+where it should actually call 
+method.invoke(ensureResolved(), args);
+
+p.s. It seems obj is always "null" within the function "DefaultDbRefResolver::LazyLoadingInterceptor::intercept()." I was wondering if there is any reason for checking if the method is an Object method  by "ReflectionUtils.isObjectMethod(method)," since whether it is object method or not, method.invoke(obj,args) will always result NullPointerException due to obj is "null."
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Original Message:
+
+DefaultDbRefResolver.intercept function only check if the method is originally from Object class, but does not check if the method is an override method of Object. when the method is an override method of Object then it should call ensureResolved() instead of just calling method.invoke(obj,args).
+
+For example.
+
+When @DBRef(lazy=true) is used and toString method is override, it result NullPointerException.
+
+public class B
+{
+   @Id
+   private String id;
+   private String value;
+
+   @Override
+   public String toString(){      return String.format("B[id=&amp;amp;apos;%s&amp;amp;apos;, value=&amp;amp;apos;%s&amp;amp;apos;]",id,value);   }
+}
+public class A
+{
+   @DBRef(lazy=true)
+   public B b;
+   @Override
+   public String toString()
+   {
+      return String.format("A[b=&amp;amp;apos;%s&amp;amp;apos;]",b);
+   }
+}
+So in DefaultDbRefResolver.intercept method should change as below
+@Override
+public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable 
+{
+   return ReflectionUtils.isObjectMethod(method) &amp;amp;&amp;amp; method.getDeclaringClass()==Object.class ? method.invoke(obj, args) : method.invoke(ensureResolved(), args);
+		}
+</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.5 M1 (Dijkstra), 1.4.2 (Codd SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DbRefMappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="888" opendate="2014-03-21 00:13:23" fixdate="2014-04-10 06:47:55" resolution="Fixed">
+		<buginformation>
+			<summary>Mapping is not applied to SortObject during queries.</summary>
+			<description>during find() method with query that has Sort clause. The mapping hasn&amp;amp;apos;t been applied to Sort Object.
+For e.g., I defined a filed as Id as followed.
+@Id
+private String orderId.  
+Then I have query condition like this. query.with(new Sort("orderId"));
+Then the actual query should be sorted on "_id" (after mapping). But the sort is sent as is with "orderId".
+I have found this for find() method. May be the case in all places where the Sort Object is used.</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.4.2 (Codd SR2), 1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.QueryCursorPreparerUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">647</link>
+		</links>
+	</bug>
+	<bug id="908" opendate="2014-04-09 10:53:02" fixdate="2014-04-14 23:00:00" resolution="Fixed">
+		<buginformation>
+			<summary>Nested field references in group operations broken</summary>
+			<description>I have the following mongodb document:
+
+
+
+
+
+
+{
+
+
+
+
+   "cmsParameterId":1,
+
+
+
+
+   "examples":null,
+
+
+
+
+   "rules":[
+
+
+
+
+      {
+
+
+
+
+         "ruleType":"CODED",
+
+
+
+
+         "values":[
+
+
+
+
+            "abc",
+
+
+
+
+            "efg"
+
+
+
+
+         ]
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "ruleType":"SEQUENCE",
+
+
+
+
+         "sequence":[
+
+
+
+
+            {
+
+
+
+
+               "value":"a",
+
+
+
+
+               "type":"CONSTANT"
+
+
+
+
+            },
+
+
+
+
+            {
+
+
+
+
+               "value":"2",
+
+
+
+
+               "type":"PARAMETER"
+
+
+
+
+            }
+
+
+
+
+         ]
+
+
+
+
+      }
+
+
+
+
+   ]
+
+
+
+
+}
+
+
+
+
+
+
+I use the following query in mongo shell which works fine.
+
+
+
+
+
+
+db.domainknowledge.aggregate([
+
+
+
+
+{ $match: {cmsParameterId: { $in: [1] } } },
+
+
+
+
+{ $project: { cmsParameterId : 1 , rules : 1 }},
+
+
+
+
+{ $unwind: "$rules" },
+
+
+
+
+{ $group: { _id: { cmsParameterId: "$cmsParameterId", ruleType: "$rules.ruleType"}, total: { $sum: 1 } } }
+
+
+
+
+]);
+
+
+
+
+
+
+using spring-data I have written the following code to produce the same result but it ends up in an Exception:
+
+
+
+
+
+
+Aggregation agg = newAggregation(match(Criteria.where("cmsParameterId").in(1)),
+
+
+
+
+                project("cmsParameterId", "rules"), unwind("rules"),
+
+
+
+
+                group("cmsParameterId", "rules.ruleType").count().as("totol"));
+
+
+
+
+
+
+
+
+
+        AggregationResults&amp;lt;Summary&amp;gt; aggregate = mongoTemplate.aggregate(agg,
+
+
+
+
+                "domainknowledge", Summary.class);
+
+
+
+
+
+
+Here is the stacktrace of exception:
+
+
+
+
+
+
+java.lang.IllegalArgumentException: Invalid reference &amp;amp;apos;rules.ruleType&amp;amp;apos;!
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:78)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:62)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.GroupOperation.toDBObject(GroupOperation.java:300)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.Aggregation.toDbObject(Aggregation.java:247)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1405)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1346)
+
+
+
+
+	at com.etilize.automation.dke.core.domainknowledge.report.DomainKnowledgeReportServiceImpl.generateCategoryWiseReport(DomainKnowledgeReportServiceImpl.java:57)
+
+
+
+
+
+</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.4.2 (Codd SR2), 1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="897" opendate="2014-04-01 04:38:51" fixdate="2014-04-14 23:48:22" resolution="Fixed">
+		<buginformation>
+			<summary>FindAndUpdate broken when using @DbRef and interface as target</summary>
+			<description>NullPointerException is thrown when using MongoTemplate.findAndModify(...) with @DbRef and interface as @DbRef target. See attached project for more details. Probably regression issue since same test is passing with Spring Data Commons 1.6.3.RELEASE and Spring Data MongoDB 1.3.3.RELEASE.
+</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.4.2 (Codd SR2), 1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="892" opendate="2014-03-28 09:08:03" fixdate="2014-04-15 00:13:36" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;mongo:mapping-converter&gt; can&amp;apos;t be configured as nested bean definition</summary>
+			<description>The sample config which worked in the 1.1.1 version, but doesn&amp;amp;apos;t work now:
+
+
+
+
+
+
+&amp;lt;beans:bean id="messageStore" class="org.springframework.integration.mongodb.store.ConfigurableMongoDbMessageStore"&amp;gt;
+
+
+
+
+		&amp;lt;beans:constructor-arg ref="mongoDbFactory"/&amp;gt;
+
+
+
+
+		&amp;lt;beans:constructor-arg&amp;gt;
+
+
+
+
+			&amp;lt;mongo:mapping-converter&amp;gt;
+
+
+
+
+				&amp;lt;mongo:custom-converters&amp;gt;
+
+
+
+
+					&amp;lt;mongo:converter&amp;gt;
+
+
+
+
+						&amp;lt;beans:bean class="org.springframework.integration.mongodb.store.ConfigurableMongoDbMessageGroupStoreTests$MessageReadConverter"/&amp;gt;
+
+
+
+
+					&amp;lt;/mongo:converter&amp;gt;
+
+
+
+
+				&amp;lt;/mongo:custom-converters&amp;gt;
+
+
+
+
+			&amp;lt;/mongo:mapping-converter&amp;gt;
+
+
+
+
+		&amp;lt;/beans:constructor-arg&amp;gt;
+
+
+
+
+		&amp;lt;beans:constructor-arg value="testConfigurableMongoDbMessageStore"/&amp;gt;
+
+
+
+
+	&amp;lt;/beans:bean&amp;gt;
+
+
+
+
+
+
+That&amp;amp;apos;s because MappingMongoConverterParser doesn&amp;amp;apos;t check if the parserContext.isNested(), registers BeanDefinition and returns null</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.4.2 (Codd SR2), 1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.MappingMongoConverterParserIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MappingMongoConverterParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="893" opendate="2014-03-28 13:38:15" fixdate="2014-04-15 08:38:38" resolution="Fixed">
+		<buginformation>
+			<summary>Mapping Convertor does not remove "_class" property on collection of embedded objects</summary>
+			<description>Let&amp;amp;apos;s have this example:
+
+one document has embedded field
+repository with method which has collection of embedded fields as argument
+
+
+
+
+
+
+
+Foo.java
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Foo {
+
+
+
+
+   @Id
+
+
+
+
+   private ObjectId id;
+
+
+
+
+   private EmbeddedClass embedded;
+
+
+
+
+   //getters and setters
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+EmbeddedClass.java
+
+
+
+
+
+
+public class EmbeddedClass {
+
+
+
+
+   public String id;
+
+
+
+
+   //getters and setters
+
+
+
+
+   //hashcode and equals
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+IFooRepository.java
+
+
+
+
+
+
+@Repository
+
+
+
+
+public interface IFooRepository extends MongoRepository&amp;lt;Foo, ObjectId&amp;gt; {
+
+
+
+
+   public List&amp;lt;Foo&amp;gt; findByEmbeddedIn(List&amp;lt;EmbeddedClass&amp;gt; list);
+
+
+
+
+}
+
+
+
+
+
+
+And this repository method is not working (worked in 1.2.1)
+in spring-data-mongodb 1.2.1 it generates underlying query:
+find: db.foo { "embedded" : { "$in" : [ { "_id" : "0"} , { "_id" : "2"}]} , "_class : "Foo" }
+and in affected version 1.4.1 it generates:
+find: db.foo { "embedded" : { "$in" : [ { "_class" : "Foo" , "_id" : "0"} , { "_class" : "Foo" , "_id" : "2"}]}}
+In my opinion in MappingMongoConverter.convertToMongoType() it should call removeTypeInfoRecursively but it dont.</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.4.2 (Codd SR2), 1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="912" opendate="2014-04-15 15:40:23" fixdate="2014-04-23 00:07:59" resolution="Fixed">
+		<buginformation>
+			<summary>Aggregation#project followed by Aggregation#match with custom converter causes IllegalArgumentException</summary>
+			<description>I have an aggregation pipeline with two stages (match, project) and a custom converter for the entity being matched by.
+When MongoTemplate#aggregate is called with Aggregation.newAggregation(match, project) everything works as expected, but when it is called with Aggregation.newAggregation(project, match) appears the following exception:
+
+
+
+
+
+
+Exception in thread "main" java.lang.IllegalArgumentException: can&amp;amp;apos;t serialize class MatchAfterProjectIssue$Age
+
+
+
+
+	at org.bson.BasicBSONEncoder._putObjectField(BasicBSONEncoder.java:272)
+
+
+
+
+	at org.bson.BasicBSONEncoder.putObject(BasicBSONEncoder.java:173)
+
+
+
+
+	at org.bson.BasicBSONEncoder._putObjectField(BasicBSONEncoder.java:228)
+
+
+
+
+	at org.bson.BasicBSONEncoder.putObject(BasicBSONEncoder.java:173)
+
+
+
+
+	at org.bson.BasicBSONEncoder._putObjectField(BasicBSONEncoder.java:228)
+
+
+
+
+	at org.bson.BasicBSONEncoder.putIterable(BasicBSONEncoder.java:297)
+
+
+
+
+	at org.bson.BasicBSONEncoder._putObjectField(BasicBSONEncoder.java:236)
+
+
+
+
+	at org.bson.BasicBSONEncoder.putObject(BasicBSONEncoder.java:173)
+
+
+
+
+	at org.bson.BasicBSONEncoder.putObject(BasicBSONEncoder.java:119)
+
+
+
+
+	at com.mongodb.DefaultDBEncoder.writeObject(DefaultDBEncoder.java:27)
+
+
+
+
+	at com.mongodb.OutMessage.putObject(OutMessage.java:289)
+
+
+
+
+	at com.mongodb.OutMessage.writeQuery(OutMessage.java:211)
+
+
+
+
+	at com.mongodb.OutMessage.query(OutMessage.java:84)
+
+
+
+
+	at com.mongodb.DBApiLayer$MyCollection.__find(DBApiLayer.java:285)
+
+
+
+
+	at com.mongodb.DB.command(DB.java:262)
+
+
+
+
+	at com.mongodb.DB.command(DB.java:244)
+
+
+
+
+	at com.mongodb.DB.command(DB.java:301)
+
+
+
+
+	at com.mongodb.DB.command(DB.java:199)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$1.doInDB(MongoTemplate.java:323)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$1.doInDB(MongoTemplate.java:321)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:391)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.executeCommand(MongoTemplate.java:321)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1328)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1305)
+
+
+
+
+
+
+Looks like this happens because the project stage, being first, sets the AggregationOperationContext to the newly created ExposedFieldsAggregationOperationContext which does not use custom converters. When match stage goes first it uses the proper AggregationOperationContext - TypeBasedAggregationOperationContext.
+The relevant code is Aggregation#toDbObject method.
+Attached gist and file contains code to reproduce the problem.
+Thank you!</description>
+			<version>1.4.1 (Codd SR1)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra), 1.4.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.Aggregation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.TypeBasedAggregationOperationContextUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

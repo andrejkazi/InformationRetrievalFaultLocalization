@@ -1,0 +1,111 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="4" master="995" duplicate="957" opendate="2014-01-24 15:14:30" fixdate="2014-05-03 19:27:35" resolution="Fixed">
+		<buginformation>
+			<summary>Fix bug with stripping spaces on last line in WordUtils.wrap()  WordUtils.wrap(String, int) doesn&amp;apos;t behave according to JavaDoc</summary>
+			<description>Via github: https://github.com/apache/commons-lang/pull/18 The JavaDoc of WordUtils.wrap(String, int) says that leading white spaces on new lines are stripped from the result. However the following test will fail, since the leading spaces of the second line are not stripped from the resultL
+
+
+@Test
+public void testWordUtils_StringInt_LeadingWhitespaces {
+        input = "spaces                               spaces";
+        expected = "spaces              " + systemNewLine + "spaces";
+        assertEquals(expected, WordUtils.wrap(input, 20));
+}
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.WordUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.WordUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">957</link>
+			<link type="Duplicate" description="is duplicated by">995</link>
+		</links>
+	</bug>
+	<bug id="5" master="1018" duplicate="1215" opendate="2014-05-27 10:24:53" fixdate="2016-06-12 11:29:48" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber(final String str)  Precision will be lost NumberUtils.createNumber() method lost precision sometimes</summary>
+			<description>With commons-lang 3.2.2:
+NumberUtils.createNumber("-160952.54");
+The result is "-160952.55".
+Should not be based on the length of the decimal point number to judge whether the floating point number.
+Using the method (createFloat(str)) of dealing with the valid number greater than seven Numbers will cause accuracy loss.
+The source code is as follows:
+
+
+try {
+            if(numDecimals &amp;lt;= 7){// If number has 7 or fewer digits past the decimal point then make it a float
+                final Float f = createFloat(str);
+                if (!(f.isInfinite() || (f.floatValue() == 0.0F &amp;amp;&amp;amp; !allZeros))) {
+                    return f;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+        try {
+            if(numDecimals &amp;lt;= 16){// If number has between 8 and 16 digits past the decimal point then make it a double
+                final Double d = createDouble(str);
+                if (!(d.isInfinite() || (d.doubleValue() == 0.0D &amp;amp;&amp;amp; !allZeros))) {
+                    return d;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+
+        return createBigDecimal(str);
+    }
+
+ For example:
+    System.out.println(NumberUtils.createNumber("193343.82"));
+The result  is   193343.81
+The bug because of  code in the class  NumberUtils of the org.apache.commons.lang3.math package
+    public static Float createFloat(final String str) {
+        if (str == null) 
+{
+            return null;
+        }
+        return Float.valueOf(str);
+    }</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1187</link>
+			<link type="Duplicate" description="is duplicated by">1215</link>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="19" master="1027" duplicate="1068" opendate="2014-07-13 11:41:53" fixdate="2014-11-30 18:40:36" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast should return true by default SystemUtils.isJavaVersionAtLeast throws NPE under Java 9 EA</summary>
+			<description>Hi
+last [lang] release doesn&amp;amp;apos;t support java 9 (not in JavaVersion enum). However it shouldn&amp;amp;apos;t break the org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast method which should return true when java version is not known (not known = older)
+My proposal is to add UNKNOWN to the enum and override atLeast for this particular value to return true. Hello,
+Testing JMeter under Java 9 EA, it fails with NPE in SystemUtils.isJavaVersionAtLeast  due to handling of Java 9 not yet being supported.
+Thanks</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1068</link>
+			<link type="Duplicate" description="duplicates">1027</link>
+		</links>
+	</bug>
+</bugrepository>

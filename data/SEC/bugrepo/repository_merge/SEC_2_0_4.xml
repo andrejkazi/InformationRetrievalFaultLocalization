@@ -1,0 +1,66 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="17" master="1084" duplicate="1154" opendate="2009-01-21 01:19:20" fixdate="2009-05-06 20:03:00" resolution="Fixed">
+		<buginformation>
+			<summary>Retain Authentication.details when authenticating in LdapAuthenticationProvider LdapAuthenticationProvider.createSuccessfulAuthentication() returned object should include authentication.getDetails() if using useAuthenticationRequestCredentials</summary>
+			<description>It seems that the LdapAuthenticationProvider looses any details set on the incomming Authentication.details property. Several other AuthenticationProviders retain these details
+Unless of course this is intentional it should be trivial to improve this with simply copying the details, thus making them available to the application. 
+Simple suggestion attached as patch. the createSuccessfulAuthentication(UsernamePasswordAuthenticationToken auth, UserDetails user) method from LdapAuthenticationProvider returns a new UsernamePasswordAuthenticationToken based on auth&amp;amp;apos;s password, depending on useAuthenticationRequestCredentials boolean.
+In the case this happens, shouldn&amp;amp;apos;t the returned object also include auth.getDetails()? I.e., something like:
+protected Authentication createSuccessfulAuthentication(UsernamePasswordAuthenticationToken authentication, UserDetails user)
+{
+  Object password = useAuthenticationRequestCredentials ? authentication.getCredentials() : ((Object) (user.getPassword()));
+  if (useAuthenticationRequestCredentials)
+  {
+      UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+      token.setDetails(authentication.getDetails());
+      return token;
+  }
+  return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+}
+(as part of our current project, we are building a custom authenticationProvider which extends LdapAuthenticationProvider, and we expected this behaviour. Not very sure this should be marked as bug or as an improvement, though)</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1154</link>
+			<link type="Duplicate" description="duplicates">1084</link>
+		</links>
+	</bug>
+	<bug id="52" master="1117" duplicate="1014" opendate="2008-10-16 20:55:23" fixdate="2009-04-28 13:04:10" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to use NtlmAwareLdapAuthenticator with LdapAuthenticationProvider due to checking for null password.   minor changes for an easy NTLM / LDAP configuration</summary>
+			<description>Currently LdapAuthenticatonProvider checks for empty password in its authenticate() method (lines 225 onward). This does not allow to use NtlmAwareLdapAuthenticator as a delegate for authentication because null password will be always rejected - as is the case when using NTLM authentication - and NtlmAwareLdapAuthenticator never gets called.  
+Forum thread mentioned above confirms the same problem encountered by another user (see item 2 in the top post)
+Also a similiar problem exists with id: SEC-1014.  Following changes are needed for an easy NTLM and LDAP (Active Directory) integration :
+LdapAuthenticationProvider :
+Either accept empty password (then LdapAuthenticationProvider can be used as is), or change scope to protected for the private LdapAuthenticator authenticator; : in that case we can easily override the authenticate() method to avoid password length check, without the need to use another LdapAuthenticator in the overriding class.
+Another change is needed for NTLM : AbstractLdapAuthenticator with no password check.
+PasswordComparisonAuthenticator is final and can&amp;amp;apos;t be overrided, despite the only usefull change is to comment last lines in authenticate() to remove password check.
+Because of the class name, it&amp;amp;apos;s not easy to change this...
+So may a new class extending LdapAuthenticationProvider  exists  ( with no password check) ?
+With those 2 changes, we can use NTLM to get username, use it to query LDAP and retrieve user informations (email, name, etc..) then use such informations in a custom UserDetails implementation (via a convenient UserDetailsContextMapper) without any implementation.
+Hope this can help.
+Regards.
+</description>
+			<version>2.0.4</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProviderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1014</link>
+			<link type="Duplicate" description="duplicates">1117</link>
+		</links>
+	</bug>
+</bugrepository>

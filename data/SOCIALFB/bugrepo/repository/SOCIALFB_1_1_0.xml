@@ -1,0 +1,141 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SOCIALFB">
+	<bug id="75" opendate="2012-04-03 12:29:27" fixdate="2012-04-16 13:19:48" resolution="Complete">
+		<buginformation>
+			<summary>FqlResult.getList(String fieldName, FqlResultMapper&lt;T&gt; mapper) throws null pointer when field value is null</summary>
+			<description>Using FQL to access the stream table, many of the json elements return are null at times.
+if you call FqlResult.getList(String fieldName, FqlResultMapper&amp;lt;T&amp;gt; mapper) with a field that exists, but is null, a null pointer exception will be thrown:
+java.lang.NullPointerException
+    at org.springframework.social.facebook.api.FqlResult.getList(FqlResult.java:163)
+    at com.inqmobile.inqcloud.domain.facebook.FbStreamItemMapper.mapObject(FbStreamItemMapper.java:58)
+    at com.inqmobile.inqcloud.domain.facebook.FbStreamItemMapper.mapObject(FbStreamItemMapper.java:1)
+    at org.springframework.social.facebook.api.impl.FqlTemplate.query(FqlTemplate.java:48)
+which corresponds to
+List&amp;lt;Map&amp;lt;String, Object&amp;gt;&amp;gt; arrayItems = (List&amp;lt;Map&amp;lt;String, Object&amp;gt;&amp;gt;) resultMap.get(fieldName);
+for (Map&amp;lt;String, Object&amp;gt; arrayItem : arrayItems) {    ~~~~~ this line  ~~~~~
+	response.add(mapper.mapObject(new FqlResult(arrayItem)));
+}		
+Expected behavior is to return null if the json value is null.
+https://graph.facebook.com/fql?q=SELECT post_id, message, action_links FROM stream WHERE source_id=100002487294420 LIMIT 1
+returns
+{  "data": [
+    {
+      "post_id": "100002487294420_404871966208922",
+      "message": "Robert Blair http://sphotos.xx.fbcdn.net/hphotos-ash4/s320x320/375127_183841518401962_100003283444808_309767_1436664147_n.jpg wat is dat! ",
+      "action_links": null
+    }
+  ]
+}
+
+note that other getXYZ calls throw null pointer or number format exceptions if the value is null, as opposed to not present.
+Facebook fql will sometimes return null for values documented as type &amp;amp;apos;int&amp;amp;apos; 
+I would like the ability to call getLong without first checking if the original result is null.
+Might also want to expose resultMap.containsKey() on the FqlResult class too.
+</description>
+			<version>1.1.0.RELEASE</version>
+			<fixedVersion>1.1.0.M1, 1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.FqlTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.FqlResult.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="97" opendate="2012-09-06 21:09:44" fixdate="2012-09-06 21:21:21" resolution="Complete">
+		<buginformation>
+			<summary>FacebookTemplate.initialize() is called twice if constructing with accessToken only.</summary>
+			<description>public FacebookTemplate(String accessToken) {
+	this(accessToken, null);
+	initialize();
+}
+omit initialize() call as it is already called by FacebookTemplate(accessToken, applicationNamespace)</description>
+			<version>1.1.0.RELEASE</version>
+			<fixedVersion>1.1.0.M1, 1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.FacebookTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="128" opendate="2013-04-05 09:31:31" fixdate="2013-08-09 09:06:16" resolution="Complete">
+		<buginformation>
+			<summary>Error 405 using CanvasSignInController</summary>
+			<description>Error 405 is encountered using CanvasSignInController. Steps to reproduce are below - 
+1. Log out of Facebook
+2. Close Browser
+3. Go to http://apps.facebook.com/springsocialcanvas/
+4. Enter user credential
+5. Error is recreated</description>
+			<version>1.1.0.M2</version>
+			<fixedVersion>1.1.0.M4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.web.CanvasSignInController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="141" opendate="2013-11-05 14:59:48" fixdate="2014-04-10 13:49:06" resolution="Complete">
+		<buginformation>
+			<summary>LikeOperations.getPagesLiked doesn&amp;apos;t get cover obj and link</summary>
+			<description>I tested directly the fb graph api explorer and got the full information. In the Java LikesOPerations call I get all the information less the cover object (id, image url, offsetx, offsety) and the link of the link
+Apparently the permissions are the same in the graph api explorer and the fb connect (user_likes,friends_likes,publish_stream,user_photos,offline_access,friends_birthday,friends_location,read_friendlists)
+GET me/friends?fields=likes.fields(link,name,website,cover),name,link&amp;amp;limit=5</description>
+			<version>1.1.0.M4</version>
+			<fixedVersion>1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.LikeTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.LikeTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="138" opendate="2013-09-24 00:59:11" fixdate="2014-04-10 14:00:09" resolution="Complete">
+		<buginformation>
+			<summary>Jackson Map Exception on checkinposts</summary>
+			<description>Some checkins do not provide a complete location mapping, only a String telling the location. 
+I suggest adding a location deserializer like this:
+	@Override
+	public Location deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		try
+{
+			Location node = jp.readValueAs(Location.class);
+			return node;
+		}
+catch (Exception e)
+{
+			Location location = new Location(jp.getText());
+			return null;
+		}
+	}</description>
+			<version>1.1.0.M4</version>
+			<fixedVersion>1.1.0.RC1, 1.1.0.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PageMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.PlacesTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.Location.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="168" opendate="2015-02-03 07:18:57" fixdate="2015-04-02 08:53:56" resolution="Complete">
+		<buginformation>
+			<summary>PagingParameters must use paging token</summary>
+			<description>When fetching the posts of a page, the response from facebook contains the paging links "next" and "previous". Those will have a "until" or "since" parameter and additionally a parameter "__paging_token"
+The PagingParameters implementation ignores the paging token, but with only "until" the last post from the previous page is returned as first item of the next page.
+Until seems to be the time of the last post on the previous page.
+And of course there might be more than one post at this time, so facebook returns all posts starting with this time. The paging token seems to add additional information for facebook so that the next page will start really at the next post.
+Example call...
+facebook.feedOperations().getPosts(facebookPageId, new PagingParameters(10, 0, null, null));
+Example next link returned from facebook:
+https://graph.facebook.com/v1.0/1234567890/posts?limit=10&amp;amp;until=1402415239&amp;amp;__paging_token=enc_Aew9rTpQB8B9zCX9BYus-GhWKOtQzhoiKlV9vpk7D4y-QgcEoCH09rNOydIOOr76wGbTxX-2pV9tMf__6bjs2_DqGcBLFDirt315VXS6_zgG7N</description>
+			<version>1.1.0.RELEASE</version>
+			<fixedVersion>2.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.PagingParameters.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.FeedTemplate.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.PagedListUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

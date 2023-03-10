@@ -1,0 +1,328 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="913" opendate="2008-07-09 00:53:59" fixdate="2008-07-15 00:44:44" resolution="Fixed">
+		<buginformation>
+			<summary>SwitchUserProcessingFilter modifies the switchFailureUrl member variable on failure</summary>
+			<description>The code in redirectToFailureUrl() prepends the contextPath to the member variable every time there is a failure. If the contextPath isn&amp;amp;apos;t "" this means that the second time there is a failure the client will be redirected to an invalid page. Here&amp;amp;apos;s the faulty code:
+        if (switchFailureUrl != null) 
+{
+            switchFailureUrl = request.getContextPath() + switchFailureUrl;
+            response.sendRedirect(response.encodeRedirectURL(switchFailureUrl));
+        }
+ else {
+Why not use the sendRedirect() method which is used for targetUrl? E.g.:
+        if (switchFailureUrl != null) 
+{
+            sendRedirect(request, response, switchFailureUrl);
+        }
+ else {
+This fix also means that the useRelativeContext property will actually be used also on failures. I think the user of SwitchUserProcessingFilter would expect that.</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.switchuser.SwitchUserProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.ui.switchuser.SwitchUserProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">745</link>
+		</links>
+	</bug>
+	<bug id="903" opendate="2008-07-01 17:38:31" fixdate="2008-07-15 03:52:48" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong attribute mapping when using jdbc-user-service bean</summary>
+			<description>The JdbcUserServiceBeanDefinitionParser adds the wrong property when detecting groupAuthoritiesByUsernameQuery.
+It adds authoritiesByUsernameQuery instead of groupAuthoritiesByUsernameQuery.
+Thus after that the JdbcDaoImpl use its default value for groupAuthoritiesByUsernameQuery instead of the one passed 
+in parameter by the bean.
+I guess that if authoritiesByusernameQuery is passed also, there should be a mismatch between the two queries. 
+This is a side effect.
+Correction tested :
+In the class JdbcUserServiceBeanDefinitionParser   
+if (StringUtils.hasText(groupAuthoritiesQuery)) {
+   builder.addPropertyValue("enableGroups", Boolean.TRUE);
+   //builder.addPropertyValue("authoritiesByUsernameQuery", groupAuthoritiesQuery);
+   // should be
+   builder.addPropertyValue("groupAuthoritiesByUsernameQuery", groupAuthoritiesQuery);
+   // end correction
+}
+With that the JdbcDaoImplTests testLookupFailsIfUserHasNoGrantedAuthorities() will fail.
+When looking at it, it seems that it is not functionaly correct.
+</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.JdbcUserServiceBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.JdbcUserServiceBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="899" opendate="2008-06-27 12:51:50" fixdate="2008-07-31 00:03:37" resolution="Fixed">
+		<buginformation>
+			<summary>GrantedAuthorityImpl.compareTo should handle null roles</summary>
+			<description>when mixing GrantedAuthorityImpl with other more specialized implementations that return null from getAuthority, GrantedAuthorityImpl.compareTo fails with an NPE.</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.GrantedAuthorityImplTests.java</file>
+			<file type="M">org.springframework.security.GrantedAuthorityImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="923" opendate="2008-07-14 14:18:51" fixdate="2008-07-31 06:32:41" resolution="Fixed">
+		<buginformation>
+			<summary>OpenId integration and support for discovering relying parties</summary>
+			<description>Hi,
+I am using the excellent openId support in Spring Security but I noticed that with Yahoo, I keep seeing the following message on Yahoo&amp;amp;apos;s openid page:
+"Warning: This website has not confirmed its identity with Yahoo! and might be fraudulent. Do not share any personal information with this website unless you are certain it is legitimate. "
+I looked into this issue and found that  the reason is that Yahoo implements a feature in OpenId 2.0 where it verifies if the return_to URL is a relying party endpoint (see http://openid.net/specs/openid-authentication-2_0-12.html#realms, section 9.2.1). In this case the return_to URL is http://&amp;lt;website&amp;gt;/j_spring_openid_security_check.
+I also followed the tutorial here http://blog.nerdbank.net/2008/06/why-yahoo-says-your-openid-site.html but with no success. 
+I can actually see on my webserver log a Yahoo IP address hitting the following URL after I post the OpenId authentication request:
+68.142.241.108 - - [15/Jul/2008:02:49:06 +0000] "GET /j_spring_openid_security_check HTTP/1.1" 302 -
+after which Yahoo&amp;amp;apos;s openId page shows the warning. Note that the login works fine if I click on the "Let me in" button.
+Please help.
+florin</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.openid.consumers.OpenID4JavaConsumer.java</file>
+			<file type="M">org.springframework.security.ui.openid.consumers.MockOpenIDConsumer.java</file>
+			<file type="M">org.springframework.security.ui.openid.OpenIDConsumer.java</file>
+			<file type="M">org.springframework.security.ui.openid.OpenIDAuthenticationProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="943" opendate="2008-07-31 06:17:52" fixdate="2008-08-05 10:09:52" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultSpringSecurityContextSource should support escaped spaces in URL.</summary>
+			<description>When working out the base name, it uses URI.getPath() when it should probably use URI.getRawPath(). Otherwise it gets confused by the returned space and assumes that there are multiple URLs in the string.</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.DefaultSpringSecurityContextSourceTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="947" opendate="2008-08-03 17:29:25" fixdate="2008-08-05 11:18:09" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;custom-filter before="FIRST" /&gt; causes filter to be placed last in the filters chain</summary>
+			<description>With this configuration:
+&amp;lt;bean id="myFilter" class="SomeFilterClass"&amp;gt;
+  &amp;lt;custom-filter before="FIRST" /&amp;gt;
+&amp;lt;/s:bean&amp;gt;
+myFilter will be placed last in the filters chain, because of this line in OrderedFilterBeanDefinitionDecorator class:
+return Integer.toString(FilterChainOrder.getOrder(before) - 1);
+FilterChainOrder.getOrder(before) returns Integer.MIN_VALUE for filterName "FIRST" and then decrement (-1) causes numerical buffer overflow so that order returned becomes Integer.MAX_VALUE not MIN_VALUE.
+WORKAROUND: use this instead:
+&amp;lt;bean id="myFilter" class="SomeFilterClass"&amp;gt;
+  &amp;lt;custom-filter before="CHANNEL_FILTER" /&amp;gt;
+&amp;lt;/s:bean&amp;gt;</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.OrderedFilterBeanDefinitionDecorator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="905" opendate="2008-07-03 15:30:00" fixdate="2008-08-12 04:15:05" resolution="Fixed">
+		<buginformation>
+			<summary>&lt;protect-pointcut /&gt; pointcuts do not respect method arguments</summary>
+			<description>Suppose you have two methods with the same name but different parameter types along with some further methods. E.g. securing a method with one parameter with an admin role and all other methods (by using *.(..)) with a user role this leads to upredictable results. Depending on which of the two methods you secure, you either get both secured with admin role or all methods of the class are only user secured.
+Digging into the sources I suppose the MapBasedDefinitionSource to be the problem. addSecureMethod(Class javaType, String mappedName, ConfigAttributeDefinition attr) only regards method names but does NOT regard parameters.
+Furthermore the check for more specificality seems odd to me. If you take the order of the pointcut definitions into account, the first pointcut matching a method should win. I doubt if it is possible at all to find out if one pointcut is a subset or superset of another. SO why not take the first match?
+Regards,
+Ollie</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.annotation.BusinessService.java</file>
+			<file type="M">org.springframework.security.annotation.BusinessServiceImpl.java</file>
+			<file type="M">org.springframework.security.intercept.method.MapBasedMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.ProtectPointcutPostProcessor.java</file>
+			<file type="M">org.springframework.security.annotation.Jsr250BusinessServiceImpl.java</file>
+			<file type="M">org.springframework.security.config.ConfigTestUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="936" opendate="2008-07-27 21:01:44" fixdate="2008-08-15 13:33:05" resolution="Fixed">
+		<buginformation>
+			<summary>NPE in AbstractFallbackMethodDefinitionSource</summary>
+			<description>A NullPointerException occurs in the following code while calling mi.getThis().getClass():
+    public ConfigAttributeDefinition getAttributes(Object object) throws IllegalArgumentException {
+        Assert.notNull(object, "Object cannot be null");
+        if (object instanceof MethodInvocation) 
+{
+        	MethodInvocation mi = (MethodInvocation) object;
+            return getAttributes(mi.getMethod(), mi.getThis().getClass());
+        }
+
+I guess the mi.getThis() method returns null when there is no target object. This is the case, for example, when the last interceptor in the chain handles the method call instead of a &amp;amp;apos;real&amp;amp;apos; target object (like Spring&amp;amp;apos;s HttpInvokerClientInterceptor). 
+I think the getAttributes() method accepts a null targetClass, so a simple mi.getThis()==null?null:mi.getThis().getClass() would fix this issue.
+</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.AbstractFallbackMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.MapBasedMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.config.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="908" opendate="2008-07-06 14:40:44" fixdate="2008-09-04 15:36:13" resolution="Fixed">
+		<buginformation>
+			<summary>BasePermission.buildFromName(name) does not find static permission in class</summary>
+			<description>I am converting from Acegi 1.0.3.
+This code:
+     BasePermission.buildFromName(name)
+With name having the value "WRITE" (a permission within BasePermission) throws this assertion error:
+java.lang.IllegalArgumentException: Unknown permission &amp;amp;apos;WRITE&amp;amp;apos;
+        at org.springframework.util.Assert.isTrue(Assert.java:65)
+        at org.springframework.security.acls.domain.DefaultPermissionFactory.bui
+ldFromName(DefaultPermissionFactory.java:108)
+        at org.springframework.security.acls.domain.AbstractRegisteredPermission
+.buildFromName(AbstractRegisteredPermission.java:33)
+After a little debugging, the registeredPermissionsByName Map is in fact empty.
+I could be wrong, but I believe the problem is that java will call the method in the superclass of BasePermission and not execute the static initializer. I could get around this problem by hacking an inner class to use the BasePermission constructor before using this method (which forces the static initializer to execute).</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.acls.domain.AbstractRegisteredPermission.java</file>
+			<file type="M">org.springframework.security.acls.domain.BasePermission.java</file>
+			<file type="M">org.springframework.security.acls.domain.PermissionTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="960" opendate="2008-08-20 06:25:06" fixdate="2008-09-05 00:51:23" resolution="Fixed">
+		<buginformation>
+			<summary>DN Encoding in LDAPUserDetailsManager.changePassword() causes bind errors</summary>
+			<description>Please see the write-up here:
+http://forum.springframework.org/showthread.php?t=53118
+This prevents changepassword operations by binding as the user.  Normally, binding as the admin to change the password will work, but certain LDAP directory servers (such as Novell eDirectory) have a policy that sets the user&amp;amp;apos;s account to expire after some small time period whenever an admin user changes a password.  However, this side-effect is undesirable when it&amp;amp;apos;s actually the user changing the password.
+</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.userdetails.ldap.LdapUserDetailsManagerTests.java</file>
+			<file type="M">org.springframework.security.userdetails.ldap.LdapUserDetailsManager.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="975" opendate="2008-09-10 01:17:26" fixdate="2008-09-12 06:08:04" resolution="Fixed">
+		<buginformation>
+			<summary>Namespace access-denied-page attribute does not work with property placeholders</summary>
+			<description>Hello,
+I am trying to use a property inside Spring security:
+	&amp;lt;security:http 
+		access-denied-page="$
+{security.errorPage}
+"
+ ...&amp;gt;
+		...
+	&amp;lt;/security:http&amp;gt;
+Where security.errorPage is a property defined in a property file loaded by a org.springframework.beans.factory.config.PropertyPlaceholderConfigurer bean.
+But it is not interpreted.
+Looking at org.springframework.security.config.HttpSecurityBeanDefinitionParser I got the confirmation it is not a case.
+I don&amp;amp;apos;t know if it is a feature but I think it may be useful.
+Philippe.</description>
+			<version>2.0.3</version>
+			<fixedVersion>2.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="996" opendate="2008-09-30 10:30:35" fixdate="2008-12-15 06:17:19" resolution="Fixed">
+		<buginformation>
+			<summary>AccessDeniedhandlerimpl  doesn&amp;apos;t write response code if used with errorPage</summary>
+			<description>The forward to the error page will cause the response to be committed and thus the 403 error code cannot be written (the commit check was introduced as a fix for SEC-324), but the code should perhaps be written before the forward instead.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.AccessDeniedHandlerImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="992" opendate="2008-09-29 09:12:30" fixdate="2008-12-15 06:17:19" resolution="Fixed">
+		<buginformation>
+			<summary>SpringSecurityLdapTemplate: clearing the returningObjFlag of SearchControls contradicts contract with LdapTemplate</summary>
+			<description>In method searchForSingleAttributeValues(String, String, Object[], String) of class SpringSecurityLdapTemplate, on line 168, there is this call:
+ctls.setReturningObjFlag(false);
+Then the search(String, String, Object[], String) method is called with a context mapper, which implies that  returnObj must be true in SearchControls. LdapTemplate checks the returningObjFlag state, and if it is false, sets it to true. It also emits an INFO log entry about the inconsistency.
+The documentation of class SearchControls states for the controls argument:
+"The &amp;lt;code&amp;gt;SearchControls&amp;lt;/code&amp;gt; to use in the search. If the
+
+returnObjFlag is not set in the &amp;lt;code&amp;gt;SearchControls&amp;lt;/code&amp;gt;,
+this method will set it automatically, as this is required for
+the &amp;lt;code&amp;gt;ContextMapper&amp;lt;/code&amp;gt; to work.
+"
+
+Setting the returningObjFlag to false is at best superfluous, at worst some behavior of the search is desired, which cannot be achieved this way.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="993" opendate="2008-09-29 14:15:45" fixdate="2008-12-16 06:40:13" resolution="Fixed">
+		<buginformation>
+			<summary>OpenID and RememberMe broken</summary>
+			<description>I&amp;amp;apos;m trying to create a remember-me cookie with an OpenID authentication. Since OpenIDAuthenticationToken doesn&amp;amp;apos;t support password, it&amp;amp;apos;s causing a NullPointerException in TokenBasedRememberMeServices.retrievePassword() - it calls toString() on the null password ("return authentication.getCredentials().toString();" line 202).
+How am I supposed to use cookies with OpenID? If I create my own RememberMeServices and leave out the password then anyone can create a cookie with my OpenID and log in as me.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.springframework.security.ui.rememberme.TokenBasedRememberMeServicesTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="925" opendate="2008-07-16 05:43:27" fixdate="2009-09-30 05:32:23" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy - support for schema qualifier</summary>
+			<description>The current impl of this class works great - I would like to avoid writing my own custom strategy wherever possible.  The JavaDocs for BasicLookupStrategy state that it&amp;amp;apos;s not design for extension which I understand.
+It would be great, however, if a property could be set in the bean config that would allow the referenced tables in the SQL to be qualified by a schema.  Projects often run into such requirements based on the conventions used by a DBA group.  In our particular case, we&amp;amp;apos;re using DB2 and the ACL tables are being created in a schema that is not the default schema.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1224</link>
+			<link type="Duplicate" description="is duplicated by">1308</link>
+		</links>
+	</bug>
+	<bug id="1320" opendate="2009-12-08 04:11:02" fixdate="2009-12-13 02:20:39" resolution="Fixed">
+		<buginformation>
+			<summary>JaasAuthenticationProvider can not find jaas realm defined inside service archive</summary>
+			<description>Fix for SEC-760 causes another bug. If you deploy JAAS login module (application policy) with application, as a service archive, JaasAuthenticationProvider does not see it because of an config reset, which was a fix in SEC-760.
+If line "Configuration.getConfiguration().refresh();" is removed everything works ok.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.authentication.jaas.JaasAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

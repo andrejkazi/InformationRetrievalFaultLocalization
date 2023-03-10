@@ -1,0 +1,41 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="358" opendate="2010-06-29 21:35:09" fixdate="2010-06-29 23:38:16" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll(Collection collection, Collection remove) calls ListUtils.retainAll(collection, remove)</summary>
+			<description>Inside CollectionUtils.removeAll(Collection collection, Collection remove) the retainAll() method of ListUtils is called in line 1122.
+It should read ListUtils.removeAll(collection, remove) instead.
+Workaround: use ListUtils.removeAll(Collection collection, Collection remove) instead.</description>
+			<version>3.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+	<bug id="316" opendate="2009-02-10 21:55:15" fixdate="2013-02-28 20:04:53" resolution="Fixed">
+		<buginformation>
+			<summary>LRUMap constructor javadoc and behavior are inconsistent (maxSize cannot be less than 0)</summary>
+			<description>The LRUMap constructor specifies "@param maxSize  the maximum size of the map, -1 for no limit"
+The first line is then:
+        if (maxSize &amp;lt; 1) 
+{
+            throw new IllegalArgumentException("LRUMap max size must be greater than 0");
+        }
+
+There is nothing wrong with allowing a negative maxSize. This way the map can be used to order elements relative to access time. I think the above code should be remove and the javadoc should stay the same.</description>
+			<version>3.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.LRUMap.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

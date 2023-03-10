@@ -1,0 +1,237 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="261" opendate="2006-06-01 00:10:25" fixdate="2006-06-06 02:37:22" resolution="Fixed">
+		<buginformation>
+			<summary>Error in an example in the javadoc of the StringUtils.splitPreserveAllTokens() method</summary>
+			<description>There is an error in the javadoc of the org.apache.commons.lang.StringUtils.splitPreserveAllTokens(String str,char separatorChar) method.
+Here the original line :
+StringUtils.splitPreserveAllTokens("a..b.c", &amp;amp;apos;.&amp;amp;apos;)   = ["a", "b", "c"]
+But it should be :
+StringUtils.splitPreserveAllTokens("a..b.c", &amp;amp;apos;.&amp;amp;apos;)   = ["a", "", "b", "c"]</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="100" opendate="2005-11-29 21:57:38" fixdate="2006-06-27 07:28:09" resolution="Fixed">
+		<buginformation>
+			<summary>[lang] RandomStringUtils.random() family of methods create invalid unicode sequences</summary>
+			<description>Problem are surrogate pairs: 
+E.g. RandomStringUtils.random(int) may create strings with a high surrogate not
+followed by a low surrogate character.
+When processing them, we get errors in string-conversion-functions later on.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.RandomStringUtils.java</file>
+			<file type="M">org.apache.commons.lang.RandomStringUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="59" opendate="2005-10-26 07:22:00" fixdate="2006-07-21 05:15:42" resolution="Fixed">
+		<buginformation>
+			<summary>[lang] DateUtils.truncate method is buggy when dealing with DST switching hours</summary>
+			<description>Try to truncate 2004-10-31 01:00:00 MDT by hour and you&amp;amp;apos;ll actually get 2004-10-
+31 01:00:00 MST, which is one hour after the input hour.
+    // truncate 2004-10-31 01:00:00 MDT
+    Date oct31_01MDT = new Date(1099206000000L);    
+    Date result = DateUtils.truncate(oct31_01MDT, Calendar.HOUR_OF_DAY);
+    assertEquals(oct31_01MDT, result);</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.DateUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">654</link>
+		</links>
+	</bug>
+	<bug id="271" opendate="2006-07-08 23:51:26" fixdate="2006-08-10 21:25:47" resolution="Fixed">
+		<buginformation>
+			<summary>LocaleUtils test fails under Mustang</summary>
+			<description>Testsuite: org.apache.commons.lang.LangTestSuite
+Tests run: 635, Failures: 1, Errors: 0, Time elapsed: 4.467 sec
+------------- Standard Output ---------------
+------------- ---------------- ---------------
+Testcase: testLanguagesByCountry(org.apache.commons.lang.LocaleUtilsTest):      FAILED
+expected:&amp;lt;1&amp;gt; but was:&amp;lt;2&amp;gt;
+junit.framework.AssertionFailedError: expected:&amp;lt;1&amp;gt; but was:&amp;lt;2&amp;gt;
+        at org.apache.commons.lang.LocaleUtilsTest.assertLanguageByCountry(LocaleUtilsTest.java:396)
+        at org.apache.commons.lang.LocaleUtilsTest.testLanguagesByCountry(LocaleUtilsTest.java:426)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.LocaleUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="259" opendate="2006-05-22 21:10:15" fixdate="2006-08-18 22:21:34" resolution="Fixed">
+		<buginformation>
+			<summary>ValuedEnum.compareTo(Object other) not typesafe - it easily could be...</summary>
+			<description>int org.apache.commons.lang.enums.ValuedEnum.compareTo(Object other)
+ is not typesafe - if the int-values are the same, it will return "0" even for two totally different sub-classes of ValuedEnum</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.enums.ValuedEnumTest.java</file>
+			<file type="M">org.apache.commons.lang.enums.EnumEqualsTest.java</file>
+			<file type="M">org.apache.commons.lang.enums.ValuedEnum.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">258</link>
+		</links>
+	</bug>
+	<bug id="277" opendate="2006-08-30 06:22:04" fixdate="2006-08-30 18:19:44" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc errors on StringUtils.splitPreserveAllTokens(String, char)</summary>
+			<description>In the Javadoc for StringUtils.splitPreserveAllTokens(String, char) there are a couple of mistakes.  I didn&amp;amp;apos;t check for similar mistakes in the similar functions with different signatures.
+StringUtils.splitPreserveAllTokens("a..b.c", &amp;amp;apos;.&amp;amp;apos;)   = ["a", "b", "c"]
+should read
+StringUtils.splitPreserveAllTokens("a..b.c", &amp;amp;apos;.&amp;amp;apos;)   = ["a", "", "b", "c"]
+These two lines have the same input giving different outputs.  I think that the input string on the second call should be "a b c  ".
+StringUtils.splitPreserveAllTokens("a b c ", &amp;amp;apos; &amp;amp;apos;)   = ["a", "b", "c", ""]
+StringUtils.splitPreserveAllTokens("a b c ", &amp;amp;apos; &amp;amp;apos;)   = ["a", "b", "c", "", ""]</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="278" opendate="2006-09-12 12:09:36" fixdate="2006-09-12 15:26:19" resolution="Fixed">
+		<buginformation>
+			<summary>javadoc for StringUtils.removeEnd is incorrect</summary>
+			<description>The javadoc for StringUtils.removeEnd(String, String) lists a number of examples, one of which is wrong:
+StringUtils.removeEnd("www.domain.com", ".com.")  = "www,domain"
+The actual result of this is just "www.domain.com"</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="281" opendate="2006-10-05 16:51:37" fixdate="2006-10-07 00:23:28" resolution="Fixed">
+		<buginformation>
+			<summary>DurationFormatUtils returns wrong result</summary>
+			<description>DurationFormatUtils returns wrong result.  oddly, it is only when Date is set to Dec 31, 2005
+The following code will result in a String of -2 which is way off.
+I&amp;amp;apos;ve tested against 2.1 and 2.2.
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.DECEMBER);
+        cal.set(Calendar.DAY_OF_MONTH, 31);
+        cal.set(Calendar.YEAR, 2005);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        String result = DurationFormatUtils.formatPeriod(cal.getTimeInMillis(), System.currentTimeMillis(), "MM");
+        System.out.println(result);</description>
+			<version>2.1</version>
+			<fixedVersion>2.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.DurationFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.time.DurationFormatUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="313" opendate="2007-01-16 07:26:30" fixdate="2007-01-17 03:58:45" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong behavior of Entities.unescape</summary>
+			<description>Hi,
+    There&amp;amp;apos;s seems to be a bug at Entities.unescape. Try for example StringEscapeUtils.unescapeHtml("&amp;amp; &amp;amp;"). It outputs "&amp;amp; &amp;amp;" instead of "&amp;amp; &amp;amp;". The problem is at this piece of code:
+                if (entityValue == -1) 
+{
+                    buf.append(&amp;amp;apos;&amp;amp;&amp;amp;apos;);
+                    buf.append(entityName);
+                    buf.append(&amp;amp;apos;;&amp;amp;apos;);
+                }
+ else 
+{
+                    buf.append((char) (entityValue));
+                }
+                i = semi;
+     The method always skips to the next ";", even if it doesn&amp;amp;apos;t finds the entity value and then disregarding any entity that may be actually be referred inside.
+Regards,
+Thiago Souza</description>
+			<version>2.1</version>
+			<fixedVersion>2.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="69" opendate="2005-08-07 05:14:30" fixdate="2007-02-06 21:10:31" resolution="Fixed">
+		<buginformation>
+			<summary>[lang] ToStringBuilder throws StackOverflowError when an Object cycle exists</summary>
+			<description>Hi,
+The ToStringBuilder throws a StackOverflowError if you have a cycle in the
+object graph. For instance, the following toString() method will cause a
+StackOverflowError:
+public class ObjectCycle {
+    Object obj;
+    public String toString() 
+{
+        return new ToStringBuilder(this).append(obj).toString();
+    }
+}
+public void testObjectCycle() {
+    ObjectCycle a = new ObjectCycle();
+    ObjectCycle b = new ObjectCycle();
+    a.obj = b;
+    b.obj = a;
+    a.toString();  // ouch: StackOverflowError    	
+}
+I&amp;amp;apos;ll submit some patches that fixes this problem...
+regards,
+Maarten</description>
+			<version>2.1</version>
+			<fixedVersion>2.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.ToStringStyle.java</file>
+			<file type="M">org.apache.commons.lang.builder.ToStringBuilderTest.java</file>
+			<file type="M">org.apache.commons.lang.builder.ReflectionToStringBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="66" opendate="2006-01-10 18:18:56" fixdate="2009-07-19 18:30:42" resolution="Fixed">
+		<buginformation>
+			<summary>[lang] StringEscaper.escapeXml() escapes characters &gt; 0x7f</summary>
+			<description>StringEscaper.escapeXml() escapes characters &amp;gt; 0x7f. That&amp;amp;apos;s both undesired and
+undocumented.</description>
+			<version>2.1</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">448</link>
+			<link type="Reference" description="relates to">505</link>
+			<link type="Reference" description="relates to">515</link>
+			<link type="Reference" description="is related to">339</link>
+		</links>
+	</bug>
+</bugrepository>

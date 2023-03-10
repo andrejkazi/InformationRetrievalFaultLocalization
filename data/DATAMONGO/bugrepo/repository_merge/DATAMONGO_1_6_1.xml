@@ -1,0 +1,428 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="4" master="1120" duplicate="1126" opendate="2014-12-15 13:39:20" fixdate="2015-01-20 08:04:31" resolution="Fixed">
+		<buginformation>
+			<summary>Pageable queries timeout or return incorrect counts Repository keyword query findByInId with pageable not returning correctly</summary>
+			<description>Counts for total elements and pages on some repositories return 0 and some throw a 500 when the socket times out.  This is ONLY occurring on calls that return a Page object and accept a Pageable input.  After debugging a bit, the inputs all seem to be populated from the controller fine.  The query definitions are
+findByActiveIsTrue = wrong counts for totalElements and totalPages. both are 0
+findByUserId = this collection is large at around 3 million records, but is indexed.
+This is only happening in 1.6.1 and works correctly in 1.6.0 I&amp;amp;apos;ve been trying to use the In-keyword with identifiers and making the query pageable. The query returns results but getTotalElements() and getTotalPages() always returns 0. Also when you try to get any other page than 0, no results return. I&amp;amp;apos;ve tried using In with another member other than id and it works as expected. Below is a strip down example I used for testing;
+I&amp;amp;apos;ve created 3 types and 10 items per those types, results in a total of 30 items.
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Item {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private String id;
+
+
+
+
+    private String type;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public interface ItemRepository extends MongoRepository&amp;lt;Item, String&amp;gt; {
+
+
+
+
+
+
+
+
+
+    Page&amp;lt;Item&amp;gt; findByIdIn(Collection ids, Pageable pageable);
+
+
+
+
+    Page&amp;lt;Item&amp;gt; findByTypeIn(Collection types, Pageable pageable);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@ContextConfiguration(classes = {MongoDbConfig.class})
+
+
+
+
+@TransactionConfiguration(defaultRollback = false)
+
+
+
+
+public class TestPageableIdIn {
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private ItemRepository itemRepository;
+
+
+
+
+    
+
+
+
+
+    private List&amp;lt;String&amp;gt; allIds = new LinkedList&amp;lt;&amp;gt;();
+
+
+
+
+
+
+
+
+
+    @Before
+
+
+
+
+    public void setUp() {
+
+
+
+
+        itemRepository.deleteAll();
+
+
+
+
+        String[] types = {"SWORD", "SHIELD", "ARMOUR"};
+
+
+
+
+
+
+
+
+
+        // 10 items per type
+
+
+
+
+        for (String type : types) {
+
+
+
+
+            for (int i = 0; i &amp;lt; 10; i++) {
+
+
+
+
+                String id = UUID.randomUUID().toString();
+
+
+
+
+                allIds.add(id);
+
+
+
+
+                itemRepository.save(new Item(id, type));
+
+
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testPageableIdIn() {
+
+
+
+
+        
+
+
+
+
+        Pageable pageable = new PageRequest(0, 5);
+
+
+
+
+        
+
+
+
+
+        // expect 5 Items returned, total of 10 Items(SWORDS) in 2 Pages
+
+
+
+
+        Page&amp;lt;Item&amp;gt; results = itemRepository.findByTypeIn(Arrays.asList("SWORD"), pageable);
+
+
+
+
+        Assert.assertEquals(5, results.getContent().size());
+
+
+
+
+        Assert.assertEquals(10, results.getTotalElements());
+
+
+
+
+        Assert.assertEquals(2, results.getTotalPages());
+
+
+
+
+        
+
+
+
+
+        // expect 5 Items returned, total of 30 Items in 6 Pages
+
+
+
+
+        results = itemRepository.findByIdIn(allIds, pageable);
+
+
+
+
+        Assert.assertEquals(5, results.getContent().size());
+
+
+
+
+        Assert.assertEquals(30, results.getTotalElements()); // this is returning 0
+
+
+
+
+        Assert.assertEquals(6, results.getTotalPages());     // this is returning 0
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1126</link>
+			<link type="Relate" description="is related to">1080</link>
+			<link type="Duplicate" description="duplicates">1120</link>
+		</links>
+	</bug>
+	<bug id="10" master="1078" duplicate="1088" opendate="2014-10-28 02:23:26" fixdate="2014-11-12 23:11:42" resolution="Fixed">
+		<buginformation>
+			<summary>@Query annotated repository query fails to map complex Id structure. @Query $in does not remove "_class" property on collection of embedded objects </summary>
+			<description>StringBasedMongoQuery converts any complex object to the according mongo type including type restrictions via _class. Therefore annotated queries like:
+
+
+
+
+
+
+@Query("{&amp;amp;apos;_id&amp;amp;apos;: {$in: ?0}}")
+
+
+
+
+List&amp;lt;User&amp;gt; findByUserIds(Collection&amp;lt;MyUserId&amp;gt; userIds);
+
+
+
+
+
+
+end up being converted to:
+
+
+
+
+
+
+{_id:  {$in: [ {_class:"com.sampleuser.MyUserId", userId:"....", sampleId:"...."}, ...
+
+
+
+
+
+
+So we need to check for the presence of typeKey when converting id properties. Following method on repository 
+
+
+
+
+
+
+	@Query(value = "{ embedded : { $in : ?0} }")
+
+
+
+
+	List&amp;lt;Foo&amp;gt; findByEmbeddedIn2(Collection&amp;lt;EmbeddedObject&amp;gt; c);
+
+
+
+
+
+
+generates incorrect query. 
+
+
+
+
+
+
+{ "embedded" : { "$in" : [ {  "_class" : "demo.EmbeddedObject" , "s" : "hello"}]}}
+
+
+
+
+
+
+Query should be without _class property e.g.:
+
+
+
+
+
+
+{ "embedded" : { "$in" : [ { "s" : "hello"}]}}
+
+
+
+
+
+
+I attached test project demonstrating this bug.
+This bug is related to https://jira.spring.io/browse/DATAMONGO-893</description>
+			<version>1.6.1 (Evans SR1)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.MyId.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.ComplexIdRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.UserWithComplexId.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1088</link>
+			<link type="Duplicate" description="duplicates">1078</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,683 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="386" opendate="2011-11-03 14:07:04" fixdate="2011-11-03 16:19:31" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll(Collection, Collection) has an CopyPaste-Failure</summary>
+			<description>public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0, Nightly Builds</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+	<bug id="400" opendate="2012-03-30 02:59:47" fixdate="2012-04-09 17:27:40" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent Javadoc comment and code in addIgnoreNull(Collection&lt;T&gt;, T) in org.apache.commons.collections.CollectionUtils</summary>
+			<description>The Javadoc comment below states that the method "throws NullPointerException if the collection is null". 
+    	    /**
+	       .....
+
+@param collection  the collection to add to, must not be null
+@param object  the object to add, if null it will not be added
+@return true if the collection changed
+@throws NullPointerException if the collection is null
+	     */
+	    public static &amp;lt;T&amp;gt; boolean addIgnoreNull(Collection&amp;lt;T&amp;gt; collection, T object) 
+{
+	        return (object != null &amp;amp;&amp;amp; collection.add(object));
+	    }
+However, when called with an null collection and a null object (i.e., "addIgnoreNull((Collection)null, null)"), the method executes normally without throwing any exception.
+
+Suggested Fixes:
+1. Add code "if (collection == null) throw NullPointerException();" at the beginning of the method body.
+or
+2. Remove "@throws NullPointerException if the collection is null" from the Javadoc.
+or
+3. Change "@throws NullPointerException if the collection is null" to "@throws NullPointerException if the collection is null and the object is non-null)".</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="406" opendate="2012-05-27 19:52:30" fixdate="2012-06-03 10:25:40" resolution="Fixed">
+		<buginformation>
+			<summary>ListUtils.subtract is very slow </summary>
+			<description>Hi,
+ListUtils.subtract is very slow when subtracting two large lists.  The
+root cause of this problem is similar to the root cause of the
+previously fixed COLLECTIONS-328 in ListUtils, i.e., quadratic
+complexity instead of linear complexity.
+I am encountering this problem in version 3.2.1 and also in revision
+1342815 (May 25th 2012).  I have attached a test that exposes this
+problem and a simple patch.  On my machine, for the attached test,
+this patch provides a 95X speedup.
+To run the test, just do:
+$ java Test
+Currently, the code for ListUtils.subtract is:
+final ArrayList&amp;lt;E&amp;gt; result = new ArrayList&amp;lt;E&amp;gt;(list1);
+for (E e : list2) 
+{
+    result.remove(e);
+}
+return result;
+which is quadratic, because result.remove(e) has linear complexity.
+The attached patch makes the remove() be constant complexity by
+removing from an org.apache.commons.collections.bag.HashBag.  I use
+HashBag and not HashSet because ListUtils.subtract needs to respect
+the cardinality when there are repeated objects in the list.
+As mentioned in COLLECTIONS-328 discussion, for small lists, there is
+some overhead for creating the HashBag.  This can be fixed with a
+threshold, but I did not implement it in my patch because the
+COLLECTIONS-328 patch does not implement it.
+Unlike the patch for COLLECTIONS-328, my patch does not choose the
+list to iterate over based on size, because of the cardinality
+requirement in subtract.  This means the code could be made even
+faster if we could use something like a LinkedHashBag but neither
+Apache Collections nor standard Java libraries have such a class.
+Even so, this patch is still a lot faster than the original version.
+Is this truly a bug, or am I missing something here?  If so, can you
+please confirm if the patch is correct?
+Thanks,
+Adrian
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.ListUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="407" opendate="2012-06-01 17:55:32" fixdate="2012-06-19 19:00:13" resolution="Fixed">
+		<buginformation>
+			<summary>ListOrderedSet.removeAll() is slow</summary>
+			<description>Hi,
+I am encountering a performance problem in ListOrderedSet.removeAll().
+It appears in version 3.2.1 and also in revision 1344775 (31 May
+2012).  I have attached a test that exposes this problem and a
+one-line patch that fixes it.  On my machine, for this test, the patch
+provides a 317X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 3812
+The output for the patched version is:
+Time is 12
+As the patch shows, the problem is in 
+ListOrderedSet.remove(Object object).  The code for this method is:
+boolean result = collection.remove(object);
+setOrder.remove(object);
+return result;
+The patch changes it to :
+boolean result = collection.remove(object);
+if (result) setOrder.remove(object);
+return result;
+The "setOrder.remove(object)" is not necessary if 
+"collection.remove(object)" did not find the object.
+This small change speeds up
+ListOrderedSet.ListOrderedSet.removeAll(Collection&amp;lt;?&amp;gt; coll) because
+ListOrderedSet.ListOrderedSet.removeAll(Collection&amp;lt;?&amp;gt; coll) iterates
+over all the elements in "coll" and calls 
+ListOrderedSet.remove(Object object).  So the un-patched code has
+quadratic complexity, while the patched code has linear complexity.
+Is this truly a bug, or am I missing something here?  If so, can you
+please confirm if the patch is correct?
+Thanks,
+Adrian</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.set.ListOrderedSet.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">409</link>
+			<link type="Reference" description="is related to">408</link>
+		</links>
+	</bug>
+	<bug id="409" opendate="2012-06-19 16:00:19" fixdate="2012-06-19 19:52:30" resolution="Fixed">
+		<buginformation>
+			<summary>ListOrderedSet.addAll() is very slow</summary>
+			<description>Hi,
+I am encountering a performance problem in ListOrderedSet.addAll().
+It appears in version 3.2.1 and also in revision 1351465 (18 Jun
+2012). I have attached a test that exposes this problem and a
+three-line patch that fixes it. On my machine, for this test, the
+patch provides a 79X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 1837
+The output for the patched version is:
+Time is 23
+As the patch shows, the problem is that 
+ListOrderedSet.addAll(int index, Collection&amp;lt;? extends E&amp;gt; coll) 
+performs:
+"setOrder.add(index++, e)" for each element in "coll".  This is very 
+expensive, because "setOrder" is an ArrayList, and inserting an
+element in the middle of an ArrayList shifts all the elements to the
+right.
+The patched version avoids this cost by inserting all the elements at
+once, thus performing only one insert.
+Is this a bug?  If so, can you please confirm that the patch is
+correct?
+Thanks,
+Adrian</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.set.ListOrderedSet.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">407</link>
+		</links>
+	</bug>
+	<bug id="413" opendate="2012-06-21 18:38:48" fixdate="2012-06-23 12:06:24" resolution="Fixed">
+		<buginformation>
+			<summary>Performance problem in DualHashBidiMap</summary>
+			<description>Hi,
+I am encountering a performance problem in DualHashBidiMap.  It
+appears in version 3.2.1 and also in revision 1352574 (21 June 2012).
+I attached a test that exposes this problem and a patch that fixes it.
+On my machine, for this test, the patch provides a 173X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 5029
+The output for the patched version is:
+Time is 29
+The attached test shows that, for a "DualHashBidiMap bidi" object, the
+following operation is very slow:
+bidi.entrySet().removeAll(toRemove);
+DualHashBidiMap.entrySet() returns a
+"DualHashBidiMap.EntrySet" object, which inherits 
+removeAll(Collection&amp;lt;?&amp;gt; coll) from "DualHashBidiMap.View".  
+As the patch shows, the problem is that
+"DualHashBidiMap.View.removeAll(Collection&amp;lt;?&amp;gt; coll)" performs
+"coll.contains(it.next())" for each element in the View.
+"coll.contains(it.next())" can be very slow, e.g., if "coll" is a
+list.
+The patch avoids this cost by using remove(Object obj) (defined in
+"EntrySet&amp;lt;K, V&amp;gt;", "KeySet&amp;lt;K&amp;gt;", and "Values&amp;lt;V&amp;gt;"), which is fast because
+it uses only operations on sets.
+Is this a bug, or am I misunderstanding something? If so, can you
+please confirm that the patch is correct?
+Thanks,
+Adrian
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.bidimap.AbstractDualBidiMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="415" opendate="2012-06-29 21:02:29" fixdate="2012-09-20 18:08:08" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractLinkedList.removeAll() is very slow</summary>
+			<description>Hi,
+I am encountering a performance problem in
+AbstractLinkedList.removeAll().  It appears in version 3.2.1 and also
+in revision 1355448.  I attached a test that exposes this problem and
+a one-line patch that fixes it.  On my machine, for this test, the
+patch provides a 226X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 5655
+The output for the patched version is:
+Time is 25
+As the patch shows, the problem is that
+"AbstractLinkedList.removeAll(Collection&amp;lt;?&amp;gt; coll)" performs
+"coll.contains(it.next())" for each element in the AbstractLinkedList,
+which can be very expensive if "coll.contains()" is expensive, e.g.,
+when "coll" is a list.
+The one-line patch I attached puts the elements of "coll" in a HashSet
+(which has very fast "contains()"), if "coll" is not already a set:
+"if (!(coll instanceof java.util.Set&amp;lt;?&amp;gt;)) coll = new java.util.HashSet&amp;lt;Object&amp;gt;(coll);"
+Is this a bug, or am I misunderstanding the intended behavior? If so,
+can you please confirm that the patch is correct?
+Thanks,
+Adrian</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.list.AbstractLinkedList.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="435" opendate="2012-11-14 10:13:40" fixdate="2012-11-14 10:26:34" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll() calls ListUtils.retainAll()</summary>
+			<description>A snippet from CollectionUtils.java:
+CollectionUtils.java
+
+public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.retainAll(collection, remove);
+}
+
+
+It should call ListUtils.removeAll() instead.</description>
+			<version>3.2.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="424" opendate="2012-07-23 09:07:51" fixdate="2013-03-17 10:03:19" resolution="Fixed">
+		<buginformation>
+			<summary>Surprising exception by CompositeSet in a situation where CompositeCollection works fine</summary>
+			<description>We have a method that uses a CompositeCollection. Here&amp;amp;apos;s a simplified version of it:
+  void m(CompositeCollection coll) 
+{
+    coll.addComposited(new TreeBag());
+  }
+
+It works fine when the argument is a CompositeCollection, but it throws an exception when the argument is a CompositeSet. E.g.:
+  m(new CompositeCollection());  // OK
+  m(new CompositeSet());         // IllegalArgumentException
+Although the exception is documented in CompositeSet, this behavior is very surprising. Is there a way to have m() accept CompositeCollections without running into this exception? The only solution that comes to my mind is to dynamically check the type of &amp;amp;apos;coll&amp;amp;apos; in m(), but this is a rather nasty work-around.
+A better solution may be to make the genericity of CompositeCollection explicit by adding a type parameter:
+  class CompositeCollection&amp;lt;T extends Collection&amp;gt; {
+    void addComposited(T c) 
+{ /* .. */ }
+  }
+
+  class CompositeSet extends CompositeCollection&amp;lt;Set&amp;gt; {
+    @Override void addComposited(Set c) { /* .. */ }
+  }
+This way, users of CompositeCollection must choose the kind of collections that can be composed and will not encounter surprises, such as the above.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.set.CompositeSetTest.java</file>
+			<file type="M">org.apache.commons.collections.collection.CompositeCollectionTest.java</file>
+			<file type="M">org.apache.commons.collections.set.EmptySetMutator.java</file>
+			<file type="M">org.apache.commons.collections.collection.CompositeCollection.java</file>
+			<file type="M">org.apache.commons.collections.set.CompositeSet.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="444" opendate="2013-02-25 16:08:12" fixdate="2013-04-17 18:13:13" resolution="Fixed">
+		<buginformation>
+			<summary>SetUniqueList may become inconsistent</summary>
+			<description>I found this bug during my work on issue COLLECTIONS-310 : 
+When you &amp;amp;apos;set&amp;amp;apos; an element to a position that contains this element, it is removed from the internal set. This leads to the situation that 
+
+invocing get() returns the element
+invocing contains() returns false.
+
+Extending the existing test method for set:
+
+
+   public void testSet() {
+        final SetUniqueList&amp;lt;E&amp;gt; lset = new SetUniqueList&amp;lt;E&amp;gt;(new ArrayList&amp;lt;E&amp;gt;(), new HashSet&amp;lt;E&amp;gt;());
+
+        // Duplicate element
+        final E obj1 = (E) new Integer(1);
+        final E obj2 = (E) new Integer(2);
+        final E obj3 = (E) new Integer(3);
+
+        lset.add(obj1);
+        lset.add(obj2);
+        lset.set(0, obj1);
+        assertEquals(2, lset.size());
+        assertSame(obj1, lset.get(0));
+        assertSame(obj2, lset.get(1));
+
+        assertTrue(lset.contains(obj1));  // fails !
+        assertTrue(lset.contains(obj2));
+
+
+
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.list.SetUniqueListTest.java</file>
+			<file type="M">org.apache.commons.collections4.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections.list.SetUniqueListTest.java</file>
+			<file type="M">org.apache.commons.collections.list.SetUniqueList.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">310</link>
+		</links>
+	</bug>
+	<bug id="454" opendate="2013-04-27 12:26:13" fixdate="2013-04-28 18:53:13" resolution="Fixed">
+		<buginformation>
+			<summary>findBugs Warning: Flat3Map - 3 iterators which are "both an Iterator and a Map.Entry"</summary>
+			<description>The iterators should be rewritten as suggested by findbugs.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.Flat3Map.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="453" opendate="2013-04-27 12:23:51" fixdate="2013-05-05 16:16:46" resolution="Fixed">
+		<buginformation>
+			<summary>findBugs Warnings: several classes in package functors may expose their internal representation</summary>
+			<description>Several classes (e.g. SwitchTransformer) take in their constructor an array as input which is not copied/cloned.
+Thus its internal representation may be changed externally.
+The corresponding factory methods do copy the input arguments thus we have two choices:
+
+move the copy from the factory methods to the ctors
+make the ctors private to prevent their use
+
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.functors.SwitchTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.SwitchClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ChainedTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ChainedClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InvokerTransformer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="472" opendate="2013-06-03 22:59:35" fixdate="2013-06-09 18:35:43" resolution="Fixed">
+		<buginformation>
+			<summary>wasted work in AbstractMapBag.containsAll()</summary>
+			<description>The problem appears in version 3.2.1 and in revision 1489197.  I
+attached a one-line patch that fixes it.
+In method "AbstractMapBag.containsAll", the loop over
+"other.uniqueSet()" should return immediately after "result" becomes
+"false", because "result = result &amp;amp;&amp;amp; contains;" can never become
+"true" again.  All the iterations after "result" becomes "false" do
+not perform any useful work, at best they just set "result" again to
+"false".</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.bag.AbstractMapBag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="487" opendate="2013-10-21 07:48:55" fixdate="2013-10-21 07:56:23" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll is not work as expected</summary>
+			<description>http://svn.apache.org/viewvc/commons/proper/collections/tags/COLLECTIONS_3_2_1/src/java/org/apache/commons/collections/CollectionUtils.java?revision=1211567&amp;amp;view=markup
+Line: 1122
+Problem:
+The method called "removeAll", but call "retainAll" internally.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="493" opendate="2013-10-25 01:04:54" fixdate="2013-10-25 14:26:05" resolution="Duplicate">
+		<buginformation>
+			<summary>Satisfies CollectionUtils Method</summary>
+			<description>Recently I needed a method to verify that a predicate held true for all members of a collection.  I saw where CollectionUtils had the exists method that checked for a single list element that satisfied a predicate, but not a method for all elements.
+Hoping to get more involved with the project!</description>
+			<version>3.2.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">488</link>
+			<link type="Duplicate" description="is duplicated by">490</link>
+			<link type="Duplicate" description="is duplicated by">491</link>
+			<link type="Duplicate" description="is duplicated by">492</link>
+		</links>
+	</bug>
+	<bug id="488" opendate="2013-10-25 00:49:00" fixdate="2013-11-05 10:51:52" resolution="Fixed">
+		<buginformation>
+			<summary>Satisfies utility method</summary>
+			<description>I recently needed to use something like the CollectionUtils.exists method, but I wanted to know if a given predicate was true for ALL members of a collection, rather than just one.  I cooked up a quick method called satisfies (help would be appreciated on the name - it&amp;amp;apos;s the best that I could come up with) that determines whether a given predicate is true for all members of a collection.
+Been using this library a good deal recently - hoping to get involved in its development!</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">489</link>
+			<link type="Duplicate" description="is duplicated by">493</link>
+		</links>
+	</bug>
+	<bug id="524" opendate="2014-05-06 00:58:27" fixdate="2014-05-06 22:14:01" resolution="Fixed">
+		<buginformation>
+			<summary>ListOrderedSet can have duplicates</summary>
+			<description>The static method, org.apache.commons.collections.set.ListOrderedSet.decorate(List list), has a comment "If the list contains duplicates, the duplicates are removed".  It does not remove duplicates and will leave you in an inconsistent state if your list has duplicates.  (i.e. the .size() result is smaller than the number of iterations from the iterator)</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSet.java</file>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSetTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="536" opendate="2014-10-29 02:58:01" fixdate="2014-10-29 21:05:23" resolution="Fixed">
+		<buginformation>
+			<summary>(Code style) map.size() call in MapUtils.putAll()</summary>
+			<description>In class org.apache.commons.collections(4).MapUtils there&amp;amp;apos;s a method putAll(final Map&amp;lt;K, V&amp;gt; map, final Object[] array) which starts with 
+
+map.size();  // force NPE
+
+
+Actually map.size() is not that harmless call for any map. For example, consider java.util.concurrent.ConcurrentHashMap size() implementation: depending on the circumstances it may take even more time than the rest of the putAll method (at least prior to JDK 8). Things are even worse for ConcurrentSkipListMap: its size() method iterates over all the map elements. Thus I&amp;amp;apos;d suggest to replace this call with more conventional check like:
+
+if(map == null) {
+    throw new NullPointerException();
+}
+
+
+If you still want to save bytes, you may use map.getClass(). It&amp;amp;apos;s final, so it will never be overridden to do something strange and it&amp;amp;apos;s even used by JavaC for the same purpose (to trigger NPE). For example, if you compile and disassemble this code:
+
+public class Outer {
+    public class Inner {}
+    public void test(Outer n) { n.new Inner(); }
+}
+
+
+You will see a getClass() call which is used to trigger NPE.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.MapUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="426" opendate="2012-07-24 22:04:01" fixdate="2015-01-27 15:06:21" resolution="Fixed">
+		<buginformation>
+			<summary>performance problem in ListOrderedSet.retainAll()</summary>
+			<description>Hi,
+I am encountering a performance problem in ListOrderedSet.retainAll().
+It appears in version 3.2.1 and also in revision 1365132.  I attached
+a test that exposes this problem and a patch that fixes it.  On my
+machine, for this test, the patch provides a 263X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 3682
+The output for the patched version is:
+Time is 14
+The problem is that the code for method
+"ListOrderedSet.retainAll(Collection&amp;lt;?&amp;gt; coll)" is:
+
+
+public boolean retainAll(Collection&amp;lt;?&amp;gt; coll) {
+    boolean result = collection.retainAll(coll);
+....
+}
+
+
+because "collection.retainAll(coll)" has quadratic complexity if
+parameter "coll" is a List.  Conceptually, the solution is to call
+"coll.retainAll(collection)" which has linear complexity (not
+quadratic), because "collection" is always a HashSet (we know this,
+because "collection" is an inherited field of ListOrderedSet, and thus
+cannot have another type).  See the
+"java.util.AbstractCollection.retainAll()" code inlined below for why
+one call has quadratic complexity, and the other has linear
+complexity.
+Directly calling "coll.retainAll(collection)" would change the
+behavior of ListOrderedSet.retainAll(), which is why the patch seems a
+bit involved.  In reality, the patch simulates the behavior of
+"coll.retainAll(collection)" (which is just the intersection of two
+collections).  You can easily see this by looking at the patch and at
+the "java.util.AbstractCollection.retainAll()" code inlined below.
+"collection.retainAll(coll)" is "java.util.HashSet.retainAll()", which
+is "java.util.AbstractCollection.retainAll()", which has the code:
+
+
+public boolean retainAll(Collection&amp;lt;?&amp;gt; c) {
+    boolean modified = false;
+    Iterator&amp;lt;E&amp;gt; e = iterator();
+    while (e.hasNext()) {
+        if (!c.contains(e.next())) {
+            e.remove();
+            modified = true;
+        }
+    }
+    return modified;
+}
+
+
+Is this a bug, or am I misunderstanding the intended behavior?  If so,
+can you please confirm if the patch is correct?
+Thanks,
+Adrian</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0, 4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSet.java</file>
+			<file type="M">org.apache.commons.collections4.set.ListOrderedSetTest.java</file>
+			<file type="M">org.apache.commons.collections.set.ListOrderedSet.java</file>
+			<file type="M">org.apache.commons.collections.set.ListOrderedSetTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="427" opendate="2012-07-24 23:50:21" fixdate="2015-01-27 15:09:58" resolution="Fixed">
+		<buginformation>
+			<summary>performance problem in SetUniqueList.retainAll()</summary>
+			<description>I am encountering a performance problem in SetUniqueList.retainAll().
+It appears in version 3.2.1 and also in revision 1365132.  I attached
+a test that exposes this problem and a patch that fixes it.  On my
+machine, for this test, the patch provides a 621X speedup.
+To run the test, just do:
+$ java Test
+The output for the un-patched version is:
+Time is 6215
+The output for the patched version is:
+Time is 10
+There are two problems here.  First, "SetUniqueList.retainAll()"
+should have similar implementation with the current implementation of
+"ListOrderedSet.retainAll()", which is more optimized.  Second, even
+"ListOrderedSet.retainAll()" has a performance problem, which was
+reported and explained in detail in COLLECTIONS-426.
+The attached patch has two parts.  The first part (the first loop) is
+inspired from COLLECTIONS-426.  The second part (everything after the
+first loop) is in fact the current implementation of
+"ListOrderedSet.retainAll()", with some minor changes to adapt it for
+the current code.  Overall, the attached patch is very similar to the
+COLLECTIONS-426 patch.
+I will rehash some of the information from COLLECTIONS-426 (which
+describes "ListOrderedSet.retainAll()") for the current
+"SetUniqueList.retainAll()".
+The current code for "SetUniqueList.retainAll()" is:
+
+
+public boolean retainAll(Collection&amp;lt;?&amp;gt; coll) {
+    boolean result = super.retainAll(coll);
+    set.retainAll(coll);
+    return result;
+}
+
+
+where both "super.retainAll(coll)" and "set.retainAll(coll)" can have
+quadratic complexity, e.g., if "coll" is a List.  Both these calls to
+"retainAll" are in fact calls to
+"java.util.AbstractCollection.retainAll()", which has the code:
+
+
+public boolean retainAll(Collection&amp;lt;?&amp;gt; c) {
+    boolean modified = false;
+    Iterator&amp;lt;E&amp;gt; e = iterator();
+    while (e.hasNext()) {
+        if (!c.contains(e.next())) {
+            e.remove();
+            modified = true;
+        }
+    }
+    return modified;
+}
+
+
+which iterates over "this" and calls "contains()" on "c".  Mapping
+this code back to "SetUniqueList.retainAll()" means that the code
+iterates over "this" and "set" and calls "contains()" on "coll".  If
+"coll" has slow "contains()" (e.g., if "coll" is a list), then
+"SetUniqueList.retainAll()" has quadratic complexity.
+The patch iterates over "coll" and calls "contains()" on "set", which
+we know is fast, because "set" is a Set.  For a more detailed
+discussion of the patch and the problem, see the current
+implementation of "ListOrderedSet.retainAll()", the discussion for
+COLLECTIONS-426, and the patch for COLLECTIONS-426.
+Is this a bug, or am I misunderstanding the intended behavior?  If so,
+can you please confirm if the patch is correct?</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0-alpha1, 4.0, 4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.list.SetUniqueListTest.java</file>
+			<file type="M">org.apache.commons.collections4.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections.list.SetUniqueListTest.java</file>
+			<file type="M">org.apache.commons.collections.list.SetUniqueList.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

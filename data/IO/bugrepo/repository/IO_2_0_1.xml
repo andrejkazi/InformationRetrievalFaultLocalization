@@ -1,0 +1,304 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="260" opendate="2011-02-03 22:59:18" fixdate="2011-03-12 01:14:45" resolution="Fixed">
+		<buginformation>
+			<summary>ClassLoaderObjectInputStream does not handle Proxy classes</summary>
+			<description>ObjectInputSteam has 2 methods that need to be overloaded for proper behavior in this case.
+resolveClass is ok, but resolveProxyClass doesn&amp;amp;apos;t attempt to look in the passed class loader to resolve the interfaces.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ClassLoaderObjectInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.ClassLoaderObjectInputStreamTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="263" opendate="2011-03-08 02:12:45" fixdate="2011-04-10 11:27:58" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils.freeSpaceKb throws exception for Windows volumes with no visible files.</summary>
+			<description>Doing a FileSystemUtils.freeSpaceKb("D:/") where the drive (in this example d:) is an empty drive (A drive with no non-hidden files on it yet) results in an exception being thrown.
+     "Command line returned OS error code &amp;amp;apos;1&amp;amp;apos; for command [cmd.exe, /C, dir /-c "D:\"]
+Perhaps it could do a "dir /a /-c" to work in more cases? (Since hidden file "System Volume Information" will usually be available)</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="266" opendate="2011-03-18 18:58:51" fixdate="2011-05-09 17:29:35" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.copyFile() throws IOException when copying large files to a shared directory (on Windows)</summary>
+			<description>java.io.IOException: Insufficient system resources exist to complete the requested service
+	at sun.nio.ch.FileDispatcher.pwrite0(Native Method)
+	at sun.nio.ch.FileDispatcher.pwrite(Unknown Source)
+	at sun.nio.ch.IOUtil.writeFromNativeBuffer(Unknown Source)
+	at sun.nio.ch.IOUtil.write(Unknown Source)
+	at sun.nio.ch.FileChannelImpl.write(Unknown Source)
+	at sun.nio.ch.FileChannelImpl.transferFromFileChannel(Unknown Source)
+	at sun.nio.ch.FileChannelImpl.transferFrom(Unknown Source)
+	at org.apache.commons.io.FileUtils.doCopyFile(FileUtils.java:813)
+	at org.apache.commons.io.FileUtils.copyFile(FileUtils.java:783)
+	at org.test.igor.TestFileUtils.main(TestFileUtils.java:55)
+NOTE: the issue is cased by the function doCopyFile(File srcFile, File destFile, boolean preserveFileDate) using hardcoded data chunks of FIFTY_MB in the transferFrom() call.
+Reducing this chunk from 50M to 31M solves the issue for my situation (32M still fails).
+Here is a test program to reproduce the issue:
+package org.test.igor;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+public class TestFileUtils {
+    public static void main(String[] args){
+        File src = new File("D:\\2011.1-dev\\testtest");
+        File dest = new File("\\\\ismerek1Shared");
+        String filename = "jdk-6u19-windows-x64.exe";
+        File file = new File(src, filename);
+        File toFile = new File(dest, filename);
+        try 
+{
+            FileUtils.copyFile(file, toFile, true);
+            System.out.println("Successful copy");
+        }
+        catch (IOException e1) 
+{
+            e1.printStackTrace();
+        }
+    }
+}
+</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="274" opendate="2011-05-24 20:44:49" fixdate="2011-05-26 10:03:55" resolution="Fixed">
+		<buginformation>
+			<summary>Tailer returning partial lines when reaching EOF before EOL</summary>
+			<description>As reported here: http://mail-archives.apache.org/mod_mbox/commons-user/201105.mbox/%3cBANLkTim6hA-xGjn8cA6FfcPkVa6ax6KGag@mail.gmail.com%3e</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.TailerTest.java</file>
+			<file type="M">org.apache.commons.io.input.Tailer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="277" opendate="2011-07-10 05:26:35" fixdate="2011-09-05 23:39:13" resolution="Fixed">
+		<buginformation>
+			<summary>ReaderInputStream enters infinite loop when it encounters an unmappable character</summary>
+			<description>The ReaderInputStream.read(byte[] b, int off, int len) method enters an infinite loop when its CharsetEncoder encounters an unmappable character in the input buffer.
+When its CharsetEncoder encounters an unmappable character, the value of CoderResult lastCoderResult.isUnmappable() == true, and Reader.read() is not invoked on the underlying Reader ever again.
+Attaching source file that reproduces this behavior.
+One fix to consider is to call CharsetEncoder.onUnmappableCharacter(CodingErrorAction) in the ReaderInputStream constructor with a value other than the default CodingErrorAction.REPORT. e.g.:
+public ReaderInputStream(Reader reader, Charset charset, int bufferSize) {
+            this.reader = reader;
+            encoder = charset.newEncoder();
+            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+...
+By replacing the unmappable character with encoder&amp;amp;apos;s default replacement character, this effectively prevents the infinite loop from occurring. I&amp;amp;apos;m not sure if that&amp;amp;apos;s the ideal behavior, but it seems fairly consistent with what org.apache.commons.io.output.WriterOutputStream does.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ReaderInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.ReaderInputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.output.WriterOutputStream.java</file>
+			<file type="M">org.apache.commons.io.input.XmlStreamReaderTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="368" opendate="2013-02-24 07:13:40" fixdate="2013-04-17 14:17:13" resolution="Fixed">
+		<buginformation>
+			<summary>ClassLoaderObjectInputStream does not handle primitive typed members</summary>
+			<description>Any class with a simple primitive (such as long, or int) cannot be deserialized.  For example, the following code:
+
+
+    ObjectInputStream ois = null;
+    try {
+      ois = new ClassLoaderObjectInputStream(getClass().getClassLoader(), new ByteArrayInputStream(bytes));
+      return (T) ois.readObject();
+    } catch (ClassNotFoundException e) {
+      LOGGER.error("Deserialization failed for {}", objectClass, e);
+    } catch (IOException e) {
+      LOGGER.error("Deserialization failed for {}", objectClass, e);
+    } finally {
+      if (ois != null) {
+        try {
+          ois.close();
+        } catch (IOException ignored) {
+        }
+      }
+    }
+
+
+Will fail if bytes represents a byte[] of the serialized version of the following class:
+
+
+public class Foo {
+
+  private static final long serialVersionUID = 1L;
+
+  private long thisFieldWillCauseCLOISToFail;
+
+  // class logic, ctors, etc...
+
+}
+
+
+With the following stacktrace:
+
+Caused by: java.lang.ClassNotFoundException: long
+        at java.net.URLClassLoader$1.run(URLClassLoader.java:202)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at java.net.URLClassLoader.findClass(URLClassLoader.java:190)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:306)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
+        at java.lang.Class.forName0(Native Method)
+        at java.lang.Class.forName(Class.java:247)
+        at org.apache.commons.io.input.ClassLoaderObjectInputStream.resolveClass(ClassLoaderObjectInputStream.java:68)
+        at java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1574)
+        at java.io.ObjectInputStream.readClassDesc(ObjectInputStream.java:1495)
+        at java.io.ObjectInputStream.readClass(ObjectInputStream.java:1461)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1311)
+        at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:1946)
+        at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1870)
+        at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1752)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1328)
+        at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:1946)
+        at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1870)
+        at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1752)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1328)
+        at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:1946)
+        at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1870)
+        at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1752)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1328)
+        at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:1946)
+        at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1870)
+        at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1752)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1328)
+        at java.io.ObjectInputStream.readObject(ObjectInputStream.java:350)
+        at java.util.ArrayList.readObject(ArrayList.java:593)
+        at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:597)
+        at java.io.ObjectStreamClass.invokeReadObject(ObjectStreamClass.java:974)
+        at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1848)
+        at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1752)
+        at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1328)
+        at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:1946)
+...
+
+
+Of some relevance may be:
+http://issues.liferay.com/browse/LPS-30742
+https://groups.google.com/forum/?hl=en&amp;amp;fromgroups=#!topic/akka-user/3PC4L48qyqs</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ClassLoaderObjectInputStream.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">378</link>
+		</links>
+	</bug>
+	<bug id="299" opendate="2012-01-17 09:57:57" fixdate="2013-04-22 17:52:42" resolution="Fixed">
+		<buginformation>
+			<summary>getPrefixLength returns null if filename has leading slashes</summary>
+			<description>Situation:
+FilenameUtils.getPrefixLength is used in FilenameUtils.doNormalize.
+FilenameUtils.normalize("////I don&amp;amp;apos;t want to become null!") returns null.
+Problem:
+Expected was: "I don&amp;amp;apos;t want to become null!"
+The method FilenameUtils.getPrefixLength returns -1 for the mentioned string.
+The root problem is found in following lines of code:
+FilenameUtils.getPrefixLength
+
+...
+                int posUnix = filename.indexOf(UNIX_SEPARATOR, 2);
+                int posWin = filename.indexOf(WINDOWS_SEPARATOR, 2);
+                if ((posUnix == -1 &amp;amp;&amp;amp; posWin == -1) || posUnix == 2 || posWin == 2) {
+                    return -1;
+                }
+...
+
+
+Solution:
+All leading slashes should be ignored at all, but considering the rest of the string.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="428" opendate="2014-03-12 13:10:44" fixdate="2015-06-23 06:00:05" resolution="Fixed">
+		<buginformation>
+			<summary>BOMInputStream.skip returns wrong count if stream contains no BOM</summary>
+			<description>If the skip method of BOMInputStream is used on a stream without a BOM, skip returns the wrong number of bytes (n - max(BOM-length)). This can lead to problems if the return value is evaluated for example from guava ByteStreams.skipFully.
+BomTest.java
+
+public class BomTest {
+
+	private static InputStream createInputStream(boolean addBOM) {
+		ByteBuffer bb = ByteBuffer.allocate(64);
+		if (addBOM) {
+			// UTF-8 BOM
+			bb.put(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
+		}
+		bb.put((byte) 0x31);
+		bb.put((byte) 0x32);
+		bb.put((byte) 0x33);
+		return new ByteArrayInputStream(bb.array());
+	}
+	
+	public static void main(String[] args) throws IOException {
+		BOMInputStream is1 = new BOMInputStream(createInputStream(true));
+		assertEquals(2, is1.skip(2));
+		assertEquals((byte) 0x33, is1.read());
+		
+		BOMInputStream is2 = new BOMInputStream(createInputStream(false));
+		assertEquals(2, is2.skip(2)); // fails here - skip returns 0
+		assertEquals((byte) 0x33, is2.read());
+	}
+	
+}
+
+
+I catched this bug in 2.0.1, but as far as I can see on the source 2.5 is still affected.
+I suggest the following change to the skip method:
+BOMInputStream.java
+
+    public long skip(long n) throws IOException {
+    	int skipped = 0;
+        while ((n &amp;gt; skipped) &amp;amp;&amp;amp; (readFirstBytes() &amp;gt;= 0)) {
+            skipped++;
+        }
+        return in.skip(n - skipped) + skipped;
+    }
+
+</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BOMInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.BOMInputStreamTest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,161 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="10" master="422" duplicate="467" opendate="2007-01-02 22:02:11" fixdate="2008-04-05 09:17:29" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy - computeRepeatingSql contains bad SQL New Acl package not compatible with Mysql Db</summary>
+			<description>The line
++ "ACL_OBJECT_IDENTITY,ENTRIES_INHERITING, "
+should be
++ "ACL_OBJECT_IDENTITY.ENTRIES_INHERITING, " (notice the dot instead of comma) The sql statements JdbcAclService and JdbcMutableAclService are only compatible with hsqlDb but not with other DBs e.g. mysql. the "call identity()" for example query must be "SELECT LAST_INSERT_ID()" in mysql dialect.
+So it would be great if you could access the ...Query properties via setter-methods and configure JdbcMutableAclService via spring beans xml.
+also have a look at this thread please:
+http://forum.springframework.org/archive/index.php/t-34222.html
+thank you</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">467</link>
+			<link type="Duplicate" description="duplicates">422</link>
+		</links>
+	</bug>
+	<bug id="16" master="335" duplicate="494" opendate="2006-08-12 15:15:26" fixdate="2008-01-17 06:47:24" resolution="Fixed">
+		<buginformation>
+			<summary>Add Secure/InsecureChannelProcessor supporting attribute Add IgnoredChannelProcessor for org.acegisecurity.securechannel.ChannelDecisionManagerImpl</summary>
+			<description>Most of my URLs fall into two categories: require security (REQUIRES_SECURE_CHANNEL) or require insecure (REQUIRES_INSECURE_CHANNEL). But I have a couple links which must support both HTTP/HTTPS and there is no way for me to express this exception. I recommend two new attributes:
+SUPPORTS_INSECURE_CHANNEL
+SUPPORTS_SECURE_CHANNEL
+Then I can write my bean as follows:
+&amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+  &amp;lt;value&amp;gt;
+    CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON 
+    \A/secure/.*\Z=REQUIRES_SECURE_CHANNEL 
+    \A/myspecialcase/*\Z=SUPPORTS_SECURE_CHANNEL
+    \A.*\Z=REQUIRES_INSECURE_CHANNEL
+  &amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt; when use ajax,switch http and https may cause cross domain exception.
+I need:
+in page  https://localhost:8443/account/login,dwr is https://localhost:8443/dwr/
+in page http://localhost:8080/index,dwr is http://localhost:8080/dwr/
+so I add a IgnoredChannelProcessor with key &amp;amp;apos;IGNORED_CHANNEL&amp;amp;apos;
+CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+\A/struts/.*\Z=IGNORED_CHANNEL
+\A/dwr/.*\Z=IGNORED_CHANNEL
+\A/account/.*\Z=REQUIRES_SECURE_CHANNEL
+\A/.*\Z=REQUIRES_INSECURE_CHANNEL
+</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImplTests.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">494</link>
+			<link type="Duplicate" description="duplicates">335</link>
+		</links>
+	</bug>
+	<bug id="36" master="408" duplicate="500" opendate="2006-12-03 14:04:17" fixdate="2007-08-28 23:37:44" resolution="Fixed">
+		<buginformation>
+			<summary>Add getFilterProcessesUrl() to org.acegisecurity.ui.logout.LogoutFilter Provide a getFilterProcessesUrl (protected or public) method in org.acegisecurity.ui.logout.LogoutFilter so that subclasses can access this parameter</summary>
+			<description>Please add a getFilterProcessesUrl() method to LogoutFilter to give sub-classes access to the filterProcessesUrl field.
+For the JAMWiki project (jamwiki.org) we have a need to use a custom redirect, and therefore have created a subclass of LogoutFilter to implement a custom version of the sendRedirect() method.  Unfortunately this subclass cannot access the filterProcessesUrl field because it is private in the LogoutFilter class and there is no get method in LogoutFilter.  We have worked around the problem by extending the setFilterProcessesUrl() method in our subclass, but it would be much cleaner to just be able to call a parent getFilterProcessesUrl() method. Provide a getFilterProcessesUrl (protected or public) method in org.acegisecurity.ui.logout.LogoutFilter so that subclasses can access this parameter.</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">500</link>
+			<link type="Duplicate" description="is duplicated by">500</link>
+			<link type="Depends" description="depends on">408</link>
+			<link type="Duplicate" description="duplicates">408</link>
+		</links>
+	</bug>
+	<bug id="67" master="99" duplicate="424" opendate="2005-11-14 14:27:20" fixdate="2008-03-24 11:45:11" resolution="Fixed">
+		<buginformation>
+			<summary>MethodDefinitionMap must support superclass declared methods MethodDefinitionMap - Can&amp;apos;t access inherited methods</summary>
+			<description>As reported by Tom Dunstan, MethodDefinitionMap line 168 by default will only locate methods declared for the class, and not for superclasses (ie uses clazz.getMethods() instead of clazz.getDeclaredMethods()). Whilst this is consistent with Spring&amp;amp;apos;s transaction handling, it does present an issue for those relying on generic superclasses and wanting to define authorization configuration attributes against them. It is proposed to add a new keyword to the property editor to direct MethodDefinitionMap to use getDeclaredMethods() vs getMethods(), such that by default the existing behaviour is preserved (to be consistent with transaction services) but the superclass search behaviour can be used instead. Alternatively, we could introduce an optional prefix the method name, such as "+", which denotes "locate the matching methods in the superclass". This would have the added advantage of ensuring only patterns where you deliberately want to use getDeclaredMethods() will use that method. See : http://forum.springframework.org/showthread.php?p=94634
+The MethodDefinitionMap can&amp;amp;apos;t secure any inherited method. Line 123 of the java file has to be modified as follows :
+
+
+
+
+
+Eclipse Workspace Patch 1.0
+#P acegisecurity
+Index: core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java
+===================================================================
+RCS file: /cvsroot/acegisecurity/acegisecurity/core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java,v
+retrieving revision 1.6
+diff -u -r1.6 MethodDefinitionMap.java
+
+
+core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java	17 Nov 2005 00:56:09 -0000	1.6
++++ core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java	9 Jan 2007 14:45:34 -0000
+@@ -165,7 +165,7 @@
+                 + "] with attributes [" + attr + "]");
+         }
+
+
+
+
+
+
+Method[] methods = clazz.getDeclaredMethods();
++        Method[] methods = clazz.getMethods();
+         List matchingMethods = new ArrayList();
+
+         for (int i = 0; i &amp;lt; methods.length; i++) {</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditorTests.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.intercept.method.MethodDefinitionMap.java</file>
+			<file type="M">org.springframework.security.util.SimpleMethodInvocation.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributesTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditor.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.MockMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.OtherTargetObject.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisorTests.java</file>
+			<file type="M">org.springframework.security.config.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.ConfigAttributeDefinition.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.aspectj.AspectJSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.springframework.security.annotation.MethodDefinitionSourceEditorTigerTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.MockJoinPoint.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.springframework.security.util.MethodInvocationUtils.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributes.java</file>
+			<file type="M">org.springframework.security.vote.BasicAclEntryVoterTests.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributesTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">428</link>
+			<link type="Duplicate" description="is duplicated by">424</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+			<link type="Related" description="is related to">734</link>
+			<link type="Duplicate" description="duplicates">99</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,416 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="501" opendate="2014-05-05 22:39:24" fixdate="2014-05-06 01:48:57" resolution="Fixed">
+		<buginformation>
+			<summary>ID type not detected for intermediate repository interface</summary>
+			<description>I have a class hierarchy as follows (actual code running in Production):
+
+
+
+
+
+
+abstract class Entity {}
+
+
+
+
+
+
+
+
+
+@MappedSuperClass
+
+
+
+
+abstract class RelationalEntity {}
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Inheritance(strategy = InheritanceType.JOINED)
+
+
+
+
+@Table(name = "person")
+
+
+
+
+public class Person extends RelationalEntity {}
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Table(name = "employee")
+
+
+
+
+public class Employee extends Person {}
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Table(name = "manager")
+
+
+
+
+public class Manager extends Employee {}
+
+
+
+
+
+
+and their corresponding Spring Data JPA repositories:
+
+
+
+
+
+
+@NoRepositoryBean
+
+
+
+
+public interface RelationalEntityRepository&amp;lt;T extends RelationalEntity&amp;gt; extends JpaRepository&amp;lt;T, Long&amp;gt; {}
+
+
+
+
+
+
+
+
+
+public interface PersonRepository&amp;lt;P extends Person&amp;gt; extends RelationalEntityRepository&amp;lt;P&amp;gt; {}
+
+
+
+
+
+
+
+
+
+public interface EmployeeRepository extends PersonRepository&amp;lt;Employee&amp;gt; {}
+
+
+
+
+
+
+
+
+
+public interface ManagerRepository extends PersonRepository&amp;lt;Manager&amp;gt; {}
+
+
+
+
+
+
+We have to sometimes run queries such as PersonRepository&amp;lt;Person&amp;gt;.count() because of which we have not marked that repository with NoRepositoryBean.  This arrangement is working fine in production with Spring Data JPA 1.4.3.
+On attempting to upgrade to Spring Data JPA 1.5.2 we get the following exception:
+
+
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;personRepository&amp;amp;apos;: Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Could not resolve id type of interface org.example.data.PersonRepository!
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1553)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:539)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:475)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:304)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:228)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:300)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:195)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:684)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:760)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:482)
+
+
+
+
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:125)
+
+
+
+
+	at org.springframework.test.context.support.AbstractGenericContextLoader.loadContext(AbstractGenericContextLoader.java:60)
+
+
+
+
+	at org.springframework.test.context.support.AbstractDelegatingSmartContextLoader.delegateLoading(AbstractDelegatingSmartContextLoader.java:100)
+
+
+
+
+	at org.springframework.test.context.support.AbstractDelegatingSmartContextLoader.loadContext(AbstractDelegatingSmartContextLoader.java:250)
+
+
+
+
+	at org.springframework.test.context.CacheAwareContextLoaderDelegate.loadContextInternal(CacheAwareContextLoaderDelegate.java:64)
+
+
+
+
+	at org.springframework.test.context.CacheAwareContextLoaderDelegate.loadContext(CacheAwareContextLoaderDelegate.java:91)
+
+
+
+
+	... 25 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not resolve id type of interface org.example.data.PersonRepository!
+
+
+
+
+	at org.springframework.data.repository.core.support.DefaultRepositoryMetadata.resolveIdType(DefaultRepositoryMetadata.java:79)
+
+
+
+
+	at org.springframework.data.repository.core.support.DefaultRepositoryMetadata.&amp;lt;init&amp;gt;(DefaultRepositoryMetadata.java:51)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepositoryMetadata(RepositoryFactorySupport.java:173)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:207)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean.afterPropertiesSet(JpaRepositoryFactoryBean.java:84)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1612)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1549)
+
+
+
+
+	... 40 more
+
+
+
+
+
+
+This exception is thrown from every Spring Data JPA version 1.4.4 onwards.
+We have a few class hierarchies like this in our code base for which Spring Data JPA has been working well so far.  Has this kind of support been dropped from 1.4.4 onwards?
+Attached is a sample project that demonstrates the problem.</description>
+			<version>1.7.2 (Codd SR2)</version>
+			<fixedVersion>1.8 GA (Dijkstra), 1.7.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryMetadata.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">11763</link>
+		</links>
+	</bug>
+	<bug id="502" opendate="2014-05-07 11:01:22" fixdate="2014-05-08 05:54:02" resolution="Fixed">
+		<buginformation>
+			<summary>AnnotationRepositoryConfigurationSource fails when the annotated class is in the default package.</summary>
+			<description>
+
+
+
+
+
+
+@Configuration
+
+
+
+
+@ComponentScan
+
+
+
+
+@EnableJpaRepositories
+
+
+
+
+public class OtherConfig {
+
+
+
+
+}
+
+
+
+
+
+
+No package statement.  This class is in the default package.
+
+
+
+
+
+
+Caused by: java.lang.StringIndexOutOfBoundsException: String index out of range: -1
+
+
+
+
+	at java.lang.String.substring(String.java:1911) ~[na:1.7.0_51]
+
+
+
+
+	at org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource.getBasePackages(AnnotationRepositoryConfigurationSource.java:98) ~[spring-data-commons-1.7.2.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.config.RepositoryConfigurationSourceSupport.getCandidates(RepositoryConfigurationSourceSupport.java:68) ~[spring-data-commons-1.7.2.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport.getRepositoryConfigurations(RepositoryConfigurationExtensionSupport.java:54) ~[spring-data-commons-1.7.2.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.config.RepositoryConfigurationDelegate.registerRepositoriesIn(RepositoryConfigurationDelegate.java:88) ~[spring-data-commons-1.7.2.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport.registerBeanDefinitions(RepositoryBeanDefinitionRegistrarSupport.java:78) ~[spring-data-commons-1.7.2.RELEASE.jar:na]
+
+
+
+
+
+
+This should not cause an exception.
+Thanks,
+Adam and Rossen</description>
+			<version>1.7.2 (Codd SR2)</version>
+			<fixedVersion>1.8 GA (Dijkstra), 1.7.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.AnnotationRepositoryConfigurationSourceUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="519" opendate="2014-06-11 06:14:40" fixdate="2014-06-12 04:03:37" resolution="Fixed">
+		<buginformation>
+			<summary>PagedResourcesAssembler should keep tempalte variables provided in base link</summary>
+			<description></description>
+			<version>1.7.2 (Codd SR2)</version>
+			<fixedVersion>1.9 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PagedResourcesAssembler.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

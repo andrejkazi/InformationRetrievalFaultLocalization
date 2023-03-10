@@ -1,0 +1,134 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="567" opendate="2014-02-05 15:52:21" fixdate="2014-04-27 17:35:41" resolution="Fixed">
+		<buginformation>
+			<summary>XMLBeanDeclaration.getNestedBeanDeclarations() doesn&amp;apos;t escape the node name when query the child node</summary>
+			<description>When query the nested bean declaration, the child name may contain the special character. So when call "HierarchicalConfiguration.configurationsAt()", the node name should be escaped by the expression engine first as the following
+
+
+getConfiguration().getExpressionEngine().nodeKey(node,"")
+
+
+Call sequence to the problem code:
+
+getNestedBeanDeclarations()
+-&amp;gt;nested.put(child.getName(), createBeanDeclaration(child));
+   -&amp;gt;List&amp;lt;HierarchicalConfiguration&amp;gt; list = getConfiguration().configurationsAt(node.getName());
+
+</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.beanutils.TestXMLBeanDeclaration.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.XMLBeanDeclaration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="573" opendate="2014-04-03 08:49:53" fixdate="2014-04-29 20:39:01" resolution="Fixed">
+		<buginformation>
+			<summary>The values of XML configuration keys having namespace prefix are null</summary>
+			<description>Consider such snippet:
+
+
+public void testElementWithNameSpace() throws Exception {
+    String xml =
+            "&amp;lt;Config&amp;gt;\n" +
+            "&amp;lt;dsig:Transforms xmlns:dsig=\"http://www.w3.org/2000/09/xmldsig#\"&amp;gt;\n" +
+            "  &amp;lt;dsig:Transform Algorithm=\"http://www.w3.org/TR/1999/REC-xpath-19991116\"&amp;gt;\n" +
+            "    &amp;lt;dsig:XPath xmlns:ietf=\"http://www.ietf.org\" xmlns:pl=\"http://test.test\"&amp;gt;self::pl:policy1&amp;lt;/dsig:XPath&amp;gt;\n" +
+            "  &amp;lt;/dsig:Transform&amp;gt;\n" +
+            "  &amp;lt;dsig:Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/&amp;gt;\n" +
+            "&amp;lt;/dsig:Transforms&amp;gt;" +
+            "&amp;lt;/Config&amp;gt;";
+    final XMLConfiguration config = new XMLConfiguration();
+    config.setAttributeSplittingDisabled(true);
+    config.setDelimiterParsingDisabled(true);
+    config.setExpressionEngine(new XPathExpressionEngine());
+
+    config.load(new StringReader(xml));
+    System.out.println(ConfigurationUtils.toString(config));
+}
+
+
+It prints all keys as null:
+
+
+dsig:Transforms/dsig:Transform/dsig:XPath=null
+dsig:Transforms/dsig:Transform/dsig:XPath/@xmlns:ietf=null
+dsig:Transforms/dsig:Transform/dsig:XPath/@xmlns:pl=null
+dsig:Transforms/dsig:Transform/@Algorithm=null
+dsig:Transforms/@xmlns:dsig=null
+
+
+Without XPathExpressionEngine set it prints correct values:
+
+
+dsig:Transforms.dsig:Transform.dsig:XPath=self::pl:policy1
+dsig:Transforms.dsig:Transform.dsig:XPath[@xmlns:ietf]=http://www.ietf.org
+dsig:Transforms.dsig:Transform.dsig:XPath[@xmlns:pl]=http://test.test
+dsig:Transforms.dsig:Transform[@Algorithm]=[http://www.w3.org/TR/1999/REC-xpath-19991116, http://www.w3.org/TR/2001/REC-xml-c14n-20010315]
+dsig:Transforms[@xmlns:dsig]=http://www.w3.org/2000/09/xmldsig#
+
+
+JXPath 1.3 version dependecy was used.
+Am I missing something?</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.tree.xpath.TestXPathExpressionEngineInConfig.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.ConfigurationNodeIteratorChildren.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.ConfigurationNodeIteratorAttribute.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.ConfigurationNodeIteratorBase.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.TestConfigurationIteratorAttributes.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.TestConfigurationNodeIteratorChildren.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="581" opendate="2014-06-05 06:39:42" fixdate="2014-06-10 20:34:29" resolution="Duplicate">
+		<buginformation>
+			<summary>SystemConfiguration can not get the correct system property</summary>
+			<description>Currently the SystemConfiguration does not handle the scenario like below
+  System.setProperty("demoId", "demoValue");
+  SystemConfiguration sysConf = new SystemConfiguration ();
+  System.setProperties(new Properties(System.getProperties())));
+ System.setProperty("demoId", "newDemoValue");
+ String propertyFromSysConf = sysConf.getProperty("demoId")
+In the above code the value of propertyFromSysConf is demoValue but not newDemoValue, and I think the correct value should be newDemoValue</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.MapConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSystemConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">540</link>
+		</links>
+	</bug>
+	<bug id="582" opendate="2014-06-18 04:51:18" fixdate="2014-09-10 14:17:51" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfigurationLayout.getCanonicalComment throws StringIndexOutOfBoundsException when line before property has a single space</summary>
+			<description>When a properties file has a line with a single space in it, calling getCanonicalComment(&amp;lt;propertyKey&amp;gt;, false) on the PropertiesConfigurationLayout will throw a StringIndexOutOfBoundsException. Below is the stack trace:
+
+
+java.lang.StringIndexOutOfBoundsException: String index out of range: 1
+	at java.lang.String.charAt(String.java:686)
+	at org.apache.commons.configuration.PropertiesConfigurationLayout.stripCommentChar(PropertiesConfigurationLayout.java:768)
+	at org.apache.commons.configuration.PropertiesConfigurationLayout.trimComment(PropertiesConfigurationLayout.java:741)
+	at org.apache.commons.configuration.PropertiesConfigurationLayout.constructCanonicalComment(PropertiesConfigurationLayout.java:900)
+	at org.apache.commons.configuration.PropertiesConfigurationLayout.getCanonicalComment(PropertiesConfigurationLayout.java:212)
+
+</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfigurationLayout.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,58 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="10" master="580" duplicate="583" opendate="2015-11-07 13:28:01" fixdate="2015-12-14 07:47:22" resolution="Fixed">
+		<buginformation>
+			<summary>Arbitrary remote code execution with InvokerTransformer JAVA serialization vulnerability "CVE-2015-4852" in commons-collections*.jar</summary>
+			<description>With InvokerTransformer serializable collections can be build that execute arbitrary Java code. sun.reflect.annotation.AnnotationInvocationHandler#readObject invokes #entrySet and #get on a deserialized collection. If you have an endpoint that accepts serialized Java objects (JMX, RMI, remote EJB, ...) you can combine the two to create arbitrary remote code execution vulnerability.
+I don&amp;amp;apos;t know of a good fix short of removing InvokerTransformer or making it not Serializable. Both probably break existing applications.
+This is not my research, but has been discovered by other people.
+https://github.com/frohoff/ysoserial
+http://foxglovesecurity.com/2015/11/06/what-do-weblogic-websphere-jboss-jenkins-opennms-and-your-application-have-in-common-this-vulnerability/ The vulnerability we are talking about is known under number CVE-2015-4852. As far as we know this is only related to the 
+file commons-collections*.jar. In this jar file is a class that takes care of the deserialization. 
+Currently we are using commons-collections-3.2.1.jar.
+Is there a version of this jar that does not have this vulnerability?</description>
+			<version>3.0</version>
+			<fixedVersion>3.2.2, 4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.collections4.multimap.MultiValuedHashMap.java</file>
+			<file type="D">org.apache.commons.collections4.multimap.MultiValuedHashMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.TransformedMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.UnmodifiableMultiValuedMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractSetValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.MultiMapUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.TransformedMultiValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.package-info.java</file>
+			<file type="M">org.apache.commons.collections4.multimap.AbstractListValuedMap.java</file>
+			<file type="M">org.apache.commons.collections4.MultiMapUtils.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtils.java</file>
+			<file type="M">org.apache.commons.collections4.ClosureUtils.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtils.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMap.java</file>
+			<file type="M">org.apache.commons.collections4.FactoryUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.TransformerUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateFactory.java</file>
+			<file type="M">org.apache.commons.collections4.functors.WhileClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.CloneTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.ForClosure.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InvokerTransformer.java</file>
+			<file type="M">org.apache.commons.collections4.functors.PrototypeFactory.java</file>
+			<file type="M">org.apache.commons.collections4.functors.package-info.java</file>
+			<file type="M">org.apache.commons.collections4.functors.InstantiateTransformer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">583</link>
+			<link type="Reference" description="relates to">487</link>
+			<link type="Reference" description="relates to">4135</link>
+			<link type="Reference" description="is related to">12579</link>
+			<link type="Reference" description="is related to">4020</link>
+			<link type="dependent" description="is depended upon by">169</link>
+			<link type="Duplicate" description="duplicates">580</link>
+		</links>
+	</bug>
+</bugrepository>

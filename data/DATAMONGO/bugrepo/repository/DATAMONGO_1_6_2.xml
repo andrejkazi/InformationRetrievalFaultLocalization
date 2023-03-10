@@ -1,0 +1,114 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1180" opendate="2015-03-10 01:55:22" fixdate="2015-03-10 04:25:52" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect exception message creation in PartTreeMongoQuery.</summary>
+			<description>In PartTreeMongoQuery#createQuery the JSONParseException is passed to the String.format() instead of IllegalStateException.</description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.7 GA (Fowler), 1.6.3 (Evans SR3), 1.5.6 (Dijkstra SR6)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.PartTreeMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.PartTreeMongoQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1202" opendate="2015-04-14 02:36:40" fixdate="2015-06-01 00:45:42" resolution="Fixed">
+		<buginformation>
+			<summary>Indexed annotation problems under generics</summary>
+			<description>There is a problem with the @Indexed annotation with the model classes. Under simple scenarios with reflexive DBRef relations works as expected, but if used in conjunction with generics it doesn&amp;amp;apos;t create the index expected.
+I provide a github project with two scenarios:
+
+Employer: Very simple reflexive relation that works nicely (EmployerTest)
+Customer: A little more complex scenario using GenericCustomer as a base class to allow having many different kinds of customers. This scenario fails at creating the index (CustomerTest).
+
+This test runs without a Mongo server because it uses embedmongo-spring (https://github.com/jirutka/embedmongo-spring) at a random port each time the test runs.
+If you run Application it will just create indexes and put some data in customer collection assuming a MongoD is running locally at 27017</description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.8 M1 (Gosling), 1.7.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.data.mongodb.core.index.GenericCustomer.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreatorIntegrationTests.java</file>
+			<file type="D">org.springframework.data.mongodb.core.index.ConcreteCustomer.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.IndexResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1210" opendate="2015-04-26 23:05:01" fixdate="2015-06-01 04:29:36" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent property order of _class type hint breaks document equality.</summary>
+			<description>findAndModify writes the type hint _class either before or after all other fields, whereas save writes it always after. Because of that, MongoDBs addToSet/forEach treats two objects as different, even though they only differ in the position of _class. As a consequence, findAndModify/addToSet/forEach adds duplicates to collections.
+The proposed change fixes this by always writing the type hint after all fields.
+Unfortunately, this works only for collection fields of complex documents, when both save and findAndModify write the type hint. Please see my other pull request for a test that demonstrates the erroneous behaviour in case of simple documents, where the type hint is written by findAndModify.
+
+https://github.com/spring-projects/spring-data-mongodb/pull/289 (proposed fix)
+https://github.com/spring-projects/spring-data-mongodb/pull/290 (tests)
+https://github.com/spring-projects/spring-data-mongodb/pull/291 (tests)</description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.8 M1 (Gosling), 1.6.3 (Evans SR3), 1.7.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.test.util.IsBsonObject.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1269</link>
+			<link type="Relate" description="is related to">1509</link>
+			<link type="Supersede" description="supersedes">1209</link>
+		</links>
+	</bug>
+	<bug id="1166" opendate="2015-02-19 23:36:37" fixdate="2015-06-21 23:56:17" resolution="Fixed">
+		<buginformation>
+			<summary>ReadPreference not used for Aggregations.</summary>
+			<description>From the referenced issue on SO:
+
+It turned out that spring-data-mongodb does not pass the read preference specified on mongoTemplate to the underlying com.mongodb.Mongo connection pool - for aggregations. It would pass the read preference for simple find operations.</description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.6.3 (Evans SR3), 1.7.1 (Fowler SR1), 1.5.6 (Dijkstra SR6), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1232" opendate="2015-06-03 10:27:23" fixdate="2015-06-24 11:21:16" resolution="Fixed">
+		<buginformation>
+			<summary>IgnoreCase should escape queries</summary>
+			<description>The IgnoreCase query generator is subject to a sort of "regex injection" attack, because the query generator simply slaps ^..$ around the string and passes it directly to MongoDB. This fails when the string contains any sort of special characters. In my case, I&amp;amp;apos;m trying to perform a case-insensitive find on an e-mail address with the + sign, a legal character, but the regex interprets this as 1..*.
+The query generator needs to properly escape regex-special characters.</description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.6.3 (Evans SR3), 1.7.1 (Fowler SR1), 1.5.6 (Dijkstra SR6), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1368</link>
+		</links>
+	</bug>
+	<bug id="1236" opendate="2015-06-08 11:17:11" fixdate="2015-07-08 01:26:13" resolution="Fixed">
+		<buginformation>
+			<summary>MongoOperations findAndModify and updateFirst do not include the _class in Map values</summary>
+			<description>When a map of type LinkedHashMap&amp;lt;String, Object&amp;gt;  is updated via MongoOperations findAndModify or updateFirst, the _class field is not saved for the map values.  Therefore, later reads of the data do not convert the value to the correct type, instead leaving it as LinkedHashMap. 
+Please see attached maven project for test illustrating the problem. </description>
+			<version>1.6.2 (Evans SR2)</version>
+			<fixedVersion>1.6.3 (Evans SR3), 1.7.1 (Fowler SR1), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,169 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2" master="1413" duplicate="1385" opendate="2010-01-24 21:22:54" fixdate="2010-08-10 13:21:15" resolution="Complete">
+		<buginformation>
+			<summary>AbstractRetryEntryPoint should use RedirectStrategy AbstractRetryEntryPoint should use DefaultRedirectStrategy for redirects to support proxies</summary>
+			<description>For consistency, AbstractRetryEntryPoint should probably use RedirectStrategy as implemented in SEC-1226. Possible use cases include URL pre-processing, which users might want consistently applied.
+Let me know if you agree and I am happy to supply a patch. The AbstractRetryEntryPoint builds the redirect url for the redirect itself in its commence method. The problem is, that the context-path is always used.
+If you run your application through a proxy with a change of the path, than the redirects leeds to a wrong url.
+Example:
+The app is deployed on Tomcat as ajp://localhost:8009/app1 and is accessed via a apache proxy through http://yourdomain.com/. The redirect url of a secured resource /resource.html will be http://yourdomain.com/app1/resource.html instead of the correct one http://yourdomain.com/resource.html.
+Other parts of Spring Security are using the DefaultRedirectStrategy, which works as expected when setting the contextRelative to true.
+I think if the AbstractRetryEntryPoint uses the same convention (DefaultRedirectStrategy), then the problem with the http-&amp;gt;https redirect in DefaultRedirectStrategy (see comment on the class) will also be fixed.
+As a workaround we implemented our own RetryWithHttpsEntryPoint, which processes the contextRelative flag, and it works. But this is heavily to configure, because you cannot use the namespace configuration any more.
+https://fisheye.springsource.org/browse/spring-security/web/src/main/java/org/springframework/security/web/access/channel/AbstractRetryEntryPoint.java</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpEntryPointTests.java</file>
+			<file type="M">org.springframework.security.web.access.channel.AbstractRetryEntryPoint.java</file>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpsEntryPointTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1385</link>
+			<link type="Related" description="is related to">1500</link>
+			<link type="Duplicate" description="duplicates">1413</link>
+		</links>
+	</bug>
+	<bug id="34" master="1380" duplicate="1395" opendate="2010-01-22 08:45:04" fixdate="2010-02-02 02:33:51" resolution="Fixed">
+		<buginformation>
+			<summary>"access" attribute in "intercept-url" should trim whitespace from attributes intercept-url access attribute should support spaces when specifying a list of authorized roles</summary>
+			<description>Currently "ROLE_A, ROLE_B" will map to two attributes, the second being " ROLE_B". Whitespace should be trimmed. The "extra" space in access definition is not supported, it should be allowed.
+If this is the desired behavior, the xsd should be updated to reflect the constraint.
+
+
+
+
+
+
+
+
+
+
+
+
+
+&amp;lt;security:intercept-url pattern="/app/*.action" access="ROLE_ANONYMOUS, ROLE_USER" /&amp;gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+it produces
+
+
+
+
+
+
+2010-02-02 00:17:40.500:WARN::Nested in org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.web.access.intercept.FilterSecurityInterceptor#0&amp;amp;apos;: Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Unsupported configuration attributes: [ ROLE_USER]: java.lang.IllegalArgumentException: Unsupported configuration attributes: [ ROLE_USER]
+
+
+
+
+        at org.springframework.security.access.intercept.AbstractSecurityInterceptor.afterPropertiesSet(AbstractSecurityInterceptor.java:153)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1460)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1398)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:512)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:450)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:290)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:287)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:189)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:557)
+
+
+
+
+        at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:842)
+
+
+
+
+        at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:416)
+
+
+
+
+
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.SecurityConfig.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1395</link>
+			<link type="Duplicate" description="duplicates">1380</link>
+		</links>
+	</bug>
+	<bug id="60" master="1133" duplicate="1388" opendate="2009-04-01 20:45:14" fixdate="2010-08-14 07:11:35" resolution="Complete">
+		<buginformation>
+			<summary>Allow setting authenticationDetailsSource ref via form-login namespace URL Support for custom AuthenticationDetailsSource in form-login tag.</summary>
+			<description> When using the &amp;lt;form-login /&amp;gt; tag, theres no way to configure a custom AuthenticationDetailsSource.
+The workaround is to reconfigure UsernamePasswordAuthenticationFilter as a custom filter and reconfigure LoginUrlAuthenticationEntryPoint with its loginFormUrl property. Spring XML becomes more polluted and some minor functionality like the &amp;lt;http&amp;gt; auto-config and the built-in form login page are lost.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.FormLoginBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1388</link>
+			<link type="Duplicate" description="duplicates">1133</link>
+		</links>
+	</bug>
+</bugrepository>

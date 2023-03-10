@@ -1,0 +1,21 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="5" master="951" duplicate="848" opendate="2016-04-21 10:56:08" fixdate="2016-12-05 15:35:07" resolution="Fixed">
+		<buginformation>
+			<summary>Add Converters for JSR-310 Duration and Period Support JSR-310 Duration and Period (to and from String)</summary>
+			<description> The current Jsr310Converters.java doesn&amp;amp;apos;t support convertion to and from String representations of java.time.Duration and java.time.Period.
+MongoTemplate should understand how to deserialize for instance "PT3M" to a java.time.Duration (by Duration#parse</description>
+			<version>1.12.1 (Hopper SR1)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 2.0 M2 (Kay)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.Jsr310Converters.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310ConvertersUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">848</link>
+			<link type="Duplicate" description="duplicates">951</link>
+		</links>
+	</bug>
+</bugrepository>

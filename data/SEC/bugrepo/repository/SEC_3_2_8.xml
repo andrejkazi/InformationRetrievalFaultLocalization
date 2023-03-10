@@ -1,0 +1,553 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="3073" opendate="2015-08-18 09:47:26" fixdate="2015-08-18 09:58:33" resolution="Duplicate">
+		<buginformation>
+			<summary>JSPAuthorizeTag authorizeUsingUrlCheck only compares against first WebInvocationPrivilegeEvaluator</summary>
+			<description>In AbstractAuthorizeTag, authorizeUsingUrlCheck calls getPrivilegeEvaluator which on line 347 returns the first WebInvocationPrivilegeEvaluator ignoring others. 
+An application might have multiple WebInvocationPrivilegeEvaluators for instance if there is one &amp;lt;http&amp;gt; config for the main ui of the application and one for a built in REST service. 
+Example REST &amp;lt;http&amp;gt; config:
+ &amp;lt;http pattern="/api/**" create-session="stateless" use-expressions="true"&amp;gt;
+    	&amp;lt;intercept-url pattern="/api/**" access="hasRole(&amp;amp;apos;ROLE_REST&amp;amp;apos;)"/&amp;gt;
+    	&amp;lt;http-basic/&amp;gt;
+    &amp;lt;/http&amp;gt; 
+Thus a JSP authorize url check such as:
+&amp;lt;sec:authorize url="/secureAction"&amp;gt;
+will only be evaluated against the first &amp;lt;http&amp;gt; config.
+In some cases, such as when the main &amp;lt;http&amp;gt; config contains a catchall (&amp;lt;intercept-url pattern="/**" access="isAuthenticated()" /&amp;gt;), the order of the &amp;lt;http&amp;gt; configs can not be changed yielding no way to conduct url evaluations.
+It seems like all WebInvocationPrivilegeEvaluators should be considered.</description>
+			<version>3.2.8</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.WebAttributes.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AbstractAuthorizeTag.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2045</link>
+		</links>
+	</bug>
+	<bug id="3132" opendate="2015-10-23 15:24:42" fixdate="2015-10-23 17:53:21" resolution="Complete">
+		<buginformation>
+			<summary>securityBuilder cannot be null</summary>
+			<description>If a custom SecurityConfigurerAdapter tries to apply additional SecurityConfigurerAdapter, then it will cause the following error
+
+
+
+
+
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;springSecurityFilterChain&amp;amp;apos; defined in class org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [javax.servlet.Filter]: Factory method &amp;amp;apos;springSecurityFilterChain&amp;amp;apos; threw exception; nested exception is java.lang.IllegalStateException: securityBuilder cannot be null
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:599)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1123)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1018)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:305)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:301)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:295)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:772)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:834)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:537)
+
+
+
+
+	at org.springframework.context.annotation.AnnotationConfigApplicationContext.&amp;lt;init&amp;gt;(AnnotationConfigApplicationContext.java:84)
+
+
+
+
+	at org.springframework.security.config.http.customconfigurer.CustomHttpSecurityConfigurerTests.loadContext(CustomHttpSecurityConfigurerTests.java:114)
+
+
+
+
+	at org.springframework.security.config.http.customconfigurer.CustomHttpSecurityConfigurerTests.customConfiguerPermitAll(CustomHttpSecurityConfigurerTests.java:73)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:497)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+
+
+
+
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+
+
+
+
+	at org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:27)
+
+
+
+
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:86)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+
+
+
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [javax.servlet.Filter]: Factory method &amp;amp;apos;springSecurityFilterChain&amp;amp;apos; threw exception; nested exception is java.lang.IllegalStateException: securityBuilder cannot be null
+
+
+
+
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:189)
+
+
+
+
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:588)
+
+
+
+
+	... 41 more
+
+
+
+
+Caused by: java.lang.IllegalStateException: securityBuilder cannot be null
+
+
+
+
+	at org.springframework.security.config.annotation.SecurityConfigurerAdapter.getBuilder(SecurityConfigurerAdapter.java:65)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer.updateAuthenticationDefaults(AbstractAuthenticationFilterConfigurer.java:360)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer.init(AbstractAuthenticationFilterConfigurer.java:226)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer.init(FormLoginConfigurer.java:211)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer.init(AbstractAuthenticationFilterConfigurer.java:1)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.add(AbstractConfiguredSecurityBuilder.java:206)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.apply(AbstractConfiguredSecurityBuilder.java:130)
+
+
+
+
+	at org.springframework.security.config.annotation.web.builders.HttpSecurity.getOrApply(HttpSecurity.java:1191)
+
+
+
+
+	at org.springframework.security.config.annotation.web.builders.HttpSecurity.formLogin(HttpSecurity.java:836)
+
+
+
+
+	at org.springframework.security.config.http.customconfigurer.CustomConfigurer.init(CustomConfigurer.java:54)
+
+
+
+
+	at org.springframework.security.config.http.customconfigurer.CustomConfigurer.init(CustomConfigurer.java:1)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.init(AbstractConfiguredSecurityBuilder.java:371)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.doBuild(AbstractConfiguredSecurityBuilder.java:325)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractSecurityBuilder.build(AbstractSecurityBuilder.java:41)
+
+
+
+
+	at org.springframework.security.config.annotation.web.builders.WebSecurity.performBuild(WebSecurity.java:287)
+
+
+
+
+	at org.springframework.security.config.annotation.web.builders.WebSecurity.performBuild(WebSecurity.java:1)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.doBuild(AbstractConfiguredSecurityBuilder.java:334)
+
+
+
+
+	at org.springframework.security.config.annotation.AbstractSecurityBuilder.build(AbstractSecurityBuilder.java:41)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration.springSecurityFilterChain(WebSecurityConfiguration.java:105)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$d1e9db75.CGLIB$springSecurityFilterChain$6(&amp;lt;generated&amp;gt;)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$d1e9db75$$FastClassBySpringCGLIB$$325a4508.invoke(&amp;lt;generated&amp;gt;)
+
+
+
+
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:228)
+
+
+
+
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:318)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$d1e9db75.springSecurityFilterChain(&amp;lt;generated&amp;gt;)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:497)
+
+
+
+
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:162)
+
+
+
+
+	... 42 more
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</description>
+			<version>3.2.8</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="3109" opendate="2015-09-18 14:19:14" fixdate="2015-10-26 22:27:19" resolution="Fixed">
+		<buginformation>
+			<summary>Concurrent/ThreadPoolTaskScheduler don&amp;apos;t work with DelegatingSecurityContextExecutor</summary>
+			<description>We have a setup with Spring Boot with scheduling. To use method security with background jobs we want to use the DelegatingSecurityContextScheduledExecutorService like described here: http://www.petrikainulainen.net/programming/spring-framework/spring-from-the-trenches-invoking-a-secured-method-from-a-scheduled-job/ (see "Spring Security 3.2: It Is Almost Like Magic!").
+I suspect this stopped working with SEC-3031, because now DelegatingSecurityContextRunnable/Callable doesn&amp;amp;apos;t set/clear the security context if run on the same thread as they were created.
+As Concurrent/TheadPoolTaskScheduler uses a ReschedulingRunnable for the trigger mechanic (we use cron triggers), so the rescheduling is done on the pool thread. So random subsequent calls executed on the same pool thread might fail, because the SecurityContext is not set.
+Getting DelegatingSecurityContextExecutor to set the enableOnOriginalThread property on DelegatingSecurityContextRunnable to true would fix that issue.</description>
+			<version>3.2.8</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnable.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallable.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">3122</link>
+			<link type="Relate" description="is related to">3031</link>
+		</links>
+	</bug>
+	<bug id="3128" opendate="2015-10-17 14:59:41" fixdate="2015-10-29 20:02:57" resolution="Complete">
+		<buginformation>
+			<summary>RoleVoter throws NPE with null Authentication</summary>
+			<description>Using AccessDecisionManager manually(just like how webflow integrates with security) is causing NPE if no `Authentication` is present:
+
+
+
+
+
+
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+
+
+
+manager.decide(authentication, object, configAttributes);
+
+
+
+
+
+
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at org.springframework.security.access.vote.RoleVoter.extractAuthorities(RoleVoter.java:119)
+
+
+
+
+	at org.springframework.security.access.vote.RoleVoter.vote(RoleVoter.java:99)
+
+
+
+
+	at org.springframework.security.access.vote.AffirmativeBased.decide(AffirmativeBased.java:62)
+
+
+
+
+
+
+While I could handle null `Authentication` in my class calling `accessDecisionManager` it&amp;amp;apos;s a bit wrong that security core is throwing NPE. I didn&amp;amp;apos;t test if `RoleVoter` is only voter throwing NPE. Not sure if you&amp;amp;apos;d ever see this in a real web app but I wanted to add a test and see how my stuff behaves when there is no existing authentication in a sec context.
+Maybe voter should actually throw a proper exception or vote `ACCESS_DENIED` or `ACCESS_ABSTAIN`. I could throw `AccessDeniedException` from my class but, imho throwing that specific exception is security&amp;amp;apos;s job.
+</description>
+			<version>3.2.8</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.vote.RoleVoterTests.java</file>
+			<file type="M">org.springframework.security.access.vote.RoleVoter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="3082" opendate="2015-08-20 02:52:54" fixdate="2015-10-29 21:57:40" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequest parameters are treated as case-insensitive</summary>
+			<description>The DefaultSavedRequest stores parameters in a case-insensitive TreeMap, but with a normal HttpServletRequest parameter names are case-sensitive.
+Basically, this TreeMap should not use a case-insensitive comparator: https://github.com/spring-projects/spring-security/blob/c79bceab03555df0825b5d0c96fc9bc38eb88b9a/web/src/main/java/org/springframework/security/web/savedrequest/DefaultSavedRequest.java#L65
+Someone already noticed this mistake in the past, see the comment at the test class: https://github.com/spring-projects/spring-security/blob/c79bceab03555df0825b5d0c96fc9bc38eb88b9a/web/src/test/java/org/springframework/security/web/savedrequest/DefaultSavedRequestTests.java#L35
+Header names should be case-insensitive, so that&amp;amp;apos;s fine.</description>
+			<version>3.2.8</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequest.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequestTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

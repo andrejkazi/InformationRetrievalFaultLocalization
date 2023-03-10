@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="1" master="863" duplicate="870" opendate="2016-07-30 07:55:49" fixdate="2016-08-08 13:00:11" resolution="Fixed">
+		<buginformation>
+			<summary>REST calls to /api always redirect to HAL Browser if no accept header is specified CustomAcceptHeaderHttpServletRequest doesn&amp;apos;t work as intended with Spring Framework 4.3.2</summary>
+			<description>After updating 2 projects to Spring Boot 1.4 (and Spring Data Rest 2.5.2) all REST calls to /api  that don&amp;amp;apos;t specify a header like "accept: application/json" redirect to /api/browser/index.html#/api/. In previous versions this was only the case when the accept header was text/html, but now the redirect happens with empty accept header.
+This may have nothing to do with Spring Data Rest directly, I just put it here because HAL Browser is involved.
+But as a result, the default HAL browser itself cannot get the /api and shows its own index.html. CustomAcceptHeaderHttpServletRequest tries to provide a custom view of the request&amp;amp;apos;s Accept header by overriding getHeader(String). It works with Spring Framework 4.2.x but doesn&amp;amp;apos;t work with Spring Framework 4.3.2. As a result of SPR-14506, Spring Framework 4.3.2 now calls getHeaderValues(String) rather than getHeader(String) and the original Accept header is returned.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.4.5 (Gosling SR5), 2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowserIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">870</link>
+			<link type="Duplicate" description="duplicates">863</link>
+		</links>
+	</bug>
+</bugrepository>

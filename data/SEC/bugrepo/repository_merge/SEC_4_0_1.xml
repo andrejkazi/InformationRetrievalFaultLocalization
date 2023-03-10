@@ -1,0 +1,275 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1" master="3020" duplicate="3035" opendate="2015-06-26 08:22:36" fixdate="2015-07-16 12:34:02" resolution="Complete">
+		<buginformation>
+			<summary>HttpServletRequest.isUserInRole("ROLE_&lt;anything&gt;") returns false with defaults SecurityContextHolderAwareRequestWrapper#isUserInRole adds role prefix to already prefixed role</summary>
+			<description>I&amp;amp;apos;m just trying to upgrade from Spring Security 3.1 to 4.0.1 and have discovered a breaking change in the behaviour of request.isUserInRole().
+In Spring 3.1 the following was returning true and now returns false:
+request.isUserInRole("ROLE_REMEMBER_ME")
+In Spring 4.0.1 I had to change it to the following:
+request.isUserInRole("REMEMBER_ME") SecurityContextHolderAwareRequestWrapper#isUserInRole adds role prefix even if passed role already has one.
+Currently calling request.isUserInRole("ROLE_ADMIN") fails because ROLE_ADMIN becomes ROLE_ROLE_ADMIN in SecurityContextHolderAwareRequestWrapper#isGranted method.</description>
+			<version>4.0.1</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapperTests.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">3035</link>
+			<link type="Duplicate" description="is duplicated by">3055</link>
+			<link type="Relate" description="relates to">2926</link>
+			<link type="Duplicate" description="duplicates">3020</link>
+		</links>
+	</bug>
+	<bug id="41" master="2948" duplicate="2960" opendate="2015-04-27 13:16:16" fixdate="2015-07-09 21:21:01" resolution="Complete">
+		<buginformation>
+			<summary>Incorrect message when upgrading to 4.0.x with the wrong xml schema declarations Bad Spring Security XSD Version Error Message</summary>
+			<description>During migration from 3.2.x to 4.0.1 I came across the following error message when using the 4.0.1 library with an XML config file with 3.2 schema declarations...
+
+
+
+
+
+
+SEVERE: Exception sending context initialized event to listener instance of class org.springframework.web.context.ContextLoaderListener
+
+
+
+
+org.springframework.beans.factory.parsing.BeanDefinitionParsingException: Configuration problem: You cannot use a spring-security-2.0.xsd or spring-security-3.0.xsd or spring-security-3.1.xsd schema with Spring Security 3.2. Please update your schema declarations to the 3.2 schema.
+
+
+
+
+Offending resource: class path resource [foo/bar/spring/spring-security.xml]
+
+
+
+
+
+
+The error message needs to be updated to...
+You cannot use a spring-security-2.0.xsd or spring-security-3.0.xsd or spring-security-3.1.xsd or spring-security-3.2.xsd schema with Spring Security 4.0. Please update your schema declarations to the 4.0 schema.
+XML Declarations that cause the error...
+
+
+
+
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+
+
+
+
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans"
+
+
+
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+
+
+
+    xmlns:aop="http://www.springframework.org/schema/aop"
+
+
+
+
+    xmlns:context="http://www.springframework.org/schema/context"
+
+
+
+
+    xmlns:security="http://www.springframework.org/schema/security"
+
+
+
+
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+
+
+
+
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+
+
+
+
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+
+
+
+
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd"
+
+
+
+
+    &amp;gt;
+
+
+
+
+
+ When applicationContext.xml includes an old Spring Security XSD, the error message is misleading, indicating that version 3.2 needs to be used (I was using 3.2), when 4.0+ actually needs to be used.
+The Reference URL indicates the erroneous line.
+Note that this has been a problem in the past:
+https://jira.spring.io/browse/SEC-2145
+Perhaps it&amp;amp;apos;s worth considering a dynamically-created error message?</description>
+			<version>4.0.1</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.SecurityNamespaceHandler.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2960</link>
+			<link type="Duplicate" description="is duplicated by">2990</link>
+			<link type="Duplicate" description="duplicates">2948</link>
+		</links>
+	</bug>
+	<bug id="44" master="3020" duplicate="3055" opendate="2015-06-26 08:22:36" fixdate="2015-07-25 06:36:07" resolution="Complete">
+		<buginformation>
+			<summary>HttpServletRequest.isUserInRole("ROLE_&lt;anything&gt;") returns false with defaults request.isUserInRole add an extra "ROLE_"</summary>
+			<description>I&amp;amp;apos;m just trying to upgrade from Spring Security 3.1 to 4.0.1 and have discovered a breaking change in the behaviour of request.isUserInRole().
+In Spring 3.1 the following was returning true and now returns false:
+request.isUserInRole("ROLE_REMEMBER_ME")
+In Spring 4.0.1 I had to change it to the following:
+request.isUserInRole("REMEMBER_ME") When calling the request.isUserInRole, the underling class: SecurityContextHolderAwareRequestWrapper:isGranted adds an extra "ROLE_" prefix so calling the request.isUserInRole("ROLE_TEST"); will cause too : ROLE_ROLE_TEST.
+</description>
+			<version>4.0.1</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapperTests.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">3035</link>
+			<link type="Duplicate" description="is duplicated by">3055</link>
+			<link type="Relate" description="relates to">2926</link>
+			<link type="Duplicate" description="duplicates">3020</link>
+		</links>
+	</bug>
+	<bug id="57" master="2948" duplicate="2990" opendate="2015-04-27 13:16:16" fixdate="2015-07-16 09:18:42" resolution="Complete">
+		<buginformation>
+			<summary>Incorrect message when upgrading to 4.0.x with the wrong xml schema declarations Fix SecurityNamespaceHandler exception message</summary>
+			<description>During migration from 3.2.x to 4.0.1 I came across the following error message when using the 4.0.1 library with an XML config file with 3.2 schema declarations...
+
+
+
+
+
+
+SEVERE: Exception sending context initialized event to listener instance of class org.springframework.web.context.ContextLoaderListener
+
+
+
+
+org.springframework.beans.factory.parsing.BeanDefinitionParsingException: Configuration problem: You cannot use a spring-security-2.0.xsd or spring-security-3.0.xsd or spring-security-3.1.xsd schema with Spring Security 3.2. Please update your schema declarations to the 3.2 schema.
+
+
+
+
+Offending resource: class path resource [foo/bar/spring/spring-security.xml]
+
+
+
+
+
+
+The error message needs to be updated to...
+You cannot use a spring-security-2.0.xsd or spring-security-3.0.xsd or spring-security-3.1.xsd or spring-security-3.2.xsd schema with Spring Security 4.0. Please update your schema declarations to the 4.0 schema.
+XML Declarations that cause the error...
+
+
+
+
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+
+
+
+
+&amp;lt;beans xmlns="http://www.springframework.org/schema/beans"
+
+
+
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+
+
+
+    xmlns:aop="http://www.springframework.org/schema/aop"
+
+
+
+
+    xmlns:context="http://www.springframework.org/schema/context"
+
+
+
+
+    xmlns:security="http://www.springframework.org/schema/security"
+
+
+
+
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+
+
+
+
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+
+
+
+
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+
+
+
+
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd"
+
+
+
+
+    &amp;gt;
+
+
+
+
+
+ Migrating an application from Spring Security 3.2.x to 4.0.x raised this exception:
+      org.springframework.beans.factory.parsing.BeanDefinitionParsingException:
+      Configuration problem: You cannot use a spring-security-2.0.xsd or
+      spring-security-3.0.xsd or spring-security-3.1.xsd schema with
+      Spring Security 3.2. Please update your schema declarations to the
+      3.2 schema.  Offending resource: ServletContext resource
+[/WEB-INF/applicationContext-security.xml]
+It appears that the exception message in config/src/main/java/org/springframework/security/config/SecurityNamespaceHandler.java needs to be updated.</description>
+			<version>4.0.1</version>
+			<fixedVersion>4.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.SecurityNamespaceHandler.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2960</link>
+			<link type="Duplicate" description="is duplicated by">2990</link>
+			<link type="Duplicate" description="duplicates">2948</link>
+			<link type="Duplicate" description="is duplicated by">3010</link>
+		</links>
+	</bug>
+</bugrepository>

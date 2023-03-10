@@ -1,0 +1,53 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="375" opendate="2006-10-11 05:33:20" fixdate="2006-11-12 08:05:56" resolution="Fixed">
+		<buginformation>
+			<summary>AuthorizedEvent published by before filter but not by after filter</summary>
+			<description>All of the interceptors (filter, method, aspectj) do a before pass and an after pass on the request. 
+The before and after filtering methods are shared among the filtere and are implemented in the base class AbstractSecurityInterceptor.
+The method AbstractSecurityInterceptor.before publishes an AuthorizedEvent if the authorization is successful.
+The method AbstractSecurityInterceptor.after 
+    delegates to the afterInvocationManager
+    if you use the AfterInfocationProviderManager, that invokes a List of Providers in turn.
+There is no AuthorizedEvent published if the authorization succeeds.   To be consistent, the AuthorizedEvent should be published whenever the authorization succeeds. </description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.event.authorization.AuthorizationFailureEvent.java</file>
+			<file type="M">org.acegisecurity.intercept.AbstractSecurityInterceptor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="371" opendate="2006-10-05 23:12:17" fixdate="2006-11-12 09:10:51" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractTicketValidator should not use LogFactory.getLog(CasProxyTicketValidator.class)</summary>
+			<description>The first line in org.acegisecurity.providers.cas.ticketvalidator.AbstractTicketValidator contains
+LogFactory.getLog(CasProxyTicketValidator.class) 
+It should probably use
+LogFactory.getLog(AbstractTicketValidator.class).</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.cas.ticketvalidator.AbstractTicketValidator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="376" opendate="2006-10-12 21:58:24" fixdate="2007-04-25 10:07:42" resolution="Fixed">
+		<buginformation>
+			<summary>FilterSecurityInterceptor is not  applied to /j_acegi_switch_user</summary>
+			<description>FilterSecurityInterceptor is not  applied to /j_acegi_switch_user
+e.g. using  /j_acegi_switch_user=SUPERUSER
+Whilst it is possible to protect the url that renders the form that eventually submits to  /j_acegi_switch_user, it is possible to circumvent this using a hand-crafted url
+e.g.http://localhost:9090/my-app/j_acegi_switch_user?j_username=some.user
+see forum entry for more details http://forum.springframework.org/showthread.php?t=29621&amp;amp;highlight=j_acegi_switch_user</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.FilterChainOrderUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

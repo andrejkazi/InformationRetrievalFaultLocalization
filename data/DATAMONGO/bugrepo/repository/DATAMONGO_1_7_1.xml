@@ -1,0 +1,393 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1251" opendate="2015-07-06 06:14:49" fixdate="2015-07-07 05:54:07" resolution="Fixed">
+		<buginformation>
+			<summary>update / findAndModify throws NullPointerException</summary>
+			<description>Following code throws a NullPointerException:
+
+
+
+
+
+
+mongoOperations.updateFirst(
+
+
+
+
+	new Query(),
+
+
+
+
+	new Update().set("date", null),
+
+
+
+
+	TestEntity.class
+
+
+
+
+);
+
+
+
+
+
+
+Where TestEntity simply this:
+
+
+
+
+
+
+@Document(collection="test")
+
+
+
+
+public class TestEntity {
+
+
+
+
+	@Id
+
+
+
+
+	private String id;
+
+
+
+
+	public String getId() { return id; }
+
+
+
+
+	
+
+
+
+
+	private LocalDate date;
+
+
+
+
+	public LocalDate getDate() { return date; }
+
+
+
+
+	public void setDate(LocalDate date) { this.date = date; }	
+
+
+
+
+}
+
+
+
+
+
+
+StackTrace:
+
+
+
+
+
+
+java.lang.NullPointerException: null
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.processTypeHintForNestedDocuments(UpdateMapper.java:155)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.getTypeHintForEntity(UpdateMapper.java:145)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.delegateConvertToMongoType(UpdateMapper.java:70)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.convertSimpleOrDBObject(QueryMapper.java:362)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedValue(QueryMapper.java:308)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.getMappedObjectForField(UpdateMapper.java:93)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:123)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.convertSimpleOrDBObject(QueryMapper.java:359)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedKeyword(QueryMapper.java:242)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:100)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:1095)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:1086)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:461)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doUpdate(MongoTemplate.java:1086)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.updateFirst(MongoTemplate.java:1060)
+
+
+
+
+
+
+Using mongoOperations.save / insert works as expected. And using field of type String works as well.
+I tried to debug it, but I can&amp;amp;apos;t figure out why this happens. It looks like it treats LocalDate as a MongoPersistentEntity, but it doesn&amp;amp;apos;t do that for a String ?!
+I also tried to provide my own Converter for LocalDate to Date and backwords, but this results in the same exception.
+Here&amp;amp;apos;s the full code: http://pastebin.com/xEq54Umh
+And pom.xml: http://pastebin.com/wDhWzx8s
+It also happens with mongo-java-driver 2.12.5 and/or spring-data-mongodb 1.6.3</description>
+			<version>1.7.1 (Fowler SR1)</version>
+			<fixedVersion>1.7.2 (Fowler SR2), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1257" opendate="2015-07-20 12:08:51" fixdate="2015-07-27 04:50:43" resolution="Fixed">
+		<buginformation>
+			<summary>mongo:mongo-client namespace does not support usernames with a comma</summary>
+			<description>When using a mongo database with X-509 authentication, the username of the user is the subject DN from the X-509 certificate (see http://docs.mongodb.org/manual/tutorial/configure-x509-client-authentication/). The subject DN usually contains commas in it. This causes problems with trying to setup the mongo client using the mongo:mongo-client namespace with xml configuration since it expects credentials to be a comma separated list of usernames and splits on comma (,)
+Another problem is that the credential is expected to be in username:password@database format, but when using X-509 authentication there is no password.
+A third issue that I noticed was that there seems to be a bug in 
+org.springframework.data.mongodb.config.MongoCredentialPropertyEditor since when it checks for the presence of : and @ in the property, it does so on the original property, not the split string, which can cause NPEs if the colon or @ exists in the property but not on each split.</description>
+			<version>1.7.1 (Fowler SR1)</version>
+			<fixedVersion>1.7.2 (Fowler SR2), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.MongoCredentialPropertyEditor.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoCredentialPropertyEditorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1269" opendate="2015-08-04 23:04:39" fixdate="2015-08-06 11:19:12" resolution="Fixed">
+		<buginformation>
+			<summary>QueryMapper drops numeric keys in Maps.</summary>
+			<description>As of 1.7.1 numeric keys get dropped in query mapping.
+
+
+
+
+
+
+@Test
+
+
+
+
+public void SO_31799474() {
+
+
+
+
+
+
+
+
+
+	SomeContent content = new SomeContent();
+
+
+
+
+	content.text = "foo";
+
+
+
+
+
+
+
+
+
+	SO31799474 entity = new SO31799474();
+
+
+
+
+	entity.id = "id-1";
+
+
+
+
+
+
+
+
+
+	entity.map = Collections.singletonMap(Integer.valueOf(1), content);
+
+
+
+
+
+
+
+
+
+	template.save(entity);
+
+
+
+
+
+
+
+
+
+	assertThat(template.findOne(query(where("map.1.text").is("foo")), SO31799474.class), notNullValue());
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+static class SO31799474 {
+
+
+
+
+	String id;
+
+
+
+
+	Map&amp;lt;Integer, SomeContent&amp;gt; map;
+
+
+
+
+
+
+
+
+
+	@Override
+
+
+
+
+	public String toString() {
+
+
+
+
+		return "SO31799474 [id=" + id + ", map=" + map + "]";
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.7.1 (Fowler SR1)</version>
+			<fixedVersion>1.8 GA (Gosling), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">1210</link>
+		</links>
+	</bug>
+	<bug id="1289" opendate="2015-09-17 11:43:51" fixdate="2015-12-16 10:47:48" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException when saving an object with no "id" field or @Id annotation</summary>
+			<description>According to the documentation:
+
+If no field or property specified above is present in the Java class then an implicit &amp;amp;apos;_id&amp;amp;apos; file will be generated by the driver but not mapped to a property or field of the Java class.
+
+Instead of this, I&amp;amp;apos;m seeing a NullPointerException when attempting to save an object that doesn&amp;amp;apos;t have an "id" field or an @Id annotated field.
+This was working in 1.6.0, but seems to have changed at least in 1.6.2 (did not test 1.6.1) and is still not working as I expect in newer versions</description>
+			<version>1.7.1 (Fowler SR1)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.MongoRepositoryFactory.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.MappingMongoEntityInformation.java</file>
+			<file type="M">org.springframework.data.mongodb.core.NoExplicitIdTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

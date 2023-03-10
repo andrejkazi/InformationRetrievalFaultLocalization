@@ -1,0 +1,331 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="874" opendate="2016-06-23 11:04:05" fixdate="2016-07-18 07:43:54" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException when unwrapping empty Scala Options</summary>
+			<description>Unwrapping an empty Scala Option causes a NullPointerException. The passed argument is a function which is accessed during the orNull() call.
+A solution would look like:
+
+
+
+
+
+
+Option.empty().getOrElse(new AbstractFunction0&amp;lt;Object&amp;gt;() {
+
+
+
+
+			@Override
+
+
+
+
+			public Object apply() {
+
+
+
+
+				return null;
+
+
+
+
+			}
+
+
+
+
+		});
+
+
+
+
+
+
+Exception:
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at scala.Option$$anonfun$orNull$1.apply(Option.scala:132)
+
+
+
+
+	at scala.Option.getOrElse(Option.scala:121)
+
+
+
+
+	at scala.Option.orNull(Option.scala:132)
+
+
+
+
+	at org.springframework.data.repository.util.QueryExecutionConverters$ScalOptionUnwrapper.convert(QueryExecutionConverters.java:431)
+
+
+
+
+	at org.springframework.data.repository.util.QueryExecutionConverters.unwrap(QueryExecutionConverters.java:154)
+
+
+
+
+	at org.springframework.data.repository.query.ParametersParameterAccessor.&amp;lt;init&amp;gt;(ParametersParameterAccessor.java:55)
+
+
+
+
+
+
+Repository:
+
+
+
+
+
+
+public interface PersonRepository extends CrudRepository&amp;lt;Person, Long&amp;gt; {
+
+
+
+
+	List&amp;lt;Person&amp;gt; findByFirstname(Option&amp;lt;String&amp;gt; gender);
+
+
+
+
+}
+
+
+
+
+
+
+Invocation:
+
+
+
+
+
+
+repository.findByFirstname(Option.empty());
+
+
+
+
+
+</description>
+			<version>1.12.2 (Hopper SR2)</version>
+			<fixedVersion>1.13 M1 (Ingalls), 1.12.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.util.QueryExecutionConverters.java</file>
+			<file type="M">org.springframework.data.repository.util.QueryExecutionConvertersUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="880" opendate="2016-07-05 22:03:56" fixdate="2016-07-26 07:54:26" resolution="Fixed">
+		<buginformation>
+			<summary>TransactionalRepositoryFactoryBeanSupport.setBeanFactory doesn&amp;apos;t delegate to super-implementation</summary>
+			<description>From TransactionalRepositoryFactoryBeanSupport:
+
+
+
+
+
+
+public void setBeanFactory(BeanFactory beanFactory) {
+
+
+
+
+
+
+
+
+
+	Assert.isInstanceOf(ListableBeanFactory.class, beanFactory);
+
+
+
+
+
+
+
+
+
+	ListableBeanFactory listableBeanFactory = (ListableBeanFactory) beanFactory;
+
+
+
+
+	this.txPostProcessor = new TransactionalRepositoryProxyPostProcessor(listableBeanFactory, transactionManagerName,
+
+
+
+
+			enableDefaultTransactions);
+
+
+
+
+	this.exceptionPostProcessor = new PersistenceExceptionTranslationRepositoryProxyPostProcessor(listableBeanFactory);
+
+
+
+
+	    
+
+
+
+
+}
+
+
+
+
+
+
+which doesn&amp;amp;apos;t delegate to the super-implementation of RepositoryFactoryBeanSupport, and consequently, afterPropertiesSet() passes null down to a custom factory implementation, which is IMHO wrong. Maven project attached to demonstrate the issue, but I think the fix is simply to add a line with the call to the super implementation in TransactionalRepositoryFactoryBeanSupport.setBeanFactory.</description>
+			<version>1.12.2 (Hopper SR2)</version>
+			<fixedVersion>1.13 M1 (Ingalls), 1.12.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.TransactionalRepositoryFactoryBeanSupport.java</file>
+			<file type="M">org.springframework.data.repository.core.support.TransactionRepositoryFactoryBeanSupportUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="900" opendate="2016-08-25 12:24:34" fixdate="2016-09-01 15:25:50" resolution="Fixed">
+		<buginformation>
+			<summary>ExampleMatcher.PropertySpecifiers does not implement equals/hashCode</summary>
+			<description>The class ExampleMatcher.PropertySpecifiers does not implement equals/hashCode. Since an ExampleMatcher and its PropertySpecifiers are referenced by an Example instance, this means that it is not possible to mock the implementation of repository methods taking an Example as argument, e.g. JpaRepository.findAll(Example).</description>
+			<version>1.12.2 (Hopper SR2)</version>
+			<fixedVersion>1.12.3 (Hopper SR3), 1.13 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.ExampleMatcher.java</file>
+			<file type="M">org.springframework.data.domain.ExampleMatcherUnitTests.java</file>
+			<file type="M">org.springframework.data.domain.ExampleUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="912" opendate="2016-09-16 15:08:45" fixdate="2016-09-19 22:57:54" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to write custom implementation of CRUD method with generic parameters</summary>
+			<description>As discussed in https://jira.spring.io/browse/DATACMNS-854, I am opening a new issue as I am unable to create a custom implementation of a CRUD method that takes generic parameters.
+I modified my example that reproduces the problem and removed Mockito from the picture.  I also tested the flow in our code base at runtime (not in unit tests), and am also able to reproduce.
+Here is the potential DefaultRepositoryInformationUnitTests test that reproduces:
+
+
+
+
+
+
+    class BossRepositoryCustom {
+
+
+
+
+        Boss save(Boss boss) {
+
+
+
+
+            return boss;
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void discoversCustomlyImplementedCrudMethodWithGenericParameters() throws SecurityException, NoSuchMethodException {
+
+
+
+
+        BossRepositoryCustom customImplementation = new BossRepositoryCustom();
+
+
+
+
+        RepositoryMetadata metadata = new DefaultRepositoryMetadata(BossRepository.class);
+
+
+
+
+        RepositoryInformation information = new DefaultRepositoryInformation(metadata, CrudRepository.class,
+
+
+
+
+                                                                             customImplementation.getClass());
+
+
+
+
+
+
+
+
+
+        Method customBaseRepositoryMethod = BossRepository.class.getMethod("save", Object.class);
+
+
+
+
+        assertThat(information.isCustomMethod(customBaseRepositoryMethod), is(true));
+
+
+
+
+    }
+
+
+
+
+
+
+I&amp;amp;apos;ve also attached a self-contained small test that also reproduces the issue.
+Let me know if you need more information.  Hopefully I am not missing something obvious here.</description>
+			<version>1.12.2 (Hopper SR2)</version>
+			<fixedVersion>1.11.5 (Gosling SR5), 1.12.3 (Hopper SR3), 1.13 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">854</link>
+		</links>
+	</bug>
+</bugrepository>

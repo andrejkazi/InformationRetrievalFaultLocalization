@@ -1,0 +1,911 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="217" opendate="2006-07-18 17:42:56" fixdate="2006-07-18 22:02:11" resolution="Fixed">
+		<buginformation>
+			<summary>Flat3Map.Entry.setValue() overwrites other Entry values</summary>
+			<description>Flat3Map&amp;amp;apos;s Entry objects will overwrite other Entry&amp;amp;apos;s values if Entry.setValue() is called on one.  It should only overwrite the Entry at hand.
+I&amp;amp;apos;ve looked at the source, and the case statement incorrectly falls through, rather than returning like it should:
+Flat3Map.java, lines 646-660:
+        public Object setValue(Object value) {
+            if (canRemove == false) 
+{
+                throw new IllegalStateException(AbstractHashedMap.SETVALUE_INVALID);
+            }
+            Object old = getValue();
+            switch (nextIndex) 
+{
+                case 3: 
+                    parent.value3 = value;
+                case 2:
+                    parent.value2 = value;
+                case 1:
+                    parent.value1 = value;
+            }
+            return old;
+        }
+With this code, if I set the value of the third item in the EntrySet, then all three values are set to the new value.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.Flat3Map.java</file>
+			<file type="M">org.apache.commons.collections.map.TestFlat3Map.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="214" opendate="2006-06-18 18:54:06" fixdate="2006-07-18 22:44:33" resolution="Fixed">
+		<buginformation>
+			<summary>ExtendedProperties - field include should be non-static and private</summary>
+			<description>The field "include" in ExtendedProperties is currently static and protected, yet has instance get/set accessors.
+Given that there are accessors, it seems unnecessary for the field to be protected - it could be private.
+The field should also surely be non-static - or the accessors should be made static, if the field really is supposed to be shared among instances.</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestExtendedProperties.java</file>
+			<file type="M">org.apache.commons.collections.ExtendedProperties.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supercedes" description="is superceded by">351</link>
+		</links>
+	</bug>
+	<bug id="222" opendate="2006-08-18 17:43:04" fixdate="2006-08-18 19:01:22" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils removeAll is actually retainAll</summary>
+			<description>The removeAll(Collection collection, Collection remove) method calls ListUtils.retainAll(collection, remove)
+instead of ListUtils.removeAll(Collection collection, Collection remove)
+Should be an easy fix</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="261" opendate="2007-08-18 14:12:49" fixdate="2007-08-20 14:11:54" resolution="Fixed">
+		<buginformation>
+			<summary>Flat3Map.remove() does not return the correct value when size &lt;= 3</summary>
+			<description>        final Flat3Map m = new Flat3Map();
+        m.put( new Integer( 1 ), new Integer( 1 ) );
+        m.put( new Integer( 0 ), new Integer( 0 ) );
+        System.out.println( m.remove( new Integer( 1 ) ) );
+The above code will print "0" when it should print "1"</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.Flat3Map.java</file>
+			<file type="M">org.apache.commons.collections.map.TestFlat3Map.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="264" opendate="2007-08-30 16:24:29" fixdate="2007-08-31 09:39:59" resolution="Fixed">
+		<buginformation>
+			<summary>FastTreeMap forgets the comparator</summary>
+			<description>In line 359 and 582 of the current 3.2 release you should replace
+                map = new TreeMap()
+with
+                map = new TreeMap(map.comparator());
+Otherwise the underlaying TreeMap looses ist comparator.</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.FastTreeMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="284" opendate="2008-01-30 21:01:51" fixdate="2008-02-05 05:47:36" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll() calls ListUtils.retainAll()</summary>
+			<description>CollectionUtils.removeAll() calls ListUtils.retainAll().  I believe it should actually be 
+public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.removeAll(collection, remove);
+}</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="315" opendate="2009-02-03 19:30:04" fixdate="2009-02-03 20:40:57" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll calls the wrong ListUtils method</summary>
+			<description>Using version 3.2.1 as downloaded from maven&amp;amp;apos;s public repository.
+CollectionUtils.removeAll should call ListUtils.removeAll instead of ListUtils.retainAll.
+Currently
+{{public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }
+}}
+Suggested
+{{public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.*removeAll*(collection, remove);
+    }
+}}</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="349" opendate="2010-01-07 10:47:37" fixdate="2010-06-19 19:21:34" resolution="Duplicate">
+		<buginformation>
+			<summary>The method CollectionUtils.removeAll() call wrongly ListUtils.retainAll()</summary>
+			<description>The method CollectionUtils.removeAll() calls wrongly ListUtils.retainAll() instead of ListUtils.removeAll().</description>
+			<version>3.2</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="353" opendate="2010-02-23 10:15:31" fixdate="2010-06-19 19:28:28" resolution="Duplicate">
+		<buginformation>
+			<summary>AbstractLinkedMap firstKey/lastKey JavaDoc reversed</summary>
+			<description>According to the Javadoc on AbstractLinkedMap#firstKey and AbstractLinkedMap#lastKey the following test shouldn&amp;amp;apos;t fail:
+    LinkedMap map = new LinkedMap();
+    map.put("one", "one");
+    map.put("two", "two");
+    assertEquals("one", map.lastKey());
+    assertEquals("two", map.firstKey());</description>
+			<version>3.2</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">262</link>
+		</links>
+	</bug>
+	<bug id="363" opendate="2010-10-16 01:39:44" fixdate="2010-12-20 19:25:03" resolution="Fixed">
+		<buginformation>
+			<summary>TransformedMap is Serializable but its superclass doesn&amp;apos;t define an accessible void constructor</summary>
+			<description>TransformedMap is Serializable but its superclass doesn&amp;amp;apos;t define an accessible void constructor.
+For example, the following test fails:
+
+
+public void testSerialisation() throws Exception {
+    TransformedMap&amp;lt;String, String, String, String&amp;gt; map = TransformedMap.decorate(
+            new HashMap&amp;lt;String, String&amp;gt;(),  NOPTransformer.&amp;lt;String&amp;gt; getInstance(), NOPTransformer.&amp;lt;String&amp;gt; getInstance());
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bytes);
+    out.writeObject(map); // fails with java.io.InvalidClassException: org.apache.commons.collections.splitmap.TransformedMap; no valid constructor
+    out.close();
+}
+
+</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.splitmap.AbstractIterableGetMapDecorator.java</file>
+			<file type="M">org.apache.commons.collections.splitmap.TestTransformedMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="371" opendate="2011-01-31 19:17:45" fixdate="2011-02-01 07:19:10" resolution="Duplicate">
+		<buginformation>
+			<summary>BUG in org.apache.commons.collections.CollectionUtils.removeAll(Collection, Collection)   </summary>
+			<description>line: 1121
+public static Collection removeAll(Collection collection, Collection remove) 
+{
+    return ListUtils.retainAll(collection, remove); //&amp;lt;&amp;lt;&amp;lt;&amp;lt;&amp;lt;-------- here absolutely wrong!
+
+}
+</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+	<bug id="360" opendate="2010-08-23 19:29:56" fixdate="2011-03-01 22:17:27" resolution="Fixed">
+		<buginformation>
+			<summary>FilterListIterator#hasNext throws exception (associate with JUnit tests)</summary>
+			<description>Hi,
+I found the some of the iterator classes does not fulfill the iterator specification of JDK.
+e.g. hasNext() should never throw exception.
+Here is an automatically generated junit test (I am now writing a tool)
+
+
+public void test233() throws Throwable {
+    java.lang.Integer var6 = new java.lang.Integer(0);
+    org.apache.commons.collections.list.GrowthList var7 = new org.apache.commons.collections.list.GrowthList(var6);
+    org.apache.commons.collections.Predicate var9 = org.apache.commons.collections.PredicateUtils.anyPredicate((java.util.Collection)var7);
+    java.lang.Long var10 = new java.lang.Long(10L);
+    org.apache.commons.collections.iterators.FilterListIterator var13 = new org.apache.commons.collections.iterators.FilterListIterator(var9);
+    //this line throws exception!
+    var13.hasNext();
+}
+
+
+could you please check it to confirm whether it is bug or I misunderstand the specification of apache common collections?
+thanks,</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.iterators.TestFilterListIterator.java</file>
+			<file type="M">org.apache.commons.collections.iterators.FilterListIterator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="331" opendate="2009-06-24 14:32:05" fixdate="2011-03-08 22:33:02" resolution="Fixed">
+		<buginformation>
+			<summary>CollatingIterator NPE when Comparator is null</summary>
+			<description>Run the attached Test against commons-collections-3.2.1. While the JavaDoc for CollatingIterator claims 
+@param comp  the comparator to use to sort, or null to use natural sort order
+the test fails, because the comparator is null.
+Fixing this requires a change in org.apache.commons.collections.iterators.CollatingIterator.least(): 
+
+
+if (comparator.compare(curObject,leastObject) &amp;lt; 0) { ...
+
+
+could be replaced with
+
+
+int c = comparator==null?((Comparable)curObject).compareTo(leastObject):comparator.compare(curObject,leastObject);
+if (c &amp;lt; 0) { ...
+
+
+The workaround is to provide a comparator, of course.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.iterators.CollatingIterator.java</file>
+			<file type="M">org.apache.commons.collections.iterators.TestCollatingIterator.java</file>
+			<file type="M">org.apache.commons.collections.comparators.ComparableComparator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="323" opendate="2009-04-22 08:43:38" fixdate="2011-03-08 23:39:03" resolution="Fixed">
+		<buginformation>
+			<summary>Behavior of constructors CaseInsensitiveMap inconsistent with standard Java HashMap</summary>
+			<description>The constructor CaseInsensitiveMap(int initialCapacity) throws an IllegalArgumentException if "the initial capacity is less than one". This is inconsistent with the standard Java HashMap constructor HashMap(int initialCapacity), which throws an if IllegalArgumentException if "the initial capacity is negative".
+Thus:
+new HashMap(0) ==&amp;gt; no exception
+new CaseInsensitiveMap(0) ==&amp;gt; IllegalArgumentException.
+This inconsistency is confusing.
+Actions:
+
+Change Javadoc (this shouldn&amp;amp;apos;t be a problem in practice since surely there is no code around depending on the fact that the constructor throws an IllegalArgumentException )
+Change code.
+
+</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.IdentityMap.java</file>
+			<file type="M">org.apache.commons.collections.map.AbstractHashedMap.java</file>
+			<file type="M">org.apache.commons.collections.map.CaseInsensitiveMap.java</file>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestHashedMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestIdentityMap.java</file>
+			<file type="M">org.apache.commons.collections.map.HashedMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestCaseInsensitiveMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestLinkedMap.java</file>
+			<file type="M">org.apache.commons.collections.map.LinkedMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="379" opendate="2011-09-22 02:45:04" fixdate="2012-07-26 21:19:02" resolution="Fixed">
+		<buginformation>
+			<summary>Bugs In Javadoc Comment in the CollectionUtils class</summary>
+			<description>I came across the following bugs in the Javadoc comments in the method below in the CollectionUtils class:
+1.
+
+   /** 
+
+Selects all elements from input collection which match the given predicate
+and adds them to outputCollection.
+&amp;lt;p&amp;gt;
+If the input collection or predicate is null, there is no change to the
+output collection.
+
+@param inputCollection  the collection to get the input from, may be null
+@param predicate  the predicate to use, may be null
+@param outputCollection  the collection to output into, may not be null
+     */
+    public static void select(Collection inputCollection, Predicate predicate, Collection outputCollection) {
+
+
+This method will execute normally when calling select((Collection)null, (Predicate)null, (Collection)null) but the comment clearly states that outputCollection may not be null
+2.
+
+  /** 
+
+Selects all elements from inputCollection which don&amp;amp;apos;t match the given predicate
+and adds them to outputCollection.
+&amp;lt;p&amp;gt;
+If the input predicate is &amp;lt;code&amp;gt;null&amp;lt;/code&amp;gt;, no elements are added to &amp;lt;code&amp;gt;outputCollection&amp;lt;/code&amp;gt;.
+
+@param inputCollection  the collection to get the input from, may be null
+@param predicate  the predicate to use, may be null
+@param outputCollection  the collection to output into, may not be null
+     */
+    public static void selectRejected(Collection inputCollection, Predicate predicate, Collection outputCollection) {
+
+
+This method will execute normally when calling selectRejected((Collection)null, (Predicate)null, (Collection)null) but the comment also clearly states that outputCollection may not be null
+3.
+
+  /** 
+
+Transforms all elements from the inputIterator with the given transformer
+and adds them to the outputCollection.
+&amp;lt;p&amp;gt;
+If the input iterator or transformer is null, there is no change to the
+output collection.
+     *
+@param inputIterator  the iterator to get the input from, may be null
+@param transformer  the transformer to use, may be null
+@param outputCollection  the collection to output into, may not be null
+@return the outputCollection with the transformed input added
+@throws NullPointerException if the output collection is null
+     */
+    public static Collection collect(Iterator inputIterator, final Transformer transformer, final Collection outputCollection) {
+
+
+This method will execute normally when calling collect((Iterator)null, (Transformer)null, (Collection)null) but the comment clearly states that NullPointerException will be thrown when the outputCollection is null
+4.
+
+ /** 
+
+Transforms all elements from inputCollection with the given transformer
+and adds them to the outputCollection.
+&amp;lt;p&amp;gt;
+If the input collection or transformer is null, there is no change to the
+output collection.
+     *
+@param inputCollection  the collection to get the input from, may be null
+@param transformer  the transformer to use, may be null
+@param outputCollection  the collection to output into, may not be null
+@return the outputCollection with the transformed input added
+@throws NullPointerException if the output collection is null
+     */
+    public static Collection collect(Collection inputCollection, final Transformer transformer, final Collection outputCollection) {
+
+
+This method will execute normally when calling collect((Collection)null, (Transformer)null, (Collection)null) but the comment clearly states that NullPointerException will be thrown when the outputCollection is null
+The bugs in the Javadoc comments above could be confusing to the users of the Common Collection library and they could be fixed easily by the developers..
+There are a few ways to fix the:
+1. Throwing the NullPointerException explicitly when the outputCollection is null.
+2. Changing the Javadoc comments to include the case where all of the parameters are null.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="437" opendate="2012-12-26 07:04:54" fixdate="2013-02-28 18:38:56" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll invoke ListUtils.retainAll !!!</summary>
+			<description>    public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="357" opendate="2010-06-24 20:03:19" fixdate="2013-02-28 19:25:31" resolution="Duplicate">
+		<buginformation>
+			<summary>CollectionUtils.removeAll invokes wrong Listutils method</summary>
+			<description>
+
+    public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.retainAll(collection, remove);
+    }
+
+</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">219</link>
+			<link type="Duplicate" description="is duplicated by">371</link>
+			<link type="Duplicate" description="is duplicated by">386</link>
+			<link type="Duplicate" description="is duplicated by">358</link>
+			<link type="Duplicate" description="is duplicated by">369</link>
+			<link type="Duplicate" description="is duplicated by">376</link>
+		</links>
+	</bug>
+	<bug id="262" opendate="2007-08-29 04:10:32" fixdate="2013-02-28 19:28:11" resolution="Fixed">
+		<buginformation>
+			<summary>probably apidoc error: firstKey() and lastKey() in AbstractLinkedMap</summary>
+			<description>In the apidoc or source of org.apache.commons.collections.map.AbstractLinkedMap.firstKey(), it is said that this method "Gets the first key in the map, which is the most recently inserted.", which is exactly the actual behavior of lastKey(), and vice versa. 
+So I think there is a typo with this class&amp;amp;apos; javadoc.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">279</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+		</links>
+	</bug>
+	<bug id="279" opendate="2007-11-28 07:12:49" fixdate="2013-02-28 19:29:02" resolution="Duplicate">
+		<buginformation>
+			<summary>LRUMap: moveToMRU is not invoked for new entry</summary>
+			<description>
+	@Test
+	public void testFirst() 
+{
+		LRUMap map = new LRUMap();
+
+		String key = "key1";
+		String value = "value1";
+
+		map.put(key, value);
+		Assert.assertEquals(map.get(key), value);
+		Assert.assertEquals(map.get(map.firstKey()), value);
+		
+		key = "key2";
+		value = "value2";
+		map.put(key, value);
+		// here it fails
+		Assert.assertEquals(map.get(map.firstKey()), value);
+	}</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.AbstractLinkedMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">262</link>
+		</links>
+	</bug>
+	<bug id="359" opendate="2010-07-05 14:58:59" fixdate="2013-02-28 19:37:12" resolution="Fixed">
+		<buginformation>
+			<summary>A   B  !=  B   A when duplicates are present in a list</summary>
+			<description>When duplicates are present in a list, ListUtils.intersection doesn&amp;amp;apos;t behave as expected. The intersection of two lists should give the same result regardless of which list comes first. ListUtils.intersection(A,B) should equal ListUtils.intersection(B,A).  This is not the case when the list contains duplicates.
+Right now:
+[a, b]    [a, a, b, b] =  [a, a, b, b]
+and
+[a, a, b, b]    [a, b] =  [a, b]
+Expected behavior:
+ [a, a, b, b]    [a, b] =  [a, b]
+[a, b]    [a, a, b, b] =  [a, b]
+Code demonstrating the problem.
+		List A = new ArrayList();
+		List B = new ArrayList();
+		A.add("a");
+		A.add("b");
+		B.add("a");
+		B.add("a");
+		B.add("b");
+		B.add("b");
+		System.out.println("List A: " + A);
+		System.out.println("List B: " + B);
+		System.out.println("A  B = " + ListUtils.intersection(A,B));
+		System.out.println("B  A = " +ListUtils.intersection(B,A));
+output:
+List A: [a, b]
+List B: [a, a, b, b]
+A  B = [a, a, b, b]
+B  A = [a, b]</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.ListUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="304" opendate="2008-09-05 10:43:47" fixdate="2013-02-28 19:38:05" resolution="Fixed">
+		<buginformation>
+			<summary>SetUniqueList set method use corrupts uniqness</summary>
+			<description>When set method is used to put element (Strawberry) on list, then it is possible to add the same element (Strawberry) with add method. Also you cannot add element (Lemon) that has been once removed with set method. Reproduction code below:
+List&amp;lt;String&amp;gt; list = new LinkedList&amp;lt;String&amp;gt;();
+SetUniqueList decoratedList = SetUniqueList.decorate(list);
+decoratedList.add("Apple");
+decoratedList.add("Lemon");
+decoratedList.add("Orange");
+System.out.println(decoratedList.toString());
+decoratedList.set(1, "Strawberry");
+System.out.println(decoratedList.toString());
+decoratedList.add(1, "Strawberry");
+System.out.println(decoratedList.toString());
+decoratedList.add(1, "Lemon");
+System.out.println(decoratedList.toString());</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections.list.TestSetUniqueList.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="288" opendate="2008-03-17 16:34:24" fixdate="2013-02-28 19:38:25" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc: incorrect behavior explained for ListUtils.transformedList</summary>
+			<description>The contract stated for ListUtils.transformedList is wrong. The list is not transformed  it decorates the existing list and transforms NEW objects  EXISTING objects are not transformed. 
+Compare this to the javadoc found in MapUtils.transformedMap:
+"This method returns a new map (decorating the specified map) that will transform any new entries added to it. Existing entries in the specified map will not be transformed. "
+That little missing piece of information messed me up. Just replace "map" with "list" and append it to the existing LilstUtils javadoc.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.ListUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">256</link>
+			<link type="Reference" description="relates to">348</link>
+		</links>
+	</bug>
+	<bug id="294" opendate="2008-04-25 14:31:23" fixdate="2013-02-28 19:38:34" resolution="Fixed">
+		<buginformation>
+			<summary>Fix case-insensitive string handling</summary>
+			<description>For example, the behavior of the CaseInsensitiveMap is currently platform-dependent, please see Common Bug #3 for details.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.TestCaseInsensitiveMap.java</file>
+			<file type="M">org.apache.commons.collections.map.CaseInsensitiveMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="271" opendate="2007-10-16 12:40:42" fixdate="2013-02-28 19:56:39" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.collections.ExtendedProperties#combine don&amp;apos;t import string properly</summary>
+			<description>When we set property with escaped characters, after combine propertySets we got them unescaped.
+Simple Example
+ExtendedProperties props = new ExtendedProperties();
+props.setProperty("test", "\\\\\\\\192.168.1.91\\\\test");
+props.getProperty("test"); // =&amp;gt; \\192.168.1.91\test
+ExtendedProperties props2 = new ExtendedProperties();
+props2.combine(props);
+props.getProperty("test"); // =&amp;gt; \192.168.1.91\test  Wrong!</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestExtendedProperties.java</file>
+			<file type="M">org.apache.commons.collections.ExtendedProperties.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supercedes" description="is superceded by">351</link>
+		</links>
+	</bug>
+	<bug id="266" opendate="2007-09-11 21:02:35" fixdate="2013-02-28 19:57:14" resolution="Fixed">
+		<buginformation>
+			<summary>Issue with MultiKey when serialized/deserialized via RMI</summary>
+			<description>This is because the hash code of MultiKey is calculated only once. 
+So if the MultiKey is deserialized in an other jvm, and if one at least of the subkeys defines its hash code with System.identityHashCode() (for example all the enums does), then the hash code of the MultiKey is no longer valid, and you can&amp;amp;apos;t retreive the key in your Map.
+I fixed it by making the cached hash code field transient, and by recalculating the hash code during deserialization. </description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.keyvalue.MultiKey.java</file>
+			<file type="M">org.apache.commons.collections.keyvalue.TestMultiKey.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">576</link>
+		</links>
+	</bug>
+	<bug id="307" opendate="2008-11-12 16:59:19" fixdate="2013-02-28 20:03:15" resolution="Fixed">
+		<buginformation>
+			<summary>SetUniqueList.subList().contains() method checks against full parent list, not sublist range</summary>
+			<description>The view returned by the subList() method of a SetUniqueList checks contains() against the set of the original list.
+As shown by the following test snippet.
+		List list = new ArrayList();
+		List uniqueList = SetUniqueList.decorate(list);
+		uniqueList.add("Hello");
+		uniqueList.add("World");
+		List subList = list.subList(0, 0);
+		List subUniqueList = uniqueList.subList(0, 0);
+		assertFalse(subList.contains("World")); // passes
+		assertFalse(subUniqueList.contains("World")); // fails</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections.list.TestSetUniqueList.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="240" opendate="2007-01-20 14:09:02" fixdate="2013-02-28 20:04:15" resolution="Fixed">
+		<buginformation>
+			<summary>MultiValueMap should implement Serializable</summary>
+			<description>Collection classes should be serializable as they are frequently used in model classes which need to be serializable, for example in a HttpSession object within a servlet container cluster.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.MultiValueMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestMultiValueMap.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">2151</link>
+			<link type="Reference" description="is related to">2146</link>
+		</links>
+	</bug>
+	<bug id="265" opendate="2007-09-10 19:38:09" fixdate="2013-02-28 20:04:25" resolution="Fixed">
+		<buginformation>
+			<summary>TreeBag allows uncomparable item to be added, breaking toString</summary>
+			<description>The following code throws an exception not when the Object is added, but when toString is called:
+		TreeBag bag = new TreeBag();
+		bag.add(new Object());
+		bag.toString();
+Trace:
+java.lang.ClassCastException: java.lang.Object
+	at java.util.TreeMap.compare(TreeMap.java:1093)
+	at java.util.TreeMap.getEntry(TreeMap.java:347)
+	at java.util.TreeMap.get(TreeMap.java:265)
+	at org.apache.commons.collections.bag.AbstractMapBag.getCount(AbstractMapBag.java:116)
+	at org.apache.commons.collections.bag.AbstractMapBag.toString(AbstractMapBag.java:581)
+[...]
+In a client program, toString should never throw an exception--it makes debugging much harder, for one thing.  I believe that TreeBag should defend against the addition of uncomparable objects, so that toString will never throw an exception.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.bag.TestTreeBag.java</file>
+			<file type="M">org.apache.commons.collections.TestTreeBag.java</file>
+			<file type="M">org.apache.commons.collections.bag.TreeBag.java</file>
+			<file type="M">org.apache.commons.collections.TreeBag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="249" opendate="2007-04-20 19:10:59" fixdate="2013-02-28 20:05:02" resolution="Fixed">
+		<buginformation>
+			<summary>SetUniqueList.addAll(int index, Collection coll) adds to end of list instead of at specified index</summary>
+			<description>When you call SetUniqueList.addAll(int index, Collection coll), it incorrectly adds the new elements to the end of the list instead of at the specified index.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.list.SetUniqueList.java</file>
+			<file type="M">org.apache.commons.collections.list.TestSetUniqueList.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="278" opendate="2007-11-13 21:24:36" fixdate="2013-02-28 20:05:19" resolution="Fixed">
+		<buginformation>
+			<summary>put() and putAll() don&amp;apos;t update the getKeys() map</summary>
+			<description>If you use the put() or putAll() methods of the ExtendedProperties class, it will  not update the contents of the internal keysAsListed map which in turn will return a different list of keys using the getKeys() method than the keySet() method does.
+The attached patchs fix this behaviour and add test cases. </description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestExtendedProperties.java</file>
+			<file type="M">org.apache.commons.collections.ExtendedProperties.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supercedes" description="is superceded by">351</link>
+		</links>
+	</bug>
+	<bug id="350" opendate="2010-01-15 16:35:06" fixdate="2013-02-28 20:07:58" resolution="Fixed">
+		<buginformation>
+			<summary>MapUtils.getNumber sends output to System.out</summary>
+			<description>MapUtils.getNumber calls "logInfo" on a ParseException and it produces output on the System.out, instead of just returning "null" as the documentation states.
+Since the expected behavior is to return null, not print to System.out.  I recommend we remove the call to logInfo and/or remove the System.out.println inside it.
+At minimum, if that&amp;amp;apos;s not agreed upon, the "side-effect" of writing to System.out should be documented.
+I&amp;amp;apos;m happy to offer code for either of these fixes.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.MapUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="221" opendate="2006-08-12 17:10:01" fixdate="2013-02-28 20:08:07" resolution="Fixed">
+		<buginformation>
+			<summary>CompositeCollection, CompositeMap, CompositeSet should implement Serializable</summary>
+			<description>These classes should implement Serializable as usually all generial collection classes do. (At least I cannot think of a reason why they shouldn&amp;amp;apos;t and currently their usage is quite limited, like in RMI or http-sessions.)</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.TestCompositeMap.java</file>
+			<file type="M">org.apache.commons.collections.set.TestCompositeSet.java</file>
+			<file type="M">org.apache.commons.collections.collection.CompositeCollection.java</file>
+			<file type="M">org.apache.commons.collections.map.CompositeMap.java</file>
+			<file type="M">org.apache.commons.collections.collection.TestCompositeCollection.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="220" opendate="2006-08-07 13:53:14" fixdate="2013-02-28 20:08:17" resolution="Fixed">
+		<buginformation>
+			<summary>Serialization/Deserialization doesn&amp;apos;t work well with empty buffers.</summary>
+			<description>When I serialize the queue to disk an it has elements, all works ok, but when I serialize an empty queue I have some problems when I create a new object using the serialized file.
+When I deserialize the queue it has a &amp;amp;apos;buffer&amp;amp;apos; with size 1 (with null content), &amp;amp;apos;tail&amp;amp;apos; and &amp;amp;apos;head&amp;amp;apos; fields are 0 (they are declared transient). So, when I try to add a new object to the queue, the sentence:
+ Object[] tmp = new Object[((buffer.length - 1) * 2) + 1];
+Is executed in the add() method to increase the buffer length, but the buffer remains with the same size! (buffer.length = 1 --&amp;gt; (1 - 1) * 2 + 1 = 1). So, the object is added and when the tail is going to be incremented, it is reset to 0!! 
+    private int increment(int index) {
+        index++;
+        if (index &amp;gt;= buffer.length) 
+{
+            index = 0;
+        }
+        return index;
+    }
+So it is impossible to add new elements after an empty queue has been serialized / deserialized.
+I attach a simple TestCase where this is proved. The example works when you use XMLEncoder to serialize the buffer but doesn&amp;amp;apos;t work if you use ObjectOutputStream or XStream.</description>
+			<version>3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.buffer.TestUnboundedFifoBuffer.java</file>
+			<file type="M">org.apache.commons.collections.buffer.UnboundedFifoBuffer.java</file>
+			<file type="M">org.apache.commons.collections.AbstractTestObject.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Supercedes" description="is superceded by">432</link>
+		</links>
+	</bug>
+	<bug id="228" opendate="2006-10-28 12:14:56" fixdate="2013-02-28 20:25:10" resolution="Fixed">
+		<buginformation>
+			<summary>MultiValueMap put and putAll do not return the correct values</summary>
+			<description>MultiValueMap put and putAll do not return the correct values.
+putAll(Object, Collection) should return true if the map is changed. But if the key is new then this behaviour fails.
+put(Object, Object) should return the added value if the map is changed. But if the key is new then this behaviour fails.
+This was hidden because the test case referred to MultiHashMap and not MultValueMap.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.map.MultiValueMap.java</file>
+			<file type="M">org.apache.commons.collections.map.TestMultiValueMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="219" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method.</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method.</description>
+			<version>3.2</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+		</links>
+	</bug>
+	<bug id="237" opendate="2006-12-12 18:09:44" fixdate="2013-04-27 11:09:45" resolution="Fixed">
+		<buginformation>
+			<summary>MultiValueMap: behavior of entrySet().iterator() is not the expected one</summary>
+			<description>The entrySet() method of the MultiValueMap delegates the entrySet() call to the decorated map, which is HashMap by default. The default hashmap iterator is used, which causes the iterator to return one Map.Entry for every key. The value returned for the key is an ArrayList, and not the value of the entry which was put into the map.
+The expected behavior would be the iterator to return the whole set of entries in the map, which requires iteration over the different array lists contained in the decorated map.</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMapTest.java</file>
+			<file type="M">org.apache.commons.collections4.map.MultiValueMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="256" opendate="2007-06-08 22:43:11" fixdate="2013-04-27 21:42:26" resolution="Duplicate">
+		<buginformation>
+			<summary>ListUtils.transformedList(list, transformer) doesn&amp;apos;t transform</summary>
+			<description>The static method ListUtils.transformedList(List list, Transformer trans) does not apply the transformer before returning the list.  I&amp;amp;apos;ve traced into the code and it falls all the way through to the TransformedCollection constructor which has documentation that states that items existing in the list are NOT transformed.  This yields bizarre unexpected behavior for this method.
+Conversely, the ListUtils.predicatedList(List list, Predicate pred) DOES apply the predicate.  These methods are very similar but behave inconsistently.
+If the transformer is not applied to the list, the method&amp;amp;apos;s usefulness is somewhat limited and causes the user to create an extra unwanted list in some circumstances:
+// To transform an existing list
+List myList = ... some list to be transformed ...
+List transformed = ListUtils.transformedList(new ArrayList(), myTransformer);
+transformed.addAll(myList);
+I would expect a much shorter implementation such as:
+List transformed = ListUtils.transformedList(myList, myTransformer)</description>
+			<version>3.2</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.bag.TestTransformedBag.java</file>
+			<file type="M">org.apache.commons.collections.SetUtils.java</file>
+			<file type="M">org.apache.commons.collections.set.TestTransformedSet.java</file>
+			<file type="M">org.apache.commons.collections.BufferUtils.java</file>
+			<file type="M">org.apache.commons.collections.bag.TransformedSortedBag.java</file>
+			<file type="M">org.apache.commons.collections.bag.TransformedBag.java</file>
+			<file type="M">org.apache.commons.collections.list.TransformedList.java</file>
+			<file type="M">org.apache.commons.collections.ListUtils.java</file>
+			<file type="M">org.apache.commons.collections.buffer.TestTransformedBuffer.java</file>
+			<file type="M">org.apache.commons.collections.collection.TransformedCollection.java</file>
+			<file type="M">org.apache.commons.collections.set.TestTransformedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections.set.TransformedSortedSet.java</file>
+			<file type="M">org.apache.commons.collections.buffer.TransformedBuffer.java</file>
+			<file type="M">org.apache.commons.collections.list.TestTransformedList.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.BagUtils.java</file>
+			<file type="M">org.apache.commons.collections.set.TransformedSet.java</file>
+			<file type="M">org.apache.commons.collections.collection.TestTransformedCollection.java</file>
+			<file type="M">org.apache.commons.collections.bag.TestTransformedSortedBag.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">288</link>
+		</links>
+	</bug>
+</bugrepository>

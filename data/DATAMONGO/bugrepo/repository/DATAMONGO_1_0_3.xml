@@ -1,0 +1,456 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="495" opendate="2012-07-25 18:57:39" fixdate="2012-07-26 01:37:21" resolution="Fixed">
+		<buginformation>
+			<summary>JSON can&amp;apos;t serialize Enum when printing Query in DEBUG message</summary>
+			<description>I&amp;amp;apos;m trying to execute the following code to query MongoDB where the field &amp;amp;apos;type&amp;amp;apos; is an Enum.
+
+
+
+
+
+
+this.getOperations().find(new Query(Criteria.where("type").is(type)), ComponentDefinition.class);
+
+
+
+
+
+
+I get an error saying the class can&amp;amp;apos;t be serialized (see exception below).
+But I noticed the error only happens when the log level is set to DEBUG, when a line in MongoTemplate.java attempts to add the Query to a debug message. The serialization error is then triggered by toString() of BasicDBObject. The exception thrown is:
+
+
+
+
+
+
+java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class au.org.aurin.workflow.datamodel.ComponentType
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:261)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:58)
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84)
+
+
+
+
+	at java.lang.String.valueOf(String.java:2902)
+
+
+
+
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1241)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1233)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.find(MongoTemplate.java:471)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.find(MongoTemplate.java:466)
+
+
+
+
+	at au.org.aurin.workflow.persistence.ComponentRepository.getByType(ComponentRepository.java:42)
+
+
+
+
+
+
+When log level is set to INFO, the problem doesn&amp;amp;apos;t appear. The enum value is serialized as expected in all DB operations.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4, 1.1 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="521" opendate="2012-08-31 02:37:13" fixdate="2012-09-03 22:42:49" resolution="Fixed">
+		<buginformation>
+			<summary>Query creation from method names using AND criteria does not work anymore</summary>
+			<description>I created a simple repository like below
+
+
+
+
+
+
+public interface PersonRepository extends PagingAndSortingRepository&amp;lt;Person, String&amp;gt; {
+
+
+
+
+	
+
+
+
+
+	Person findOneByFirstname(String name);
+
+
+
+
+	Person findOneByFirstnameAndLastname(String firstname, String lastname);
+
+
+
+
+}
+
+
+
+
+
+
+and when queried using this repository
+
+
+
+
+
+
+Person p = repository.findOneByFirstnameAndLastname("Shirish","Reddy");
+
+
+
+
+
+
+The command that goes in to mongodb is
+runQuery called db.persons 
+{ lastname: "Reddy" }
+ where as it should be having </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.1 GA</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepositoryIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="539" opendate="2012-09-13 07:22:42" fixdate="2012-09-17 03:01:24" resolution="Fixed">
+		<buginformation>
+			<summary>Document remove doesn&amp;apos;t work when giving collection name as a parameter</summary>
+			<description>I have a document that is put to different kinds of collections, depending on the need. Therefore, I need to use mongoOperations.save(item, "collection") method to save the document. Saving works fine, but removing the item with a call like this: mongoOperations.remove(item, "collection") doesn&amp;amp;apos;t actually remove the document. The remove operation doesn&amp;amp;apos;t fail, but the document still exists in the collection.
+Remove works when using spring-data-mongo version 1.0.1 and 1.0.2.
+Here&amp;amp;apos;s some test code to show a failing test:
+
+
+
+
+
+
+Item item = new Item("kukkuu");
+
+
+
+
+mongoOperations.save(item, "test");
+
+
+
+
+mongoOperations.remove(item, "test");
+
+
+
+
+assertThat(mongoOperations.findAll(Item.class, "test").isEmpty(), is(Boolean.TRUE));
+
+
+
+
+
+
+The Item is defined as:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Item {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private String id;
+
+
+
+
+    private String name;
+
+
+
+
+
+
+
+
+
+    public Item(String name) {
+
+
+
+
+        this.name = name;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public String getName() {
+
+
+
+
+        return name;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public String getId() {
+
+
+
+
+        return id;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setId(String id) {
+
+
+
+
+        this.id = id;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setName(String name) {
+
+
+
+
+        this.name = name;
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.1 GA</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="540" opendate="2012-09-13 22:48:20" fixdate="2013-08-21 23:45:19" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate upsert and findOne handle id queries differently</summary>
+			<description>With a domain object class that has @Id annotated property:
+
+
+
+
+
+
+public class Item {
+
+
+
+
+  @Id
+
+
+
+
+  private String id;
+
+
+
+
+  
+
+
+
+
+
+
+If these objects are upserted using MongoTemplate and the resulting object is then fetched with exactly the same query using findOne() method, the upsert fails silently (ie. no exception or error messages in debug logs) but findOne() returns the correct object (in applications point of view).
+
+
+
+
+
+
+Query query = new Query(Criteria.where("id").is(identifier));
+
+
+
+
+mongoTemplate.upsert(query, update, collectionName);
+
+
+
+
+Item item = mongoTemplate.findOne(query, Item.class, collectionName);
+
+
+
+
+
+
+In mongod logs:
+
+
+
+
+
+
+Thu Sep 13 14:25:51 [conn91] update db.collection query: { id: "foo" } update: { $inc: { totalClickCount: 1 } } 0ms
+
+
+
+
+Thu Sep 13 14:25:51 [conn91] query db.collection query: { _id: "foo" } ntoreturn:1 idhack:1 reslen:61 0ms
+
+
+
+
+
+
+This shows that in upsert method, id in the query is resolved to id, whereas in findOne() method it is resolved to _id. 
+Because of this, the upsert creates or updates a document {id : "foo", _id : 
+{"$oid" : &amp;lt;something&amp;gt;}
+ ...} but findOne returns the document {_id : "foo" ...}
+If I change the property in query to _id like this: 
+
+
+
+
+
+
+Query query = new Query(Criteria.where("_id").is(identifier));
+
+
+
+
+
+
+everything works as expected.
+Now I know, having browsed through this project&amp;amp;apos;s JIRA, that it is confusing to use id-property and @Id at the same time and should be avoided. The problem here is, IMO, that MongoTemplate methods resolve these queries differently leading to confusing results.
+The example works as expected (upsert() succeeds and findOne() returns the created object) up until 1.0.2.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.2.2, 1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,16 @@
+{
+	"SOCIALFB":{
+		"SOCIALFB_1_1_0":198, 
+		"SOCIALFB_1_1_1":198, 
+		"max":253, 
+		"SOCIALFB_2_0_0":251, 
+		"SOCIALFB_2_0_1":251, 
+		"SOCIALFB_2_0_2":251, 
+		"SOCIALFB_2_0_3":252, 
+		"SOCIALFB_3_0_0":253, 
+		"SOCIALFB_1_0_3":127, 
+		"SOCIALFB_1_0_2":123, 
+		"SOCIALFB_1_0_1":121, 
+		"SOCIALFB_1_0_0":119
+	}
+}

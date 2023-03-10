@@ -1,0 +1,346 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="939" opendate="2016-11-19 13:26:43" fixdate="2016-11-21 20:05:49" resolution="Fixed">
+		<buginformation>
+			<summary>Static interface methods should not be considered query methods</summary>
+			<description>I have a table with a partition key on a date, and I&amp;amp;apos;ll mostly ever query only the last 2 days. Beyond that, the data is "dead", we only keep it for trace.
+I&amp;amp;apos;m using Java 8 in which you can set default implementation of methods in interfaces.
+Here is what I&amp;amp;apos;m trying to do:
+
+
+
+
+
+
+public interface MyObjectRepository extends CassandraRepository&amp;lt;MyObject&amp;gt; {
+
+
+
+
+
+
+
+
+
+    /**
+
+
+
+
+     * @return the partition key dates that we consider contain "alive" data.
+
+
+
+
+     */
+
+
+
+
+    static String[] getAlivePartitionKeys() {
+
+
+
+
+        String[] searchedPartitionKeys = new String[2];
+
+
+
+
+        LocalDate currentLocalDate = LocalDateUtils.getUtcLocalDate();
+
+
+
+
+        searchedPartitionKeys[0] = LocalDateUtils.format(currentLocalDate);// today
+
+
+
+
+        searchedPartitionKeys[1] = LocalDateUtils.format(currentLocalDate.minus(Period.ofDays(1)));// yesterday
+
+
+
+
+        return searchedPartitionKeys;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    default MyObject findById(UUID id) {
+
+
+
+
+        return findByPartitionKeyDateAndId(getAlivePartitionKeys(), sessionUUID);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Query("SELECT * FROM myobject WHERE partition_key_date IN (:partitionKeyDates) AND id = :id")
+
+
+
+
+    MyObject findByPartitionKeyDateAndId(@NotNull @Param("partitionKeyDates") String[] partitionKeyDates, @NotNull @Param("id") UUID id);
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+(Note: The String[] seem to not be supported with the version 1.4.5 but should be supported in 1.5.0 from what I understood, but that&amp;amp;apos;s not the object of my request, I&amp;amp;apos;m only trying to express the need)
+Here&amp;amp;apos;s is what I&amp;amp;apos;d like to do from my service:
+
+
+
+
+
+
+myObjectRepository.finById(uuid);
+
+
+
+
+
+
+And that call will automatically look on the last 2 days. Am I trying to do something bad?
+The problem is, I get the following error:
+
+
+
+
+
+
+Caused by: org.springframework.dao.InvalidDataAccessApiUsageException: declarative query methods are a todo
+
+
+
+
+
+
+I&amp;amp;apos;m looking for a way to tell him I dont want any query resolution for those methods...
+I thought an annotation could be used to disable it. Or we could automatically detect its a "static" or "default" method. We would then only resolve the query if:
+
+
+
+
+
+
+!method.isDefault() &amp;amp;&amp;amp; !Modifier.isStatic(method.getModifiers())
+
+
+
+
+
+
+</description>
+			<version>1.12.5 (Hopper SR5)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 2.0 M1 (Kay), 1.12.6 (Hopper SR6)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="943" opendate="2016-10-04 21:54:22" fixdate="2016-11-24 16:25:00" resolution="Fixed">
+		<buginformation>
+			<summary>Redeclared save(Iterable) results in wrong method overload to be invoked eventually</summary>
+			<description>I have upgrade my project from spring boot 1.3.1 to 1.4.1.
+After the update the code seems to behave fine in windows with java 1.8.0_45 64bit
+But in jenkins server (on linux) with the same java version the code breaks with this exception
+
+
+
+
+
+
+org.springframework.beans.NotReadablePropertyException: Invalid property &amp;amp;apos;id&amp;amp;apos; of bean class [java.util.Arrays$ArrayList]: Could not find field for property during fallback access!
+
+
+
+
+	at org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper.getPropertyValue(DirectFieldAccessFallbackBeanWrapper.java:56)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.JpaMetamodelEntityInformation.getId(JpaMetamodelEntityInformation.java:149)
+
+
+
+
+	at org.springframework.data.repository.core.support.AbstractEntityInformation.isNew(AbstractEntityInformation.java:51)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.JpaMetamodelEntityInformation.isNew(JpaMetamodelEntityInformation.java:225)
+
+
+
+
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:505)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:497)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.executeMethodOn(RepositoryFactorySupport.java:503)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.doInvoke(RepositoryFactorySupport.java:488)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:460)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+
+
+
+
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:61)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+
+
+
+
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:99)
+
+
+
+
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:281)
+
+
+
+
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:96)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+
+
+
+
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:136)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+
+
+
+
+	at 
+
+
+
+
+
+
+The invoking call is 
+
+
+
+
+
+ myRepository.save(Arrays.asList(new MyEntity(1, "foo"), new MyEntity(2, "bar"))); 
+
+
+
+
+
+. In linux and with the upgrade to spring boot 1.4.1 it seems the save(Iterable) method is not invoked, but the save(entity) method is invoked and causes this exception.</description>
+			<version>1.12.5 (Hopper SR5)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 1.11.7 (Gosling SR7), 1.12.6 (Hopper SR6), 2.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">945</link>
+		</links>
+	</bug>
+	<bug id="963" opendate="2016-12-21 13:07:49" fixdate="2016-12-21 13:15:19" resolution="Fixed">
+		<buginformation>
+			<summary>ReturnedType.getInputProperties() does not guarantee distinct properties</summary>
+			<description>In case inheritance is used in projection interfaces and an accessor method is redeclared, the property is returned twice in ReturnedType.getInputProperties(). The reason for that is that the accessor methods are backed by different PropertyDescriptor instances as they&amp;amp;apos;re unique per declared type.</description>
+			<version>1.12.5 (Hopper SR5)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 1.12.6 (Hopper SR6), 2.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.ReturnedTypeUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.query.ReturnedType.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">1029</link>
+		</links>
+	</bug>
+</bugrepository>

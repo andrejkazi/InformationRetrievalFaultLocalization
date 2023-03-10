@@ -1,0 +1,609 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="880" opendate="2016-08-29 08:33:33" fixdate="2016-08-29 17:36:23" resolution="Fixed">
+		<buginformation>
+			<summary>@JsonUnwrapped annotation ignored</summary>
+			<description>Using Spring Boot 1.4.0, Spring Data REST no longer seems to take the @JsonUnwrapped annotation into account to unwrap entities in the JSON responses. The previous Spring Boot versions (i.c. 1.3.7) does not have this problem.
+It can be easily reproduced on the master branch of the RestBucks project. When you PUT a payment for an order, the credit card number should be unwrapped, since it is annotated with @JsonUnwrapped, but it is not:
+
+
+
+
+
+
+{
+
+
+
+
+  "amount": "EUR4.20",
+
+
+
+
+  "creditCard": {
+
+
+
+
+    "number": {
+
+
+
+
+      "number": "1234123412341234"
+
+
+
+
+    },
+
+
+
+
+    "cardHolderName": "Oliver Gierke",
+
+
+
+
+    "expirationDate": "2099-12-01"
+
+
+
+
+  },
+
+
+
+
+  "_links": {
+
+
+
+
+    "restbucks:order": {
+
+
+
+
+      "href": "http://localhost:8080/orders/1{?projection}",
+
+
+
+
+      "templated": true,
+
+
+
+
+      "title": "An order"
+
+
+
+
+    },
+
+
+
+
+    "curies": [
+
+
+
+
+      {
+
+
+
+
+        "href": "http://localhost:8080/docs/{rel}.html",
+
+
+
+
+        "name": "restbucks",
+
+
+
+
+        "templated": true
+
+
+
+
+      }
+
+
+
+
+    ]
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+The expected output would be (if the @JsonUnwrapped annotation was parsed correctly):
+
+
+
+
+
+
+{
+
+
+
+
+  "amount": "EUR4.20",
+
+
+
+
+  "creditCard": {
+
+
+
+
+    "number": "1234123412341234",
+
+
+
+
+    "cardHolderName": "Oliver Gierke",
+
+
+
+
+    "expirationDate": "2099-12-01"
+
+
+
+
+  },
+
+
+
+
+  "_links": {
+
+
+
+
+    "restbucks:order": {
+
+
+
+
+      "href": "http://localhost:8080/orders/1{?projection}",
+
+
+
+
+      "templated": true,
+
+
+
+
+      "title": "An order"
+
+
+
+
+    },
+
+
+
+
+    "curies": [
+
+
+
+
+      {
+
+
+
+
+        "href": "http://localhost:8080/docs/{rel}.html",
+
+
+
+
+        "name": "restbucks",
+
+
+
+
+        "templated": true
+
+
+
+
+      }
+
+
+
+
+    ]
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+This looks like a Spring Data REST bug. Spring Boot 1.3.x uses Spring Data Gosling and @JsonUnwrapped works as expected. However if spring-data-releasetrain.version is overriden to use Spring Data Hopper @JsonUnwrapped no longer works. You can see this behaviour if you check out and run this commit in RestBucks.</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.CreditCard.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="866" opendate="2016-08-04 02:18:14" fixdate="2016-09-01 17:28:29" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException from RepositoryRestConfiguration if you inject mvcValidator into RepositoryRestConfigurer</summary>
+			<description>Hopper release throws a null-pointer exception when you inject "mvcValidator" in your RepositoryRestConfigurer.</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="887" opendate="2016-09-06 13:37:00" fixdate="2016-09-12 08:55:09" resolution="Fixed">
+		<buginformation>
+			<summary>JsonLateObjectEvaluator uses hard-coded ObjectMapper</summary>
+			<description>JsonLateObjectEvaluator uses a hard-coded jackson ObjectMapper to deserialize json patch payload. As a result all custom modules to deserialize e.g. LocalDateTime, Money,... will not be available.</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonLateObjectEvaluator.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.JsonPatchHandler.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="885" opendate="2016-09-06 13:14:13" fixdate="2016-09-12 09:25:40" resolution="Fixed">
+		<buginformation>
+			<summary>Patch with object value omitted</summary>
+			<description>After migrating to spring data rest 2.5.2 the PATCH operation with application/json-patch+json for object values is broken.
+Consider the following entity:
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Product implements Identifiable&amp;lt;Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    @GeneratedValue(strategy = IDENTITY)
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+    private String name;
+
+
+
+
+
+
+
+
+
+    @Embedded
+
+
+
+
+    private Gtin gtin;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@Embeddable
+
+
+
+
+@Getter
+
+
+
+
+@Setter
+
+
+
+
+public class Gtin {
+
+
+
+
+
+
+
+
+
+    private String type;
+
+
+
+
+    private String value;
+
+
+
+
+}
+
+
+
+
+
+
+I try to patch with the following payload.
+
+
+
+
+
+
+[
+
+
+
+
+  {
+
+
+
+
+    "op":"replace",
+
+
+
+
+    "path":"/gtin",
+
+
+
+
+    "value":{"type":"EAN","value":"some"}
+
+
+
+
+  }
+
+
+
+
+]
+
+
+
+
+
+
+As a result of this operation the property to update (gtin) is null. 
+org.springframework.data.rest.webmvc.json.patch.JsonLateObjectEvaluator#evaluate returns null because it receives a JsonMappingException as it tries to serialize the value json into the entity type.
+Please see this product to reproduce the issue https://github.com/mduesterhoeft/spring-data-rest-json-patch-issue</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.Todo.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.FromOperation.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.CopyOperationTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.AddOperation.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.RemoveOperation.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.TodoList.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.TestOperationTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.PatchException.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonLateObjectEvaluator.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.PatchOperation.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.PathToSpEL.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.AddOperationTest.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.MoveOperationTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.Patch.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.PatchConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.ReplaceOperation.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.MoveOperation.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.ReplaceOperationTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.TestOperation.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.CopyOperation.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.PathToSpelTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.LateObjectEvaluator.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.JsonPatchTest.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.json.patch.RemoveOperationTest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.TodoType.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="889" opendate="2016-09-07 15:51:25" fixdate="2016-09-14 08:17:49" resolution="Fixed">
+		<buginformation>
+			<summary>JSON Patch silently nullifies property values</summary>
+			<description>The current JSON patch implementation internally catches exceptions (JsonLateObjectEvaluator line 41) and misses certain cases in if-else-statements (JsonPatchPatchConverter line 127), resulting in SDR setting the property value to null. This is quite bad, as already noticed in DATAREST-886. Instead some exception, like the PatchException should be thrown to avoid applying wrong changes.</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonLateObjectEvaluator.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.JsonPatchTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.patch.Todo.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="872" opendate="2016-08-15 12:10:48" fixdate="2016-09-19 08:40:17" resolution="Fixed">
+		<buginformation>
+			<summary>Jackson&amp;apos;s @JsonTypeInfo is not supported</summary>
+			<description>I am trying to use spring data rest in a scenario with spring-data-jpa and entity inheritance.
+Spring data rest seems to be able to serialize entities with inheritance. But as soon as I add @JsonTypeInfo annotations (to be able to deserialize) I get the following error when serializing such entities:
+
+
+
+
+
+
+Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException:
+
+
+
+
+    Could not write content: Type id handling not implemented for type java.lang.Object (by serializer of type org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$NestedEntitySerializer)
+
+
+
+
+    (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["parents"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.["content"]-&amp;gt;com.example.Parent["valueHolder"]);
+
+
+
+
+
+
+The problem seems to be that the custom serializer used here (PersistentEntityJackson2Module$NestedEntitySerializer) does not implement com.fasterxml.jackson.databind.JsonSerializer#serializeWithType - which throw an Exception by default.
+Please see this repo to reproduce the issue:
+https://github.com/mduesterhoeft/spring-data-rest-entity-inheritance</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Room.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Suite.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Meal.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.jpa.GuestRepository.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Guest.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Dinner.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="864" opendate="2016-08-01 04:48:43" fixdate="2016-09-19 12:51:49" resolution="Fixed">
+		<buginformation>
+			<summary>NestedEntitySerializer does not support Maps</summary>
+			<description>With the latest Hopper-SR2 I get the following error:
+
+
+
+
+
+
+2016-07-30 15:50:16,189 [main] WARN : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: PersistentEntity must not be null! (through reference chain: org.springframework.data.rest.webmvc.json.["content"]-&amp;gt;com.nemesis.platform.module.cms.core.entity.ListerPageEntity["title"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: PersistentEntity must not be null! (through reference chain: org.springframework.data.rest.webmvc.json.["content"]-&amp;gt;com.nemesis.platform.module.cms.core.entity.ListerPageEntity["title"])
+
+
+
+
+
+
+My entity has a Map&amp;lt;Locale, LocalizedValue&amp;gt; where LocalizedValue is @Embedable and in my case entity is null because in PersistentEntityJackson2Module you look it up like this 
+
+
+
+
+
+
+PersistentEntity&amp;lt;?, ?&amp;gt; entity = entities.getPersistentEntity(value.getClass());
+
+
+
+
+
+
+but value is a Map so value.getClass() returns PersistentMap.
+Sounds like you need a dedicated clause for Maps in NestedEntitySerializer.serialize().
+</description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.tests.mongodb.User.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="898" opendate="2016-09-19 13:38:50" fixdate="2016-09-19 13:45:28" resolution="Fixed">
+		<buginformation>
+			<summary>Typo in EntityLookupConfiguration assertion message</summary>
+			<description></description>
+			<version>2.5.2 (Hopper SR2)</version>
+			<fixedVersion>2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.config.EntityLookupConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

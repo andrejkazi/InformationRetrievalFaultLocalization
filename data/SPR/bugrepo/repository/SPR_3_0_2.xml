@@ -1,0 +1,188 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="7190" opendate="2010-05-11 12:56:12" fixdate="2011-01-12 01:33:59" resolution="Duplicate">
+		<buginformation>
+			<summary>AnnotationMethodHandlerAdapter and AnnotationMethodHandlerExceptionResolver should supports MappingJacksonHttpMessageConverter by default</summary>
+			<description>The AnnotationMethodHandlerAdapter and AnnotationMethodHandlerExceptionResolver should supports MappingJacksonHttpMessageConverter (and other HttpMessageConverter, such as Jaxb2RootElementHttpMessageConverter etc if the libraries are found in classpath) by default, to make it consistent with the class AnnotationDrivenBeanDefinitionParser that used internally for mvc:annotation-driven / &amp;gt;</description>
+			<version>3.0.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.web.servlet.config.MvcNamespaceTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6902</link>
+		</links>
+	</bug>
+	<bug id="7769" opendate="2010-11-28 11:40:27" fixdate="2011-03-10 07:22:38" resolution="Duplicate">
+		<buginformation>
+			<summary>SpringJUnit4ClassRunner is not compatible with java context configuration</summary>
+			<description>have test:
+
+
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@Import(SomeTestContext.class)
+
+
+
+
+public class SomeTest {
+
+
+
+
+ ....
+
+
+
+
+}
+
+
+
+
+
+
+get exception:
+
+
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Can not load an ApplicationContext with a NULL &amp;amp;apos;contextLoader&amp;amp;apos;. Consider annotating your test class with @ContextConfiguration.
+
+
+
+
+	at org.springframework.util.Assert.notNull(Assert.java:112)
+
+
+
+
+	at org.springframework.test.context.TestContext.loadApplicationContext(TestContext.java:276)
+
+
+
+
+	at org.springframework.test.context.TestContext.getApplicationContext(TestContext.java:304)
+
+
+
+
+	... 24 more
+
+
+
+
+
+</description>
+			<version>3.0.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.testng.AnnotationConfigTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.support.AnnotationConfigContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingDefaultConfigClassesInheritedTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.ExplicitConfigClassesBaseTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesBaseTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.BeanOverridingExplicitConfigClassesInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassesInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.ContextLoaderUtils.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractGenericContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ResourceTypeAwareContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextLoader.java</file>
+			<file type="M">org.springframework.test.context.ContextConfiguration.java</file>
+			<file type="M">org.springframework.test.context.support.GenericPropertiesContextLoader.java</file>
+			<file type="M">org.springframework.test.context.support.GenericXmlContextLoader.java</file>
+			<file type="M">org.springframework.test.context.testng.ConcreteTransactionalTestNGSpringContextTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassInheritedTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.junit4.SpringJUnit4SuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigTestSuite.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassBaseTests.java</file>
+			<file type="M">org.springframework.test.context.support.AbstractContextLoader.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSuiteTests.java</file>
+			<file type="M">org.springframework.test.context.junit4.annotation.PojoAndStringConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.DefaultConfigClassAnnotationConfigTestsConfig.java</file>
+			<file type="M">org.springframework.test.context.TestContext.java</file>
+			<file type="D">org.springframework.test.context.junit4.annotation.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.AnnotationConfigSpringJUnit4ClassRunnerAppCtxTests.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTestsConfig.java</file>
+			<file type="D">org.springframework.test.context.junit4.ConfigurationClassSpringJUnit4ClassRunnerAppCtxTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6184</link>
+		</links>
+	</bug>
+	<bug id="8124" opendate="2011-03-31 12:30:42" fixdate="2011-06-17 06:20:56" resolution="Duplicate">
+		<buginformation>
+			<summary>@ExceptionHandler doesn&amp;apos;t handle exceptions from other controllers</summary>
+			<description>The fact that a method annotated with @ExceptionHandler can only handle exceptions from the same controller is a restrictive issue. The better behavior would be if the annotated method would be able to handle all exceptions of that particular type, regardless of their source. </description>
+			<version>3.0.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7278</link>
+			<link type="Duplicate" description="is duplicated by">8178</link>
+		</links>
+	</bug>
+	<bug id="7278" opendate="2010-06-10 20:05:30" fixdate="2012-06-19 03:18:55" resolution="Won&apos;t Fix">
+		<buginformation>
+			<summary>@ResponseBody usage limitations</summary>
+			<description>The recommended way to develop REST-style webservices is the usage of @ResponseBody annotation and HttpMessageConverter instead of generating a model and a view (ContentNegotiatingViewResolver etc.).
+But there are some limitations, that make things hard to handle:
+
+ExceptionResolver support
+	
+@RequestBody is only supported with @ExceptionHandler annotation. I need a centralized exception handling to generate a special error object as the return value. So I must wrote a method in each controller class to delegate to the centralized exception handler. I think the ExceptionResolver-interface is more like an AOP-approach, with no glue code.
+ExceptionResolver also have some nice standard implementations like SimpleMappingExceptionResolver, where I can handle the returned HTTP status code very easy. This is also not supported by @ExceptionHandler out of the box
+
+
+&amp;amp;apos;useNotAcceptableStatusCode&amp;amp;apos; from ContentNegotiatingViewResolver (so for some features, I must also configure view-handling)
+	
+simple and easy to use attribute to enable NOT_ACCEPTABLE Http Status code
+
+
+missing option for enabling global @ResponseBody-like handling instead of annotate all methods (e.g. in AnnotationMethodHandlerAdapter)
+
+I also would recommend the full HttpMessageConverter way (@RequestBody &amp;amp; @ResponseBody) without view handling, so it would be nice, if @ResponseBody has fewer limitations. Additionaly it would be great, if the documentation have some notes about the recommended way for webservice-only REST-style applications (with hints to the limitations above)</description>
+			<version>3.0.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">8124</link>
+			<link type="Related" description="is related to">7353</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,672 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="424" opendate="2014-12-10 10:34:57" fixdate="2015-01-02 03:36:29" resolution="Fixed">
+		<buginformation>
+			<summary>Make sure HAL HttpMessageConverter is ordered before the standard one</summary>
+			<description>RepositoryRestMvcConfiguration registers two HttpMessageConverter beans handling ResourceSupport types. One is handling the HAL media type, the other all Spring Data REST specific media types. We have to make sure that depending on the settings of config().useHalAsDefaultJsonMediaType() one is registered before the other.</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.2.2 (Evans SR2), 2.3 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvConfigurationIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="427" opendate="2014-12-25 07:58:23" fixdate="2015-01-05 07:15:47" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException when POST/PUT entities with rels in DomainClassConverter</summary>
+			<description>My setup is completely based on Java Configuration files. I configured my my application as follows:
+
+
+
+
+
+
+@Override
+
+
+
+
+	protected Class&amp;lt;?&amp;gt;[] getRootConfigClasses() {
+
+
+
+
+		return new Class&amp;lt;?&amp;gt;[] { CustomMongoDBRepositoryConfig.class, CustomJPARepositoryConfig.class, CustomSecurityConfiguration.class };
+
+
+
+
+	}
+
+
+
+
+..
+
+
+
+
+
+
+
+
+
+@Override
+
+
+
+
+	public void onStartup(ServletContext servletContext) throws ServletException {		
+
+
+
+
+        AnnotationConfigWebApplicationContext webCtx = new AnnotationConfigWebApplicationContext();
+
+
+
+
+        webCtx.register(CustomRepositoryRestMvcConfiguration.class);
+
+
+
+
+     
+
+
+
+
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(webCtx);
+
+
+
+
+        ServletRegistration.Dynamic appServlet = servletContext.addServlet("exporter", dispatcherServlet);
+
+
+
+
+        appServlet.setAsyncSupported(true);
+
+
+
+
+        appServlet.setLoadOnStartup(1);
+
+
+
+
+        appServlet.addMapping("/*");
+
+
+
+
+        
+
+
+
+
+        FilterRegistration.Dynamic corsFilter = servletContext.addFilter("corsFilter", CORSFilter.class);
+
+
+
+
+        corsFilter.addMappingForUrlPatterns(null, false, "/*");
+
+
+
+
+        
+
+
+
+
+        FilterRegistration.Dynamic filter = servletContext.addFilter("openSessionInViewFilter", OpenEntityManagerInViewFilter.class);
+
+
+
+
+        filter.setInitParameter("singleSession", "true");
+
+
+
+
+        filter.addMappingForServletNames(null, true, "exporter");
+
+
+
+
+        
+
+
+
+
+        FilterRegistration.Dynamic securityFilter = servletContext.addFilter("springSecurityFilterChain", 
+
+
+
+
+        		new DelegatingFilterProxy("springSecurityFilterChain"));
+
+
+
+
+        securityFilter.addMappingForUrlPatterns(null, false, "/*");
+
+
+
+
+        
+
+
+
+
+        
+
+
+
+
+	    super.onStartup(servletContext);
+
+
+
+
+	}
+
+
+
+
+
+
+The interesting thing is, everything is working fine. MVC URLs are mapped, controllers are working, Spring Security is working, SD REST URLs are mapped and working, but one thing is not working:
+POST/PUT of entities with rels. Having the following payload posted to /roles 
+
+
+
+
+
+
+{
+
+
+
+
+  "name": "Developer",
+
+
+
+
+  "description": "Standard role for a agent developer in the system",
+
+
+
+
+  "rights": [
+
+
+
+
+    "http://localhost:8080/web/rights/186",
+
+
+
+
+    "http://localhost:8080/web/rights/189",
+
+
+
+
+    "http://localhost:8080/web/rights/185",
+
+
+
+
+    "http://localhost:8080/web/rights/46"
+
+
+
+
+  ]
+
+
+
+
+}
+
+
+
+
+
+
+leads to the following exception:
+
+
+
+
+
+
+LOGBACK:16:54:09.765 [tomcat-http--2] ERROR o.s.d.r.w.RepositoryRestExceptionHandler - Could not read JSON: (was java.lang.NullPointerException) (through reference chain: de.cloudscale.model.user.Role["rights"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: de.cloudscale.model.user.Role["rights"])
+
+
+
+
+org.springframework.http.converter.HttpMessageNotReadableException: Could not read JSON: (was java.lang.NullPointerException) (through reference chain: de.cloudscale.model.user.Role["rights"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: de.cloudscale.model.user.Role["rights"])
+
+
+
+
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.readJavaType(AbstractJackson2HttpMessageConverter.java:208) ~[AbstractJackson2HttpMessageConverter.class:4.1.1.RELEASE]
+
+
+
+
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.readInternal(AbstractJackson2HttpMessageConverter.java:192) ~[AbstractJackson2HttpMessageConverter.class:4.1.1.RELEASE]
+
+
+
+
+	at org.springframework.http.converter.AbstractHttpMessageConverter.read(AbstractHttpMessageConverter.java:159) ~[AbstractHttpMessageConverter.class:4.1.1.RELEASE]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.read(PersistentEntityResourceHandlerMethodArgumentResolver.java:185) ~[PersistentEntityResourceHandlerMethodArgumentResolver.class:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.read(PersistentEntityResourceHandlerMethodArgumentResolver.java:168) ~[PersistentEntityResourceHandlerMethodArgumentResolver.class:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgumentResolver.java:123) ~[PersistentEntityResourceHandlerMethodArgumentResolver.class:na]
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) ~[HandlerMethodArgumentResolverComposite.class:4.1.1.RELEASE]
+
+
+
+
+
+
+Which in turn is a result of fact that in DomainClassConverter the variable repositories is empty during the POST/PUT call. Following that the RepositoryInformations are empty and the NPE is thrown. 
+I guess this is happening due to some context splitup during startup time. The interesting thing is, that POST/PUT a plain object without any rels works properly, I am not able to see any stuff in the debug logs showing me the second context</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.2.2 (Evans SR2), 2.3 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.UriToEntityConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.core.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="434" opendate="2015-01-08 01:52:12" fixdate="2015-01-11 11:05:22" resolution="Fixed">
+		<buginformation>
+			<summary>PersistentEntityResourceHandlerMethodArgumentResolver&amp;apos;s read() methods swallow exceptions</summary>
+			<description></description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.2.2 (Evans SR2), 2.3 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="461" opendate="2015-01-21 04:57:40" fixdate="2015-01-21 05:54:32" resolution="Fixed">
+		<buginformation>
+			<summary>@JsonIgnored properties must not be updated in PUT requests</summary>
+			<description>When issuing PUT requests for existing entities properties that are not mapped (e.g. using @JsonIgnore) must not be nulled out.</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.2.2 (Evans SR2), 2.3 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.JsonPatchHandler.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">491</link>
+		</links>
+	</bug>
+	<bug id="477" opendate="2015-02-16 02:11:56" fixdate="2015-02-16 03:44:53" resolution="Duplicate">
+		<buginformation>
+			<summary>VenueProjection with List&lt;ContactProjection&gt; returns List&lt;Contact&gt; instead</summary>
+			<description>I have 2 entities that are exposed by Spring Data REST: Venue and Contact. A Venue can have multiple Contacts.
+I create this projections:
+
+
+
+
+
+
+VenueDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Venue.class)
+
+
+
+
+public interface VenueDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getName();
+
+
+
+
+	//...
+
+
+
+
+    List&amp;lt;ContactDetails&amp;gt; getContacts();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+ContactDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Contact.class)
+
+
+
+
+public interface ContactDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getContact();
+
+
+
+
+    ContactType getContact_type();
+
+
+
+
+}
+
+
+
+
+
+
+When the client invokes http://localhost:8080/myrestservice/rest/venues/2?projection=details gets:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 2,
+
+
+
+
+  "name" : "A place in the desert",
+
+
+
+
+  "contacts" : [ {
+
+
+
+
+    "id" : 1,
+
+
+
+
+    "contact" : "555 768547",
+
+
+
+
+  }, {
+
+
+
+
+    "id" : 2,
+
+
+
+
+    "contact" : "contacts@example.org",
+
+
+
+
+  }],
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contacts" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2/contacts"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+You see that every contact misses "contact_type".
+But "contact_type" is shown when invoking http://localhost:8080/myrestservice/rest/contacts/1?projection=details:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 1,
+
+
+
+
+  "contact" : "555 768547",
+
+
+
+
+  "contact_type" : {
+
+
+
+
+    "code" : "T",
+
+
+
+
+    "name" : "Telephone"
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contact_type" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/contact_type"
+
+
+
+
+    },
+
+
+
+
+    "venue" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/venue"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+So it seems that expressing List&amp;lt;AProjectionOfALinkedObject&amp;gt; in a projection, ignores AProjectionOfALinkedObject and simply uses ALinkedObject.</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptor.java</file>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">408</link>
+		</links>
+	</bug>
+</bugrepository>

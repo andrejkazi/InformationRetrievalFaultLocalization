@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="ELY">
+	<bug id="1" master="385" duplicate="401" opendate="2015-12-01 11:04:10" fixdate="2016-03-15 08:40:24" resolution="Done">
+		<buginformation>
+			<summary>ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA"</summary>
+			<description>05:48:13 [33m05:48:13,801 WARN  [org.wildfly.security] (MSC service thread 1-2) ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA" Getting the following warning logged when filtering the ciphers available from Oracle Java 8 with unlimited strength policy files in place: -
+
+
+
+
+
+
+ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA"
+
+
+
+
+
+
+The JCE policy is probably unrelated, mentioning it just in case.</description>
+			<version>1.0.2.Final</version>
+			<fixedVersion>1.1.0.Beta5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.wildfly.security.ssl.MechanismDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="cloned from">2076</link>
+			<link type="Duplicate" description="is duplicated by">401</link>
+			<link type="Duplicate" description="duplicates">385</link>
+		</links>
+	</bug>
+</bugrepository>

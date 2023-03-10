@@ -1,0 +1,26 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="906" opendate="2016-09-21 11:56:51" fixdate="2016-09-23 13:33:31" resolution="Fixed">
+		<buginformation>
+			<summary>MappingAwarePageableArgumentResolver accidentally drops default Pageable returned from delegate PageableHandlerMethodArgumentResolver</summary>
+			<description>After upgrading to spring-boot 1.4.1 which includes Hopper-SR3 I get a NPE in the following code section when Pageable is not set explicitly:
+public Page&amp;lt;Translation&amp;gt; findTranslationsBy(String isoCode, Pageable pageable) 
+{
+    log.info("" + pageable.getPageSize());
+    ....
+}
+
+Setting HOPPER-SR2 in pom.xml fixes the problem as a default page-size is taken into account.</description>
+			<version>2.4.5 (Gosling SR5)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.5.4 (Hopper SR4), 2.4.6 (Gosling SR6)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaDefaultPageableWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">909</link>
+		</links>
+	</bug>
+</bugrepository>

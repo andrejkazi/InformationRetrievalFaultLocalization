@@ -1,0 +1,44 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="3" master="525" duplicate="552" opendate="2013-02-14 19:35:14" fixdate="2013-08-12 20:26:57" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfigurationLayout does not preserve comments at bottom of a file save() causes trailing comments to be deleted</summary>
+			<description>Example:
+helloWorld.properties
+hello = world
+#this comments would not be preserved If there are comments at the end of a properties file, they are dropped when save is called.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfigurationLayout.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">552</link>
+			<link type="Duplicate" description="is duplicated by">525</link>
+		</links>
+	</bug>
+	<bug id="4" master="537" duplicate="310" opendate="2008-02-19 10:57:14" fixdate="2014-09-13 19:10:54" resolution="Fixed">
+		<buginformation>
+			<summary>Remove deprecated ConfigurationFactory class Remove ConfigurationFactory</summary>
+			<description>ConfigurationFactory has been deprecated in the 1.x series. In version 2.0, this class can be removed. ConfigurationBuilder provides an equivalent alternative to ConfigurationFactory and can be removed. Without this class we no longer depend on Digester.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.configuration.ConfigurationFactory.java</file>
+			<file type="D">org.apache.commons.configuration.TestConfigurationFactory.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubsetConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestEqualBehaviour.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">310</link>
+			<link type="Duplicate" description="is duplicated by">537</link>
+		</links>
+	</bug>
+</bugrepository>

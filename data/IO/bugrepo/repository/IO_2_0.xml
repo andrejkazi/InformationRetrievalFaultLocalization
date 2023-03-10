@@ -1,0 +1,72 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="206" opendate="2009-05-18 16:46:18" fixdate="2009-05-18 19:40:35" resolution="Fixed">
+		<buginformation>
+			<summary>ProxyInputStream: misleading parameter names</summary>
+			<description>ProxyInputStream has a the following method signatures:
+
+public int read(byte[] bts, int st, int end)
+public void mark(int idx)
+
+But they should be:
+
+public int read(byte[] bts, int off, int length)
+public void mark(int readlimit)
+
+Especially the "end" parameter could be misinterpreted.</description>
+			<version>2.0</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ProxyInputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="257" opendate="2010-12-22 03:13:21" fixdate="2010-12-22 23:06:21" resolution="Fixed">
+		<buginformation>
+			<summary>BOMInputStream.read(byte[]) can return 0 which it should not</summary>
+			<description>BOMInputStream.read(byte[]) returns 0 when it should return -1.
+This is not a valid action (unless buf.length == 0) and can cause problems, e.g. "java.io.IOException: Underlying input stream returned zero bytes - at sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:268)"
+From java.io.InputStream.read(byte[]) JavaDocs: "If the length of b is zero, then no bytes are read and 0 is returned; otherwise, there is an attempt to read at least one byte. If no byte is available because the stream is at the end of the file, the value -1 is returned; otherwise, at least one byte is read and stored into b."
+Suggested fix, change line 287 of BOMInputStream.java from
+        return (secondCount &amp;lt; 0) ? firstCount : firstCount + secondCount;
+into
+        return (secondCount &amp;lt; 0) ? (firstCount &amp;gt; 0 ? firstCount : -1) : firstCount + secondCount;</description>
+			<version>2.0</version>
+			<fixedVersion>2.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BOMInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.BOMInputStreamTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="258" opendate="2010-12-23 02:57:53" fixdate="2010-12-23 03:18:42" resolution="Fixed">
+		<buginformation>
+			<summary>XmlStreamReader consumes the stream during encoding detection</summary>
+			<description>XmlStreamReader reads the underlying InputStream to try and detect the encoding. However once that process is done the bytes read from the stream should still be available to be read - this was accidentally broken in r1004882 by creating the underlying reader with the original InputStream, rather than the wrapped streams used to detect encoding.</description>
+			<version>2.0</version>
+			<fixedVersion>2.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.XmlStreamReaderTest.java</file>
+			<file type="M">org.apache.commons.io.input.XmlStreamReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">162</link>
+		</links>
+	</bug>
+	<bug id="264" opendate="2011-03-10 13:09:56" fixdate="2011-03-12 00:48:48" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.moveFile() JavaDoc should specify FileExistsException thrown</summary>
+			<description>FileUtils.moveFile() JavaDoc does specify the behaviour of the method in a case when the destFile exists. It would be helpful to know from the JavaDoc that in such case an exception is thrown as it&amp;amp;apos;s not immediately obvious.</description>
+			<version>2.0</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,457 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="11" master="2543" duplicate="2570" opendate="2014-04-02 10:08:49" fixdate="2014-05-02 09:31:05" resolution="Fixed">
+		<buginformation>
+			<summary>Logout Does Not Require POST even though CSRF is enabled LogoutConfigurer supports GET by default when CSRF is enabled</summary>
+			<description>The documentation says "Adding CSRF will update the LogoutFilter to only use HTTP POST. This ensures that log out requires a CSRF token and that a malicious user cannot forcibly log out your users.": http://docs.spring.io/spring-securit...e/#csrf-logout
+However, in my testing, I can still logout with a GET to /logout using the following Java-based security configuration:
+
+
+
+
+
+
+SecurityConfig.java
+
+
+
+
+
+
+@Configuration
+
+
+
+
+@EnableWebMvcSecurity
+
+
+
+
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+
+
+
+    @Override
+
+
+
+
+    protected void configure(final AuthenticationManagerBuilder auth)
+
+
+
+
+            throws Exception {
+
+
+
+
+        auth.inMemoryAuthentication()//
+
+
+
+
+                .withUser("user").password("password").roles("USER")//
+
+
+
+
+                .and()//
+
+
+
+
+                .withUser("admin").password("password").roles("USER", "ADMIN");
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+
+
+
+
+    protected void configure(final HttpSecurity http) throws Exception {
+
+
+
+
+        http.authorizeRequests()//
+
+
+
+
+                .antMatchers("/admin/**").hasRole("ADMIN")//
+
+
+
+
+                .antMatchers("/**").permitAll().and()//
+
+
+
+
+                .formLogin();
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+ Since commit 5082a046 for SEC-2311, the default LogoutRequestMatcher supports all HTTP methods regardless of the CSRF configuration.
+You can see in the LogoutConfigurer.java code below that a POST only matcher is created, but not used:
+
+
+
+
+
+
+    @SuppressWarnings("unchecked")
+
+
+
+
+    private RequestMatcher getLogoutRequestMatcher(H http) {
+
+
+
+
+        if(logoutRequestMatcher != null) {
+
+
+
+
+            return logoutRequestMatcher;
+
+
+
+
+        }
+
+
+
+
+        if(http.getConfigurer(CsrfConfigurer.class) != null) {
+
+
+
+
+            this.logoutRequestMatcher = new AntPathRequestMatcher(this.logoutUrl, "POST");
+
+
+
+
+        }
+
+
+
+
+        return new AntPathRequestMatcher(this.logoutUrl);
+
+
+
+
+    }
+
+
+
+
+
+</description>
+			<version>3.2.3</version>
+			<fixedVersion>3.2.4, 4.0.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.LogoutConfigurer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2570</link>
+			<link type="Duplicate" description="duplicates">2543</link>
+		</links>
+	</bug>
+	<bug id="25" master="2549" duplicate="2604" opendate="2014-04-07 01:34:51" fixdate="2014-05-23 06:09:25" resolution="Complete">
+		<buginformation>
+			<summary>java.lang.IllegalAccessError: class org.springframework.security.config.annotation.authentication.configuration.$Proxy90 cannot access its superinterface &lt;omitted&gt;.AuthenticationConfiguration$LazyBean Spring Security not working with configurations in Parent Application Contect</summary>
+			<description>Is it possible to change the visibility of LazyBean marker interface to `public`?
+We are planning to pull up spring dependencies as JBoss EAP "module" (shared libraries) to be shared among all of our applications.
+Each "module" has its own isolated ClassLoader, and is parallel to the war "module" ClassLoader, so we have to emulate the class loading hierarchy ourselves for compatibility.
+The problem is that the aggregated ClassLoader (delegates to "module" classLoader and then the applications&amp;amp;apos;s ClassLoader) cannot sees the private LazyBean marker. Hi,
+In your web application, we have three layers of application context. 
+1. Spring MVC Context
+2. Web Application Context
+3. Parent Application Context.
+WebApplicationContext is parent of SpringMVCContext.
+ParentApplicationContext is parent of WebApplicationContext.
+We are using JavaConfig in our application.
+Now, we want to use Authorization feature Spring Security in our application. To use this we configured below in Parent Context
+1. Authentication Manager
+2. Authentication Provider
+3. UserDetailsService
+We have defined these beans in the class which extends from GlobalSecurityConfiguration. This class is annotated with @GlobalMethodSecurity.
+We&amp;amp;apos;ve overriden the configure(AuthenticationManagerBuilder) and added AuthenticationProvider in AuthenticationBuilder to build the AuthenticationManager.
+
+
+
+
+
+
+protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+
+
+
+
+
+
+
+
+
+        auth.authenticationProvider(preAuthenticatedAuthenticationProvider());
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+We have exposed the AuthenticationManager as below
+
+
+
+
+
+
+   @Bean(name="authenticationManager")
+
+
+
+
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+
+
+
+
+        return authenticationManager();
+
+
+
+
+    }
+
+
+
+
+
+
+And, we have configured the required filter bean in SpringMVCContext. 
+Filter gets the reference of the AuthenticationManager which is configured in ParentContext. However, it throws below exception and application does not work.
+
+
+
+
+
+
+Caused by: java.lang.IllegalAccessError: org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration$LazyBean
+
+
+
+
+      at java.lang.reflect.Proxy.defineClass0(Native Method)
+
+
+
+
+      at java.lang.reflect.Proxy.getProxyClass0(Proxy.java:625)
+
+
+
+
+      at java.lang.reflect.Proxy.newProxyInstance(Proxy.java:702)
+
+
+
+
+      at org.springframework.aop.framework.JdkDynamicAopProxy.getProxy(JdkDynamicAopProxy.java:121)
+
+
+
+
+      at org.springframework.aop.framework.ProxyFactoryBean.getProxy(ProxyFactoryBean.java:368)
+
+
+
+
+      at org.springframework.aop.framework.ProxyFactoryBean.getSingletonInstance(ProxyFactoryBean.java:322)
+
+
+
+
+      at org.springframework.aop.framework.ProxyFactoryBean.getObject(ProxyFactoryBean.java:246)
+
+
+
+
+      at org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration.lazyBean(AuthenticationConfiguration.java:119)
+
+
+
+
+      at org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration.getAuthenticationMangerBean(AuthenticationConfiguration.java:123)
+
+
+
+
+      at org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration.getAuthenticationManager(AuthenticationConfiguration.java:81)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.authenticationManager(WebSecurityConfigurerAdapter.java:229)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.getHttp(WebSecurityConfigurerAdapter.java:171)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.init(WebSecurityConfigurerAdapter.java:276)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.init(WebSecurityConfigurerAdapter.java:61)
+
+
+
+
+      at com.deere.dsfj.jdorderspringmvcweb.config.SpringWebSecurityConfig$$EnhancerBySpringCGLIB$$1ccbdc0f.init(&amp;lt;generated&amp;gt;)
+
+
+
+
+      at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.init(AbstractConfiguredSecurityBuilder.java:369)
+
+
+
+
+      at org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder.doBuild(AbstractConfiguredSecurityBuilder.java:322)
+
+
+
+
+      at org.springframework.security.config.annotation.AbstractSecurityBuilder.build(AbstractSecurityBuilder.java:39)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration.springSecurityFilterChain(WebSecurityConfiguration.java:92)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$a1372076.CGLIB$springSecurityFilterChain$1(&amp;lt;generated&amp;gt;)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$a1372076$$FastClassBySpringCGLIB$$a530ca1c.invoke(&amp;lt;generated&amp;gt;)
+
+
+
+
+      at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:228)
+
+
+
+
+      at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:312)
+
+
+
+
+      at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$$EnhancerBySpringCGLIB$$a1372076.springSecurityFilterChain(&amp;lt;generated&amp;gt;)
+
+
+
+
+      at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+      at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:60)
+
+
+
+
+      at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:37)
+
+
+
+
+      at java.lang.reflect.Method.invoke(Method.java:611)
+
+
+
+
+      at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:166)
+
+
+
+
+      ... 113 more
+
+
+
+
+
+
+Please suggest
+</description>
+			<version>3.2.3</version>
+			<fixedVersion>3.2.4, 4.0.0.M1</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2604</link>
+			<link type="Relate" description="relates to">2531</link>
+			<link type="Duplicate" description="duplicates">2549</link>
+		</links>
+	</bug>
+</bugrepository>

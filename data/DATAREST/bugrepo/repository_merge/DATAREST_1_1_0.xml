@@ -1,0 +1,1181 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="3" master="238" duplicate="143" opendate="2013-08-27 01:33:12" fixdate="2014-02-14 04:26:34" resolution="Fixed">
+		<buginformation>
+			<summary>PUT on entity with self links causes changes to be overwritten with old values PUT of entity with links fails..</summary>
+			<description>When PUTting the following JSON (a "Workload" entity):
+
+
+
+
+
+
+{
+
+
+
+
+  "version" : 1,
+
+
+
+
+  "weight" : 123,
+
+
+
+
+  "handlingMinutes" : 2,
+
+
+
+
+  "articleCount" : 3,
+
+
+
+
+  "address" : {
+
+
+
+
+    "line1" : null,
+
+
+
+
+    "line2" : null,
+
+
+
+
+    "line3" : null,
+
+
+
+
+    "postCode" : "53123",
+
+
+
+
+    "city" : "Bonn          ",
+
+
+
+
+    "countryCode" : null,
+
+
+
+
+    "street" : "Bonner Bonnweg",
+
+
+
+
+    "houseNumber" : "125"
+
+
+
+
+  },
+
+
+
+
+  "links" : [ {
+
+
+
+
+    "rel" : "self",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060"
+
+
+
+
+  }, {
+
+
+
+
+    "rel" : "area",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060/area"
+
+
+
+
+  }, {
+
+
+
+
+    "rel" : "product",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060/product"
+
+
+
+
+  } ]
+
+
+
+
+}
+
+
+
+
+
+
+.. the incoming JSON is converted all fine and well, until it runs into the links/rel/self/href thing, and hits this line: [1]
+This causes the converted Workload entity from the PUT call to be overwritten with the old values. End-effect: A PUT looks like it is successful, but no changes are stored.
+[1] https://github.com/spring-projects/spring-data-rest/blob/2.0.0.M1/spring-data-rest-webmvc/src/main/java/org/springframework/data/rest/webmvc/json/PersistentEntityJackson2Module.java#L135 Github Author: jhiemer
+Github Last-Updated: 2013-03-22T20:05:51Z
+This issue was automatically imported from github
+Hi Jon,
+when I am doing a put to the self link with embedded links I get an error. This means I need to remove all links before putting an element. I think this should not be the desired behaviour. Or?
+Sample:
+
+
+
+
+
+
+{
+
+
+
+
+   "description":"adasdadsasdads",
+
+
+
+
+   "name":"Customer Corp",
+
+
+
+
+   "links":[
+
+
+
+
+      {
+
+
+
+
+         "rel":"self",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.users",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/users"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.credentials",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/credentials"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.addresses",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/addresses"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.sector",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/sector"
+
+
+
+
+      }
+
+
+
+
+   ]
+
+
+
+
+}
+
+
+
+
+
+
+The response is:
+
+
+
+
+
+
+javascript
+
+
+
+
+{
+
+
+
+
+  "cause" : null,
+
+
+
+
+  "message" : "Property &amp;amp;apos;links&amp;amp;apos; not found for entity de.model.customer.Customer"
+
+
+
+
+}
+
+
+
+
+
+
+Perhaps one additional note: the same happens, when using embedded entities like you described here: http://stackoverflow.com/questions/12879975/spring-data-rest-uri-vs-entity-id. Of course the POST fails, if I remove the links as the exporter is not able to find the customer in the database.</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">143</link>
+			<link type="Duplicate" description="duplicates">238</link>
+		</links>
+	</bug>
+	<bug id="6" master="198" duplicate="204" opendate="2013-12-04 06:20:36" fixdate="2014-01-20 03:22:28" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException when accessing OneToMany Relationship Collection References not working with SF 4.0 due to generics changes</summary>
+			<description>I have a OneToMany relationship, when I try to access the elements of the collection using the link I get the following Exception: 
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.handleReturnValue(ResourceProcessorHandlerMethodReturnValueHandler.java:161)
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:71)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:122)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:748)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:689)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:947)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:878)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:946)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:837)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:621)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:822)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+
+
+
+
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)
+
+
+
+
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)
+
+
+
+
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472)
+
+
+
+
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)
+
+
+
+
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99)
+
+
+
+
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:947)
+
+
+
+
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)
+
+
+
+
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)
+
+
+
+
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1009)
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589)
+
+
+
+
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:312)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:744)
+
+
+
+
+
+ When calling an object relation like provider/3487T/services. The call fails with an NPE in ResourceProcessorHandlerMethodReturnValueHandler. The stacktrace is a follows: 
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.handleReturnValue(ResourceProcessorHandlerMethodReturnValueHandler.java:161)
+
+
+
+
+	org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:71)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:122)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:748)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:689)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83)
+
+
+
+
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:945)
+
+
+
+
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:876)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:931)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:822)
+
+
+
+
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:621)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:807)
+
+
+
+
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:728)
+
+
+
+
+	com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source)
+
+
+
+
+	com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source)
+
+
+
+
+	org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter.doFilterInternal(OpenEntityManagerInViewFilter.java:177)
+
+
+
+
+	org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:108)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330)
+
+
+
+
+	org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118)
+
+
+
+
+	org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	de.cloudscale.security.filter.BaseAuthenticationTokenProcessingFilter.doFilter(BaseAuthenticationTokenProcessingFilter.java:86)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:183)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:105)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160)
+
+
+
+
+	org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:344)
+
+
+
+
+	org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:261)
+
+
+
+
+
+
+Error occurs in the following lines:
+
+
+
+
+
+
+if (!elementTargetType.getType().equals(elementTypeInformation.getType())) {
+
+
+
+
+  elementTargetType = elementTypeInformation;
+
+
+
+
+}
+
+
+
+
+
+
+as elementTargetType is null.</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.TestDataPopulator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">422</link>
+			<link type="Duplicate" description="is duplicated by">204</link>
+			<link type="Relate" description="relates to">181</link>
+			<link type="Duplicate" description="duplicates">198</link>
+			<link type="Relate" description="relates to">181</link>
+		</links>
+	</bug>
+	<bug id="9" master="199" duplicate="188" opendate="2013-11-18 22:52:37" fixdate="2013-12-05 06:17:55" resolution="Fixed">
+		<buginformation>
+			<summary>Collection/Object conversion broken in PersistentEntityJackson2Module Spring data rest wrongly handles jpa collection attributes</summary>
+			<description>I am trying to post to localhost:8080/credentials/
+{
+   "customer":
+{
+      "rel":"self",
+      "href":"http://localhost:8080/web/customers/60"
+   }
+,
+   "credentialProperties":[
+
+{
+         "name":"Access Key",
+         "value":"123456"
+      }
+,
+      {
+         "name":"Secrect Access Key",
+         "value":"12344567"
+      }
+   ],
+   "name":"12344567",
+   "service":
+{
+      "rel":"self",
+      "href":"http://localhost:8080/web/services/50"
+   }
+,
+   "vendorType":"1234567"
+}
+The according object looks like that:
+@Entity
+public class Credential extends AbstractEntity {
+	private String name;
+	private boolean disabled;
+	private String disablingReason;
+	private String vendorType;
+	@ManyToOne
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
+	@JoinColumn(name = "service_id")
+	private Service service;
+	@OneToMany(mappedBy = "credential", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private Set&amp;lt;CredentialProperty&amp;gt; credentialProperties;
+	@OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+	private CredentialSettings credentialSettings;
+And the Exception is as follows:
+java.lang.IllegalArgumentException: argument type mismatch
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_45]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_45]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_45]
+	at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_45]
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:191) ~[spring-core-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.data.mapping.model.BeanWrapper.setProperty(BeanWrapper.java:97) ~[spring-data-commons-1.7.0.M1.jar:na]
+	at org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ResourceDeserializer.deserialize(PersistentEntityJackson2Module.java:241) ~[PersistentEntityJackson2Module$ResourceDeserializer.class:na]
+	at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:2888) ~[jackson-databind-2.2.2.jar:2.2.2]
+	at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:2094) ~[jackson-databind-2.2.2.jar:2.2.2]
+	at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readJavaType(MappingJackson2HttpMessageConverter.java:178) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readInternal(MappingJackson2HttpMessageConverter.java:166) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.http.converter.AbstractHttpMessageConverter.read(AbstractHttpMessageConverter.java:153) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgumentResolver.java:48) ~[spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:123) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:745) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:686) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:80) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:925) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:856) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:936) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:838) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:647) [servlet-api.jar:na]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:812) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728) [servlet-api.jar:na]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source) [cors-filter-1.5.jar:na]
+	at com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source) [cors-filter-1.5.jar:na]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter.doFilterInternal(OpenEntityManagerInViewFilter.java:180) [spring-orm-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at de.cloudscale.security.filter.BaseAuthenticationTokenProcessingFilter.doFilter(BaseAuthenticationTokenProcessingFilter.java:86) [BaseAuthenticationTokenProcessingFilter.class:na]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:183) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:105) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:343) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:260) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:947) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408) [catalina.jar:7.0.39.B]
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1009) [tomcat-coyote.jar:7.0.39.B]
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589) [tomcat-coyote.jar:7.0.39.B]
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:312) [tomcat-coyote.jar:7.0.39.B]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_45]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_45]
+	at java.lang.Thread.run(Thread.java:744) [na:1.7.0_45]
+I guess the reason for that is as follows:
+@SuppressWarnings("unchecked")
+	private &amp;lt;S&amp;gt; S getPotentiallyConvertedValue(Object source, Class&amp;lt;S&amp;gt; targetType) {
+		boolean conversionServiceAvailable = conversionService != null;
+		boolean conversionNeeded = source == null || !targetType.isAssignableFrom(source.getClass());
+		if (conversionServiceAvailable &amp;amp;&amp;amp; conversionNeeded) 
+{
+			return conversionService.convert(source, targetType);
+		}
+
+		return (S) source;
+	}
+In BeanWrapper.java the NPE for conversion service is thrown. Maybe it is not autowired? Given an entity with a collection attribute
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class MyEntity {
+
+
+
+
+......
+
+
+
+
+	@ElementCollection(fetch=FetchType.EAGER)
+
+
+
+
+	private Set&amp;lt;String&amp;gt; myAttribute;
+
+
+
+
+.......
+
+
+
+
+
+
+when you try to create a new instance with spring data rest, it throws an exception
+
+
+
+
+
+
+01:01:03.453 [qtp1456083854-24] ERROR o.s.d.r.w.AbstractRepositoryRestController - argument type mismatch
+
+
+
+
+java.lang.IllegalArgumentException: argument type mismatch
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_40]
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_40]
+
+
+
+
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_40]
+
+
+
+
+        at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_40]
+
+
+
+
+        at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:191) ~[spring-core-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.data.mapping.model.BeanWrapper.setProperty(BeanWrapper.java:97) ~[spring-data-commons-1.7.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ResourceDeserializer.deserialize(PersistentEntityJackson2Module.java:226) ~[
+
+
+
+
+spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:2888) ~[jackson-databind-2.2.2.jar:2.2.2]
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:2094) ~[jackson-databind-2.2.2.jar:2.2.2]
+
+
+
+
+        at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readJavaType(MappingJackson2HttpMessageConverter.java:178) ~[spring-web-3
+
+
+
+
+.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readInternal(MappingJackson2HttpMessageConverter.java:166) ~[spring-web-3
+
+
+
+
+.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.http.converter.AbstractHttpMessageConverter.read(AbstractHttpMessageConverter.java:153) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELE
+
+
+
+
+ASE]
+
+
+
+
+        at org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgum
+
+
+
+
+entResolver.java:48) ~[spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) ~[sprin
+
+
+
+
+g-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162) ~[spring-web-3.2.5.RELEASE.jar
+
+
+
+
+:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:123) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.
+
+
+
+
+RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) ~[spring-
+
+
+
+
+webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:745) ~[spring
+
+
+
+
+-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:686) ~[spring-web
+
+
+
+
+
+
+I think the problem is with PersistentEntityJackson2Module#deserialize where the collections are handled
+
+
+
+
+
+
+if (Collection.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new ArrayList&amp;lt;Object&amp;gt;();
+
+
+
+
+} else if (Set.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new HashSet&amp;lt;Object&amp;gt;();
+
+
+
+
+}
+
+
+
+
+
+ and it should be 
+
+
+
+
+
+
+if (Set.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new HashSet&amp;lt;Object&amp;gt;();
+
+
+
+
+} else if (Collection.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new ArrayList&amp;lt;Object&amp;gt;();
+
+
+
+
+}
+
+
+
+
+
+ or the first branch should consider List.class instead of Collection.class</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">188</link>
+			<link type="Duplicate" description="is duplicated by">199</link>
+		</links>
+	</bug>
+</bugrepository>

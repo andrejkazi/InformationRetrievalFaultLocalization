@@ -1,0 +1,396 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="804" opendate="2013-11-28 02:01:03" fixdate="2013-12-04 03:14:35" resolution="Fixed">
+		<buginformation>
+			<summary>EnableMongoRepositories repositoryImplementationPostfix() default is empty String instead of "Impl"</summary>
+			<description>In contrast to the doc, which states that the default repositoryImplementationPostfix is "Impl", the default is actually set to empty string:
+String repositoryImplementationPostfix() default "";
+Took me a while to figure out why my RepositoryImpl was not recognised...</description>
+			<version>1.4 M1 (Codd)</version>
+			<fixedVersion>1.3.3 (Babbage SR2), 1.4 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.config.EnableMongoRepositories.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="828" opendate="2014-01-21 04:29:09" fixdate="2014-02-17 02:37:26" resolution="Fixed">
+		<buginformation>
+			<summary>UpdateFirst throws OptimisticLockingFailureException when updating document that does not exist</summary>
+			<description>when updating a document that does not exists using MongoTemplage.updateFirst an OptimisticLockingFailureException is thrown in case of a non multi update.
+
+
+
+
+
+
+@Test
+
+
+
+
+public void updateFirstShouldDoNothingWhenCalledForEntitiesThatDoNotExist() {
+
+
+
+
+		
+
+
+
+
+	Query q = query(where("id").is(Long.MIN_VALUE));
+
+
+
+
+	Assume.assumeThat(template.findOne(q, VersionedPerson.class), IsNull.nullValue());
+
+
+
+
+		
+
+
+
+
+	template.updateFirst(q, Update.update("lastname", "supercalifragilisticexpialidocious"), VersionedPerson.class);
+
+
+
+
+	Assert.assertThat(template.findOne(q, VersionedPerson.class), IsNull.nullValue());
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.4 M1 (Codd)</version>
+			<fixedVersion>1.3.4 (Babbage SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="852" opendate="2014-02-19 04:43:31" fixdate="2014-02-21 04:59:44" resolution="Fixed">
+		<buginformation>
+			<summary>Increase version for update does not traverse DBObject correctly in order to find version property.</summary>
+			<description>Version property is nested and therefore not resolved correctly.
+
+
+
+
+
+
+{
+
+
+
+
+  $inc : {version : 1}
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.4 RC1 (Codd)</version>
+			<fixedVersion>1.4 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.Update.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.UpdateTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">811</link>
+		</links>
+	</bug>
+	<bug id="863" opendate="2014-02-25 21:30:25" fixdate="2014-03-06 02:48:39" resolution="Fixed">
+		<buginformation>
+			<summary>QueryMapper.getMappedValue Fails To Handle Arrays Mapped To $in</summary>
+			<description>I have a scenario where I run the following update to pull array elements with the given ids:
+List&amp;lt;BigInteger&amp;gt; idsToRemove = Arrays.asList(
+    BigInteger.valueOf(123), BigInteger.valueOf(234));
+Update update = new Update()
+        .pull("options",
+            new BasicDBObject("_id",
+            new BasicDBObject("$in", mongoOps
+                .getConverter().convertToMongoType(idsToRemove))));
+mongoOps.findAndModify(new Query(), update, MongoProduct.class);
+This used to work before version 1.4.
+Using version 1.4, I get a java.lang.ClassCastException (see attachment).
+This seems to be due to a double call to QueryMapper.getMappedValue(Field, Object) from UpdateMapper.getMappedObjectForField(Field, Object) at line 80 of UpdateMapper, the first of which converts idsToRemove (which is already a BasicDBList) to an array of strings. The second call to getMappedValue from within super.getMappedObjectForField then tries to cast that array to Iterable&amp;lt;?&amp;gt;, which fails.
+Finally, this might be a little out of scope, but I feel that if a BasicDBObject is passed to the Spring Data API, it should be taken as is. It should not be re-converted/re-mapped!</description>
+			<version>1.4 GA (Codd)</version>
+			<fixedVersion>1.4.1 (Codd SR1), 1.5 M1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="843" opendate="2014-02-05 13:07:34" fixdate="2014-03-06 02:56:22" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to use @EnableMongoAuditing annotation in Java config</summary>
+			<description>When declaring an @EnableMongoAuditing annotation on a configuration, application startup fails due to an exception: NoSuchBeanDefinitionException: No bean named &amp;amp;apos;mappingContext&amp;amp;apos; is defined.   This error only occurs if auditing is enabled.</description>
+			<version>1.4 RC1 (Codd)</version>
+			<fixedVersion>1.4.1 (Codd SR1), 1.5 M1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.MongoAuditingRegistrar.java</file>
+			<file type="M">org.springframework.data.mongodb.config.AuditingViaJavaConfigRepositoriesTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.GridFsTemplateParser.java</file>
+			<file type="M">org.springframework.data.mongodb.config.BeanNames.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoParser.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.event.AuditingEventListener.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.event.AuditingEventListenerUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MappingMongoConverterParserIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MappingMongoConverterParserValidationIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MappingMongoConverterParser.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.MongoRepositoryFactoryBean.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoTemplateParser.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoAuditingBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoDbFactoryParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">901</link>
+			<link type="Relate" description="relates to">455</link>
+		</links>
+	</bug>
+	<bug id="909" opendate="2014-04-09 14:15:16" fixdate="2014-04-28 11:03:27" resolution="Fixed">
+		<buginformation>
+			<summary>@CompoundIndex on inherited entity classes</summary>
+			<description>Whenever an entity class is annotated with @CompoundIndexes, it does create the relevant index in the collection. Yet any other entity class that inherits from the first entity class does not inherit this index and thus the @CompoundIndexes annotation has to be repeated in the child classes even though it references the parent class. Its counter-intuitive and one would expect the annotation to apply to child classes also.</description>
+			<version>1.4 GA (Codd)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">899</link>
+		</links>
+	</bug>
+	<bug id="970" opendate="2014-06-27 02:37:03" fixdate="2014-06-27 08:01:04" resolution="Fixed">
+		<buginformation>
+			<summary>Id query cannot be created if object to remove is DBObject</summary>
+			<description>If we in insert DBObject in database used method:
+
+
+
+
+
+
+protected void populateIdIfNecessary(Object savedObject, Object id) {
+
+
+
+
+  if (id == null) {
+
+
+
+
+    return;
+
+
+
+
+  }
+
+
+
+
+  if (savedObject instanceof BasicDBObject) {
+
+
+
+
+    DBObject dbObject = (DBObject) savedObject;
+
+
+
+
+    dbObject.put(ID_FIELD, id);
+
+
+
+
+    return;
+
+
+
+
+  }
+
+
+
+
+  MongoPersistentProperty idProp = getIdPropertyFor(savedObject.getClass());
+
+
+
+
+  if (idProp == null) {
+
+
+
+
+    return;
+
+
+
+
+  }
+
+
+
+
+  ConversionService conversionService = mongoConverter.getConversionService();
+
+
+
+
+  BeanWrapper&amp;lt;PersistentEntity&amp;lt;Object, ?&amp;gt;, Object&amp;gt; wrapper = BeanWrapper.create(savedObject, conversionService);
+
+
+
+
+  Object idValue = wrapper.getProperty(idProp, idProp.getType(), true);
+
+
+
+
+  if (idValue != null) {
+
+
+
+
+    return;
+
+
+
+
+  }
+
+
+
+
+  wrapper.setProperty(idProp, id);
+
+
+
+
+}
+
+
+
+
+
+
+where checked: &amp;amp;apos;savedObject instanceof BasicDBObject&amp;amp;apos; and not store property with &amp;amp;apos;_id&amp;amp;apos;. Then if we remove DBObject from database for create query used:
+
+
+
+
+
+
+private Query getIdQueryFor(Object object) {
+
+
+
+
+  Assert.notNull(object);
+
+
+
+
+  Class&amp;lt;?&amp;gt; objectType = object.getClass();
+
+
+
+
+  MongoPersistentEntity&amp;lt;?&amp;gt; entity = mappingContext.getPersistentEntity(objectType);
+
+
+
+
+  MongoPersistentProperty idProp = entity == null ? null : entity.getIdProperty();
+
+
+
+
+  if (idProp == null) {
+
+
+
+
+    throw new MappingException("No id property found for object of type " + objectType);
+
+
+
+
+  }
+
+
+
+
+  ConversionService service = mongoConverter.getConversionService();
+
+
+
+
+  Object idProperty = null;
+
+
+
+
+  idProperty = BeanWrapper.create(object, service).getProperty(idProp, Object.class, true);
+
+
+
+
+  return new Query(where(idProp.getFieldName()).is(idProperty));
+
+
+
+
+}
+
+
+
+
+
+
+Where not checked:  &amp;amp;apos;savedObject instanceof BasicDBObject&amp;amp;apos; and throw exception. Why not checked removing object on &amp;amp;apos;savedObject instanceof BasicDBObject&amp;amp;apos; if we insert BAsicDBObject and after remove then.</description>
+			<version>1.4 RC1 (Codd)</version>
+			<fixedVersion>1.5.1 (Dijkstra SR1), 1.6 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

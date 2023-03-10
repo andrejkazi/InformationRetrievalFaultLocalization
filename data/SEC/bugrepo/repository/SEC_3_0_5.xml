@@ -1,0 +1,310 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1670" opendate="2011-02-03 09:45:52" fixdate="2011-02-05 04:11:47" resolution="Fixed">
+		<buginformation>
+			<summary>SpringSecurityLdapTemplate should use a CompositeName to remove JNDI escaping from SearchResult.getName()</summary>
+			<description>SearchResult.getName() returns a CompositeName syntax, so JNDI special characters will be escaped, which we don&amp;amp;apos;t want in a pure-LDAP name. The result should be wrapped in a CompositeName() before passing to the constructor for DistinguishedName. The latter knows how to deal with CompositeNames.
+</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0.RC1, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+			<file type="M">org.springframework.security.ldap.AbstractLdapIntegrationTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">950</link>
+		</links>
+	</bug>
+	<bug id="1705" opendate="2011-03-31 09:06:26" fixdate="2011-03-31 14:04:15" resolution="Fixed">
+		<buginformation>
+			<summary>Namespace creates spurious OpenIDAuthenticationFilter bean</summary>
+			<description></description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0.RC2, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1674" opendate="2011-02-08 16:35:01" fixdate="2011-04-14 07:08:51" resolution="Duplicate">
+		<buginformation>
+			<summary>absolute paths should be allowed for security:form-login and security:logout attributes.</summary>
+			<description>absolute paths should be allowed for security:form-login and security:logout attributes.
+For instance, login-page doesn&amp;amp;apos;t work with an absolute path.  But if LoginUrlAuthenticationEntryPoint.buildRedirectUrlToLoginPage&amp;amp;apos;s first lines were changed to:
+protected String buildRedirectUrlToLoginPage(final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException authException) {
+        String loginForm = determineUrlToUseForThisRequest(request, response, authException);
+        /** Allow support for absolute URIs */
+        if(URI.create(loginForm).isAbsolute()) 
+{
+            return loginForm;
+        }
+
+        // continue on with existing logic
+}
+Then comes the inevitable question of why would you want to do this.  Consider that someone is using spring-mvc to build an API on domain api.test.com, but a set of non-java, front-end user pages on ui.test.com.  
+So, api.test.com performs all database/backend logic.  In this circumstance, if someone were to go to api.test.com directly in their browser, I would possibly want to redirect them to ui.test.com to login (where ui.test.com has a form with method=http://api.test.com&amp;amp;apos;s/login.do or equivalent).  
+So in this case, I need to specify:
+&amp;lt;security:form-login login-page=http://ui.test.com/login&amp;gt;,
+which won&amp;amp;apos;t work unless the above patch (or something similiar) is implemented.
+</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0.RC2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandlerTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1700" opendate="2011-03-23 13:01:30" fixdate="2011-04-20 06:50:44" resolution="Fixed">
+		<buginformation>
+			<summary>IOException in JaasAuthenticationProvider when loginConfig is a classpath resource in JBoss 5.1.0.GA</summary>
+			<description>Here is a snippet of my security config file showing my declaration of the JaasAuthenticationProvider:
+&amp;lt;b:bean id="jaasAuthenticationProvider" class="org.springframework.security.authentication.jaas.JaasAuthenticationProvider"&amp;gt;
+    &amp;lt;b:property name="loginConfig" value="classpath:auth.conf" /&amp;gt;
+    ...
+&amp;lt;/b:bean&amp;gt;
+Here is the exception thrown when starting up the application:
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;jaasAuthenticationProvider&amp;amp;apos; defined in class path resource [applicationContext-security.xml]: Invocation of init method failed; nested exception is java.io.IOException: File resolution not supported for nested resource: ZipEntryHandler@30251001[path=application.ear/application-main-4.5.0.jar/auth.conf context=file:/C:/tools/jboss-5.1.0.GA/server/default/deploy/ real=file:/C:/tools/jboss-5.1.0.GA/server/default/deploy/application.ear/application-main-4.5.0.jar/auth.conf]
+        at org.springframework.beans.factory.access.SingletonBeanFactoryLocator.useBeanFactory(SingletonBeanFactoryLocator.java:389)
+Digging through the Spring code, I found that the exception is being thrown from the getFile() method of VfsUtils, which is called from VfsResource.getFile(). Apparently under JBoss, the classpath resource is resolved to a VfsResource. The first line of the method JaasAuthenticationProvider.convertLoginConfigToUrl() calls loginConfig.getFile().getAboslutePath(). Looking at the code in VfsUtils, it appears that the version of the JBoss VFS used with JBoss 5 doesn&amp;amp;apos;t support the getFile() method, and throws the IOException noted above.
+Even if it weren&amp;amp;apos;t for this problem, the code in JaasAuthenticationProvider.convertLoginConfigToUrl() appears to assume that the loginConfig is a file in the file system. Any other type of resource looks as though it would not work.
+To test this theory, I wrote a subclass of JaasAuthenticationProvider, and replaced the convertLoginConfigToUrl method with the following code:
+    private String convertLoginConfigToUrl() throws IOException 
+{
+        return getLoginConfig().getURL().toString();
+    }
+
+This solved my problem.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0.RC2, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.authentication.jaas.JaasGrantedAuthority.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.LdapUserDetailsImpl.java</file>
+			<file type="M">org.springframework.security.core.context.SecurityContextImpl.java</file>
+			<file type="M">org.springframework.security.core.authority.GrantedAuthoritiesContainerImpl.java</file>
+			<file type="M">org.springframework.security.core.session.SessionInformation.java</file>
+			<file type="M">org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority.java</file>
+			<file type="M">org.springframework.security.access.intercept.RunAsUserToken.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails.java</file>
+			<file type="M">org.springframework.security.provisioning.MutableUser.java</file>
+			<file type="M">org.springframework.security.web.authentication.WebAuthenticationDetails.java</file>
+			<file type="M">org.springframework.security.authentication.jaas.JaasAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.authentication.AuthenticationDetails.java</file>
+			<file type="M">org.springframework.security.remoting.rmi.ContextPropagatingRemoteInvocation.java</file>
+			<file type="M">org.springframework.security.cas.authentication.CasAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.authentication.rcp.RemoteAuthenticationException.java</file>
+			<file type="M">org.springframework.security.core.authority.GrantedAuthorityImpl.java</file>
+			<file type="M">org.springframework.security.core.userdetails.User.java</file>
+			<file type="M">org.springframework.security.authentication.RememberMeAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.InetOrgPerson.java</file>
+			<file type="M">org.springframework.security.authentication.UsernamePasswordAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.Person.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+			<file type="M">org.springframework.security.cas.authentication.CasAssertionAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.core.authority.SimpleGrantedAuthority.java</file>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationToken.java</file>
+			<file type="M">org.springframework.security.authentication.jaas.JaasAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1764" opendate="2011-06-13 11:22:07" fixdate="2011-06-14 15:54:56" resolution="Complete">
+		<buginformation>
+			<summary>z/OS Password Encoding Error</summary>
+			<description>Package: org.springframework.security.authentication.encoding
+LdapShaPasswordEncoding.java
+Fix - line 104:  has been tested with "org.springframework.security.core_3.0.3.RELEASE" on z/OS 1.12
+was:        return prefix + new String(Base64.encode(hash));
+change:  return prefix + new String(Base64.encode(hash), "UTF-8");
+MD4PasswordEncoder.java  also looks like it has same issue.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.crypto.codec.Utf8.java</file>
+			<file type="M">org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder.java</file>
+			<file type="M">org.springframework.security.authentication.encoding.Md4PasswordEncoder.java</file>
+			<file type="M">org.springframework.security.authentication.encoding.LdapShaPasswordEncoder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1768" opendate="2011-06-17 07:53:44" fixdate="2011-06-18 07:01:30" resolution="Fixed">
+		<buginformation>
+			<summary>Using the "*" wildcard in intercept-method does not include implemented interfaces</summary>
+			<description>Created on behalf of client, with the following use case:
+1.  Bean is secured via the intercept-methods tag.
+2.  The method attributed of the protect tag is set to "*"
+3.  Bean implements an interface and is annotated with @Transactional.
+4.  None of the methods on the interface are protected unless the interface is explicitly defined in the method attribute.
+In this case only the methods on the bean, not the interface are secured when the method is "".  They feel that in addition to the methods declared on the bean, all implemented interface methods should also be secured when the "" is specified for the method.
+Attached is a sample test case illustrating the behavior.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.method.AbstractMethodSecurityMetadataSource.java</file>
+			<file type="M">org.springframework.security.config.TestBusinessBeanImpl.java</file>
+			<file type="M">org.springframework.security.config.method.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.config.method.InterceptMethodsBeanDefinitionDecoratorTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1782" opendate="2011-07-11 14:14:22" fixdate="2011-07-11 17:54:33" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect Javadoc in LdapAuthenticationProvider</summary>
+			<description>This page:
+http://static.springsource.org/spring-security/site/docs/3.0.x/apidocs/org/springframework/security/ldap/authentication/LdapAuthenticationProvider.html
+Has instructions for wiring up a BindAuthenticator. But the package name of the BindAuthenticator has changed recently. So the package name is now wrong.
+In the text BindAuthenticator is here:
+org.springframework.security.authentication.ldap.authenticator.BindAuthenticator
+But in the latest version it&amp;amp;apos;s actually here:
+org.springframework.security.ldap.authentication.BindAuthenticator</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.authentication.LdapAuthenticationProvider.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1772" opendate="2011-06-27 05:09:52" fixdate="2011-07-13 14:16:43" resolution="Complete">
+		<buginformation>
+			<summary>Unneeded URL decode in SimpleUrlLogoutSuccessHandler</summary>
+			<description>URLDecoder.decode(targetUrl, "UTF-8") call is not needed in org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler and it breaks URLs with GET parameters escaped in them.
+p.s. also isUseReferer() is missing.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">213</link>
+		</links>
+	</bug>
+	<bug id="1792" opendate="2011-07-29 06:57:15" fixdate="2011-07-29 08:07:26" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in RunAsUserToken#toString() when originalAuthentication is null</summary>
+			<description></description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.intercept.RunAsUserTokenTests.java</file>
+			<file type="M">org.springframework.security.access.intercept.RunAsUserToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1790" opendate="2011-07-25 08:02:24" fixdate="2011-08-19 10:46:03" resolution="Fixed">
+		<buginformation>
+			<summary>URL spring-security-redirect parameters vulnerable to CRLF injection by default.</summary>
+			<description>AbstractAuthenticationTargetUrlRequestHandler#determineTargetUrl(HttpServletRequest, HttpServletResponse) calls URLDecoder.decode, and the result is directly feed to DefaultRedirectStrategy by default, which does not filter line feeds, injecting a custom header after "Location"
+Request:
+GET
+/mywebapp/logout/spring-security-redirect=%0d%0a%20SomeCustomInjectedHeader%3ainjected_
+by_wvs HTTP/1.1
+Response:
+HTTP/1.1 302 Moved Temporarily
+Date: Tue, 19 Jul 2011 15:28:57 GMT
+Location: xxxxxxxxxxxxxxx
+SomeCustomInjectedHeader: injected_by_wvs
+Content-Length: 0
+Connection: close
+Content-Type: text/plain; charset=UTF-8
+You need to restrict CR(0x13) and LF(0x10) from the user input or properly encode the output in order to prevent the injectino of custom HTTP headers.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.DefaultHttpFirewall.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1795" opendate="2011-08-10 21:39:37" fixdate="2011-08-19 11:47:46" resolution="Complete">
+		<buginformation>
+			<summary>Changing ACL parent causes a NPE</summary>
+			<description>Changing the the parent ACL of an AclImpl when it has a parent already causes a NullpointException in AclImpl.equals(.)
+The unit test (paste into AclImplTests.java) proves it.
+@Test
+  public void testChangeParent() throws Exception
+  {
+    AclImpl parentAcl = new AclImpl(objectIdentity, 1L, mockAuthzStrategy, mockAuditLogger);
+    AclImpl childAcl = new AclImpl(objectIdentity, 2L, mockAuthzStrategy, mockAuditLogger);
+    AclImpl changeParentAcl = new AclImpl(objectIdentity, 3L, mockAuthzStrategy, mockAuditLogger);
+
+    // This works
+    childAcl.setParent(parentAcl);
+    childAcl.setParent(null);                        // setting to null first avoids NPE
+    childAcl.setParent(changeParentAcl);
+
+    // This causes an NPE
+    childAcl.setParent(parentAcl);
+  }</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1802" opendate="2011-08-23 02:06:16" fixdate="2011-10-21 09:26:43" resolution="Fixed">
+		<buginformation>
+			<summary>RFC 1738 / 3986 compliant schemes will not be recognized as valid schemes.</summary>
+			<description>org.springframework.security.web.util.UrlUtils.isAbsoluteUrl(String) checks whether the given URL is absolute. It will be done by checking the URL is starting  with a valid scheme. But some valid schemes (RFC 1738 / 3986) will not be accepted (e.g. http1). In general all schemes containing digits will be rejected.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.1.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtilsTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1735" opendate="2011-05-09 11:01:31" fixdate="2011-12-30 14:47:48" resolution="Fixed">
+		<buginformation>
+			<summary>Logged out immediately after logging in on some browsers</summary>
+			<description>This bug is closely related to SEC-1587.
+I start at my log in screen, log into the system, see the logged in view and then the next navigation I make I end up being redirect back to the login screen.
+It happens periodly, not every time.  It happens the most when using Internet Explorer 6.
+After I debugged the problem I figured out that the httpSession.removeAttribute(SPRING_SECURITY_CONTEXT_KEY); call in HttpSessionSecurityContextRepository was destroying my newly created authentication object.
+Here&amp;amp;apos;s how it happens:
+1. Browser requests jsf.js.faces during the loading of the login screen.  This request passes through the httpSessionContextIntegrationFilter along with all .faces requests.
+2. Browser holds on to connection after getting the javascript file.  (Browsers do this as an optimization to prevent lots of new tcp connects)
+3. I log into my app from the login page.  This adds the security context to the session.
+4. Browser makes another javascript request from the open connection which causes the thread working on jsf.js.faces to finish up (come back out through the filters)
+5. On the request thread of jsf.js.faces the original security context had a null authenication so httpSession.removeAttribute(SPRING_SECURITY_CONTEXT_KEY); is called which wipes up the new authenication.
+I&amp;amp;apos;ve worked around the problem by created my own version of HttpSessionSecurityContextRepository and just changing the lines:
+                if (httpSession != null) 
+{
+                    // SEC-1587 A non-anonymous context may still be in the session
+                    httpSession.removeAttribute(SPRING_SECURITY_CONTEXT_KEY);
+                }
+                return;
+
+to
+
+                if (httpSession != null &amp;amp;&amp;amp; contextHashBeforeChainExecution != -1) {                    // SEC-1587 A non-anonymous context may still be in the session                    httpSession.removeAttribute(SPRING_SECURITY_CONTEXT_KEY);                }
+                return;
+This means that the security context is only reset if there was one at the beginning of the request. (Hash of -1 means no authenication)</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.8, 3.1.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepositoryTests.java</file>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">2742</link>
+		</links>
+	</bug>
+</bugrepository>

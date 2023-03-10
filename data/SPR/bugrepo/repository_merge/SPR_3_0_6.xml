@@ -1,0 +1,394 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="40" master="8674" duplicate="8665" opendate="2011-09-03 08:29:42" fixdate="2011-12-01 10:38:40" resolution="Complete">
+		<buginformation>
+			<summary>Collection Binding broken - TypeConverterDelegate does bind Collection Elements to Collection type instead of the collection elements Type Did spring framework 3.0.6 break property editor support for List&amp;apos;s? If so, here&amp;apos;s a new bug that was created.</summary>
+			<description>Please look at the attached Testcase. Conversion does work for String -&amp;gt; Set in 3.0.5 but fails in 3.0.6. Elements are converted to the collection type rather than their Collections elements type.
+The revision and bug which causes this is mentioned in the forum thread. I have an application that I&amp;amp;apos;ve recently upgraded to 3.0.6 from 3.0.5. The application used a property editor to convert a String to a List of objects, back and forth.
+I am positive this code used to work. In fact, the unit tests for the property editor continue to work as expected.
+However, whenever a controller uses the property editor, it wraps the List of objects with ANOTHER list, which is absolutely not what we want to happen. Did they change how property editors work? How do I fix it?
+My init binder method looks like this:
+
+
+
+
+
+
+	@InitBinder
+
+
+
+
+	public void initBinder(WebDataBinder binder) {
+
+
+
+
+		binder.registerCustomEditor(List.class, new UsernamesToRecipientsEditor(userAccountDao));
+
+
+
+
+	}
+
+
+
+
+
+
+Because java is weakly typed when it comes to List, I want you to know that this is really a `List&amp;lt;Recipient&amp;gt;` and not just a List of any random object. Here is the property editor code:
+
+
+
+
+
+
+    public class UsernamesToRecipientsEditor extends PropertyEditorSupport {
+
+
+
+
+    
+
+
+
+
+    	private UserAccountDao dao;
+
+
+
+
+    
+
+
+
+
+    	public UsernamesToRecipientsEditor(UserAccountDao dao) {
+
+
+
+
+    		this.dao = dao;
+
+
+
+
+    	}
+
+
+
+
+    
+
+
+
+
+    	@Override
+
+
+
+
+    	public String getAsText() {
+
+
+
+
+    		Object obj = getValue();
+
+
+
+
+    		if(obj == null) {
+
+
+
+
+    			return "";
+
+
+
+
+    		}
+
+
+
+
+    
+
+
+
+
+    		if(obj instanceof List) {
+
+
+
+
+    			List&amp;lt;Recipient&amp;gt; recipients = (List&amp;lt;Recipient&amp;gt;) obj;
+
+
+
+
+    
+
+
+
+
+    			StringBuilder builder = new StringBuilder();
+
+
+
+
+    			for(Iterator&amp;lt;Recipient&amp;gt; iterator = recipients.iterator(); iterator.hasNext();) {
+
+
+
+
+    				Recipient recipient = iterator.next();
+
+
+
+
+    				builder.append(recipient.getUserAccount().getUsername());
+
+
+
+
+    
+
+
+
+
+    				if(iterator.hasNext()) {
+
+
+
+
+    					builder.append(", ");
+
+
+
+
+    				}
+
+
+
+
+    			}
+
+
+
+
+    
+
+
+
+
+    			return builder.toString();
+
+
+
+
+    		}
+
+
+
+
+    
+
+
+
+
+    		throw new IllegalArgumentException("Value must be a UserAccount");
+
+
+
+
+    	}
+
+
+
+
+    
+
+
+
+
+    	@Override
+
+
+
+
+    	public void setAsText(String text) {
+
+
+
+
+    		List&amp;lt;Recipient&amp;gt; recipients = new ArrayList&amp;lt;Recipient&amp;gt;();
+
+
+
+
+    
+
+
+
+
+    		if(!StringUtils.hasText(text)) {
+
+
+
+
+    			setValue(recipients);
+
+
+
+
+    			return;
+
+
+
+
+    		}
+
+
+
+
+    
+
+
+
+
+    		for(String username : StringUtils.commaDelimitedListToSet(text)) {
+
+
+
+
+    			UserAccount userAccount = dao.findByUsername(username.trim());
+
+
+
+
+    			if(userAccount != null) {
+
+
+
+
+    				Recipient recipient = new Recipient(userAccount);
+
+
+
+
+    				if(!containsRecipient(recipients, recipient)) {
+
+
+
+
+    					recipients.add(recipient);
+
+
+
+
+    				}
+
+
+
+
+    			}
+
+
+
+
+    		}
+
+
+
+
+    
+
+
+
+
+    		setValue(recipients);
+
+
+
+
+    	}
+
+
+
+
+    
+
+
+
+
+    	private boolean containsRecipient(List&amp;lt;Recipient&amp;gt; recipients, Recipient recipient) {
+
+
+
+
+    		for(Recipient r : recipients) {
+
+
+
+
+    			if(r.getUserAccount().getId() == recipient.getUserAccount().getId()) return true;
+
+
+
+
+    		}
+
+
+
+
+    
+
+
+
+
+    		return false;
+
+
+
+
+    	}
+
+
+
+
+    
+
+
+
+
+    }
+
+
+
+
+
+
+Basically what this code does is it converts a string containing a bunch of username&amp;amp;apos;s separated by commas and converts them to the actual user objects, back and forth between them. It works in unit tests, and this worked in the past.
+Unfortunately, after Spring MVC calls into this property editor, it wraps the result from `setValue(recipients)` inside of ANOTHER List... so the end result is a "List of a List of Recipients". This isn&amp;amp;apos;t what I want.
+Since this code above USED TO work, I have to conclude that some bug or behavioral change has happened. Please help.</description>
+			<version>3.0.6</version>
+			<fixedVersion>3.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.core.convert.support.GenericConversionService.java</file>
+			<file type="M">org.springframework.core.convert.support.MapToMapConverterTests.java</file>
+			<file type="M">org.springframework.core.convert.support.ArrayToObjectConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.ArrayToCollectionConverter.java</file>
+			<file type="M">org.springframework.core.convert.support.CollectionToCollectionConverterTests.java</file>
+			<file type="M">org.springframework.core.convert.TypeDescriptor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">8665</link>
+			<link type="Relate" description="is related to">8714</link>
+			<link type="Duplicate" description="duplicates">8674</link>
+		</links>
+	</bug>
+</bugrepository>

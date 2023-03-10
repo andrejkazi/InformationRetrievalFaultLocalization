@@ -1,0 +1,925 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="1" master="1162" duplicate="1239" opendate="2015-08-10 21:11:38" fixdate="2016-05-27 10:04:19" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#equals fails with Index OOBE on non-Strings with identical leading prefix StringUtils.equals("",new StringBuffer("foo")) throws StringIndexOutOfBoundsException</summary>
+			<description>From the Commons User mailing list:
+
+StringUtils.equals(cs1,cs2) delegates to CharSequence.regionMatches(...) in a way that causes IndexOutOfBounds when either of cs1/cs2 isn&amp;amp;apos;t a String.
+Specifically, comparing "foo" and "foobar" for non-String CharSequences bombs due to CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length())) because regionMatches doesn&amp;amp;apos;t check for input exhaustion. </description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1207</link>
+			<link type="Duplicate" description="is duplicated by">1239</link>
+			<link type="Reference" description="relates to">1163</link>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="2" master="421" duplicate="423" opendate="2008-04-02 15:42:39" fixdate="2008-04-11 17:53:14" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava(String) escapes &amp;apos;/&amp;apos; characters StringEscapeUtils.escapeJava() behavior changed; backslash escapes &amp;apos;/&amp;apos; characters</summary>
+			<description>Commons Lang 2.4 StringEscapeUtils.escapeJava(String) now escapes &amp;amp;apos;/&amp;amp;apos; characters, which is not a valid "escapable" character in Java strings.  I haven&amp;amp;apos;t tried the other Java escape/unescape methods to see if they have a similar problem, or that only Java "escapable" characters are escaped by escapeJava(String).
+This bug may have appeared as an unintended side-effect of the fix for LANG-363.
+Also the javadoc for escapeJava is now a little off, in that &amp;amp;apos;/&amp;amp;apos; should now be included in the sentence describing the differences between Java and Javascript strings, with respect to escaping rules.
+The following is a JUnit3 test demonstrating the bug.
+import junit.framework.TestCase;
+import org.apache.commons.lang.StringEscapeUtils;
+public class StringEscapeUtilsTest extends TestCase {
+    public void testEscapeJavaWithSlash() 
+{
+        final String input = "String with a slash (/) in it";
+        
+        final String expected = input;
+        final String actual   = StringEscapeUtils.escapeJava( input );
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes &amp;amp;apos;/&amp;amp;apos; characters,
+         * which are not a valid character to escape in a Java string.  
+         */
+        assertEquals( expected, actual );
+    }
+}
+ StringEscapeUtils.escapeJava(String str) escapes forward-slash ("/") characters.  Prior to 2.4, this was not the case.  This is caused by the patch in LANG-363, which changed the behavior of StringEscapeUtils.escapeJavaScript(String str) to escape forward-slashes for compatibliity with IE.  The change was implemented in code common to both methods; StringEscapeUtils.escapeJavaStyleString() .
+This side-effect change to StringEscapeUtils.escapeJava() is a problem in my project.  I don&amp;amp;apos;t see any reason why it is necessary to escape forward-slashes in escapeJava(), so I suggest the behavior be changed so that escapeJavaScript() escapes forward-slashes, but escapeJava() does not.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">423</link>
+			<link type="Duplicate" description="is duplicated by">473</link>
+			<link type="Reference" description="is related to">437</link>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="3" master="478" duplicate="323" opendate="2007-02-15 09:18:44" fixdate="2009-03-14 09:29:32" resolution="Fixed">
+		<buginformation>
+			<summary>StopWatch does not resist to system time changes StopWatch: increase precision by using System.nanoTime()</summary>
+			<description>org.apache.commons.lang.time.StopWatch seems to be relying on wall clock, i.e. by calling java.lang.System.currentTimeMillis() to sample current time.
+When a system time change occurs (user action, NTP synchronization...) between 2 calls to StopWatch.getTime(), the difference between the 2 samples is wrong: the measured duration may noticeably differ from the real one. Moreover, should the system time change consist in a backward adjustment, the difference could be negative.
+In order to make StopWatch resistant to system time changes, would it be possible to use the process time, i.e. by making implementation calling java.lang.System.nanoTime() -multiplied by appropriate factor, of course.
+Thanks a lot,
+Regis. In Java5, theres a new, more precise way to measure elapsed timespans:
+http://java.sun.com/j2se/1.5.0/docs/api/java/lang/System.html#nanoTime()
+It will probably break the class contract of the current StopWatch class, as the returned timestamps cannot be transformed to Dates etc., but it will add precision to the stopwatch aspect (as opposed to the timewatch aspect) of the class.
+Perhaps the way to go is to introduce a new HighPrecisionStopWatch class.</description>
+			<version>2.3</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.StopWatch.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">323</link>
+			<link type="Duplicate" description="is duplicated by">478</link>
+		</links>
+	</bug>
+	<bug id="4" master="995" duplicate="957" opendate="2014-01-24 15:14:30" fixdate="2014-05-03 19:27:35" resolution="Fixed">
+		<buginformation>
+			<summary>Fix bug with stripping spaces on last line in WordUtils.wrap()  WordUtils.wrap(String, int) doesn&amp;apos;t behave according to JavaDoc</summary>
+			<description>Via github: https://github.com/apache/commons-lang/pull/18 The JavaDoc of WordUtils.wrap(String, int) says that leading white spaces on new lines are stripped from the result. However the following test will fail, since the leading spaces of the second line are not stripped from the resultL
+
+
+@Test
+public void testWordUtils_StringInt_LeadingWhitespaces {
+        input = "spaces                               spaces";
+        expected = "spaces              " + systemNewLine + "spaces";
+        assertEquals(expected, WordUtils.wrap(input, 20));
+}
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.WordUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.WordUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">957</link>
+			<link type="Duplicate" description="is duplicated by">995</link>
+		</links>
+	</bug>
+	<bug id="5" master="1018" duplicate="1215" opendate="2014-05-27 10:24:53" fixdate="2016-06-12 11:29:48" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber(final String str)  Precision will be lost NumberUtils.createNumber() method lost precision sometimes</summary>
+			<description>With commons-lang 3.2.2:
+NumberUtils.createNumber("-160952.54");
+The result is "-160952.55".
+Should not be based on the length of the decimal point number to judge whether the floating point number.
+Using the method (createFloat(str)) of dealing with the valid number greater than seven Numbers will cause accuracy loss.
+The source code is as follows:
+
+
+try {
+            if(numDecimals &amp;lt;= 7){// If number has 7 or fewer digits past the decimal point then make it a float
+                final Float f = createFloat(str);
+                if (!(f.isInfinite() || (f.floatValue() == 0.0F &amp;amp;&amp;amp; !allZeros))) {
+                    return f;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+        try {
+            if(numDecimals &amp;lt;= 16){// If number has between 8 and 16 digits past the decimal point then make it a double
+                final Double d = createDouble(str);
+                if (!(d.isInfinite() || (d.doubleValue() == 0.0D &amp;amp;&amp;amp; !allZeros))) {
+                    return d;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+
+        return createBigDecimal(str);
+    }
+
+ For example:
+    System.out.println(NumberUtils.createNumber("193343.82"));
+The result  is   193343.81
+The bug because of  code in the class  NumberUtils of the org.apache.commons.lang3.math package
+    public static Float createFloat(final String str) {
+        if (str == null) 
+{
+            return null;
+        }
+        return Float.valueOf(str);
+    }</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1187</link>
+			<link type="Duplicate" description="is duplicated by">1215</link>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="6" master="1189" duplicate="1235" opendate="2015-12-03 19:54:28" fixdate="2016-06-02 10:48:54" resolution="Fixed">
+		<buginformation>
+			<summary>Add getAndIncrement/getAndDecrement/getAndAdd/incrementAndGet/decrementAndGet/addAndGet in Mutable* classes Add decrementAndGet/incrementAndGet to MutableInt class</summary>
+			<description>Add below methods to Mutable* classes:
+    getAndIncrement
+    getAndDecrement
+    getAndAdd
+    incrementAndGet
+    decrementAndGet
+    addAndGet Frequently when incrementing or decrementing a number, one needs to compare it to a limit. For example in loops.
+At present that requires two calls:
+MutableInt.decrement()
+MutableInt.getValue()
+It would be convenient to have a method that combined the two.
+c.f. AtomicInteger.decrementAndGet()
+There is less likelihood of needing these methods for other Mutable Number types as they are not often used in loops.</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShort.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDouble.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableInt.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloat.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLong.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByte.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableIntTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDoubleTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShortTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLongTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloatTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByteTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1235</link>
+			<link type="Duplicate" description="duplicates">1189</link>
+			<link type="Reference" description="relates to">1176</link>
+		</links>
+	</bug>
+	<bug id="7" master="1112" duplicate="1181" opendate="2015-04-09 07:47:19" fixdate="2015-11-19 21:28:08" resolution="Fixed">
+		<buginformation>
+			<summary>MultilineRecursiveToStringStyle largely unusable due to being package-private MultilineRecursiveToStringStyle is not public</summary>
+			<description>The new MultilineRecursiveToStringStyle which was added under LANG-1052 is a package-private scoped class (no specific scope is specified for the class). I&amp;amp;apos;m assuming, like RecursiveToStringStyle, it should be public instead? The public access modifier is missing from the MultilineRecursiveToStringStyle class. </description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1181</link>
+			<link type="Duplicate" description="duplicates">1112</link>
+		</links>
+	</bug>
+	<bug id="8" master="1162" duplicate="1207" opendate="2015-08-10 21:11:38" fixdate="2016-02-24 14:45:03" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#equals fails with Index OOBE on non-Strings with identical leading prefix StringUtils.equals with CharSequence - IndexOutOfBoundsException</summary>
+			<description>From the Commons User mailing list:
+
+StringUtils.equals(cs1,cs2) delegates to CharSequence.regionMatches(...) in a way that causes IndexOutOfBounds when either of cs1/cs2 isn&amp;amp;apos;t a String.
+Specifically, comparing "foo" and "foobar" for non-String CharSequences bombs due to CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length())) because regionMatches doesn&amp;amp;apos;t check for input exhaustion. Good day,
+This is my first report here, so I&amp;amp;apos;m really sorry if I did not fill in the form right .
+I just ran into a bug with the method 
+public static boolean equals(final CharSequence cs1, final CharSequence cs2).
+If one of the object is not the String object, the method use the CharSequenceUtils to check the equality. 
+The problem is that using Math.max(cs1.length(), cs2.length()) give the max length of the 2 objects. Then 1 of the object throw IndexOutOfBoundsException.
+I think it will be better to check the size before using CharSequenceUtils as the method equalsIgnoreCase.
+Maybe this code could correct the bug :
+if (cs1 == cs2) 
+{
+    return true;
+}
+ else if (cs1 == null || cs2 == null) 
+{
+    return false;
+} else if (cs1.length() != cs2.length()) {
+    return false;
+}
+ else if (cs1 instanceof String &amp;amp;&amp;amp; cs2 instanceof String) 
+{
+    return cs1.equals(cs2);
+}
+ else 
+{
+    return CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, cs1.length());
+}
+
+Kind regards,</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1207</link>
+			<link type="Duplicate" description="is duplicated by">1239</link>
+			<link type="Reference" description="relates to">1163</link>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="9" master="1192" duplicate="1209" opendate="2015-12-10 08:16:10" fixdate="2016-03-01 06:48:24" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat does not support the week-year component (uppercase &amp;apos;Y&amp;apos;) FastDateFormat does not support the &amp;apos;u&amp;apos; pattern element</summary>
+			<description>The Java SimpleDateFormat supports two year-components, &amp;amp;apos;y&amp;amp;apos; for normal year and &amp;amp;apos;Y&amp;amp;apos; for &amp;amp;apos;Week year&amp;amp;apos;, see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+However when we try to use FastDateFormat to parse a format which uses the week-year, it fails with an exception
+
+java.lang.IllegalArgumentException: Illegal pattern component: YYYY
+	at org.apache.commons.lang3.time.FastDatePrinter.parsePattern(FastDatePrinter.java:282)
+	at org.apache.commons.lang3.time.FastDatePrinter.init(FastDatePrinter.java:149)
+	at org.apache.commons.lang3.time.FastDatePrinter.&amp;lt;init&amp;gt;(FastDatePrinter.java:142)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:384)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:369)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:91)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:88)
+	at org.apache.commons.lang3.time.FormatCache.getInstance(FormatCache.java:82)
+	at org.apache.commons.lang3.time.FastDateFormat.getInstance(FastDateFormat.java:119)
+
+
+Simple unit test to reproduce this:
+
+
+    @Test
+    public void testCommonsLang() {
+    	Date date = new Date();
+
+    	Format dateFormat = new SimpleDateFormat("YYYY");
+		assertNotNull(dateFormat.format(date));
+
+        dateFormat = FastDateFormat.getInstance("YYYY");
+		assertNotNull(dateFormat.format(date));
+    }
+
+ java.lang.IllegalArgumentException: Illegal pattern component: u</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="D">org.apache.commons.lang3.time.WeekYearTest.java</file>
+			<file type="D">org.apache.commons.lang3.time.CalendarReflection.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Blocker" description="is blocked by">1194</link>
+			<link type="Duplicate" description="is duplicated by">1209</link>
+			<link type="Duplicate" description="duplicates">1192</link>
+		</links>
+	</bug>
+	<bug id="10" master="857" duplicate="862" opendate="2012-11-20 12:36:14" fixdate="2013-05-16 21:35:38" resolution="Fixed">
+		<buginformation>
+			<summary>StringIndexOutOfBoundsException in CharSequenceTranslator CharSequenceTranslator causes StringIndexOutOfBoundsException during translation of unicode codepoints with length &gt; 1 character</summary>
+			<description>I found that there is bad surrogate pair handling in the CharSequenceTranslator
+This is a simple test case for this problem.
+\uD83D\uDE30 is a surrogate pair.
+
+
+@Test
+public void testEscapeSurrogatePairs() throws Exception {
+    assertEquals("\uD83D\uDE30", StringEscapeUtils.escapeCsv("\uD83D\uDE30"));
+}
+
+
+You&amp;amp;apos;ll get the exception as shown below.
+
+
+java.lang.StringIndexOutOfBoundsException: String index out of range: 2
+	at java.lang.String.charAt(String.java:658)
+	at java.lang.Character.codePointAt(Character.java:4668)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+
+
+Patch attached, the method affected:
+
+public final void translate(CharSequence input, Writer out) throws IOException
+
+ When translating a string with unicode characters in, I&amp;amp;apos;ve encountered an index exception:
+
+
+	java.lang.StringIndexOutOfBoundsException: String index out of range: 50
+	at java.lang.String.charAt(String.java:686)
+	at java.lang.Character.codePointAt(Character.java:2335)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:95)
+	at org.apache.commons.lang3.text.translate.CharSequenceTranslator.translate(CharSequenceTranslator.java:59)
+	at org.apache.commons.lang3.StringEscapeUtils.escapeCsv(StringEscapeUtils.java:556)
+	...
+
+
+The input string was from a twitter status:
+org.apache.commons.lang3.StringEscapeUtils.escapeCsv("pink &amp;amp; black adidas suit for this rainy weather \ud83d\udc4d");
+Both those characters are &amp;amp;apos;Invalid&amp;amp;apos; unicode characters, so presumably there is a conversion error somewhere. However, this shouldn&amp;amp;apos;t cause the translator to crash.
+At line 94, the loop which generates the exception increments the position by the size of the codepoint, which seems to grow faster than the number of characters. I don&amp;amp;apos;t really know how codepoints work, but it looks to me like there are two indexes which are treated as if they are the same one by this loop:
+
+pt is incrementing by one character each iteration
+pos is incrementing by one or more characters each iteration
+pos is being used to index into the character array
+pt is the value actually being tested in the loop test, so pos can be bigger than pt, causing an index problem at the end of the array
+
+My guess would be that the loop should read something like:
+
+
+            for (int pt = 0; pt &amp;lt; consumed;) {
+                int count = Character.charCount(Character.codePointAt(input, pos));
+                pt += count;
+                pos += count;
+            }
+
+
+I&amp;amp;apos;m not sure if that was the intention, hope it makes some sense!
+Stepping through that code with the input string " \ud83d\udc4d":
+
+the input string becomes " \ud83d\udc4d\u008d" (appended &amp;amp;apos;Reverse Line Feed&amp;amp;apos; - no idea why)
+consumed == 4
+Iterating the loop gives pt=0, pos=0 -&amp;gt; pt=1, pos=1 -&amp;gt; pt=2, pos=3 -&amp;gt; pt-3, pos=4 (Index exception)
+
+So \ud83d\udc4d seems to be a codepoint with a width of 2, which puts the index off by one after that.
+Anyway, hope that helps,
+Regards,
+Mike.</description>
+			<version>3.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.CharSequenceTranslator.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">862</link>
+			<link type="Duplicate" description="duplicates">857</link>
+		</links>
+	</bug>
+	<bug id="11" master="883" duplicate="733" opendate="2011-07-31 11:55:11" fixdate="2014-12-27 16:31:05" resolution="Fixed">
+		<buginformation>
+			<summary>Add StringUtils.containsAny(CharSequence, CharSequence... ) method Add containsAny(CharSequence cs, CharSequence... searchChars) to StringUtils</summary>
+			<description>Presently there is a: public static boolean containsAny(CharSequence cs, char... searchChars). It would be useful to have the: public static boolean containsAny(CharSequence cs, CharSequence... searchCharSequences) which will return true if any of the searchCharSequences are contained within the cs. If you decide to implement it, it would be nice to have an alias method for collections, e.g., public static boolean containsAny(CharSequence cs, Collection&amp;lt;CharSequence&amp;gt; searchCharSequences) This method is missing from StringUtils. The corresponding method: 
+public static boolean containsAny(CharSequence cs, char... searchChars) {
+does exist, so this was probably just forgotten. 
+Also
+public static boolean containsIgnoreCase(CharSequence str, CharSequence... searchStr) {
+needs to be added as well.</description>
+			<version>3.1</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">733</link>
+			<link type="Duplicate" description="is duplicated by">883</link>
+		</links>
+	</bug>
+	<bug id="12" master="477" duplicate="509" opendate="2009-01-09 10:05:53" fixdate="2009-06-09 19:13:40" resolution="Fixed">
+		<buginformation>
+			<summary>ExtendedMessageFormat: OutOfMemory with custom format registry and a pattern containing single quotes OutOfMemory Error caused by ExtendedMessageFormat</summary>
+			<description>When using ExtendedMessageFormat with a custom format registry and a pattern conatining single quotes, an OutOfMemoryError will occur.
+Example that will cause error:
+ExtendedMessageFormatTest.java
+
+
+private static Map&amp;lt;String, Object&amp;gt; formatRegistry = new HashMap&amp;lt;String, Object&amp;gt;();    
+    static {
+        formatRegistry.put(DummyFormatFactory.DUMMY_FORMAT, new DummyFormatFactory());
+    }
+    
+    public static void main(String[] args) {
+        ExtendedMessageFormat mf = new ExtendedMessageFormat("it&amp;amp;apos;&amp;amp;apos;s a {dummy} &amp;amp;apos;test&amp;amp;apos;!", formatRegistry);
+        String formattedPattern = mf.format(new String[] {"great"});
+        System.out.println(formattedPattern);
+    }
+}
+
+
+
+The following change starting at line 421 on the 2.4 release seems to fix the problem:
+ExtendedMessageFormat.java
+
+CURRENT (Broken):
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+WORKING:
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        next(pos);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+ It is possible to let ExtendedMessageFormat cause an OutOfMemory Error (Java heap space) - no matter how large you define the memory, because the code produces an endless loop that extends a StringBuffer ad infinitum.
+Code to reproduce:
+instantiate an ExtendedMessageFormat object using the constructor 
+public ExtendedMessageFormat(String pattern, Locale locale, Map registry) 
+locale and registry (not null) don&amp;amp;apos;t matter actually, but pattern as String looks like this:
+{{The field &amp;amp;apos;&amp;amp;apos;
+{0}
+&amp;amp;apos;&amp;amp;apos; must be completed}}
+notice the doubled single quotes.
+The constructor then executes applyPattern(pattern)
+In applyPattern, line 158 (that is inside the loop over the pattern length)  appendQuotedString(pattern, pos, stripCustom, true); is called, it is the last statement for that case in the loop. 
+In  appendQuotedString, line 422 the quote character gets appended to the return StringBuffer, then return. The problem in fact is, that the pointer (ParsePosition pos) isn&amp;amp;apos;t updated and after return the procedure will check the same character again and again and again. 
+Primitive workaround: no use of single quotes in messages as input of ExtendedMessageFormat.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormatTest.java</file>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">509</link>
+			<link type="Duplicate" description="duplicates">477</link>
+		</links>
+	</bug>
+	<bug id="13" master="421" duplicate="473" opendate="2008-04-02 15:42:39" fixdate="2010-02-25 20:39:52" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava(String) escapes &amp;apos;/&amp;apos; characters StringEscapeUtils.escapeJava () not escaping forward slash correctly.</summary>
+			<description>Commons Lang 2.4 StringEscapeUtils.escapeJava(String) now escapes &amp;amp;apos;/&amp;amp;apos; characters, which is not a valid "escapable" character in Java strings.  I haven&amp;amp;apos;t tried the other Java escape/unescape methods to see if they have a similar problem, or that only Java "escapable" characters are escaped by escapeJava(String).
+This bug may have appeared as an unintended side-effect of the fix for LANG-363.
+Also the javadoc for escapeJava is now a little off, in that &amp;amp;apos;/&amp;amp;apos; should now be included in the sentence describing the differences between Java and Javascript strings, with respect to escaping rules.
+The following is a JUnit3 test demonstrating the bug.
+import junit.framework.TestCase;
+import org.apache.commons.lang.StringEscapeUtils;
+public class StringEscapeUtilsTest extends TestCase {
+    public void testEscapeJavaWithSlash() 
+{
+        final String input = "String with a slash (/) in it";
+        
+        final String expected = input;
+        final String actual   = StringEscapeUtils.escapeJava( input );
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes &amp;amp;apos;/&amp;amp;apos; characters,
+         * which are not a valid character to escape in a Java string.  
+         */
+        assertEquals( expected, actual );
+    }
+}
+ We are trying to escape forward slash using StringEscapeUtils.escapeJava ()  method. The output returned by this method is no longer a valid Java String. 
+e.g. 
+String s = "a/b/c";
+System.out.println(StringEscapeUtils.escapeJava (s));
+The output returned is a\/b\/c which is not a even a valid Java String.
+This was working fine in 2.0 release of this jar.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">423</link>
+			<link type="Duplicate" description="is duplicated by">473</link>
+			<link type="Reference" description="is related to">437</link>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="14" master="719" duplicate="593" opendate="2010-02-21 19:35:01" fixdate="2011-07-19 03:52:56" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat formats year differently than SimpleDateFormat in Java 7 Testing with JDK 1.7</summary>
+			<description>Starting with Java 7 does SimpleDateFormat format a year pattern of &amp;amp;apos;Y&amp;amp;apos; or &amp;amp;apos;YYY&amp;amp;apos; as &amp;amp;apos;2003&amp;amp;apos; instead of &amp;amp;apos;03&amp;amp;apos; as in former Java releases. According Javadoc this pattern should have been always been formatted as number, therefore the new behavior seems to be a bug fix in the JDK. FastDateFormat is adjusted to behave the same. I ran the tests for the Lang 2.5 RC2 using JDK 1.7.0-b78 and they all passed except the testFormat() in FastDateFormatTest.
+The problem seems to be that in JDK 1.7 the "yyy" and "y" patterns now cause a four digit year with SimpleDateFormat - whereas previous JDK versions resulted in a 2 digit year (as FastDateFormat does).
+JDK 1.7 hasn&amp;amp;apos;t yet been released and that may be fixed in the JDK by the time it is, but I thought it worth making a note.</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">593</link>
+			<link type="Duplicate" description="is duplicated by">719</link>
+		</links>
+	</bug>
+	<bug id="15" master="658" duplicate="705" opendate="2010-11-13 14:31:25" fixdate="2011-06-08 16:10:31" resolution="Fixed">
+		<buginformation>
+			<summary>Some Entitys like &amp;Ouml; are not matched properly against its ISO8859-1 representation StringEscapeUtil generate wrong output for some entities</summary>
+			<description>In EntityArrays 
+In
+ private static final String[][] ISO8859_1_ESCAPE 
+some matching is wrong, for example
+
+ 
+        {"\u00D7", "&amp;amp;Ouml;"}, //  - uppercase O, umlaut
+        {"\u00D8", "&amp;amp;times;"}, // multiplication sign
+
+
+but this must be   
+
+ 
+       {"\u00D6", "&amp;amp;Ouml;"}, //  - uppercase O, umlaut
+        {"\u00D7", "&amp;amp;times;"}, // multiplication sign
+
+
+according to http://www.fileformat.info/info/unicode/block/latin_supplement/list.htm
+First look:
+u00CA is missing in the array and all following entries are matched wrong by an offset of 1.
+Found on http://stackoverflow.com/questions/4172784/bug-in-apache-commons-stringescapeutil/4172915#4172915 The entities such as "" are not correctly encoded in the org.apache.commons.lang3.text.translate.EntityArrays. E.g. "" is encoded as "00E4" according to the ISO-8859-1 standard, but is assigned to "00E5" in the class EntityArrays.
+The consequence is, that StringEscapeUtil can not produce correct output.</description>
+			<version>3.0</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.EntityArrays.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="duplicates">658</link>
+			<link type="Duplicate" description="duplicates">659</link>
+		</links>
+	</bug>
+	<bug id="16" master="659" duplicate="705" opendate="2010-11-13 15:54:42" fixdate="2011-06-08 16:10:31" resolution="Fixed">
+		<buginformation>
+			<summary>EntityArrays typo: {"\u2122", "&amp;minus;"}, // minus sign, U+2212 ISOtech StringEscapeUtil generate wrong output for some entities</summary>
+			<description>EntityArrays typo in HTML40_EXTENDED_ESCAPE: 
+
+      {"\u2122", "&amp;amp;minus;"}, // minus sign, U+2212 ISOtech
+
+
+should be
+
+      {"\u2212", "&amp;amp;minus;"}, // minus sign, U+2212 ISOtech
+
+
+as is obvious from the comment and the position in the list. The entities such as "" are not correctly encoded in the org.apache.commons.lang3.text.translate.EntityArrays. E.g. "" is encoded as "00E4" according to the ISO-8859-1 standard, but is assigned to "00E5" in the class EntityArrays.
+The consequence is, that StringEscapeUtil can not produce correct output.</description>
+			<version>3.0</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.EntityArrays.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="duplicates">658</link>
+			<link type="Duplicate" description="duplicates">659</link>
+		</links>
+	</bug>
+	<bug id="17" master="460" duplicate="679" opendate="2008-09-17 08:27:57" fixdate="2011-03-03 23:55:30" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong, interchanged parameters in Dokumentation of StringUtils.startsWith[IgnoreCase](String, String) StringUtils.startsWithIgnoreCase whrong documentation</summary>
+			<description>The parameters in the examples of the JavaDoc of StringUtils.startsWithIgnoreCase(String, String) and StringUtils.startsWith(String, String) are interchanged. Examples within JavaDoc misleads about parameters - according to examples the string and the prefix misplaced.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">679</link>
+			<link type="Duplicate" description="duplicates">460</link>
+		</links>
+	</bug>
+	<bug id="18" master="367" duplicate="429" opendate="2007-10-30 13:25:17" fixdate="2008-05-17 05:24:02" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat thread safety NullPointerException (NPE) in FastDateFormat.getInstance(FastDateFormat.java:211)</summary>
+			<description>FastDateFormat has several static HashMaps. These are currently not final, so there is no guarantee that they will be visible to all threads.
+Patch to follow.
+Also, as far as I can make out, the class shares SimpleDateFormat instances between threads.
+It does not document why this is OK.
+I&amp;amp;apos;m guessing that it assumes that instances of the SimpleDateFormat class are thread-safe provided that they have the same attributes, but this is not documented. If this is the case, it&amp;amp;apos;s not clear that it is a valid assumption.
+ Sometimes (sadly this is not reproducible) the following method call results in a NullPointerException (NPE):
+Stacktrace:
+java.lang.NullPointerException
+        at org.apache.commons.lang.time.FastDateFormat.getInstance(FastDateFormat.java:211)
+        at org.apache.commons.lang.time.DateFormatUtils.format(DateFormatUtils.java:258)
+        at org.apache.commons.lang.time.DateFormatUtils.format(DateFormatUtils.java:232)
+I don&amp;amp;apos;t know how this is actually possible, since the exception is being raised when accessing a static field &amp;amp;apos;cInstanceCache&amp;amp;apos; that will be implicitly initialized...
+Could this have something to do with class gc?</description>
+			<version>2.2</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.FastDateFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">429</link>
+			<link type="Duplicate" description="duplicates">367</link>
+		</links>
+	</bug>
+	<bug id="19" master="1027" duplicate="1068" opendate="2014-07-13 11:41:53" fixdate="2014-11-30 18:40:36" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast should return true by default SystemUtils.isJavaVersionAtLeast throws NPE under Java 9 EA</summary>
+			<description>Hi
+last [lang] release doesn&amp;amp;apos;t support java 9 (not in JavaVersion enum). However it shouldn&amp;amp;apos;t break the org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast method which should return true when java version is not known (not known = older)
+My proposal is to add UNKNOWN to the enum and override atLeast for this particular value to return true. Hello,
+Testing JMeter under Java 9 EA, it fails with NPE in SystemUtils.isJavaVersionAtLeast  due to handling of Java 9 not yet being supported.
+Thanks</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1068</link>
+			<link type="Duplicate" description="duplicates">1027</link>
+		</links>
+	</bug>
+	<bug id="20" master="346" duplicate="414" opendate="2007-07-06 20:06:55" fixdate="2008-02-24 04:24:58" resolution="Fixed">
+		<buginformation>
+			<summary>Dates.round() behaves incorrectly for minutes and seconds DateUtils.round() often fails</summary>
+			<description>Get unexpected output for rounding by minutes or seconds.
+public void testRound()
+{
+    Calendar testCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+    testCalendar.set(2007, 6, 2, 8, 9, 50);
+    Date date = testCalendar.getTime();
+    System.out.println("Before round() " + date);
+    System.out.println("After round()  " + DateUtils.round(date, Calendar.MINUTE));
+}
+--2.1 produces
+Before round() Mon Jul 02 03:09:50 CDT 2007
+After round()  Mon Jul 02 03:10:00 CDT 2007  this is what I would expect
+--2.2 and 2.3 produces
+Before round() Mon Jul 02 03:09:50 CDT 2007
+After round()  Mon Jul 02 03:01:00 CDT 2007  this appears to be wrong The example below shows the failure of DateUtils.round(Date,int). With version 2.1 round() works fine.
+
+        Now                                 DateUtils                        calculated directly     
+2008-02-22T11:09:06,680 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:07,000    ERROR
+2008-02-22T11:09:06,680 Truncated: 2008-02-22T11:09:06,000         2008-02-22T11:09:06,000    ok
+2008-02-22T11:09:07,040 Rounded:   2008-02-22T11:09:07,000         2008-02-22T11:09:07,000    ok
+2008-02-22T11:09:07,040 Truncated: 2008-02-22T11:09:07,000         2008-02-22T11:09:07,000    ok
+2008-02-22T11:09:07,399 Rounded:   2008-02-22T11:09:07,000         2008-02-22T11:09:07,000    ok
+2008-02-22T11:09:07,399 Truncated: 2008-02-22T11:09:07,000         2008-02-22T11:09:07,000    ok
+2008-02-22T11:09:07,743 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:08,000    ERROR
+2008-02-22T11:09:07,743 Truncated: 2008-02-22T11:09:07,000         2008-02-22T11:09:07,000    ok
+2008-02-22T11:09:08,102 Rounded:   2008-02-22T11:09:08,000         2008-02-22T11:09:08,000    ok
+2008-02-22T11:09:08,102 Truncated: 2008-02-22T11:09:08,000         2008-02-22T11:09:08,000    ok
+2008-02-22T11:09:08,446 Rounded:   2008-02-22T11:09:08,000         2008-02-22T11:09:08,000    ok
+2008-02-22T11:09:08,446 Truncated: 2008-02-22T11:09:08,000         2008-02-22T11:09:08,000    ok
+2008-02-22T11:09:08,805 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:09,000    ERROR
+2008-02-22T11:09:08,805 Truncated: 2008-02-22T11:09:08,000         2008-02-22T11:09:08,000    ok
+2008-02-22T11:09:09,149 Rounded:   2008-02-22T11:09:09,000         2008-02-22T11:09:09,000    ok
+2008-02-22T11:09:09,149 Truncated: 2008-02-22T11:09:09,000         2008-02-22T11:09:09,000    ok
+2008-02-22T11:09:09,508 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:10,000    ERROR
+2008-02-22T11:09:09,508 Truncated: 2008-02-22T11:09:09,000         2008-02-22T11:09:09,000    ok
+2008-02-22T11:09:09,852 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:10,000    ERROR
+2008-02-22T11:09:09,852 Truncated: 2008-02-22T11:09:09,000         2008-02-22T11:09:09,000    ok
+2008-02-22T11:09:10,211 Rounded:   2008-02-22T11:09:10,000         2008-02-22T11:09:10,000    ok
+2008-02-22T11:09:10,211 Truncated: 2008-02-22T11:09:10,000         2008-02-22T11:09:10,000    ok
+2008-02-22T11:09:10,555 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:11,000    ERROR
+2008-02-22T11:09:10,555 Truncated: 2008-02-22T11:09:10,000         2008-02-22T11:09:10,000    ok
+2008-02-22T11:09:10,915 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:11,000    ERROR
+2008-02-22T11:09:10,915 Truncated: 2008-02-22T11:09:10,000         2008-02-22T11:09:10,000    ok
+2008-02-22T11:09:11,258 Rounded:   2008-02-22T11:09:11,000         2008-02-22T11:09:11,000    ok
+2008-02-22T11:09:11,258 Truncated: 2008-02-22T11:09:11,000         2008-02-22T11:09:11,000    ok
+2008-02-22T11:09:11,618 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:12,000    ERROR
+2008-02-22T11:09:11,618 Truncated: 2008-02-22T11:09:11,000         2008-02-22T11:09:11,000    ok
+2008-02-22T11:09:11,961 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:12,000    ERROR
+2008-02-22T11:09:11,961 Truncated: 2008-02-22T11:09:11,000         2008-02-22T11:09:11,000    ok
+2008-02-22T11:09:12,321 Rounded:   2008-02-22T11:09:12,000         2008-02-22T11:09:12,000    ok
+2008-02-22T11:09:12,321 Truncated: 2008-02-22T11:09:12,000         2008-02-22T11:09:12,000    ok
+2008-02-22T11:09:12,665 Rounded:   2008-02-22T11:00:01,000         2008-02-22T11:09:13,000    ERROR
+2008-02-22T11:09:12,665 Truncated: 2008-02-22T11:09:12,000         2008-02-22T11:09:12,000    ok
+
+
+Example Code
+java.text.SimpleDateFormat dtFormat = new java.text.SimpleDateFormat("yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;HH:mm:ss,SSS");
+
+System.out.println(
+    "        Now            "
+    + "            "
+    + "   DateUtils  "
+    + "         "
+    + "       calculated directly "
+    + "    ");
+int errorCnt = 0;
+while(errorCnt &amp;lt; 10)
+{
+  java.util.Date now = new java.util.Date();
+  
+  java.util.Date roundedByUtils = org.apache.commons.lang.time.DateUtils.round(now, java.util.Calendar.SECOND);
+  java.util.Date truncatedByUtils = org.apache.commons.lang.time.DateUtils.truncate(now, java.util.Calendar.SECOND);
+  
+  long rest = now.getTime() % 1000;
+  java.util.Date rounded;
+  java.util.Date truncated = new java.util.Date(now.getTime() - rest);
+  if (rest &amp;lt; 500)
+    rounded = truncated;
+  else
+    rounded = new java.util.Date(now.getTime() + (1000 - rest));
+  boolean roundError = !roundedByUtils.equals(rounded);
+  boolean truncateError = !truncatedByUtils.equals(truncated);
+  if (roundError || truncateError)
+    errorCnt++;
+
+  System.out.println(
+      dtFormat.format(now)
+      + " Rounded:   "
+      + dtFormat.format(roundedByUtils)
+      + "         "
+      + dtFormat.format(rounded)
+      + "    "
+      + (roundError ? "ERROR" : "ok"));
+  System.out.println(
+      dtFormat.format(now)
+      + " Truncated: "
+      + dtFormat.format(truncatedByUtils)
+      + "         "
+      + dtFormat.format(truncated)
+      + "    "
+      + (truncateError ? "ERROR" : "ok"));
+  Thread.sleep(351);
+}
+
+</description>
+			<version>2.2</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.DateUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.time.DateUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">414</link>
+			<link type="Duplicate" description="duplicates">346</link>
+		</links>
+	</bug>
+	<bug id="21" master="1018" duplicate="1187" opendate="2014-05-27 10:24:53" fixdate="2016-06-12 11:29:48" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber(final String str)  Precision will be lost Method createNumber from NumberUtils doesn&amp;apos;t work for floating point numbers other than Float</summary>
+			<description>With commons-lang 3.2.2:
+NumberUtils.createNumber("-160952.54");
+The result is "-160952.55".
+Should not be based on the length of the decimal point number to judge whether the floating point number.
+Using the method (createFloat(str)) of dealing with the valid number greater than seven Numbers will cause accuracy loss.
+The source code is as follows:
+
+
+try {
+            if(numDecimals &amp;lt;= 7){// If number has 7 or fewer digits past the decimal point then make it a float
+                final Float f = createFloat(str);
+                if (!(f.isInfinite() || (f.floatValue() == 0.0F &amp;amp;&amp;amp; !allZeros))) {
+                    return f;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+        try {
+            if(numDecimals &amp;lt;= 16){// If number has between 8 and 16 digits past the decimal point then make it a double
+                final Double d = createDouble(str);
+                if (!(d.isInfinite() || (d.doubleValue() == 0.0D &amp;amp;&amp;amp; !allZeros))) {
+                    return d;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+
+        return createBigDecimal(str);
+    }
+
+ demo:
+ Number n = org.apache.commons.lang3.math.NumberUtils.createNumber("6264583.33");
+        System.out.println("lang3_createNumber_6264583.33----&amp;gt;" + n);
+while n will be 6264583.5. not 6264583.33</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1187</link>
+			<link type="Duplicate" description="is duplicated by">1215</link>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="22" master="464" duplicate="468" opendate="2008-10-01 20:54:42" fixdate="2008-11-06 20:36:54" resolution="Duplicate">
+		<buginformation>
+			<summary>EqualsBuilder doesn&amp;apos;t compile in 2.4 source code release JDK 1.5 build/runtime failure on LANG-393 (EqualsBuilder)</summary>
+			<description>Line 381 of org.apache.commons.lang.EqualsBuilder fails to compile because the compareTo call requires a BigDecimal rather than an object.
+376 public EqualsBuilder append(Object lhs, Object rhs) {
+...
+379         if (!lhsClass.isArray()) {
+380             if (lhs instanceof java.math.BigDecimal) 
+{
+381                 isEquals = (((java.math.BigDecimal)lhs).compareTo(rhs) == 0);
+382             }
+ else {
+I&amp;amp;apos;m using Sun&amp;amp;apos;s JDK 1.6.0_07 in Eclipse, not sure if this is a JDK version issue or not. See LANG-393</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">468</link>
+			<link type="Duplicate" description="duplicates">464</link>
+			<link type="Reference" description="relates to">393</link>
+		</links>
+	</bug>
+	<bug id="23" master="1197" duplicate="1264" opendate="2016-01-10 17:56:49" fixdate="2016-09-17 14:37:37" resolution="Fixed">
+		<buginformation>
+			<summary>Prepare Java 9 detection JavaVersion does not correctly handle Java 9</summary>
+			<description>In anticipation of Java 9 and JEP 223, the versioning scheme will change completely. We need to reflect that in SystemUtils, JavaVersion, etc.:
+
+SystemUtils: Deprecate IS_JAVA_1_9 and replace with IS_JAVA_9
+JavaVersion: Deprecate JAVA_1_9 in JavaVersion and replace with JAVA_9
+
+and other places in the library. See http://markmail.org/message/bgrhxr6ef2axubcf
+JavaVersion assumes that the version String for Java 9 will be "1.9".</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Task</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1264</link>
+			<link type="Duplicate" description="duplicates">1197</link>
+		</links>
+	</bug>
+</bugrepository>

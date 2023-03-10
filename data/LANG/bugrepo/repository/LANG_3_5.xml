@@ -1,0 +1,214 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="1104" opendate="2015-04-01 02:10:12" fixdate="2015-04-01 04:10:23" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateParserTest.testParses fails in TimeZone America/Sao_Paulo</summary>
+			<description>Build works fine with Java 7 and Maven 3.2
+Apache Maven 3.2.5 (12a6b3acb947671f09b81f49094c53f426d8cea1; 2014-12-14T15:29:23-02:00)
+Maven home: /opt/apache-maven-3.2.5
+Java version: 1.7.0_76, vendor: Oracle Corporation
+Java home: /usr/lib/jvm/java-7-oracle/jre
+Default locale: en_US, platform encoding: UTF-8
+OS name: "linux", version: "3.16.0-33-generic", arch: "amd64", family: "unix"
+The following test failed though:
+org.apache.commons.lang3.time.FastDateFormat_ParserTest:
+java.lang.AssertionError: ms_MY Sat Feb 10 01:53:32 BRT 1900 GGGG/yyyy/MMMM/dddd/hhhh/mmmm/ss/aaaa/EEEE/ZZZZ
+America/New_York expected:&amp;lt;Sat Feb 10 01:53:32 BRT 1900&amp;gt; but was:&amp;lt;Sat Feb 10 01:53:04
+BRT 1900&amp;gt;
+Build fails with Java 8 and Maven 3.2. Same test fails.
+Failed tests: 
+  FastDateFormat_ParserTest&amp;gt;FastDateParserTest.testParses:250-&amp;gt;FastDateParserTest.validateSdfFormatFdpParseEquality:227 
+Sat Feb 10 01:53:32 BRT 1900 GGGG/yyyy/MMMM/dddd/hhhh/mmmm/ss/aaaa/EEEE/ZZZZ America/New_York
+expected:&amp;lt;Sat Feb 10 01:53:32 BRT 1900&amp;gt; but was:&amp;lt;Sat Feb 10 01:53:04 BRT 1900&amp;gt;
+My time zone is set to America/Sao_Paulo, GMT -3,
+and I suspect that that failing test is in someway related to my time zone.</description>
+			<version>4.0</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1133" opendate="2015-05-06 21:34:39" fixdate="2015-05-09 23:48:04" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateParser_TimeZoneStrategyTest#testTimeZoneStrategyPattern fails on Windows with German Locale</summary>
+			<description>FastDateParser_TimeZoneStrategyTest#testTimeZoneStrategyPattern() on current master fails:
+java.lang.AssertionError: Franzsisch:Heure d&amp;amp;apos;Europe de l&amp;amp;apos;Est UTC+3
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.assertTrue(Assert.java:41)
+	at org.apache.commons.lang3.time.FastDateParser_TimeZoneStrategyTest.testTimeZoneStrategyPattern(FastDateParser_TimeZoneStrategyTest.java:39)
+I&amp;amp;apos;m unsure why. I guess it has something to do with my German Locale and maybe Windows too.
+</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser_TimeZoneStrategyTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1189" opendate="2015-12-03 19:54:28" fixdate="2016-06-02 10:47:14" resolution="Fixed">
+		<buginformation>
+			<summary>Add getAndIncrement/getAndDecrement/getAndAdd/incrementAndGet/decrementAndGet/addAndGet in Mutable* classes</summary>
+			<description>Add below methods to Mutable* classes:
+    getAndIncrement
+    getAndDecrement
+    getAndAdd
+    incrementAndGet
+    decrementAndGet
+    addAndGet</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShort.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDouble.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableInt.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloat.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLong.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByte.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableIntTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDoubleTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShortTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLongTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloatTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByteTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1235</link>
+		</links>
+	</bug>
+	<bug id="1235" opendate="2016-05-20 19:37:59" fixdate="2016-06-02 10:48:54" resolution="Duplicate">
+		<buginformation>
+			<summary>Add decrementAndGet/incrementAndGet to MutableInt class</summary>
+			<description>Frequently when incrementing or decrementing a number, one needs to compare it to a limit. For example in loops.
+At present that requires two calls:
+MutableInt.decrement()
+MutableInt.getValue()
+It would be convenient to have a method that combined the two.
+c.f. AtomicInteger.decrementAndGet()
+There is less likelihood of needing these methods for other Mutable Number types as they are not often used in loops.</description>
+			<version>3.5</version>
+			<fixedVersion></fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShort.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDouble.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableInt.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloat.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLong.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByte.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableIntTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDoubleTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShortTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLongTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloatTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByteTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1189</link>
+			<link type="Reference" description="relates to">1176</link>
+		</links>
+	</bug>
+	<bug id="1229" opendate="2016-05-15 14:27:36" fixdate="2016-06-08 20:34:48" resolution="Fixed">
+		<buginformation>
+			<summary>Performance regression due to cyclic hashCode guard</summary>
+			<description>We observed a severe performance regression in HashCodeBuilder in 3.5 trunk compared to 3.4 release. We get about 20% of the throughput in 3.5 trunk for common cases compared to 3.4 release. Previously there was no noticeable overhead of using HashCodeBuilder. Investigating we found the performance degradation was caused by the fix for LANG-456. It causes the method to be too large to be inlined and escape analysis to fail (see LANG-1218 for a related discussion).
+We currently do not see a way to keep the 3.4 performance and support cyclic graphs. The append methods have not supported cycles for so long we feel it&amp;amp;apos;s de facto part of the contract by now. Since neither the JDK nor the Guava hashCode helper methods support cyclic graphs we don&amp;amp;apos;t believe this is an unreasonable assumption. In addition EqualsBuilder#append(Object,Object) doesn&amp;amp;apos;t support cycles.
+If supporting cycles is a requirement we propose the introduction of new #appendRecursive (or named differently) methods to both HashCodeBuilder and EqualsBuilder that add cycle guards. If that is an acceptable compromise we would be willing to provide patches.</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.HashCodeBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.HashCodeBuilderTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Regression" description="is broken by">456</link>
+		</links>
+	</bug>
+	<bug id="1245" opendate="2016-06-14 05:15:53" fixdate="2016-06-15 17:40:52" resolution="Fixed">
+		<buginformation>
+			<summary>signature change of applyRules(java.util.Calendar, java.lang.StringBuffer) is not binary compatible</summary>
+			<description>add back method
+ java.lang.StringBuffer applyRules(java.util.Calendar, java.lang.StringBuffer)</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1281" opendate="2016-11-03 14:57:00" fixdate="2016-11-06 11:20:58" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc of StringUtils.ordinalIndexOf is contradictory.</summary>
+			<description>Javadoc of StringUtils.ordinalIndexOf states the following:
+"The code increments the starting index by one, rather than by the length of the match string, so matches may overlap."
+But then gives the following example:
+StringUtils.ordinalIndexOf("aabaabaa", "", 2) = 0
+which clearly indicates that it does not increment the starting index by one in case of the empty string.
+</description>
+			<version>3.5</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1285" opendate="2016-11-16 06:06:42" fixdate="2016-11-16 20:47:21" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in FastDateParser$TimeZoneStrategy</summary>
+			<description>It seems that after LANG-1186 was fixed, and before 3.5 went out, the bug was re-introduced.
+One of my customers is getting the following error (I am actually not able to reproduce it) with 3.5:
+
+
+java.lang.NullPointerException
+        at org.apache.commons.lang3.time.FastDateParser$TimeZoneStrategy.&amp;lt;init&amp;gt;(FastDateParser.java:869)
+        at org.apache.commons.lang3.time.FastDateParser.getLocaleSpecificStrategy(FastDateParser.java:637)
+        at org.apache.commons.lang3.time.FastDateParser.getStrategy(FastDateParser.java:606)
+        at org.apache.commons.lang3.time.FastDateParser.access$100(FastDateParser.java:73)
+        at org.apache.commons.lang3.time.FastDateParser$StrategyParser.letterPattern(FastDateParser.java:234)
+        at org.apache.commons.lang3.time.FastDateParser$StrategyParser.getNextStrategy(FastDateParser.java:220)
+        at org.apache.commons.lang3.time.FastDateParser.init(FastDateParser.java:167)
+        at org.apache.commons.lang3.time.FastDateParser.&amp;lt;init&amp;gt;(FastDateParser.java:153)
+        at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:394)
+        at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:378)
+        at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:100)
+        at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:97)
+        at org.apache.commons.lang3.time.FormatCache.getInstance(FormatCache.java:81)
+        at org.apache.commons.lang3.time.FastDateFormat.getInstance(FastDateFormat.java:128)
+
+</description>
+			<version>3.5</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">1186</link>
+		</links>
+	</bug>
+	<bug id="1287" opendate="2016-11-18 15:41:33" fixdate="2016-11-18 15:53:54" resolution="Fixed">
+		<buginformation>
+			<summary>RandomStringUtils#random can enter infinite loop if end parameter is to small</summary>
+			<description>I faced that the random method can cause an infinite loop. It can be caused if the end parameter is too low for generating either numbers (&amp;lt; 48) or letters (&amp;lt;65). I added some exception tests to make the cases clear. Basically, if we call the random function with for example numbers = true &amp;amp;&amp;amp; end &amp;lt; 48 the validation for Character.isDigit(ch) will fail and we increment count count++.
+Ivan Morozov https://github.com/apache/commons-lang/pull/211</description>
+			<version>3.5</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.RandomStringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.RandomStringUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

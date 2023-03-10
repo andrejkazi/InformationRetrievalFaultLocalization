@@ -1,0 +1,1002 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="633" opendate="2013-03-25 09:10:22" fixdate="2013-03-25 09:13:51" resolution="Fixed">
+		<buginformation>
+			<summary>Upgrade to Querydsl 3.0.0</summary>
+			<description></description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">669</link>
+		</links>
+	</bug>
+	<bug id="663" opendate="2013-04-24 03:21:19" fixdate="2013-04-26 06:47:53" resolution="Fixed">
+		<buginformation>
+			<summary>org.springframework.data.mongodb.core.query.Field needs an equals method</summary>
+			<description>The above class Field does not has an equals() method.
+But org.springframework.data.mongodb.core.query.Query has an equals method which is using the equals method of the Field class.
+
+
+
+
+
+
+boolean fieldsEqual = this.fieldSpec == null ? that.fieldSpec == null : this.fieldSpec.equals(that.fieldSpec);
+
+
+
+
+
+
+Please implement an equals on the Field method.
+Purpose: For unit testing the equals method is needed.</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1, 1.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.Field.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="669" opendate="2013-05-03 10:58:37" fixdate="2013-05-03 11:05:43" resolution="Duplicate">
+		<buginformation>
+			<summary>Incompatibility with Querydsl 3.1.1</summary>
+			<description>
+
+
+
+
+
+java.lang.NoSuchMethodError: com.mysema.query.types.PathMetadata.getExpression()Lcom/mysema/query/types/Expression;
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.getKeyForPath(SpringDataMongodbSerializer.java:66)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:223)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:34)
+
+
+
+
+	at com.mysema.query.types.PathImpl.accept(PathImpl.java:94)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.asDBValue(MongodbSerializer.java:75)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.asDBKey(MongodbSerializer.java:71)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:93)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:34)
+
+
+
+
+	at com.mysema.query.types.expr.BooleanOperation.accept(BooleanOperation.java:61)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.handle(MongodbSerializer.java:39)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:102)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.visit(MongodbSerializer.java:34)
+
+
+
+
+	at com.mysema.query.types.OperationImpl.accept(OperationImpl.java:91)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbSerializer.handle(MongodbSerializer.java:39)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createQuery(MongodbQuery.java:389)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createCursor(MongodbQuery.java:286)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.createCursor(MongodbQuery.java:281)
+
+
+
+
+	at com.mysema.query.mongodb.MongodbQuery.list(MongodbQuery.java:267)
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.QueryDslMongoRepository.findAll(QueryDslMongoRepository.java:93)
+
+
+
+
+	at org.springframework.data.mongodb.repository.support.QueryDslMongoRepository.findAll(QueryDslMongoRepository.java:47)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:601)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.executeMethodOn(RepositoryFactorySupport.java:333)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.invoke(RepositoryFactorySupport.java:318)
+
+
+
+
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+
+
+
+
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:204)
+
+
+
+
+	at com.sun.proxy.$Proxy27.findAll(Unknown Source)
+
+
+
+
+	at ch.twinf.mongodb.repositories.PersonRepositoryTest.querydsl(PersonRepositoryTest.java:137)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:601)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:47)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:44)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+
+
+
+
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestMethodCallbacks.evaluate(RunBeforeTestMethodCallbacks.java:74)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestMethodCallbacks.evaluate(RunAfterTestMethodCallbacks.java:83)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.SpringRepeat.evaluate(SpringRepeat.java:72)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:231)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:88)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:238)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:63)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:236)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:53)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:229)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:71)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:309)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:174)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+
+
+
+
+
+</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.support.SpringDataMongodbSerializer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">633</link>
+		</links>
+	</bug>
+	<bug id="679" opendate="2013-05-22 08:18:46" fixdate="2013-05-23 12:33:31" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate.doSave() passed a JSON String doesn&amp;apos;t save it.</summary>
+			<description>I have Spring 3.1.2 setup to TEXT messages off a queue(that contain JSON), then insert them into a mongo database.
+The MongoTemplate.doSave(..) method is passed in 
+collectionName = "audit_log"
+objectToSave = "{"nanosecond":528023582734299,"clientID":"300","action":"ENTRY"";
+writer = MappingMongoConvertor()
+These are all correct.
+The code though has this...
+if (!(objectToSave instanceof String)) {
+	writer.write(objectToSave, dbDoc);
+} else {
+	try 
+{
+		objectToSave = (T) JSON.parse((String) objectToSave);
+	}
+ catch (JSONParseException e) 
+{
+		throw new MappingException("Could not parse given String to save into a JSON document!", e);
+	}
+}
+maybeEmitEvent(new BeforeSaveEvent&amp;lt;T&amp;gt;(objectToSave, dbDoc));
+Object id = saveDBObject(collectionName, dbDoc, objectToSave.getClass());
+So the objectToSave is a String, so the first IF statement fails, and it goes into the ELSE section.
+The &amp;amp;apos;objectToSave&amp;amp;apos; is then correctly pasrsed into a BasicDBObject with the correct values.
+The saveDBObject() method though is not passed in the objectToSave.
+Its passed in the collectionName (which is correct). 
+The dbDoc which is empty since we&amp;amp;apos;ve put nothing into it.
+and the objectToSave.getClass()
+So how will it ever save the objectToSave if its not passed into the save method ??
+I suspect it should have something like...
+objectToSave = (T) JSON.parse((String) objectToSave);
+followed by
+dbDoc = (com.mongodb.BasicDBObject)objectToSave
+Note my spring config is using a int-jms:channel to wire in the queue to Mongo.
+&amp;lt;int-jms:channel id="saveToDBChannel"  
+    	queue-name="ESI_AUDIT" 
+    	auto-startup="true" concurrency="50"&amp;gt;
+    &amp;lt;/int-jms:channel&amp;gt;
+    &amp;lt;int-mongodb:outbound-channel-adapter id="outBoundMongoAdapter"
+        collection-name="audit_log"  
+        mongodb-factory="mongoDbFactory" channel="saveToDBChannel" /&amp;gt;
+If you require a WAR that is a test of this, please let me know.
+Thanks
+Jeff
+Note: this affect version 1.1.2(at least) to 1.2.1
+</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1, 1.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="683" opendate="2013-05-23 22:49:52" fixdate="2013-05-24 00:26:22" resolution="Fixed">
+		<buginformation>
+			<summary>QueryMapper does not handle default _id when no MappingMetadata is present</summary>
+			<description></description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1, 1.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="676" opendate="2013-05-20 10:06:35" fixdate="2013-05-24 00:43:42" resolution="Fixed">
+		<buginformation>
+			<summary>SimpleMongoRepository fails if used with customized collection name</summary>
+			<description>SimpleMongoRepository fails if MongoEntityInformation is passed to initialize the repository which customized collection name for entity.
+It fails with 
+SimpleMongoRepository#findOne(id)
+SimpleMongoRepository#delete(id)
+SimpleMongoRepository#delete(entity)
+</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.support.SimpleMongoRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="706" opendate="2013-06-29 04:04:09" fixdate="2013-06-29 06:05:43" resolution="Fixed">
+		<buginformation>
+			<summary>QueryMapper does not transform DBRefs in nested keywords correctly</summary>
+			<description></description>
+			<version>1.2.1</version>
+			<fixedVersion>1.2.2, 1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="688" opendate="2013-06-03 14:11:53" fixdate="2013-07-08 03:12:11" resolution="Fixed">
+		<buginformation>
+			<summary>There is no precedence between @Id annotation and field named "id" - both are attempted to be used</summary>
+			<description>If you have a domain class with an attribute named "id", even if you annotate a DIFFERENT field with "@Id", spring-data-mongo errors trying to map 2 things to the id.  While the error is correct in that you can&amp;amp;apos;t have 2, it surprises me that one doesn&amp;amp;apos;t take precedence over the other.
+I tried (in vain) to find this issue listed in jira, having read about it from a post in the forums after hitting the same issue myself, so apologies if this is a duplicate.
+Original forum post here: http://forum.springsource.org/showthread.php?120188-_id-mapping</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.mapping.MongoPersistentProperty.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.MongoMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentEntity.java</file>
+			<file type="M">org.springframework.data.mongodb.core.mapping.BasicMongoPersistentProperty.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">342</link>
+		</links>
+	</bug>
+	<bug id="702" opendate="2013-06-20 00:12:30" fixdate="2013-07-09 02:35:34" resolution="Fixed">
+		<buginformation>
+			<summary>Spring Data MongoDB projection search, is not properly configured with respective Java Pojo</summary>
+			<description>If Model Java POJO, is annotated with @Field, then during search with
+query.fields().include(field)
+uning mongoTemplate
+it does not java property field as field parameter, rather it needs the name declared with name defined with @Field annotation.</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="717" opendate="2013-07-10 11:13:46" fixdate="2013-07-10 14:09:31" resolution="Fixed">
+		<buginformation>
+			<summary>Application context is not properly distributed to persistent entities</summary>
+			<description>The MongoMappingContext does not properly distribute the application context when set to persistent entities that have already been added.
+Current code:
+
+
+
+
+
+
+MongoMappingContext.java
+
+
+
+
+
+
+	@Override
+
+
+
+
+	protected &amp;lt;T&amp;gt; BasicMongoPersistentEntity&amp;lt;T&amp;gt; createPersistentEntity(TypeInformation&amp;lt;T&amp;gt; typeInformation) {
+
+
+
+
+
+
+
+
+
+		BasicMongoPersistentEntity&amp;lt;T&amp;gt; entity = new BasicMongoPersistentEntity&amp;lt;T&amp;gt;(typeInformation);
+
+
+
+
+
+
+
+
+
+		if (context != null) {
+
+
+
+
+			entity.setApplicationContext(context);
+
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+		return entity;
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+	@Override
+
+
+
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+
+
+
+
+
+
+
+
+		this.context = applicationContext;
+
+
+
+
+		super.setApplicationContext(applicationContext);
+
+
+
+
+	}
+
+
+
+
+
+
+Possible fix:
+
+
+
+
+
+
+MongoMappingContext.java
+
+
+
+
+
+
+@Override
+
+
+
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+
+
+
+
+
+
+
+
+		this.context = applicationContext;
+
+
+
+
+		super.setApplicationContext(applicationContext);
+
+
+
+
+                // Send the application context to ALL the PersistentEntities, not just ones created after this point
+
+
+
+
+               for (BasicMongoPersistentEntity entity : getPersistentEntities()) {
+
+
+
+
+                   entity.setApplicationContext(applicationContext);
+
+
+
+
+               }
+
+
+
+
+	}
+
+
+
+
+
+
+See referenced URL PoC, no_indexes branch, test: MultiTenantTest::testMultiTenantSave() for example.
+UPDATE:
+AbstractMongoConfiguration is calling initialize() on MongoMappingContext before it returns the object.
+
+
+
+
+
+
+AbstractMongoConfiguration
+
+
+
+
+
+
+        @Bean
+
+
+
+
+	public MongoMappingContext mongoMappingContext() throws ClassNotFoundException {
+
+
+
+
+
+
+
+
+
+		MongoMappingContext mappingContext = new MongoMappingContext();
+
+
+
+
+		mappingContext.setInitialEntitySet(getInitialEntitySet());
+
+
+
+
+		mappingContext.setSimpleTypeHolder(customConversions().getSimpleTypeHolder());
+
+
+
+
+		mappingContext.initialize(); // &amp;lt;----
+
+
+
+
+
+
+
+
+
+		return mappingContext;
+
+
+
+
+	}
+
+
+
+
+
+</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.2.2, 1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.AbstractMongoConfigurationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">569</link>
+		</links>
+	</bug>
+	<bug id="721" opendate="2013-07-11 11:36:06" fixdate="2013-07-16 04:40:15" resolution="Fixed">
+		<buginformation>
+			<summary>Polymorphic attribute type not persisted on update operations</summary>
+			<description>We found a problem with Spring Data for Mongo DB.
+Here is our situation: we have an entity which have an attribute which is a list of another kind of entity, like the code below.
+@Document
+public class ParentClass {
+   private List&amp;lt;ChildClass&amp;gt; list;
+}
+the ChildClass is annotated with @Document too, but we want to store it&amp;amp;apos;s content as an embed document of ParentClass.
+When using MongoTemplate class with code such as below, the _class attribute is not inserted on the embedded document, so, if one of the items of the list attribute is a subclass of ChildClass, and ChildClass is an abstract class, we begin to face instantiation problems.
+Here is one example of usage of MongoTemplate in which we found a problem.
+mongoTemplate.updateFirst(Query.query(criteria), 
+  new Update().push("list", child));
+If child is a subclass of ChildClass, the _class attribute is not added to the embedded document.</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">345</link>
+		</links>
+	</bug>
+	<bug id="737" opendate="2013-08-01 21:18:51" fixdate="2013-08-12 00:53:30" resolution="Fixed">
+		<buginformation>
+			<summary>Extra MongoSynchronizations cause TransactionSynchronizationManager to throw IllegalStateException on transaction complete</summary>
+			<description>Multiple Mongo databases are being accessed in a transactional test case. When the transaction is rolled back at the end of the test, the following exception is thrown:
+2013-08-01 19:55:56,774 ERROR [org.springframework.transaction.support.TransactionSynchronizationUtils] - &amp;lt;TransactionSynchronization.beforeCompletion threw exception&amp;gt;
+java.lang.IllegalStateException: No value for key [Mongo: localhost/127.0.0.1:27017] bound to thread [main]
+at org.springframework.transaction.support.TransactionSynchronizationManager.unbindResource(TransactionSynchronizationManager.java:209)
+at org.springframework.transaction.support.ResourceHolderSynchronization.beforeCompletion(ResourceHolderSynchronization.java:69)
+at org.springframework.transaction.support.TransactionSynchronizationUtils.triggerBeforeCompletion(TransactionSynchronizationUtils.java:106)
+at org.springframework.transaction.support.AbstractPlatformTransactionManager.triggerBeforeCompletion(AbstractPlatformTransactionManager.java:937)
+at org.springframework.transaction.support.AbstractPlatformTransactionManager.processRollback(AbstractPlatformTransactionManager.java:834)
+at org.springframework.transaction.support.AbstractPlatformTransactionManager.rollback(AbstractPlatformTransactionManager.java:822)
+at org.springframework.test.context.transaction.TransactionalTestExecutionListener$TransactionContext.endTransaction(TransactionalTestExecutionListener.java:519)
+at org.springframework.test.context.transaction.TransactionalTestExecutionListener.endTransaction(TransactionalTestExecutionListener.java:293)
+at org.springframework.test.context.transaction.TransactionalTestExecutionListener.afterTestMethod(TransactionalTestExecutionListener.java:186)
+at org.springframework.test.context.TestContextManager.afterTestMethod(TestContextManager.java:406)
+at org.springframework.test.context.junit4.statements.RunAfterTestMethodCallbacks.evaluate(RunAfterTestMethodCallbacks.java:91)
+at org.springframework.test.context.junit4.statements.SpringRepeat.evaluate(SpringRepeat.java:72)
+at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:231)
+at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:47)
+at org.junit.runners.ParentRunner$3.run(ParentRunner.java:231)
+at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:60)
+at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:229)
+at org.junit.runners.ParentRunner.access$000(ParentRunner.java:50)
+at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:222)
+at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:71)
+at org.junit.runners.ParentRunner.run(ParentRunner.java:300)
+at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:174)
+at org.junit.runner.JUnitCore.run(JUnitCore.java:157)
+at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:76)
+at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:195)
+at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:63)
+This is a similar stack trace that was filed for DATAMONGO-546. I looked for a code resolution to that issue, but it appears that it was closed because the reporter upgraded and the issue disappeared.
+After some debugging of the interaction between MongoDbUtils and TransactionSynchronizationManager, I have a working theory as to the cause. In a nutshell, MongoDbUtils invokes TransactionSynchronizationManager for each database in the same Mongo instance. This ends up registering two MongoSynchronizations that have the same holder. As such, there is only one resource bound in the TransactionSynchronizationManager, (see MongoDbUtils.java lines 124-139). When the transaction is completed, TransactionSynchronizationUtils.triggerBeforeCompletion() is invoked and it iterates through the MongoSynchronizations in effect invoking unbindResource() for each. The first database&amp;amp;apos;s synchronization unbinds the holder by Mongo key. The second fails because the holder is only bound once.
+I am willing to submit a patch for this issue that does one of two things:
+1. Override MongoSynchronization.beforeCompletion() and MongoSynchronization.suspend() so that they utilize unbindResourceIfPossible(), or
+2. Modify MongoDbUtils.doGetDB() so that it only registers one MongoSynchronization per Mongo instead of one per database.
+I am not sure which of these two options is "better", so some feedback from the committer community would be appreciated before I get too far into the weeds!</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 GA, 1.2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtils.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoDbUtilsUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="686" opendate="2013-05-28 05:57:30" fixdate="2014-01-23 04:12:21" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException while reusing Query object</summary>
+			<description>When I create a query on document _id with $in operator and reuse that query to do another search i get ClassCastException.
+Query creation:
+
+
+
+
+
+
+query.addCriteria(Criteria.where("_id").in(signedPetitionIds));
+
+
+
+
+
+
+Reusing query (as a filterQuery argument):
+
+
+
+
+
+
+private Page&amp;lt;PetitionHeader&amp;gt; findPetitionHeaders(Pageable pageable, Query filterQuery, Sort sort) {
+
+
+
+
+	long count = mongoOp.count(filterQuery, PetitionHeader.class);
+
+
+
+
+	filterQuery.with(pageable);
+
+
+
+
+	filterQuery.with(sort);
+
+
+
+
+	List&amp;lt;PetitionHeader&amp;gt; headers = mongoOp.find(filterQuery, PetitionHeader.class);
+
+
+
+
+	return new PageImpl&amp;lt;PetitionHeader&amp;gt;(headers, pageable, count);
+
+
+
+
+}
+
+
+
+
+
+
+Stacktrace:
+
+
+
+
+
+
+java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to java.lang.Iterable
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedValue(QueryMapper.java:159) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:90) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedKeyword(QueryMapper.java:112) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:79) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1337) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doFind(MongoTemplate.java:1323) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.find(MongoTemplate.java:495) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.find(MongoTemplate.java:486) ~[spring-data-mongodb-1.2.1.RELEASE.jar:na]
+
+
+
+
+
+
+Object returned by valueDbo.get(inKey) (in line 159) is of type Object[].</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.4 RC1 (Codd), 1.3.4 (Babbage SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="675" opendate="2013-05-14 17:45:05" fixdate="2014-01-28 01:04:11" resolution="Fixed">
+		<buginformation>
+			<summary>findAndModify doesn&amp;apos;t use field value annotation for update object</summary>
+			<description>I am using the @Field annotation on some of my fields to keep the full variable name in java but shorten the mongodb key associated to it. Example: 
+
+
+
+
+
+
+@Field(value = "desc")
+
+
+
+
+protected String description;
+
+
+
+
+
+
+Everywhere I can still use the java name (e.g. description) to query with criteria except in findAndModify() from the MongoTemplate class.
+I dug into your code to try to understand why and noticed in doFindAndModify() you are not calling the mapper.getMappedObject() on the update object passed in parameters. Is there any reason for that? Because it is called in the doUpdate() (line 927).
+It is not a big issue but just wanted to know why it was not consistent with the rest.</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.2.2, 1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.Update.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

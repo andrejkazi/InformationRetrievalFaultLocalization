@@ -1,0 +1,119 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="415" opendate="2014-01-12 13:56:00" fixdate="2014-01-12 14:15:02" resolution="Fixed">
+		<buginformation>
+			<summary>Performance improvements in configuration subsystem</summary>
+			<description>Original email by Martin Lippert:
+
+The implementation creates a new ClassPathScanningCandidateComponentProvider without setting a MetadataReaderFactory. This causes a new caching metadata reading factory being created every time this method is called, resulting in more or less no caching for the metadata. I am not sure from where to get the appropriate MetadataReaderFactory, but the ConfigurationClassPostProcessor has the right one. I hope there is a way to reuse that, it would reduce the loading and parsing of byte code a lot.</description>
+			<version>1.6.3 (Babbage SR2)</version>
+			<fixedVersion>1.7 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionBuilder.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="419" opendate="2014-01-16 05:22:39" fixdate="2014-01-16 05:37:28" resolution="Fixed">
+		<buginformation>
+			<summary>PagedResourcesAssemblerArgumentResolver fails for methods with templated mappings</summary>
+			<description></description>
+			<version>1.6.3 (Babbage SR2)</version>
+			<fixedVersion>1.7 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PagedResourcesAssemblerArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="412" opendate="2014-01-08 03:51:56" fixdate="2014-01-17 06:56:56" resolution="Fixed">
+		<buginformation>
+			<summary>Exception &amp;apos; java.lang.IllegalArgumentException: Not an managed type&amp;apos; upon a tomcat context reload</summary>
+			<description>Exception &amp;amp;apos; java.lang.IllegalArgumentException: Not an managed type&amp;amp;apos; upon a tomcat context reload when cached &amp;amp;apos;RepositoryInformation&amp;amp;apos; (change added in  DATACMNS-395) is returned by the &amp;amp;apos;RepositoryFactorySupport&amp;amp;apos; class.
+The &amp;amp;apos;Environment&amp;amp;apos; field of this Jira issue contains details on my setup (emdedded tomcat 7).
+The attached file &amp;amp;apos;tomcat-log.txt&amp;amp;apos; contains the full trace of the exception and context reload.
+If I modify RepositoryFactorySupport#getRepositoryInformation and have it always return new RepositoryInformation (i.e. effectively the old behaviour prior to the DATACMNS-395 change) then this exception does not occur.
+Attached ("RepositoryInformationCmp.txt") is a dump of the cached version of RepositoryInformation vs a newly created instance (I used ReflectionToStringBuilder with a recursive &amp;amp;apos;ToStringStyle&amp;amp;apos; strategey to produce the dump). The &amp;amp;apos;diff&amp;amp;apos; utility reveals that the content of both instances is identical.
+Note however that the recursion stops at java.lang classes and so does not include the contents of the &amp;amp;apos;Class&amp;amp;apos; classes which is where I believe the difference lies.
+My theory on the cause of this problem is that a new class loader is instantiated when the Tomcat context is reloaded, thereby somehow invalidating existing &amp;amp;apos;Class&amp;amp;apos; meta-information.
+Interestingly, the first comment I saw upon navigating to the Spring Data Commons Jira site, by Seppel Hardt read with words to the effect that he encountered a similar problem and had reached a similar conclusion.
+By anecdotal observation of stack overflow posts, I see there appears to numerous other users facing this issue also.</description>
+			<version>1.6.3 (Babbage SR2)</version>
+			<fixedVersion>1.7 RC1 (Codd), 1.6.4 (Babbage SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactorySupport.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">395</link>
+		</links>
+	</bug>
+	<bug id="432" opendate="2014-01-30 04:09:52" fixdate="2014-02-06 09:07:06" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentModificationException in Repositories.getRepoInfoFor(Repositories.java:183)</summary>
+			<description>If the first request(s) to a repository after starting the application server comes in  multithreaded, a Concurentmodification exception is thrown.
+All subsequent requests are working.
+Seems releated to: DATACMNS-362
+SEVERE: Servlet.service() for servlet [yes] in context with path [/yes] threw exception [Request processing failed; nested exception is java.util.ConcurrentModificationException] with root cause
+java.util.ConcurrentModificationException
+	at java.util.HashMap$HashIterator.nextEntry(HashMap.java:926)
+	at java.util.HashMap$KeyIterator.next(HashMap.java:960)
+	at java.util.Collections$UnmodifiableCollection$1.next(Collections.java:1067)
+	at org.springframework.data.repository.support.Repositories.getRepoInfoFor(Repositories.java:183)
+	at org.springframework.data.repository.support.Repositories.getRepositoryInformationFor(Repositories.java:130)
+	at org.springframework.data.repository.support.DomainClassConverter.matches(DomainClassConverter.java:86)
+	at org.springframework.core.convert.support.GenericConversionService$ConvertersForPair.getConverter(GenericConversionService.java:617)
+	at org.springframework.core.convert.support.GenericConversionService$Converters.getRegisteredConverter(GenericConversionService.java:523)
+	at org.springframework.core.convert.support.GenericConversionService$Converters.find(GenericConversionService.java:507)
+	at org.springframework.core.convert.support.GenericConversionService.getConverter(GenericConversionService.java:240)
+	at org.springframework.core.convert.support.GenericConversionService.canConvert(GenericConversionService.java:135)
+	at org.springframework.beans.TypeConverterDelegate.convertIfNecessary(TypeConverterDelegate.java:159)
+	at org.springframework.beans.TypeConverterDelegate.convertIfNecessary(TypeConverterDelegate.java:93)
+	at org.springframework.beans.TypeConverterSupport.doConvert(TypeConverterSupport.java:64)
+	at org.springframework.beans.TypeConverterSupport.convertIfNecessary(TypeConverterSupport.java:47)
+	at org.springframework.validation.DataBinder.convertIfNecessary(DataBinder.java:582)
+	at org.springframework.web.method.annotation.AbstractNamedValueMethodArgumentResolver.resolveArgument(AbstractNamedValueMethodArgumentResolver.java:102)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:79)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:157)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:124)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:748)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:689)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:945)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:876)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:931)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:822)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:621)</description>
+			<version>1.6.3 (Babbage SR2)</version>
+			<fixedVersion>1.6.4 (Babbage SR3), 1.7 Final (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.Repositories.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactoryBeanSupportUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">246</link>
+			<link type="Relate" description="relates to">471</link>
+		</links>
+	</bug>
+	<bug id="436" opendate="2014-02-06 07:26:04" fixdate="2014-02-06 09:17:15" resolution="Fixed">
+		<buginformation>
+			<summary>Order.ignoreCase not taken into account in equals(), hashCode() and toString()</summary>
+			<description>The org.springframework.data.domain.Sort.Order#ignoreCase field is not taken into account in Order#equals(), Order#hashCode() and Order#toString(), although setting this field to different values impacts the semantics of Order.</description>
+			<version>1.6.3 (Babbage SR2)</version>
+			<fixedVersion>1.6.4 (Babbage SR3), 1.7 Final (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.Sort.java</file>
+			<file type="M">org.springframework.data.domain.SortUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

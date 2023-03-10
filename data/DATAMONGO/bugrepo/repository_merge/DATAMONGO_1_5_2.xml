@@ -1,0 +1,115 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="6" master="1025" duplicate="1027" opendate="2014-08-14 02:42:25" fixdate="2014-08-26 06:29:39" resolution="Fixed">
+		<buginformation>
+			<summary>Duplicate index creation on embedded documents  Collection inherits complex index from embedded class/object</summary>
+			<description>Having the documents:
+
+
+
+
+
+
+@CompoundIndexes({ @CompoundIndex(collection="timeRead", name = "eventIdAndChip", def = "{eventId : 1, chip : 1}"),
+
+
+
+
+        @CompoundIndex(collection="timeRead", name = "eventIdAndPublish", def = "{ eventId : 1, publish : 1}"),
+
+
+
+
+        @CompoundIndex(collection="timeRead", name = "chipAndTimeReadTickIndex", def = "{&amp;amp;apos;chip&amp;amp;apos; : -1, &amp;amp;apos;timeReadTick&amp;amp;apos; : 1}") })
+
+
+
+
+@Document
+
+
+
+
+public class TimeRead { }
+
+
+
+
+
+
+and 
+
+
+
+
+
+
+@Document
+
+
+
+
+public class TimeReadChip {
+
+
+
+
+
+
+
+
+
+    private Map&amp;lt;String, TimeRead&amp;gt; timeReads;
+
+
+
+
+    private Map&amp;lt;String, TimeRead&amp;gt; pointNameToTimeRead;
+
+
+
+
+}
+
+
+
+
+
+
+The Mongo driver tries to create the same indexes twice: once because they are defined as compound on TimeRead (which is correct), and a second time when parsing the TimeReadChip document (incorrect). I&amp;amp;apos;m assuming it sees the Map&amp;lt;String, TimeRead&amp;gt; and tries to create indexes on timeRead collection (again). This bug was introduced after 1.3.5.RELEASE. Say I have two collections:
+Books and Author
+Author has a unique compound index and Book has a list of authors as property.
+Now if I add different book with the same author to books, the insert is ignored because books inherits the index from authors.
+On a subsequent context restart I&amp;amp;apos;m also getting a duplicate key exception:
+
+
+
+
+
+
+com.mongodb.MongoException$DuplicateKey: { "serverUsed" : "" , "err" : "E11000 duplicate key error index: db.books.$name_appId_idx  dup key
+
+
+
+
+
+
+</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.5.4 (Dijkstra SR4), 1.6 GA (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.Indexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.GeoSpatialIndexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.CompoundIndex.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1027</link>
+			<link type="Duplicate" description="duplicates">1025</link>
+		</links>
+	</bug>
+</bugrepository>

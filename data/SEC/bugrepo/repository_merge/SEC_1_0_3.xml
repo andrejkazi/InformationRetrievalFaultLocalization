@@ -1,0 +1,207 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="13" master="423" duplicate="461" opendate="2007-01-04 01:40:23" fixdate="2007-05-24 12:54:29" resolution="Fixed">
+		<buginformation>
+			<summary>CLONE -SEC 356 Introduces New Bug: Changes to Authentication leak into synchronous requests when using HttpSessionContextIntegrationFilter HttpSessionContextIntegrationFilter with cloneFromHttpSession = true causes problems at login</summary>
+			<description>HttpSessionContextIntegrationFilter will read an existing SecurityContext object from the session and attach it to the Http request thread by calling: SecurityContextHolder#setContext. This means that simultaneous requests get the same SecurityContext object. If one of those threads changes the authentication attached to the context (for example, to enable some "Run As" functionality such as in org.acegisecurity.intercept.AbstractSecurityInterceptor) that authentication will be seen to change in all the request threads and may enable those threads to be able to gain access that they shouldn&amp;amp;apos;t have.
+ The cloneFromHttpSession feature of the HttpSessionContextIntegrationFilter is fantastic - just what I needed, but it has a bug. 
+On line 172, it checks to see if the clone feature is turned on and then asserts that the context from the session is an instance of Cloneable.  However, the context from the session might be null at this point.  The check for cloneFromHttpSession should be moved inside the next if() statement so that it only checks when the context in the session is non-null. </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">461</link>
+			<link type="Duplicate" description="duplicates">423</link>
+		</links>
+	</bug>
+	<bug id="15" master="404" duplicate="464" opendate="2006-11-29 13:52:40" fixdate="2007-05-21 19:34:32" resolution="Fixed">
+		<buginformation>
+			<summary>Logout when not logged in cause NullPointerException NPE when missing &amp;apos;j_acegi_logout&amp;apos; when not logged in</summary>
+			<description>When a user attempts to logout when they aren&amp;amp;apos;t logged in (e.g. when their session has expired) a NullPointerException occurs in TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295).
+The line that fails is:
+        cancelCookie(request, response, "Logout of user " + authentication.getName());
+I guess the cookie should still be cancelled, so the change might simply be to change the line to something like:
+        cancelCookie(request, response, "Logout of user " + authentication == null ? "Unknown" : authentication.getName());
+Regards,
+Damien I receive a NPE Null PointerException when linking to &amp;amp;apos;j_acegi_logout&amp;amp;apos;:
+    &amp;lt;a href="&amp;lt;c:url value="/j_acegi_logout"/&amp;gt;"&amp;gt;Logoff&amp;lt;/a&amp;gt;
+when there is no user currently logged in
+Here is the stack trace for the exception:
+An Error has occurred in this application.
+java.lang.NullPointerException
+	at org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+	at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:229)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:148)
+	at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:98)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:202)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:173)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:78)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:77)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:202)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:173)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:213)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:178)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:126)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:105)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:107)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:148)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:869)
+	at org.apache.coyote.http11.Http11BaseProtocol$Http11ConnectionHandler.processConnection(Http11BaseProtocol.java:664)
+	at org.apache.tomcat.util.net.PoolTcpEndpoint.processSocket(PoolTcpEndpoint.java:527)
+	at org.apache.tomcat.util.net.LeaderFollowerWorkerThread.runIt(LeaderFollowerWorkerThread.java:80)
+	at org.apache.tomcat.util.threads.ThreadPool$ControlRunnable.run(ThreadPool.java:684)
+	at java.lang.Thread.run(Thread.java:595)
+My current workaround for the problem is to wrap the "logout" link with &amp;lt;authz/&amp;gt; tags:
+    &amp;lt;authz:authorize ifAnyGranted="ROLE_USER,ROLE_ADMINISTRATOR"&amp;gt;
+        &amp;lt;a href="&amp;lt;c:url value="/j_acegi_logout"/&amp;gt;"&amp;gt;Logoff&amp;lt;/a&amp;gt;
+    &amp;lt;/authz:authorize&amp;gt;
+which prevents the "Logoff" link from showing, but does not stop a user from manually entering the &amp;amp;apos;j_acegi_logout&amp;amp;apos; link themselves.
+Here is the filterChainProxy config:
+    &amp;lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&amp;gt;
+        &amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+            &amp;lt;value&amp;gt;
+                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+                PATTERN_TYPE_APACHE_ANT
+                /images/**=#NONE#
+                /scripts/**=#NONE#
+                /styles/**=#NONE#
+                /**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
+            &amp;lt;/value&amp;gt;
+            &amp;lt;!-- :TODO: Put channelProcessingFilter before securityContextHolderAwareRequestFilter to turn on SSL switching --&amp;gt;
+            &amp;lt;!-- It&amp;amp;apos;s off by default b/c Canoo WebTest doesn&amp;amp;apos;t support SSL out-of-the-box --&amp;gt;
+        &amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+Here is the logoutFilter config:
+    &amp;lt;bean id="logoutFilter" class="org.acegisecurity.ui.logout.LogoutFilter"&amp;gt;
+      &amp;lt;constructor-arg value="/"/&amp;gt; &amp;lt;!-- URL redirected to after logout --&amp;gt;
+      &amp;lt;constructor-arg&amp;gt;
+         &amp;lt;list&amp;gt;
+              &amp;lt;ref bean="rememberMeServices"/&amp;gt;
+              &amp;lt;bean class="org.acegisecurity.ui.logout.SecurityContextLogoutHandler"/&amp;gt;
+         &amp;lt;/list&amp;gt;
+      &amp;lt;/constructor-arg&amp;gt;
+    &amp;lt;/bean&amp;gt;</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">433</link>
+			<link type="Duplicate" description="is duplicated by">464</link>
+			<link type="Duplicate" description="is duplicated by">407</link>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+	<bug id="49" master="404" duplicate="433" opendate="2006-11-29 13:52:40" fixdate="2007-05-21 18:56:10" resolution="Fixed">
+		<buginformation>
+			<summary>Logout when not logged in cause NullPointerException Fix to SEC-359 has introduced a NullPointer to TokenBasedRememberMeServices.logout()</summary>
+			<description>When a user attempts to logout when they aren&amp;amp;apos;t logged in (e.g. when their session has expired) a NullPointerException occurs in TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295).
+The line that fails is:
+        cancelCookie(request, response, "Logout of user " + authentication.getName());
+I guess the cookie should still be cancelled, so the change might simply be to change the line to something like:
+        cancelCookie(request, response, "Logout of user " + authentication == null ? "Unknown" : authentication.getName());
+Regards,
+Damien 
+cancelCookie(request, response, "Logout of user " + authentication.getName()); &amp;lt;-- NULL POINTER if authentication is null
+Stack trace: java.lang.NullPointerException
+    at org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+    at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:229)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.securechannel.ChannelProcessingFilter.doFilter(ChannelProcessingFilter.java:138)
+    at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+    at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:148)
+    at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:98) </description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">433</link>
+			<link type="Duplicate" description="is duplicated by">464</link>
+			<link type="Duplicate" description="is duplicated by">407</link>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+	<bug id="66" master="404" duplicate="407" opendate="2006-11-29 13:52:40" fixdate="2006-12-28 07:24:54" resolution="Fixed">
+		<buginformation>
+			<summary>Logout when not logged in cause NullPointerException Hitting LogoutFilter&amp;apos;s URL when not logged in causes NPE</summary>
+			<description>When a user attempts to logout when they aren&amp;amp;apos;t logged in (e.g. when their session has expired) a NullPointerException occurs in TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295).
+The line that fails is:
+        cancelCookie(request, response, "Logout of user " + authentication.getName());
+I guess the cookie should still be cancelled, so the change might simply be to change the line to something like:
+        cancelCookie(request, response, "Logout of user " + authentication == null ? "Unknown" : authentication.getName());
+Regards,
+Damien After upgrading to 1.0.3, I&amp;amp;apos;m getting the following error when running
+some tests:
+[INFO] [talledLocalContainer] ERROR - StandardWrapperValve.invoke(260)
+
+
+ Servlet.service() for servlet jsp threw exception
+[INFO] [talledLocalContainer] java.lang.NullPointerException
+[INFO] [talledLocalContainer]   at
+org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.logout(TokenBasedRememberMeServices.java:295)
+[INFO] [talledLocalContainer]   at
+org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:98)
+
+
+Here&amp;amp;apos;s what I have in my security.xml context file:
+   &amp;lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&amp;gt;
+       &amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+           &amp;lt;value&amp;gt;
+               CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+               PATTERN_TYPE_APACHE_ANT
+/**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
+           &amp;lt;/value&amp;gt;
+           &amp;lt;!-- Put channelProcessingFilter before
+securityContextHolderAwareRequestFilter to turn on SSL switching --&amp;gt;
+           &amp;lt;!-- It&amp;amp;apos;s off by default b/c Canoo WebTest doesn&amp;amp;apos;t support
+SSL out-of-the-box --&amp;gt;
+       &amp;lt;/property&amp;gt;
+   &amp;lt;/bean&amp;gt;
+   &amp;lt;bean id="httpSessionContextIntegrationFilter"
+class="org.acegisecurity.context.HttpSessionContextIntegrationFilter"/&amp;gt;
+   &amp;lt;bean id="logoutFilter" class="org.acegisecurity.ui.logout.LogoutFilter"&amp;gt;
+       &amp;lt;constructor-arg value="/index.jsp"/&amp;gt; &amp;lt;!-- URL redirected to
+after logout --&amp;gt;
+       &amp;lt;constructor-arg&amp;gt;
+           &amp;lt;list&amp;gt;
+               &amp;lt;ref bean="rememberMeServices"/&amp;gt;
+               &amp;lt;bean
+class="org.acegisecurity.ui.logout.SecurityContextLogoutHandler"/&amp;gt;
+           &amp;lt;/list&amp;gt;
+       &amp;lt;/constructor-arg&amp;gt;
+       &amp;lt;property name="filterProcessesUrl" value="/logout.jsp"/&amp;gt;
+   &amp;lt;/bean&amp;gt;
+The problem appears to be caused by trying to logout before you&amp;amp;apos;ve
+tried to login.  This worked fine in previous releases where the
+LogoutFilter was present.</description>
+			<version>1.0.3</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">433</link>
+			<link type="Duplicate" description="is duplicated by">464</link>
+			<link type="Duplicate" description="is duplicated by">407</link>
+			<link type="Duplicate" description="duplicates">404</link>
+		</links>
+	</bug>
+</bugrepository>

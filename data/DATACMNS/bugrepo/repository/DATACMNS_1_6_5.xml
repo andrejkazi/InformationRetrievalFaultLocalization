@@ -1,0 +1,32 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="441" opendate="2014-02-18 04:41:56" fixdate="2014-02-19 00:34:21" resolution="Fixed">
+		<buginformation>
+			<summary>Analyzing @Query annotated bridge methods lead to NPEs during QueryMethod processing in Java 8</summary>
+			<description>We should skip bridge methods instead considering them for @Query annotation inspection, since we cannot extract the generic type parameter from bridge  methods.</description>
+			<version>1.7 RC1 (Codd)</version>
+			<fixedVersion>1.7 Final (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">465</link>
+		</links>
+	</bug>
+	<bug id="453" opendate="2014-02-26 05:25:34" fixdate="2014-02-26 23:40:27" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException at listing non-CRUD repositories in RepositoryMetadata.isPageableRepository()</summary>
+			<description>Listing repositories if one repository has no pageable finders leads to a NullPointerException.</description>
+			<version>1.7 Final (Codd)</version>
+			<fixedVersion>1.7.1 (Codd SR1), 1.8 M1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.AbstractRepositoryMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.AbstractRepositoryMetadata.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

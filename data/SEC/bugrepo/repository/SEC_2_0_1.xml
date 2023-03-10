@@ -1,0 +1,336 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="818" opendate="2008-05-06 22:40:23" fixdate="2008-05-07 00:53:12" resolution="Fixed">
+		<buginformation>
+			<summary>SEC-757 fix breakes scenarios with using property placeholders in URL definitions</summary>
+			<description>We are using property placeholders for configuring well known application URLs in application condex descriptor. 
+for example:
+	&amp;lt;bean id="applicationPropertyPlaceholderConfigurer" class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer"&amp;gt;
+		&amp;lt;property name="properties"&amp;gt;
+			&amp;lt;value&amp;gt;
+				loginPath=/login
+				logoutPath=/logout
+			&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+	&amp;lt;/bean&amp;gt;
+ 	&amp;lt;util:map id="exportSymbols"&amp;gt;
+		&amp;lt;entry key="application.logoutURI" value="$
+{logoutPath}"/&amp;gt;
+	&amp;lt;/util:map&amp;gt;
+
+	&amp;lt;security:http  access-decision-manager-ref="accessDecisionManager" path-type="regex" realm="TAO Realm"&amp;gt;
+		&amp;lt;security:logout logout-url="${logoutPath}
+"/&amp;gt;
+	&amp;lt;/security:http&amp;gt;
+So, we need to define real URI once, and do not bothering if it will cahnge later. But SEC-757 fix do not allow using placeholders more, becouse now spring-security checks URLs for validity. Plese, can you check URI for validity after PropertyPlaceholderConfigurer done his job.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.concurrent.ConcurrentSessionFilter.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.springframework.security.config.ConfigUtils.java</file>
+			<file type="M">org.springframework.security.ui.AccessDeniedHandlerImpl.java</file>
+			<file type="M">org.springframework.security.ui.logout.LogoutFilter.java</file>
+			<file type="M">org.springframework.security.util.UrlUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="817" opendate="2008-05-06 11:27:09" fixdate="2008-05-07 01:00:46" resolution="Fixed">
+		<buginformation>
+			<summary>NPE in org.springframework.security.config.FilterChainProxyPostProcessor</summary>
+			<description>The NPE occurs in the method "FilterChainProxyPostProcessor.postProcessBeforeInitialization" when the beanName argument is null. In my case this argument is null when using beans that are configured using the @Configurable annotation and the AspectJ AnnotationBeanConfigurerAspect.
+I also noticed that this NPE might happen in the other BeanPostProcessor implementations in spring-security. An easy fix would be to change the order of operands in the string comparison: beanName.equals(BeanIds.FILTER_CHAIN_PROXY) =&amp;gt; BeanIds.FILTER_CHAIN_PROXY.equals(beanName)</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.MethodSecurityInterceptorPostProcessor.java</file>
+			<file type="M">org.springframework.security.config.FilterChainProxyPostProcessor.java</file>
+			<file type="M">org.springframework.security.config.RememberMeServicesInjectionBeanPostProcessor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="822" opendate="2008-05-08 01:27:44" fixdate="2008-05-08 02:08:38" resolution="Fixed">
+		<buginformation>
+			<summary>TokenBasedRememberMeServices calculate expiryTime: explicit cat to long is needed</summary>
+			<description>
+public class TokenBasedRememberMeServices extends AbstractRememberMeServices {
+  public void onLoginSuccess(HttpServletRequest request,
+      HttpServletResponse response, Authentication successfulAuthentication) {
+    String username = retrieveUserName(successfulAuthentication);
+    String password = retrievePassword(successfulAuthentication);
+    // If unable to find a username and password, just abort as
+    // TokenBasedRememberMeServices is
+    // unable to construct a valid token in this case.
+    if (!StringUtils.hasLength(username) || !StringUtils.hasLength(password)) 
+{
+      return;
+    }
+
+    int tokenLifetime = calculateLoginLifetime(request,
+        successfulAuthentication);
+    long expiryTime = System.currentTimeMillis() + 1000 * tokenLifetime;
+    String signatureValue = makeTokenSignature(expiryTime, username, password);
+    setCookie(new String[] 
+{ username, Long.toString(expiryTime),
+        signatureValue }
+, tokenLifetime, request, response);
+    if (logger.isDebugEnabled()) 
+{
+      logger.debug("Added remember-me cookie for user &amp;amp;apos;" + username
+          + "&amp;amp;apos;, expiry: &amp;amp;apos;" + new Date(expiryTime) + "&amp;amp;apos;");
+    }
+  }
+}
+tokenLifetime is an integer. When the tokenLifetime is 1 month =&amp;gt; value = 2678400 seconds =&amp;gt; 1000 * 2678400 &amp;gt; Integer.MAX_VALUE =&amp;gt; negative integer.
+In the calculation, there should be an explicit cast to long
+So 
+long expiryTime = System.currentTimeMillis() + 1000 * tokenLifetime;
+should be 
+long expiryTime = System.currentTimeMillis() + 1000 * [B](long)[/B] tokenLifetime;</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.springframework.security.ui.rememberme.TokenBasedRememberMeServicesTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="826" opendate="2008-05-11 01:52:12" fixdate="2008-05-14 03:49:27" resolution="Fixed">
+		<buginformation>
+			<summary>Support for JPA PersistenceContext annotation broken</summary>
+			<description>When using the intercept-methods tag on a bean, the dao&amp;amp;apos;s used by the userSecurityService and the protected bean are not processed by the 
+PersistenceAnnotationBeanPostProcessor. This seems to be because the dao gets created before the PostProcessor and so in never seen by it. This like SEC-750 causes a null pointer when an attempt is made to authenticate the user.
+I believe that this is related to SEC-750 and SEC-773 however it still occurs in 2.0.0/2.5.4
+I have modified the test case form SEC-750 to demonstrate the problem. The unmodified test case runs fine on my system.
+My real world case is a little more complex in that I have a userSecurityService that uses one of my service components, that in turn uses a DAO that is used by another protected service.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.config.HttpSecurityConfigPostProcessor.java</file>
+			<file type="M">org.springframework.security.config.ConfigUtils.java</file>
+			<file type="M">org.springframework.security.config.X509BeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="837" opendate="2008-05-15 20:32:32" fixdate="2008-05-21 00:27:41" resolution="Fixed">
+		<buginformation>
+			<summary>SpringSecurityLdapTemplate.searchForSingleAttributeValues, no string escape for formattedFilter</summary>
+			<description>When formattedFilter looks like this: (member=CN=Jozwicki\, Jakub, ou=IT, dc=example, dc=com)
+
+please notice "\" before first comma, search doesn&amp;amp;apos;t return any results.
+
+I don&amp;amp;apos;t know if it is MS AD specific but I had to add code replacing \ with :
+String formattedFilter = MessageFormat.format(filter, params);
+formattedFilter = formattedFilter.replaceAll("\\\\", "\\\\\\\\");
+-------
+Standalone code:
+public class LDAPSearch {
+	public final static void main(String[] args) throws Exception {
+		Hashtable env = new Hashtable();
+		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+		env.put(Context.PROVIDER_URL, "ldap://192.168.1.191:389");
+		env.put(Context.SECURITY_PRINCIPAL, "pld1jjozwic");
+		env.put(Context.SECURITY_CREDENTIALS, "*******");
+		DirContext ctx = new InitialDirContext(env);
+		SearchControls controls = new SearchControls();
+		controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		controls.setReturningObjFlag(true);
+		controls.setReturningAttributes(null);
+		NamingEnumeration result = ctx.search("dc=pld1,dc=net", "(member=CN=Jozwicki\\\\, Jakub, OU=IT, DC=pld1, DC=net)", controls);
+		while (result.hasMoreElements()) 
+{
+			System.out.println(result.next()+"\n");
+		}
+ 
+	}
+}
+proved that  is needed.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplateTests.java</file>
+			<file type="M">org.springframework.security.ldap.populator.DefaultLdapAuthoritiesPopulatorTests.java</file>
+			<file type="M">org.springframework.security.ldap.search.FilterBasedLdapUserSearchTests.java</file>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="835" opendate="2008-05-15 07:06:43" fixdate="2008-05-23 07:57:04" resolution="Fixed">
+		<buginformation>
+			<summary>SEC-790 changes incompatible with J2EE 1.3</summary>
+			<description>The changes made for issue SEC-790 break the DefaultLoginPageGeneratingFilter under J2EE 1.3.  Line 79 in DefaultLoginPageGeneratingFilter uses the setCharacterEncoding method, which was introduced in J2EE 1.4.  The same thing can be accomplished with the setContentType method instead, with response.setContentType("text/html; charset=utf-8").</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.webapp.DefaultLoginPageGeneratingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="850" opendate="2008-05-23 03:25:44" fixdate="2008-05-23 10:38:01" resolution="Fixed">
+		<buginformation>
+			<summary>custom-authentication-provider Registering Separate Bean Definitions in App Context and Providers List</summary>
+			<description>I&amp;amp;apos;m seeing multiple instances of the LdapAuthenticationProvider bean when using the traditional bean config. In the namespace config I only see one instance. 
+So in the samples-ldap app I&amp;amp;apos;m seeing two instances when using the traditional bean config w/ the namespace config commented out and the scope="singleton" attribute applied to the secondLdapProvider bean definition. 
+In my app I&amp;amp;apos;m seeing three instances of the LdapAuthenticationProvider bean. It&amp;amp;apos;s like the prototype scope is getting applied.  There&amp;amp;apos;s one instance that&amp;amp;apos;s getting used for authentication, a second instance for a dependency injection bean, not sure about the third instance. I only want ONE shared instance of the LdapAuthenticationProvider bean.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.CustomAuthenticationProviderBeanDefinitionDecoratorTests.java</file>
+			<file type="M">org.springframework.security.config.CustomAuthenticationProviderBeanDefinitionDecorator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="856" opendate="2008-05-28 00:31:40" fixdate="2008-05-28 03:28:01" resolution="Fixed">
+		<buginformation>
+			<summary>GroupManager JdbcUserDetailsManager implementation: addGroupAuthority() method doesn&amp;apos;t work.</summary>
+			<description>In addGroupAuthority(String groupName, GrantedAuthority authority) there is wrong parameter type in FindGroupIdQuery. Must be VARCHAR instead of INTEGER.
+private class FindGroupIdQuery extends MappingSqlQuery {
+        public FindGroupIdQuery(DataSource ds) 
+{
+            super(ds, findGroupIdSql);
+            declareParameter(new SqlParameter(Types.INTEGER));
+            compile();
+        }
+
+        protected Object mapRow(ResultSet rs, int rowNum) throws SQLException 
+{
+            return new Integer(rs.getInt(1));
+        }
+    }</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManager.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="864" opendate="2008-06-03 01:52:48" fixdate="2008-06-03 01:55:38" resolution="Fixed">
+		<buginformation>
+			<summary>Duplicate OpenID providers being registered by HttpSecurityBeanDefinitionParser</summary>
+			<description>There should only be the one. Currently a separate instance is being added to the AuthenticationManager and isn&amp;amp;apos;t being injected with a UserDetailsService</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="819" opendate="2008-05-06 23:10:27" fixdate="2008-06-05 12:09:08" resolution="Fixed">
+		<buginformation>
+			<summary>Integer IDs are not supported despite documentation ensures they are</summary>
+			<description>The documentation (reference) says that int domain object ids are supported (Chapter 23.3):
+"Hopefully ObjectIdentityImpl will prove sufficient, as it provides a large number of ways in which it can be used. Most
+people will have domain objects that contain a public Serializable getId() method. If the return type is
+long, or compatible with long (eg an int), you will find you need not give further consideration to
+ObjectIdentity issues."
+Unfortunately I&amp;amp;apos;m getting assertion failures when using ints as IDs:
+java.lang.IllegalArgumentException: This class requires ObjectIdentity.getIdentifier() to be a LongObject of class [java.lang.Integer] must be an instance of class java.lang.Long
+	org.springframework.util.Assert.isInstanceOf(Assert.java:337)
+	org.springframework.security.acls.jdbc.BasicLookupStrategy$1.setValues(BasicLookupStrategy.java:296)
+	org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:621)
+	org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:566)
+	org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:616)
+	org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:645)
+	org.springframework.security.acls.jdbc.BasicLookupStrategy.lookupObjectIdentities(BasicLookupStrategy.java:289)
+	org.springframework.security.acls.jdbc.BasicLookupStrategy.readAclsById(BasicLookupStrategy.java:421)
+	org.springframework.security.acls.jdbc.JdbcAclService.readAclsById(JdbcAclService.java:114)
+	org.springframework.security.acls.jdbc.JdbcAclService.readAclById(JdbcAclService.java:99)</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclServiceTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategyTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+			<file type="M">org.springframework.security.acls.objectidentity.ObjectIdentityImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="831" opendate="2008-05-13 20:44:19" fixdate="2008-06-05 13:57:11" resolution="Fixed">
+		<buginformation>
+			<summary>JdbcAclService incompatible with postgres</summary>
+			<description>JdbcAclService contains the following definition:
+private static final String selectAclObjectWithParent = "select obj.object_id_identity obj_id, class.class class "
+        + "from acl_object_identity obj, acl_object_identity parent, acl_class class "
+        + "where obj.parent_object = parent.id and obj.object_id_class = class.id "
+        + "and parent.object_id_identity = ? and parent.object_id_class = ("
+        + "select id FROM acl_class where acl_class.class = ?)";
+Postgres cannot execute this query as it requires the AS keyword for aliasing.
+The following query works in postgres:
+select obj.object_id_identity AS obj_id, class.class AS class  from acl_object_identity obj, acl_object_identity parent, acl_class class where obj.parent_object = parent.id and obj.object_id_class = class.id and parent.object_id_identity = ? and parent.object_id_class = (select id FROM acl_class where acl_class.class = ?)
+It would be desirable if this and other sql statements were configurable.</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="832" opendate="2008-05-14 01:24:19" fixdate="2008-08-25 23:54:13" resolution="Fixed">
+		<buginformation>
+			<summary>NamingEnumeration.hasMore fails on MS AD with PartialResultException</summary>
+			<description>Implementation of org.springframework.security.ldap.searchForSingleEntry doesn&amp;amp;apos;t work with MS AD.
+When calling results.hasMore with base="" a PartialResultException is thrown. The call hasMore should
+be replaced with hasMoreElements() and whole method should look like this:
+public DirContextOperations searchForSingleEntry(final String base, final String filter, final Object[] params) {
+        return (DirContextOperations) executeReadOnly(new ContextExecutor() {
+			        public Object executeWithContext(DirContext ctx)
+			            throws NamingException {
+			            try {
+							NamingEnumeration results = ctx.search(base, filter, params, searchControls);
+							if (!results.hasMoreElements())
+								throw new IncorrectResultSizeDataAccessException(1, 0);
+							SearchResult searchResult = (SearchResult) results.next();
+							logger.debug("searchResult="+searchResult);
+							if (results.hasMoreElements()) 
+{
+								if (!searchResult.equals((SearchResult) results.next()))
+									throw new IncorrectResultSizeDataAccessException(1, 2);
+							}
+
+							// Work out the DN of the matched entry
+							StringBuffer dn = new StringBuffer(searchResult.getName());
+							if (base.length() &amp;gt; 0) 
+{
+							    dn.append(",");
+							    dn.append(base);
+							}
+
+							return new DirContextAdapter(searchResult.getAttributes(),
+							        new DistinguishedName(dn.toString()), new DistinguishedName(ctx.getNameInNamespace()));
+						}
+			            catch (Exception e) 
+{
+			            	NamingException ne = new NamingException(e.getMessage());
+							ne.setStackTrace(e.getStackTrace());
+							throw ne;
+						}
+			        }
+			    });		       
+    }</description>
+			<version>2.0.1</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">113</link>
+		</links>
+	</bug>
+</bugrepository>

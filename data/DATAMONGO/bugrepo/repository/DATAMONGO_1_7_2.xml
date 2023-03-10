@@ -1,0 +1,879 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1244" opendate="2015-06-20 07:44:00" fixdate="2015-07-08 01:23:47" resolution="Fixed">
+		<buginformation>
+			<summary>StringBasedMongoQuery handles complex expression parameters incorrectly.</summary>
+			<description>Currently the regex based expression parameter scanning is too weak to handle nested object expressions like:
+
+
+
+
+
+
+{&amp;amp;apos;id&amp;amp;apos;:?#{ [0] ? { $exists :true} : [1] }}
+
+
+
+
+
+
+which currently yields the invalid mongo query:
+
+
+
+
+
+
+{&amp;amp;apos;id&amp;amp;apos;:?expr0 : [1] }}
+
+
+
+
+
+
+instead of:
+
+
+
+
+
+
+{&amp;amp;apos;id&amp;amp;apos;:&amp;amp;apos;?expr0&amp;amp;apos;}
+
+
+
+
+
+
+Further more, if complex parameter objects are passed as expressions 
+they get unnecessarily quoted which could yield wrong results.
+E.g:
+
+
+
+
+
+
+@{&amp;amp;apos;id&amp;amp;apos;:?#{ [0] ? { $exists :true} : [1] }, &amp;amp;apos;foo&amp;amp;apos;:42, &amp;amp;apos;bar&amp;amp;apos;: ?#{ [0] ? { $exists :false} : [1] }}
+
+
+
+
+
+
+Currently results in:
+
+
+
+
+
+
+@{&amp;amp;apos;id&amp;amp;apos;:"{ \"$exists\" :true}", &amp;amp;apos;foo&amp;amp;apos;:42, &amp;amp;apos;bar&amp;amp;apos;: &amp;amp;apos;foo&amp;amp;apos; }}
+
+
+
+
+
+
+when finally rendered.
+This prevents the effective use of SpEL based parameter expressions
+to be used for dynamic filtering with Spring Security as it is currently possible
+with Spring Data JPA.
+With this fixed one could easily perform filtering based on Spring Security context information in Spring Data MongoDB Repositories:
+
+
+
+
+
+
+public interface PersonRepository extends CrudRepository&amp;lt;Person, String&amp;gt; {
+
+
+
+
+
+
+
+
+
+	@Query("{id: ?#{ hasRole(&amp;amp;apos;ROLE_ADMIN&amp;amp;apos;) ? {$exists:true} : principal.id}}")
+
+
+
+
+	List&amp;lt;Person&amp;gt; findAllForCurrentUserById();
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.8 M1 (Gosling)</version>
+			<fixedVersion>1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1307" opendate="2015-10-20 12:33:45" fixdate="2015-10-20 17:24:35" resolution="Duplicate">
+		<buginformation>
+			<summary>Stop converting user-defined runtime exceptions to NPEs</summary>
+			<description>MongoTemplate has code like this in many places:
+} catch (RuntimeException ex) {
+	throw exceptionTranslator.translateExceptionIfPossible(ex);
+MongoExceptionTranslator, however, often does NOT return an exception. If it encounters an unknown exception it does this:
+// If we get here, we have an exception that resulted from user code,
+// rather than the persistence provider, so we return null to indicate
+// that translation should not occur.
+return null;
+MongoTemplate then "eats" the original exception and throws a null-pointer exception instead.
+MongoTemplate should throw the original exception if it gets null back from the exception translator.</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1276</link>
+		</links>
+	</bug>
+	<bug id="1276" opendate="2015-08-19 02:31:58" fixdate="2015-10-21 13:12:38" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate.CloseableIterableCursorAdapter does not null check return values from PersistenceExceptionTranslator.</summary>
+			<description>Using the Stream support in a MongoRepository I suddenly started getting exceptions like these:
+
+
+
+
+
+
+java.lang.NullPointerException: null
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$CloseableIterableCusorAdapter.next(MongoTemplate.java:2389)
+
+
+
+
+	at java.util.Iterator.forEachRemaining(Iterator.java:116)
+
+
+
+
+	at java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+
+
+
+
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:512)
+
+
+
+
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:502)
+
+
+
+
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+
+
+
+
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+
+
+
+
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+
+
+
+
+...
+
+
+
+
+
+
+After a bit if investigation it turns out that due to some domain model changes I appear to be getting an org.springframework.data.mapping.model.MappingException in the data mapping and since MongoExceptionTranslator does not specifically know about it. So it just returns null.
+That appears to be fine according to the PersistenceExceptionTranslator interface. But it appears that the Spring Data MongoDB code will often throw the result without any null checks. Provoking an NPE and hiding the actual reason for the exception.</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion>1.8.1 (Gosling SR1), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1295</link>
+			<link type="Duplicate" description="is duplicated by">1307</link>
+		</links>
+	</bug>
+	<bug id="1293" opendate="2015-09-24 13:32:49" fixdate="2015-10-29 14:27:36" resolution="Fixed">
+		<buginformation>
+			<summary>MongoDbFactoryParser should allow id attribute in addition to client-uri</summary>
+			<description>The following isn&amp;amp;apos;t working: &amp;lt;mongo:db-factory id="myMongoDbFactory" client-uri="mongodb://localhost:27020/test"/&amp;gt;. The following exception is thrown:
+
+
+
+
+
+
+Caused by: org.springframework.beans.factory.parsing.BeanDefinitionParsingException: Configuration problem: Configure either Mongo URI or details individually!
+
+
+
+
+Offending resource: class path resource [jingit-financial-services-event-mongo.xml]
+
+
+
+
+	at org.springframework.beans.factory.parsing.FailFastProblemReporter.error(FailFastProblemReporter.java:70)
+
+
+
+
+	at org.springframework.beans.factory.parsing.ReaderContext.error(ReaderContext.java:85)
+
+
+
+
+	at org.springframework.beans.factory.parsing.ReaderContext.error(ReaderContext.java:72)
+
+
+
+
+	at org.springframework.data.mongodb.config.MongoDbFactoryParser.parseInternal(MongoDbFactoryParser.java:77)
+
+
+
+
+
+</description>
+			<version>1.8 GA (Gosling)</version>
+			<fixedVersion>1.8.1 (Gosling SR1), 1.9 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.config.MongoDbFactoryParserIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.config.MongoDbFactoryParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1295" opendate="2015-09-27 09:57:42" fixdate="2015-11-02 09:21:59" resolution="Duplicate">
+		<buginformation>
+			<summary>The MongoTemplate.CloseableIterableCusorAdapter runs into an NPE when a MappingException was raised</summary>
+			<description>When a MappingException occurs, the MongoTemplate.CloseableIterableCusorAdapter will run into an NPE and swallow the source MappingException. That makes the stack trace unusable. CloseableIterableCursorAdapter is used for the new java.util.Stream support. The source of this issue here. The MongoExceptionTranslator.translateExceptionIfPossible(...)  returns null in case of mapping exceptions.
+The stack trace (where the nice MappingException is swallowed):
+
+
+
+
+
+
+Exception in thread "main" java.lang.IllegalStateException: Failed to execute CommandLineRunner
+
+
+
+
+	at org.springframework.boot.SpringApplication.runCommandLineRunners(SpringApplication.java:676)
+
+
+
+
+	at org.springframework.boot.SpringApplication.afterRefresh(SpringApplication.java:691)
+
+
+
+
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:322)
+
+
+
+
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:967)
+
+
+
+
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:956)
+
+
+
+
+	at com....ExtractorApplication.main(ExtractorApplication.java:25)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:483)
+
+
+
+
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:140)
+
+
+
+
+Caused by: java.lang.NullPointerException &amp;lt;---- That should be the Mapping Exception
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$CloseableIterableCusorAdapter.next(MongoTemplate.java:2395)
+
+
+
+
+	at java.util.Iterator.forEachRemaining(Iterator.java:116)
+
+
+
+
+	at java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
+
+
+
+
+	at java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:580)
+
+
+
+
+	at com......(XXX.java:48)
+
+
+
+
+	at com.....ExtractorApplication.run(ExtractorApplication.java:37)
+
+
+
+
+	at org.springframework.boot.SpringApplication.runCommandLineRunners(SpringApplication.java:673)
+
+
+
+
+	... 10 more
+
+
+
+
+
+</description>
+			<version>1.8 GA (Gosling)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1276</link>
+		</links>
+	</bug>
+	<bug id="1335" opendate="2015-11-24 16:20:40" fixdate="2015-11-25 15:20:56" resolution="Fixed">
+		<buginformation>
+			<summary>DBObjectAccessor doesn&amp;apos;t write properties correctly if multiple ones are nested</summary>
+			<description>When DBObjectAccessor is building the BasicDBObject it could check if the current dbObject already holds a BasicDBObject for the given key
+And thus documents like the one below will be inserted correctly (now only "id" and "desc"  are inserted)
+
+
+
+
+
+
+    public class One {
+
+
+
+
+      @Id String id;
+
+
+
+
+      @Field("DATA.TITLE") String title;
+
+
+
+
+      @Field("DATA.DESC") String desc;
+
+
+
+
+     ....
+
+
+
+
+    }
+
+
+
+
+
+
+I have provided a sample projecte with a few tests in order to verify the behaviour before and after the proposed change.
+I am aware that field names cannot contain the dot (.) character (https://docs.mongodb.org/manual/core/document/#field-names), and that data structures like the one before should be mapped with a Map BUT now the read process can cope with this kind of data structures so I am wondering if we can improve the write process to cover this case.  JUST AN IDEA</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DBObjectAccessor.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DBObjectAccessorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1342" opendate="2015-11-25 16:21:53" fixdate="2015-12-15 14:48:53" resolution="Fixed">
+		<buginformation>
+			<summary>Potential NullPointerException in MongoQueryCreator.nextAsArray()</summary>
+			<description>A null value is handed to a contains-clause of a repository query method will cause a NullPointerException rather than being treated like a single element object array.</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1288" opendate="2015-09-16 23:51:16" fixdate="2016-02-11 13:09:46" resolution="Fixed">
+		<buginformation>
+			<summary>Update.inc(String, Number) method fails to work with AtomicInteger</summary>
+			<description>Even though the org.springframework.data.mongodb.core.query.Update.inc(String, Number) method takes the parameter as Number, it doesn&amp;amp;apos;t actually work right with things that aren&amp;amp;apos;t simple primitive object wrappers.  For example, if you pass in an AtomicInteger, the update fails to execute, as the generated json isn&amp;amp;apos;t correct.</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion>1.9 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.NumberToNumberConverterFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.CustomConversions.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MongoConverters.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">1302</link>
+			<link type="Relate" description="is related to">13938</link>
+		</links>
+	</bug>
+	<bug id="1401" opendate="2016-03-22 11:33:58" fixdate="2016-03-31 07:39:58" resolution="Fixed">
+		<buginformation>
+			<summary>GeoJsonPoint error on update</summary>
+			<description>If i try to do an update on Entity with a GeoJsonPoint properties i get the following:
+
+
+
+
+
+
+org.springframework.data.mapping.context.InvalidPersistentPropertyPath: No property type found on org.springframework.data.mongodb.core.geo.GeoJsonPoint!
+
+
+
+
+
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentPropertyPath(AbstractMappingContext.java:256)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentPropertyPath(AbstractMappingContext.java:229)
+
+
+
+
+	at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentPropertyPath(AbstractMappingContext.java:204)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper$MetadataBackedField.getPath(QueryMapper.java:838)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper$MetadataBackedField.&amp;lt;init&amp;gt;(QueryMapper.java:729)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper$MetadataBackedField.&amp;lt;init&amp;gt;(QueryMapper.java:706)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper$MetadataBackedUpdateField.&amp;lt;init&amp;gt;(UpdateMapper.java:193)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.createPropertyField(UpdateMapper.java:164)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:122)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.convertSimpleOrDBObject(QueryMapper.java:359)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.getMappedObjectForField(UpdateMapper.java:77)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:123)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.convertSimpleOrDBObject(QueryMapper.java:359)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.UpdateMapper.getMappedObjectForField(UpdateMapper.java:77)
+
+
+
+
+	at org.springframework.data.mongodb.core.convert.QueryMapper.getMappedObject(QueryMapper.java:123)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:1108)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:1099)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:462)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doUpdate(MongoTemplate.java:1099)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doSaveVersioned(MongoTemplate.java:973)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:937)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.save(MongoTemplate.java:921)
+
+
+
+
+
+
+</description>
+			<version>1.8 GA (Gosling)</version>
+			<fixedVersion>1.9 GA (Hopper), 1.8.5 (Gosling SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1350</link>
+		</links>
+	</bug>
+	<bug id="1406" opendate="2016-04-04 18:59:49" fixdate="2016-08-25 11:50:06" resolution="Fixed">
+		<buginformation>
+			<summary>Query mapper does not use @Field field name when querying nested fields in combination with nested keywords</summary>
+			<description>we have a document class;
+
+
+
+
+
+
+@Document(collection = "Computer")
+
+
+
+
+public class Computer
+
+
+
+
+{
+
+
+
+
+   @Id
+
+
+
+
+   private String _id;
+
+
+
+
+
+
+
+
+
+   private String batchId;
+
+
+
+
+
+
+
+
+
+  @Field("stat")
+
+
+
+
+   private String status;
+
+
+
+
+
+
+
+
+
+   @Field("disp")
+
+
+
+
+   private List&amp;lt;Monitor&amp;gt; displays;
+
+
+
+
+
+
+
+
+
+   //setters and getters
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public class Monitor {
+
+
+
+
+   @Field("res")
+
+
+
+
+   private String resolution;
+
+
+
+
+
+
+
+
+
+  // setters/getters
+
+
+
+
+}
+
+
+
+
+
+
+In MongoTemplate.java, the call to :
+
+
+
+
+
+
+protected &amp;lt;S, T&amp;gt; List&amp;lt;T&amp;gt; doFind(String collectionName, DBObject query, DBObject fields, Class&amp;lt;S&amp;gt; entityClass,
+
+
+
+
+			CursorPreparer preparer, DbObjectCallback&amp;lt;T&amp;gt; objectCallback)
+
+
+
+
+
+
+
+
+
+DBObject mappedQuery = queryMapper.getMappedObject(query, entity);
+
+
+
+
+
+
+resolves the fields to the input query to the ones in the @Field annotations, except for these in embedded arrays. So, in the example above, resolution fields in DBObject remains resolution. While, the status field resolves to stat. 
+Note the queries in the inner list, are setup as elemMatch.
+The query submitted to mongo after getMappedObject is called:
+
+
+
+
+
+
+{ "$and" : [ { "stat" : "A"} , { "disp" : { "$elemMatch" : { "$and" : [ { "resolution" : { "$ne" :  null }} , { "resolution" : { "$ne" : ""}}]}}}] , "batchId" : "5d0f1c53-92a2-48cb-8c84-1061769962c1"}
+
+
+
+
+
+
+Which doesn&amp;amp;apos;t get any data, because there is no field called resolution (the field in mongo is res). 
+Note: The query input to getMappedObject is:
+
+
+
+
+
+
+{ "$and" : [ { "status" : "A"} , { "displays" : { "$elemMatch" : { "$and" : [ { "resolution" : { "$ne" :  null }} , { "resolution" : { "$ne" : ""}}]}}}] , "batchId" : "5d0f1c53-92a2-48cb-8c84-1061769962c1"}
+
+
+
+
+
+
+Notice the status and displays fields correctly get converted to the value in the @Field annotation. 
+The correct query from getMappedObject should be:
+
+
+
+
+
+
+{ "$and" : [ { "stat" : "A"} , { "disp" : { "$elemMatch" : { "$and" : [ { "res" : { "$ne" :  null }} , { "res" : { "$ne" : ""}}]}}}] , "batchId" : "5d0f1c53-92a2-48cb-8c84-1061769962c1"}
+
+
+
+
+
+
+This basically means that any queries that operate on fields (with a name different from the peristed name) in the inner list will fail. 
+</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion>1.8.5 (Gosling SR5), 1.9.3 (Hopper SR3), 1.10 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1368" opendate="2016-01-29 22:58:48" fixdate="2016-11-02 18:25:24" resolution="Works as Designed">
+		<buginformation>
+			<summary>findByIgnoreCase Not Escaping Parenthesis</summary>
+			<description>This was tested on 1.7.0.RELEASE.
+I have a method in the interface like:
+Object findOneByIdAndNameIgnoreCase(String id, String name);
+I call the function like this:
+dao.findOneByIdAndNameIgnoreCase("uid", "Engineer (TX)");
+This causes the following query to be generated (as seen in the debug log):
+(MongoTemplate.java:2066) - findOne using query: { "id" : "uid" , "name" : { "$regex" : "^Engineer (TX)$" , "$options" : "i"}} in db.collection
+Which fails to find the record having:
+{
+"id" : "uid",
+"name" : "Engineer (TX)"
+}
+
+Because the regex sees the parenthesis as part of the regex (as a group matcher) when it should see them as part of the plaintext.  i.e. they are not being escaped.
+</description>
+			<version>1.7.2 (Fowler SR2)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1232</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="921" opendate="2016-09-28 12:52:56" fixdate="2016-09-28 13:02:39" resolution="Fixed">
+		<buginformation>
+			<summary>ResultProcessor should create approximate collection instead of exact one</summary>
+			<description>ResultProcessor currently tries to create an instance of the exact collection type encountered when processing collections. This will fail for special collection implementation types that don&amp;amp;apos;t have a default constructor or fail to instantiate for other reasons.
+We should fall back to an approximate collection in that case.</description>
+			<version>1.12.3 (Hopper SR3)</version>
+			<fixedVersion>1.12.4 (Hopper SR4), 1.13 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.ResultProcessorUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.query.ResultProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">974</link>
+		</links>
+	</bug>
+</bugrepository>

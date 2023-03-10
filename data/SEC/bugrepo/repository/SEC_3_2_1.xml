@@ -1,0 +1,303 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2499" opendate="2014-02-28 05:03:46" fixdate="2014-03-06 19:19:02" resolution="Fixed">
+		<buginformation>
+			<summary>GlobalMethodSecurityBeanDefinitionParser cannot refer to expressionHandler in parent context</summary>
+			<description>This appears to have been introduced in 3.2.x, as it was working fine in 3.1.x.  If you define the referenced expressionHandler bean in the root WebApplicationContext, you get the stacktrace below:
+org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named &amp;amp;apos;expressionHandler&amp;amp;apos; is defined
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanDefinition(DefaultListableBeanFactory.java:638)
+	at org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser$LazyInitBeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry(GlobalMethodSecurityBeanDefinitionParser.java:455)
+...
+Would it make sense to just skip the post-processing case in this case?  As it would be trying to change the bean definition of a bean that it doesn&amp;amp;apos;t actually control.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2511" opendate="2014-03-06 19:56:22" fixdate="2014-03-06 20:01:45" resolution="Fixed">
+		<buginformation>
+			<summary>Remove double ALLOW-FROM from X-Frame-Options header</summary>
+			<description></description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.AbstractRequestParameterAllowFromStrategyTests.java</file>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.WhiteListedAllowFromStrategyTests.java</file>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.RegExpAllowFromStrategyTests.java</file>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.AbstractRequestParameterAllowFromStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2515" opendate="2014-03-10 03:57:44" fixdate="2014-03-10 12:39:27" resolution="Complete">
+		<buginformation>
+			<summary>Stackoverflow with @Bean AuthenticationManager</summary>
+			<description>This comes from an invalid configuration that tries to expose the AuthenticationManager as a Bean when no authentication has been configured. For example:
+
+
+
+
+
+
+@EnableWebSecurity
+
+
+
+
+@Configuration
+
+
+
+
+public class StackOverflowSecurityConfig extends WebSecurityConfigurerAdapter {
+
+
+
+
+    @Override
+
+
+
+
+    @Bean
+
+
+
+
+    public AuthenticationManager authenticationManagerBean()
+
+
+
+
+            throws Exception {
+
+
+
+
+        return super.authenticationManagerBean();
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+The stacktrace when trying to authenticate is this:
+
+
+
+
+
+
+Exception in thread "http-nio-8080-exec-1" java.lang.StackOverflowError
+
+
+
+
+	at ch.qos.logback.classic.Logger.isDebugEnabled(Logger.java:490)
+
+
+
+
+	at ch.qos.logback.classic.Logger.isDebugEnabled(Logger.java:486)
+
+
+
+
+	at org.apache.commons.logging.impl.SLF4JLocationAwareLog.isDebugEnabled(SLF4JLocationAwareLog.java:67)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:144)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator.authenticate(WebSecurityConfigurerAdapter.java:421)
+
+
+
+
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:177)
+
+
+
+
+
+
+
+
+
+...
+
+
+
+
+
+
+Here&amp;amp;apos;s an example project: https://github.com/scratches/sparklr-boot/tree/feature/password
+We should provide a better error message when this is misconfigured.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2507" opendate="2014-03-05 13:21:48" fixdate="2014-03-10 12:39:50" resolution="Complete">
+		<buginformation>
+			<summary>WebExpressionVoter - supported secured object class</summary>
+			<description>It&amp;amp;apos;s probably a typo - WebExpressionVoter has the following method:
+
+
+
+
+
+
+public boolean supports(Class&amp;lt;?&amp;gt; clazz) {
+
+
+
+
+    return clazz.isAssignableFrom(FilterInvocation.class);
+
+
+
+
+}
+
+
+
+
+
+
+I think it should be:
+
+
+
+
+
+
+public boolean supports(Class&amp;lt;?&amp;gt; clazz) {
+
+
+
+
+    return FilterInvocation.class.isAssignableFrom(clazz);
+
+
+
+
+}
+
+
+
+
+
+
+because WebExpressionVoter should support subclasses of FilterInvocation.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.1.6, 3.2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.expression.WebExpressionVoter.java</file>
+			<file type="M">org.springframework.security.web.access.expression.WebExpressionVoterTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

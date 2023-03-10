@@ -1,0 +1,2830 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="1" master="863" duplicate="870" opendate="2016-07-30 07:55:49" fixdate="2016-08-08 13:00:11" resolution="Fixed">
+		<buginformation>
+			<summary>REST calls to /api always redirect to HAL Browser if no accept header is specified CustomAcceptHeaderHttpServletRequest doesn&amp;apos;t work as intended with Spring Framework 4.3.2</summary>
+			<description>After updating 2 projects to Spring Boot 1.4 (and Spring Data Rest 2.5.2) all REST calls to /api  that don&amp;amp;apos;t specify a header like "accept: application/json" redirect to /api/browser/index.html#/api/. In previous versions this was only the case when the accept header was text/html, but now the redirect happens with empty accept header.
+This may have nothing to do with Spring Data Rest directly, I just put it here because HAL Browser is involved.
+But as a result, the default HAL browser itself cannot get the /api and shows its own index.html. CustomAcceptHeaderHttpServletRequest tries to provide a custom view of the request&amp;amp;apos;s Accept header by overriding getHeader(String). It works with Spring Framework 4.2.x but doesn&amp;amp;apos;t work with Spring Framework 4.3.2. As a result of SPR-14506, Spring Framework 4.3.2 now calls getHeaderValues(String) rather than getHeader(String) and the original Accept header is returned.</description>
+			<version>2.4.4 (Gosling SR4)</version>
+			<fixedVersion>2.4.5 (Gosling SR5), 2.5.3 (Hopper SR3), 2.6 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.halbrowser.HalBrowserIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">870</link>
+			<link type="Duplicate" description="duplicates">863</link>
+		</links>
+	</bug>
+	<bug id="2" master="697" duplicate="716" opendate="2015-10-26 19:40:30" fixdate="2016-01-07 14:23:20" resolution="Fixed">
+		<buginformation>
+			<summary>ProjectionSerializer doesn&amp;apos;t react to unwrapping mode correctly Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts</summary>
+			<description>Previously, it was possible to have a controller method that returned a Resource-wrapped @Projection interface of a domain type. Somewhere between 2.3.2 and 2.4, this functionality was broken. 
+The below code sample works fine in SDR 2.3.2, but in 2.4 and current SNAPSHOTs it results in the following error: 
+
+
+
+
+
+
+Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: Can not start an object, expecting field name; nested exception is com.fasterxml.jackson.core.JsonGenerationException: Can not start an object, expecting field name
+
+
+
+
+
+
+Testing this out, serializing a Resource-wrapped POJO works fine, a Resource-wrapped domain type works fine, a non-wrapped Projection works fine, but a Resource-wrapped projection fails with the above error. Using the SDR repository controller to return the projection works fine, too.
+This feels like a bug? 
+Below is sample code for reproducing this. Tested with Spring Boot 1.2.7 and SDR 2.3.2 (working) and Spring Boot 1.3.1.RC1 and SDR 2.4.0.RELEASE (not working).
+
+
+
+
+
+
+@SpringBootApplication
+
+
+
+
+public class Sandbox {
+
+
+
+
+
+
+
+
+
+    public static void main(String[] args) {
+
+
+
+
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Sandbox.class);
+
+
+
+
+        builder.run(args);
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public interface PersonRepository extends CrudRepository&amp;lt;Person,Long&amp;gt; {
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Projection(types=Person.class,name="test")
+
+
+
+
+public interface PersonProjection {
+
+
+
+
+
+
+
+
+
+    String getName();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@Entity
+
+
+
+
+@Getter
+
+
+
+
+@Setter
+
+
+
+
+public class Person {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
+
+
+    private Long id;
+
+
+
+
+
+
+
+
+
+    private String name;
+
+
+
+
+
+
+
+
+
+    private String phone;
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@BasePathAwareController
+
+
+
+
+public class TestController {
+
+
+
+
+
+
+
+
+
+    private final ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test/{id}", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; getProjection(@PathVariable Long id){
+
+
+
+
+        Person one = personRepository.findOne(id);
+
+
+
+
+        PersonProjection projection = projectionFactory.createProjection(PersonProjection.class, one);
+
+
+
+
+        return ResponseEntity.ok(new Resource&amp;lt;&amp;gt;(projection));
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @RequestMapping(value = "/test", produces = "application/hal+json")
+
+
+
+
+    public ResponseEntity&amp;lt;Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt;&amp;gt; getProjections(){
+
+
+
+
+        Set&amp;lt;Person&amp;gt; people = Sets.newHashSet(personRepository.findAll());
+
+
+
+
+        Resources&amp;lt;Resource&amp;lt;PersonProjection&amp;gt;&amp;gt; wrap = Resources.wrap(people.stream().map(o -&amp;gt; projectionFactory.createProjection(PersonProjection.class, o)).collect(Collectors.toSet()));
+
+
+
+
+        return ResponseEntity.ok(wrap);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+@WebAppConfiguration
+
+
+
+
+@SpringApplicationConfiguration(classes = Sandbox.class)
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+public class TestProjection {
+
+
+
+
+
+
+
+
+
+    private MockMvc mockMvc;
+
+
+
+
+
+
+
+
+
+    @Autowired
+
+
+
+
+    private WebApplicationContext webApplicationContext;
+
+
+
+
+    
+
+
+
+
+    @Autowired
+
+
+
+
+    private PersonRepository personRepository;
+
+
+
+
+
+
+
+
+
+    @Before
+
+
+
+
+    public void before(){
+
+
+
+
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+
+
+
+        Person person = new Person();
+
+
+
+
+        person.setName("Adam");
+
+
+
+
+        person.setPhone("123456");
+
+
+
+
+        personRepository.save(person);
+
+
+
+
+        
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test 
+
+
+
+
+    public void testProjection() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/test/1")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDR() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$._embedded.persons[0].name").value("Adam")).andExpect(jsonPath("$._embedded.persons[0].phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testProjectionViaSDRSingleResource() throws Exception {
+
+
+
+
+        mockMvc.perform(get("/persons/1?projection=test")).andDo(print()).andExpect(status().is2xxSuccessful()).andExpect(jsonPath("$.name").value("Adam")).andExpect(jsonPath("$.phone").doesNotExist());
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+ In some cases after application start some rest repositories fail to handle the http request and throw a HttpMessageNotWritableException (see StackOverflow reference)
+
+
+
+
+
+
+2015-11-27 09:56:19.015  WARN 1207 --- [nio-9000-exec-9] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+2015-11-27 09:56:19.024  WARN 1207 --- [nio-9000-exec-2] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+
+</description>
+			<version>2.4.1 (Gosling SR1)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">716</link>
+			<link type="Duplicate" description="duplicates">697</link>
+			<link type="Relate" description="relates to">743</link>
+		</links>
+	</bug>
+	<bug id="3" master="238" duplicate="143" opendate="2013-08-27 01:33:12" fixdate="2014-02-14 04:26:34" resolution="Fixed">
+		<buginformation>
+			<summary>PUT on entity with self links causes changes to be overwritten with old values PUT of entity with links fails..</summary>
+			<description>When PUTting the following JSON (a "Workload" entity):
+
+
+
+
+
+
+{
+
+
+
+
+  "version" : 1,
+
+
+
+
+  "weight" : 123,
+
+
+
+
+  "handlingMinutes" : 2,
+
+
+
+
+  "articleCount" : 3,
+
+
+
+
+  "address" : {
+
+
+
+
+    "line1" : null,
+
+
+
+
+    "line2" : null,
+
+
+
+
+    "line3" : null,
+
+
+
+
+    "postCode" : "53123",
+
+
+
+
+    "city" : "Bonn          ",
+
+
+
+
+    "countryCode" : null,
+
+
+
+
+    "street" : "Bonner Bonnweg",
+
+
+
+
+    "houseNumber" : "125"
+
+
+
+
+  },
+
+
+
+
+  "links" : [ {
+
+
+
+
+    "rel" : "self",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060"
+
+
+
+
+  }, {
+
+
+
+
+    "rel" : "area",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060/area"
+
+
+
+
+  }, {
+
+
+
+
+    "rel" : "product",
+
+
+
+
+    "href" : "http://127.0.0.1:8000/api/workloadDao/1060/product"
+
+
+
+
+  } ]
+
+
+
+
+}
+
+
+
+
+
+
+.. the incoming JSON is converted all fine and well, until it runs into the links/rel/self/href thing, and hits this line: [1]
+This causes the converted Workload entity from the PUT call to be overwritten with the old values. End-effect: A PUT looks like it is successful, but no changes are stored.
+[1] https://github.com/spring-projects/spring-data-rest/blob/2.0.0.M1/spring-data-rest-webmvc/src/main/java/org/springframework/data/rest/webmvc/json/PersistentEntityJackson2Module.java#L135 Github Author: jhiemer
+Github Last-Updated: 2013-03-22T20:05:51Z
+This issue was automatically imported from github
+Hi Jon,
+when I am doing a put to the self link with embedded links I get an error. This means I need to remove all links before putting an element. I think this should not be the desired behaviour. Or?
+Sample:
+
+
+
+
+
+
+{
+
+
+
+
+   "description":"adasdadsasdads",
+
+
+
+
+   "name":"Customer Corp",
+
+
+
+
+   "links":[
+
+
+
+
+      {
+
+
+
+
+         "rel":"self",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.users",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/users"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.credentials",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/credentials"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.addresses",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/addresses"
+
+
+
+
+      },
+
+
+
+
+      {
+
+
+
+
+         "rel":"customer.customer.sector",
+
+
+
+
+         "href":"http://localhost:8080/web/api/customer/1/sector"
+
+
+
+
+      }
+
+
+
+
+   ]
+
+
+
+
+}
+
+
+
+
+
+
+The response is:
+
+
+
+
+
+
+javascript
+
+
+
+
+{
+
+
+
+
+  "cause" : null,
+
+
+
+
+  "message" : "Property &amp;amp;apos;links&amp;amp;apos; not found for entity de.model.customer.Customer"
+
+
+
+
+}
+
+
+
+
+
+
+Perhaps one additional note: the same happens, when using embedded entities like you described here: http://stackoverflow.com/questions/12879975/spring-data-rest-uri-vs-entity-id. Of course the POST fails, if I remove the links as the exporter is not able to find the customer in the database.</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">143</link>
+			<link type="Duplicate" description="duplicates">238</link>
+		</links>
+	</bug>
+	<bug id="4" master="381" duplicate="411" opendate="2014-09-04 05:27:11" fixdate="2014-11-16 23:28:17" resolution="Fixed">
+		<buginformation>
+			<summary>Controllers for Alps and repository listing get listed under the root even if a base URI is configured BaseUrl mapping not workig</summary>
+			<description> Not sure if the issue is with Data-Rest or Spring Boot but extending RepositoryRestConfiguration and setting a BaseUri (to say /rest) using 1.1.9.RELEASE move the list repository controller from / to /rest allowing / to get to the index.html page in src/main/resource/public/ amending to version
+&amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+&amp;lt;artifactId&amp;gt;spring-boot-starter-parent&amp;lt;/artifactId&amp;gt;
+&amp;lt;version&amp;gt;1.2.0.M2&amp;lt;/version&amp;gt;
+Make the list repository controller work on BOTH / and /rest</description>
+			<version>2.2 GA (Evans)</version>
+			<fixedVersion>2.2.1 (Evans SR1), 2.3 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">411</link>
+			<link type="Duplicate" description="duplicates">381</link>
+		</links>
+	</bug>
+	<bug id="5" master="354" duplicate="244" opendate="2014-02-07 15:57:41" fixdate="2015-03-05 01:14:29" resolution="Fixed">
+		<buginformation>
+			<summary>Revamp JSON Schema support to current draft of the spec SDR Schema follows json-schema?</summary>
+			<description>Similarly to the support for ALPS we added in Evans M1, we should expose API meta-data in JSON Schema and JSON Hyper-Schema format.
+[0] http://json-schema.org The schema (/schema) output of SDR follows the specification (http://json-schema.org/documentation.html )? If so what version?</description>
+			<version>2.1 RC1 (Dijkstra)</version>
+			<fixedVersion>2.3 RC1 (Fowler)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.domain.jpa.Person.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Address.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Book.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Profile.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.Author.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySchemaController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.User.java</file>
+			<file type="M">org.springframework.data.rest.core.config.MetadataConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JacksonMetadata.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.JsonSchema.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">244</link>
+			<link type="Relate" description="relates to">486</link>
+			<link type="Relate" description="is related to">399</link>
+			<link type="Relate" description="is related to">194</link>
+			<link type="Relate" description="is related to">208</link>
+			<link type="Duplicate" description="duplicates">354</link>
+		</links>
+	</bug>
+	<bug id="6" master="198" duplicate="204" opendate="2013-12-04 06:20:36" fixdate="2014-01-20 03:22:28" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException when accessing OneToMany Relationship Collection References not working with SF 4.0 due to generics changes</summary>
+			<description>I have a OneToMany relationship, when I try to access the elements of the collection using the link I get the following Exception: 
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.handleReturnValue(ResourceProcessorHandlerMethodReturnValueHandler.java:161)
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:71)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:122)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:748)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:689)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:947)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:878)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:946)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:837)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:621)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:822)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)
+
+
+
+
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)
+
+
+
+
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)
+
+
+
+
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472)
+
+
+
+
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)
+
+
+
+
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99)
+
+
+
+
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:947)
+
+
+
+
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)
+
+
+
+
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408)
+
+
+
+
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1009)
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589)
+
+
+
+
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:312)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:744)
+
+
+
+
+
+ When calling an object relation like provider/3487T/services. The call fails with an NPE in ResourceProcessorHandlerMethodReturnValueHandler. The stacktrace is a follows: 
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.handleReturnValue(ResourceProcessorHandlerMethodReturnValueHandler.java:161)
+
+
+
+
+	org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:71)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:122)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:748)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:689)
+
+
+
+
+	org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83)
+
+
+
+
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:945)
+
+
+
+
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:876)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:931)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:822)
+
+
+
+
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:621)
+
+
+
+
+	org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:807)
+
+
+
+
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:728)
+
+
+
+
+	com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source)
+
+
+
+
+	com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source)
+
+
+
+
+	org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter.doFilterInternal(OpenEntityManagerInViewFilter.java:177)
+
+
+
+
+	org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:108)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330)
+
+
+
+
+	org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118)
+
+
+
+
+	org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	de.cloudscale.security.filter.BaseAuthenticationTokenProcessingFilter.doFilter(BaseAuthenticationTokenProcessingFilter.java:86)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:183)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:105)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192)
+
+
+
+
+	org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160)
+
+
+
+
+	org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:344)
+
+
+
+
+	org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:261)
+
+
+
+
+
+
+Error occurs in the following lines:
+
+
+
+
+
+
+if (!elementTargetType.getType().equals(elementTypeInformation.getType())) {
+
+
+
+
+  elementTargetType = elementTypeInformation;
+
+
+
+
+}
+
+
+
+
+
+
+as elementTargetType is null.</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.TestDataPopulator.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">422</link>
+			<link type="Duplicate" description="is duplicated by">204</link>
+			<link type="Relate" description="relates to">181</link>
+			<link type="Duplicate" description="duplicates">198</link>
+			<link type="Relate" description="relates to">181</link>
+		</links>
+	</bug>
+	<bug id="7" master="502" duplicate="599" opendate="2015-04-02 05:44:30" fixdate="2015-07-17 13:40:39" resolution="Fixed">
+		<buginformation>
+			<summary>Not convenient to search a repository by a related entity using links findBy + @Param expects an Id, which is not visible via REST</summary>
+			<description>It doesn&amp;amp;apos;t seem to be very convenient to search a repository using an related entity as a query parameter. Consider the following repository:
+
+
+
+
+
+
+@RepositoryRestResource
+
+
+
+
+public interface TagRepository extends PagingAndSortingRepository&amp;lt;Tag, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+    Page&amp;lt;Tag&amp;gt; findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc(@Param("name") String name,
+
+
+
+
+                                                                             @Param("organisation") Organisation organisation,
+
+
+
+
+                                                                             Pageable pageable);
+
+
+
+
+}
+
+
+
+
+
+
+Organisations have many tags, a tag has one organisation. The HATEOAS semantics return entity relationships as links, however we cannot pass one of these links as the "organisation" query parameter above.
+As far as I can tell, the only way to pass an organisation parameter is by using the ID (primary key) of the entity directly. This is quite inconvenient as it means we need to resolve links on the client first in order to determine the ID we need and also means that we need to expose the IDs in our DTOs (which is not default and seems like a bad idea), or attempt to parse it from the URI link.
+This is how I would expect it to be able to work:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=http://localhost:8080/api/organisations/1
+However we are currently required to use it like this:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=1
+Is this the only way to query using a related entity? Hi,
+here is another issue I came across while trying out Spring Data REST: 
+IDs are, if I&amp;amp;apos;m correct, intentionally not exposed in the resource body, as you&amp;amp;apos;re supposed to use the URL as primary identifier. 
+This is a problem, because by exposing a repository finder Spring Data REST expects me to put the primary key as query param.
+I put up a small example on github:
+https://github.com/otrosien/spring-data-examples/tree/findQueryParamMismatch
+This is the interesting part: How am I, as REST client, suppose to fill the query param for customer1?
+
+
+
+
+
+
+public interface RelationshipRepository extends PagingAndSortingRepository&amp;lt;Relationship, Long&amp;gt; {
+
+
+
+
+ Page&amp;lt;Relationship&amp;gt; findByCustomer1(@Param("customer1") Customer customer1, Pageable pageable);
+
+
+
+
+
+</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.UriToEntityConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.BookRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">678</link>
+			<link type="Duplicate" description="is duplicated by">599</link>
+			<link type="Duplicate" description="duplicates">502</link>
+		</links>
+	</bug>
+	<bug id="8" master="956" duplicate="958" opendate="2016-12-07 21:15:45" fixdate="2016-12-08 16:50:49" resolution="Fixed">
+		<buginformation>
+			<summary>PUT does not apply new items in nested collection PUT of Document with List&lt;&gt; fails to add entries post Hopper-SR5+</summary>
+			<description>In the following scenario Parent and Child are entities and Item is either a Embeddable or an Entity. Only Parent has a repository that is also exported.
+
+PUT updates existing items but does not add new items.
+Please see this project to reproduce the issue - https://github.com/mduesterhoeft/sdr-put-nested-list. See test ParentRestIntegrationTest#should_add_new_item
+
+Here are the requests I am issuing:
+
+Create parent
+
+
+
+
+
+
+POST /parents -&amp;gt; 201
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test"}]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+update parent
+
+
+
+
+
+
+PUT /parents/id -&amp;gt; 204
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test123"},
+
+
+
+
+          {"some": "test1235"}]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+After the PUT the items collection still has size 1. As demonstrated in the following project:
+
+https://github.com/timtebeek/mongo-datarest-put-nested
+https://travis-ci.org/timtebeek/mongo-datarest-put-nested
+
+I use Spring Data Mongo with Spring Data Rest.
+
+POST object with a single element in an array
+PUT to the resulting url an updated object with two elements in array
+GET the resulting url and inspect the array
+https://github.com/timtebeek/mongo-datarest-put-nested/blob/master/src/test/java/com/github/timtebeek/PetProjectTest.java#L23
+
+Under Hopper-SR4 the array is updated to now contain two elements.
+Under Hopper-SR5 the array only contains the original single element.
+This seems like a regression and breaks our application, leaving us stuck on Hopper-SR4 for now. Can you confirm and fix this please? </description>
+			<version>2.5.5 (Hopper SR5)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.5.6 (Hopper SR6), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">958</link>
+			<link type="Duplicate" description="duplicates">956</link>
+		</links>
+	</bug>
+	<bug id="9" master="199" duplicate="188" opendate="2013-11-18 22:52:37" fixdate="2013-12-05 06:17:55" resolution="Fixed">
+		<buginformation>
+			<summary>Collection/Object conversion broken in PersistentEntityJackson2Module Spring data rest wrongly handles jpa collection attributes</summary>
+			<description>I am trying to post to localhost:8080/credentials/
+{
+   "customer":
+{
+      "rel":"self",
+      "href":"http://localhost:8080/web/customers/60"
+   }
+,
+   "credentialProperties":[
+
+{
+         "name":"Access Key",
+         "value":"123456"
+      }
+,
+      {
+         "name":"Secrect Access Key",
+         "value":"12344567"
+      }
+   ],
+   "name":"12344567",
+   "service":
+{
+      "rel":"self",
+      "href":"http://localhost:8080/web/services/50"
+   }
+,
+   "vendorType":"1234567"
+}
+The according object looks like that:
+@Entity
+public class Credential extends AbstractEntity {
+	private String name;
+	private boolean disabled;
+	private String disablingReason;
+	private String vendorType;
+	@ManyToOne
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
+	@JoinColumn(name = "service_id")
+	private Service service;
+	@OneToMany(mappedBy = "credential", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private Set&amp;lt;CredentialProperty&amp;gt; credentialProperties;
+	@OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+	private CredentialSettings credentialSettings;
+And the Exception is as follows:
+java.lang.IllegalArgumentException: argument type mismatch
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_45]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_45]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_45]
+	at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_45]
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:191) ~[spring-core-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.data.mapping.model.BeanWrapper.setProperty(BeanWrapper.java:97) ~[spring-data-commons-1.7.0.M1.jar:na]
+	at org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ResourceDeserializer.deserialize(PersistentEntityJackson2Module.java:241) ~[PersistentEntityJackson2Module$ResourceDeserializer.class:na]
+	at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:2888) ~[jackson-databind-2.2.2.jar:2.2.2]
+	at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:2094) ~[jackson-databind-2.2.2.jar:2.2.2]
+	at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readJavaType(MappingJackson2HttpMessageConverter.java:178) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readInternal(MappingJackson2HttpMessageConverter.java:166) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.http.converter.AbstractHttpMessageConverter.read(AbstractHttpMessageConverter.java:153) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgumentResolver.java:48) ~[spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:123) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:745) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:686) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:80) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:925) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:856) ~[spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:936) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:838) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:647) [servlet-api.jar:na]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:812) [spring-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728) [servlet-api.jar:na]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source) [cors-filter-1.5.jar:na]
+	at com.thetransactioncompany.cors.CORSFilter.doFilter(Unknown Source) [cors-filter-1.5.jar:na]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter.doFilterInternal(OpenEntityManagerInViewFilter.java:180) [spring-orm-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at de.cloudscale.security.filter.BaseAuthenticationTokenProcessingFilter.doFilter(BaseAuthenticationTokenProcessingFilter.java:86) [BaseAuthenticationTokenProcessingFilter.class:na]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:183) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:105) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:87) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:192) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160) [spring-security-web-3.1.4.RELEASE.jar:3.1.4.RELEASE]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:343) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:260) [spring-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:947) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118) [catalina.jar:7.0.39.B]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:408) [catalina.jar:7.0.39.B]
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1009) [tomcat-coyote.jar:7.0.39.B]
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589) [tomcat-coyote.jar:7.0.39.B]
+	at org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:312) [tomcat-coyote.jar:7.0.39.B]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_45]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_45]
+	at java.lang.Thread.run(Thread.java:744) [na:1.7.0_45]
+I guess the reason for that is as follows:
+@SuppressWarnings("unchecked")
+	private &amp;lt;S&amp;gt; S getPotentiallyConvertedValue(Object source, Class&amp;lt;S&amp;gt; targetType) {
+		boolean conversionServiceAvailable = conversionService != null;
+		boolean conversionNeeded = source == null || !targetType.isAssignableFrom(source.getClass());
+		if (conversionServiceAvailable &amp;amp;&amp;amp; conversionNeeded) 
+{
+			return conversionService.convert(source, targetType);
+		}
+
+		return (S) source;
+	}
+In BeanWrapper.java the NPE for conversion service is thrown. Maybe it is not autowired? Given an entity with a collection attribute
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class MyEntity {
+
+
+
+
+......
+
+
+
+
+	@ElementCollection(fetch=FetchType.EAGER)
+
+
+
+
+	private Set&amp;lt;String&amp;gt; myAttribute;
+
+
+
+
+.......
+
+
+
+
+
+
+when you try to create a new instance with spring data rest, it throws an exception
+
+
+
+
+
+
+01:01:03.453 [qtp1456083854-24] ERROR o.s.d.r.w.AbstractRepositoryRestController - argument type mismatch
+
+
+
+
+java.lang.IllegalArgumentException: argument type mismatch
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_40]
+
+
+
+
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_40]
+
+
+
+
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_40]
+
+
+
+
+        at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_40]
+
+
+
+
+        at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:191) ~[spring-core-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.data.mapping.model.BeanWrapper.setProperty(BeanWrapper.java:97) ~[spring-data-commons-1.7.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ResourceDeserializer.deserialize(PersistentEntityJackson2Module.java:226) ~[
+
+
+
+
+spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:2888) ~[jackson-databind-2.2.2.jar:2.2.2]
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:2094) ~[jackson-databind-2.2.2.jar:2.2.2]
+
+
+
+
+        at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readJavaType(MappingJackson2HttpMessageConverter.java:178) ~[spring-web-3
+
+
+
+
+.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.http.converter.json.MappingJackson2HttpMessageConverter.readInternal(MappingJackson2HttpMessageConverter.java:166) ~[spring-web-3
+
+
+
+
+.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.http.converter.AbstractHttpMessageConverter.read(AbstractHttpMessageConverter.java:153) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.RELE
+
+
+
+
+ASE]
+
+
+
+
+        at org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgum
+
+
+
+
+entResolver.java:48) ~[spring-data-rest-webmvc-2.0.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+        at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77) ~[sprin
+
+
+
+
+g-web-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162) ~[spring-web-3.2.5.RELEASE.jar
+
+
+
+
+:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:123) ~[spring-web-3.2.5.RELEASE.jar:3.2.5.
+
+
+
+
+RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) ~[spring-
+
+
+
+
+webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:745) ~[spring
+
+
+
+
+-webmvc-3.2.5.RELEASE.jar:3.2.5.RELEASE]
+
+
+
+
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:686) ~[spring-web
+
+
+
+
+
+
+I think the problem is with PersistentEntityJackson2Module#deserialize where the collections are handled
+
+
+
+
+
+
+if (Collection.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new ArrayList&amp;lt;Object&amp;gt;();
+
+
+
+
+} else if (Set.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new HashSet&amp;lt;Object&amp;gt;();
+
+
+
+
+}
+
+
+
+
+
+ and it should be 
+
+
+
+
+
+
+if (Set.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new HashSet&amp;lt;Object&amp;gt;();
+
+
+
+
+} else if (Collection.class.isAssignableFrom(ctype)) {
+
+
+
+
+	c = new ArrayList&amp;lt;Object&amp;gt;();
+
+
+
+
+}
+
+
+
+
+
+ or the first branch should consider List.class instead of Collection.class</description>
+			<version>2.0 M1 (Codd)</version>
+			<fixedVersion>2.0 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryTestsConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractWebIntegrationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">188</link>
+			<link type="Duplicate" description="is duplicated by">199</link>
+		</links>
+	</bug>
+	<bug id="10" master="394" duplicate="477" opendate="2014-09-26 12:26:22" fixdate="2015-02-16 03:44:53" resolution="Fixed">
+		<buginformation>
+			<summary>Projections are not applied to collection attributes VenueProjection with List&lt;ContactProjection&gt; returns List&lt;Contact&gt; instead</summary>
+			<description>When a projection has an attribute which is a collection of another projection, Spring Data REST is not populating the collection with projections but with entities. This patch allows Spring Data REST to apply projections to collection attributes as well. I have 2 entities that are exposed by Spring Data REST: Venue and Contact. A Venue can have multiple Contacts.
+I create this projections:
+
+
+
+
+
+
+VenueDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Venue.class)
+
+
+
+
+public interface VenueDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getName();
+
+
+
+
+	//...
+
+
+
+
+    List&amp;lt;ContactDetails&amp;gt; getContacts();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+ContactDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Contact.class)
+
+
+
+
+public interface ContactDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getContact();
+
+
+
+
+    ContactType getContact_type();
+
+
+
+
+}
+
+
+
+
+
+
+When the client invokes http://localhost:8080/myrestservice/rest/venues/2?projection=details gets:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 2,
+
+
+
+
+  "name" : "A place in the desert",
+
+
+
+
+  "contacts" : [ {
+
+
+
+
+    "id" : 1,
+
+
+
+
+    "contact" : "555 768547",
+
+
+
+
+  }, {
+
+
+
+
+    "id" : 2,
+
+
+
+
+    "contact" : "contacts@example.org",
+
+
+
+
+  }],
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contacts" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2/contacts"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+You see that every contact misses "contact_type".
+But "contact_type" is shown when invoking http://localhost:8080/myrestservice/rest/contacts/1?projection=details:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 1,
+
+
+
+
+  "contact" : "555 768547",
+
+
+
+
+  "contact_type" : {
+
+
+
+
+    "code" : "T",
+
+
+
+
+    "name" : "Telephone"
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contact_type" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/contact_type"
+
+
+
+
+    },
+
+
+
+
+    "venue" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/venue"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+So it seems that expressing List&amp;lt;AProjectionOfALinkedObject&amp;gt; in a projection, ignores AProjectionOfALinkedObject and simply uses ALinkedObject.</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.3 M1 (Fowler), 2.1.5 (Dijkstra SR5), 2.2.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptor.java</file>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">408</link>
+			<link type="Duplicate" description="duplicates">408</link>
+		</links>
+	</bug>
+	<bug id="11" master="320" duplicate="328" opendate="2014-06-13 05:04:09" fixdate="2014-06-27 09:53:37" resolution="Fixed">
+		<buginformation>
+			<summary>Fields with @JsonProperty are ignored on serialization Serialization errors if type contains only renamed properties</summary>
+			<description>Field annotated with @JsonProperty are left out from the serialization. This also means that it is not possible to alter the json property name. 
+The problem seems to be caused by 
+
+
+
+
+
+PersistentEntityJackson2Module.updateBuilder(..)
+
+
+
+
+
+ on line #219, where the property is attempted looked up by the name from the @JsonProperty, instead of the "real" property name. One way I think this can be solved is to add an inner loop to find the internal name from beanDesc.findProperties().
+Example:
+
+
+
+
+
+
+@Entity
+
+
+
+
+public class Description {    
+
+
+
+
+    private String heading;
+
+
+
+
+    @JsonProperty("body")
+
+
+
+
+    private String content;
+
+
+
+
+    ...
+
+
+
+
+}
+
+
+
+
+
+
+On serialization, everything looks fine from Jackson&amp;amp;apos;s perspective, but when the updateBuilder() hook on PersistentEntityJackson2Module is called the content property is omitted because the name of the field is different from the @JsonProperty.
+I haven&amp;amp;apos;t sent a pull request, since I haven&amp;amp;apos;t enlisted in the contributor program, but hopefully you can cherry pick or look at the commit on my fork.
+This problem was also described in DATAREST-117 and the corresponding pull request that was never merged: https://github.com/spring-projects/spring-data-rest/pull/136. Adding @EnableMongoAuditing to an application configuration causes a few different problems related to (but probably not caused by) Jackson serialization.  These issues can be reproduced by (1) starting an application with @EnableMongoAuditing, (2) POSTing certain types of entities to a RepositoryRestResource, and (3) attempting to GET from the same repository.  
+Please refer to the referenced URL for a working example based on the mongodb-data-rest getting-started sample.  Also note the comment with sample command-line input at: https://github.com/ncantelmo/gs-accessing-mongodb-data-rest/commit/988626629a1ef708b5a3d44c4bd8b2874662747f#commitcomment-6740135
+Additional notes:
+
+This issue was initially identified in an application that implemented AuditorAware.  The inclusion of an AuditorAware bean appears to make no difference on the described behavior.
+The following sequence of events will NOT reveal the issue: (1) POST a new document to some repository X, (2) Restart the application, (3), GET from repository X, (4) POST another document with the same fields to repository X, (5) GET from repository X.
+In other words, if you GET from a populated repository before you POST, the serialization routines will work properly.
+In the referenced example, removing the @JsonProperty("brand_name") annotation in PetFood.java will prevent serialization from causing a crash.
+In root-level entities or immediate nested children, custom @JsonProperty annotations will cause the annotated properties to not be fetched during a GET after an initial POST, but won&amp;amp;apos;t cause a crash.
+
+</description>
+			<version>2.1 GA (Dijkstra)</version>
+			<fixedVersion>2.1.1 (Dijkstra SR1), 2.2 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">328</link>
+			<link type="Duplicate" description="duplicates">320</link>
+		</links>
+	</bug>
+	<bug id="12" master="394" duplicate="408" opendate="2014-09-26 12:26:22" fixdate="2014-12-01 10:18:42" resolution="Fixed">
+		<buginformation>
+			<summary>Projections are not applied to collection attributes Nested projections not loading nested lists</summary>
+			<description>When a projection has an attribute which is a collection of another projection, Spring Data REST is not populating the collection with projections but with entities. This patch allows Spring Data REST to apply projections to collection attributes as well. When nesting projections, Lists/Maps are not included in the processing. Sample:
+The following snippet represents the nested projection, which contains a list of limitations.
+
+
+
+
+
+
+"name" : "Light",
+
+
+
+
+    "description" : "Light",
+
+
+
+
+    "enabled" : true,
+
+
+
+
+    "limitations" : [ {
+
+
+
+
+      "name" : "Request",
+
+
+
+
+      "description" : "Number of requests per billing period",
+
+
+
+
+      "type" : null,
+
+
+
+
+      "value" : 20.0
+
+
+
+
+    } ],
+
+
+
+
+    "links" : [ ],
+
+
+
+
+    "content" : [ ],
+
+
+
+
+    "links" : [ {
+
+
+
+
+      "rel" : "self",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310{?projection}"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "limitations",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310/limitations"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "product",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310/product"
+
+
+
+
+    }
+
+
+
+
+
+
+Using the parent projection, which contains the nested projection
+
+
+
+
+
+
+"name" : "Light",
+
+
+
+
+    "description" : "Light",
+
+
+
+
+    "prices" : [ {
+
+
+
+
+      "value" : -1.0,
+
+
+
+
+      "currency" : "USD",
+
+
+
+
+      "unit" : "Request",
+
+
+
+
+      "period" : "Month",
+
+
+
+
+      "interval" : 1,
+
+
+
+
+      "approximation" : false,
+
+
+
+
+      "component" : null
+
+
+
+
+    } ],
+
+
+
+
+    "productCategory" : {
+
+
+
+
+      "name" : "Price comparison",
+
+
+
+
+      "description" : "Blablablaba"
+
+
+
+
+    },
+
+
+
+
+    "specifications" : [ {
+
+
+
+
+      "name" : "Light",
+
+
+
+
+      "description" : "Light",
+
+
+
+
+      "enabled" : true
+
+
+
+
+    } ],
+
+
+
+
+    "trialPeriod" : null,
+
+
+
+
+    "trialInterval" : 0,
+
+
+
+
+    "links" : [ ],
+
+
+
+
+    "content" : [ ],
+
+
+
+
+    "links" : [ {
+
+
+
+
+      "rel" : "self",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300{?projection}"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "specifications",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/specifications"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "product",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/product"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "productCategory",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/productCategory"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "accounts",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/accounts"
+
+
+
+
+    } ]
+
+
+
+
+
+
+one can see, that all types (int, string) etc. are rendered, but the list not. </description>
+			<version>2.1.4 (Dijkstra SR4)</version>
+			<fixedVersion>2.3 M1 (Fowler), 2.1.5 (Dijkstra SR5), 2.2.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptor.java</file>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">408</link>
+			<link type="Duplicate" description="duplicates">394</link>
+			<link type="Duplicate" description="is duplicated by">477</link>
+		</links>
+	</bug>
+</bugrepository>

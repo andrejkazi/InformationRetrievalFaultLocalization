@@ -1,0 +1,67 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1565" opendate="2016-12-14 23:33:20" fixdate="2016-12-19 17:16:57" resolution="Fixed">
+		<buginformation>
+			<summary>Placeholders in manually defined queries not escaped properly</summary>
+			<description>
+
+
+
+
+
+collection.findByApplicationIdAndName("fff?1fff", "This is outside of quotations");
+
+
+
+
+
+
+
+
+
+interface MyCollection  extends MongoRepository&amp;lt;MyObject, String&amp;gt; {
+
+
+
+
+     @Query(value="{ &amp;amp;apos;applicationId&amp;amp;apos; : ?0, &amp;amp;apos;name&amp;amp;apos; :?1}");
+
+
+
+
+     List&amp;lt;MyObject&amp;gt; findByApplicationIdAndName(String id, String name);
+
+
+
+
+}
+
+
+
+
+
+
+Resulting query:
+
+
+
+
+
+
+{&amp;amp;apos;applicationId&amp;amp;apos;: "fff"This is outside of quotations"fff", &amp;amp;apos;name&amp;amp;apos;:?1}
+
+
+
+
+
+</description>
+			<version>1.9.5 (Hopper SR5)</version>
+			<fixedVersion>1.10 RC1 (Ingalls), 1.9.6 (Hopper SR6), 2.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.ExpressionEvaluatingParameterBinder.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

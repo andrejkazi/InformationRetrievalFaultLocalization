@@ -1,0 +1,149 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="360" opendate="2013-08-22 18:59:57" fixdate="2013-08-25 09:32:39" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to use @Profile annotation on scanned repository interfaces</summary>
+			<description>The scanner created by RepositoryConfigurationSourceSupport [1] does not set an Environment. This means that @Profile annotations on the scanned repository will be resolved against a new StandardEnvironement which will not have any active profiles.
+[1] https://github.com/SpringSource/spring-data-commons/blob/ac256f9921807977fc8baa70054aa52cbcfebe6b/src/main/java/org/springframework/data/repository/config/RepositoryConfigurationSourceSupport.java#L43</description>
+			<version>1.5.2</version>
+			<fixedVersion>1.6 Final, 1.5.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.XmlRepositoryConfigurationSource.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupportUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryConfigurationSourceSupport.java</file>
+			<file type="M">org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource.java</file>
+			<file type="M">org.springframework.data.repository.config.AnnotationRepositoryConfigurationSourceUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="362" opendate="2013-08-26 09:26:53" fixdate="2013-08-26 10:20:52" resolution="Fixed">
+		<buginformation>
+			<summary>Potential concurrency issues in Repositories</summary>
+			<description>getRepoInfoFor() is iterating over the key set of the repositories already cached to eagerly return RepositoryInformation instances found upfront. A second thread might have already passed that block of the code and triggered lookupRepositoryFactoryInformationFor() which writes into the repositories instance variable. This will cause a ConcurrentModificationException as reported in this issue.</description>
+			<version>1.5.2</version>
+			<fixedVersion>1.6 Final, 1.5.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.Repositories.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="363" opendate="2013-08-27 00:24:19" fixdate="2013-10-07 03:46:18" resolution="Fixed">
+		<buginformation>
+			<summary>Unicode characters not supported in property reference expressions</summary>
+			<description>I have a class writing with Unicode.
+@Getter @Setter
+class TestEntity {
+	Date ;
+	String ;
+}
+I make repository method for this entity
+List&amp;lt;TestEntity&amp;gt; findByAnd(Date d, String n);
+But this is failed. 
+Caused by: org.springframework.data.mapping.PropertyReferenceException: No property And found for type TestEntity
+So I invest spring data source and found a Regex pattern is not valid in org.springframework.data.repository.query.parser.PartTree   KEYWORD_TEMPLATE
+It is 
+KEYWORD_TEMPLATE = "(%s)(?=p
+{Lu})";
+
+This is not for Unicode letter. Some language has no cases(no upper/lower). 
+
+So I reference http://www.regular-expressions.info/unicode.html 
+and Test with 
+
+String KEYWORD_TEMPLATE = "(%s)(?=P{M}p{M}*+)";
+
+It works. 
+
+
+Test code is below. 
+
+
+	@Test
+	public void testFail_Not_Splited() {
+		String KEYWORD_TEMPLATE = "(%s)(?=p{Lu}
+)";
+		Pattern pattern = Pattern.compile(String.format(KEYWORD_TEMPLATE, "And"));
+		String[] res = pattern.split("findByAnd");
+		assertEquals(1, res.length);
+		assertEquals("findByAnd", res[0]);
+	}
+	@Test
+	public void testAlternative() {
+		// Reference: http://www.regular-expressions.info/unicode.html 
+		String KEYWORD_TEMPLATE = "(%s)(?=P
+{M}p{M}
+*+)";
+		Pattern pattern = Pattern.compile(String.format(KEYWORD_TEMPLATE, "And"));
+		String[] res = pattern.split("findByAnd");
+		assertEquals(2, res.length);
+		assertEquals("findBy", res[0]);
+		assertEquals("", res[1]);
+	}
+</description>
+			<version>1.5.2</version>
+			<fixedVersion>1.7 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.parser.PartTree.java</file>
+			<file type="M">org.springframework.data.repository.query.parser.PartTreeUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="390" opendate="2013-10-28 09:07:46" fixdate="2013-11-04 02:33:59" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentModificationException in MappingContextTypeInformationMapper.resolveTypeFrom</summary>
+			<description>I am using Spring Data and found the following Stacktrace in the logs:
+Caused by: java.util.ConcurrentModificationException
+	at java.util.HashMap$HashIterator.nextEntry(HashMap.java:894)
+	at java.util.HashMap$ValueIterator.next(HashMap.java:922)
+	at org.springframework.data.convert.MappingContextTypeInformationMapper.resolveTypeFrom(MappingContextTypeInformationMapper.java:117)
+	at org.springframework.data.convert.DefaultTypeMapper.getFromCacheOrCreate(DefaultTypeMapper.java:122)
+	at org.springframework.data.convert.DefaultTypeMapper.readType(DefaultTypeMapper.java:102)
+	at org.springframework.data.convert.DefaultTypeMapper.getDefaultedTypeToBeUsed(DefaultTypeMapper.java:164)
+	at org.springframework.data.convert.DefaultTypeMapper.readType(DefaultTypeMapper.java:141)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.read(MappingMongoConverter.java:186)
+I think that there might be a data race in the implementation of  org.springframework.data.mapping.context.AbstractMappingContext#getPersistentEntities()
+	public Collection&amp;lt;E&amp;gt; getPersistentEntities() {
+		try 
+{
+			read.lock();
+			return persistentEntities.values();
+		}
+ finally 
+{
+			read.unlock();
+		}
+	}
+Although the code acquires a read lock when returning the values of the HashMap "persistentEntities" it immediately releases the lock. This opens up the possibility that a thread modifies the values of "persistentEntities" while another thread is iterating over the values. 
+The JavaDoc of java.util.HashMap#values() says "If the map is
+ modified while an iteration over the collection is in progress
+ (except through the iterator&amp;amp;apos;s own &amp;lt;tt&amp;gt;remove&amp;lt;/tt&amp;gt; operation),
+  the results of the iteration are undefined."
+In my case I get a ConcurrentModificationException.
+It would be nice, if you could take a look at this issue.  </description>
+			<version>1.5.2</version>
+			<fixedVersion>1.7 M1 (Codd), 1.6.3 (Babbage SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContextUnitTests.java</file>
+			<file type="M">org.springframework.data.mapping.context.AbstractMappingContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="366" opendate="2013-09-06 05:44:40" fixdate="2013-12-05 02:12:34" resolution="Fixed">
+		<buginformation>
+			<summary>PageableArgumentResolver does not support list of properties to sort on</summary>
+			<description>Query parameters such as &amp;amp;apos;?page.sort=name&amp;amp;page.sort=description&amp;amp;apos; or &amp;amp;apos;?page.sort=name,description&amp;amp;apos; end up creating a Sort instance (via org.springframework.data.web.PageableArgumentResolver.SortPropertyEditor.setAsText(String)) that sorts on SINGLE property named &amp;amp;apos;name,description&amp;amp;apos; instead of TWO properties named &amp;amp;apos;name&amp;amp;apos; and &amp;amp;apos;description&amp;amp;apos;. This results in &amp;amp;apos;org.springframework.data.mapping.PropertyReferenceException: No property name,description found for type com.co.Xyz&amp;amp;apos;. Fix might to to update line in setAsText method from &amp;amp;apos;setValue(new Sort(order, text));&amp;amp;apos; to &amp;amp;apos;setValue(new Sort(order, StringUtils.commaDelimitedListToStringArray(text)));&amp;amp;apos;.</description>
+			<version>1.5.2</version>
+			<fixedVersion>1.6.3 (Babbage SR2), 1.7 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

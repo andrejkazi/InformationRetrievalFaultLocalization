@@ -1,0 +1,115 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="4" master="219" duplicate="435" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll() calls ListUtils.retainAll()</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. A snippet from CollectionUtils.java:
+CollectionUtils.java
+
+public static Collection removeAll(Collection collection, Collection remove) {
+        return ListUtils.retainAll(collection, remove);
+}
+
+
+It should call ListUtils.removeAll() instead.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.2.2, 4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="5" master="219" duplicate="487" opendate="2006-08-02 17:37:52" fixdate="2013-10-21 07:56:23" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll is not work as expected</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. http://svn.apache.org/viewvc/commons/proper/collections/tags/COLLECTIONS_3_2_1/src/java/org/apache/commons/collections/CollectionUtils.java?revision=1211567&amp;amp;view=markup
+Line: 1122
+Problem:
+The method called "removeAll", but call "retainAll" internally.</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">219</link>
+		</links>
+	</bug>
+	<bug id="11" master="488" duplicate="493" opendate="2013-10-25 00:49:00" fixdate="2013-11-05 10:51:52" resolution="Fixed">
+		<buginformation>
+			<summary>Satisfies utility method Satisfies CollectionUtils Method</summary>
+			<description>I recently needed to use something like the CollectionUtils.exists method, but I wanted to know if a given predicate was true for ALL members of a collection, rather than just one.  I cooked up a quick method called satisfies (help would be appreciated on the name - it&amp;amp;apos;s the best that I could come up with) that determines whether a given predicate is true for all members of a collection.
+Been using this library a good deal recently - hoping to get involved in its development! Recently I needed a method to verify that a predicate held true for all members of a collection.  I saw where CollectionUtils had the exists method that checked for a single list element that satisfied a predicate, but not a method for all elements.
+Hoping to get more involved with the project!</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtilsTest.java</file>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">489</link>
+			<link type="Duplicate" description="is duplicated by">493</link>
+			<link type="Duplicate" description="duplicates">488</link>
+			<link type="Duplicate" description="is duplicated by">490</link>
+			<link type="Duplicate" description="is duplicated by">491</link>
+			<link type="Duplicate" description="is duplicated by">492</link>
+		</links>
+	</bug>
+	<bug id="16" master="219" duplicate="386" opendate="2006-08-02 17:37:52" fixdate="2013-02-28 20:25:30" resolution="Fixed">
+		<buginformation>
+			<summary>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. CollectionUtils.removeAll(Collection, Collection) has an CopyPaste-Failure</summary>
+			<description>The CollectionUtils.removeAll method calls the ListUtils.retainAll method instead of the ListUtils.removeAll method. public static Collection removeAll(Collection collection, Collection remove) 
+{
+        return ListUtils.retainAll(collection, remove);
+    }</description>
+			<version>3.2.1</version>
+			<fixedVersion>4.0, Nightly Builds</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TestListUtils.java</file>
+			<file type="M">org.apache.commons.collections.TestCollectionUtils.java</file>
+			<file type="M">org.apache.commons.collections.CollectionUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">487</link>
+			<link type="Duplicate" description="is duplicated by">357</link>
+			<link type="Duplicate" description="is duplicated by">437</link>
+			<link type="Duplicate" description="is duplicated by">222</link>
+			<link type="Duplicate" description="is duplicated by">284</link>
+			<link type="Duplicate" description="is duplicated by">315</link>
+			<link type="Duplicate" description="is duplicated by">349</link>
+			<link type="Duplicate" description="is duplicated by">435</link>
+			<link type="Duplicate" description="duplicates">357</link>
+		</links>
+	</bug>
+</bugrepository>

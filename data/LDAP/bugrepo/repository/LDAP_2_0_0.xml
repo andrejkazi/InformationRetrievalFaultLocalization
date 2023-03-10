@@ -1,0 +1,86 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LDAP">
+	<bug id="277" opendate="2013-11-04 03:57:07" fixdate="2013-11-06 03:42:57" resolution="Complete">
+		<buginformation>
+			<summary>ODM needs to use DN Attribute index when populating DnAttribute values</summary>
+			<description>If the same attribute is part of the DN twice (e.g. ou=department,ou=company) the automatic DN calculation in ODM doesn&amp;amp;apos;t seem to work.</description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="278" opendate="2013-11-06 03:43:41" fixdate="2013-11-07 06:05:25" resolution="Complete">
+		<buginformation>
+			<summary>Static fields should be disregarded by ODM</summary>
+			<description></description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper.java</file>
+			<file type="M">org.springframework.ldap.odm.core.impl.ObjectMetaData.java</file>
+			<file type="M">org.springframework.ldap.odm.core.impl.AttributeMetaData.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="291" opendate="2014-02-01 20:16:38" fixdate="2014-02-11 13:16:37" resolution="Complete">
+		<buginformation>
+			<summary>ldapTemplate#authenticate does not throw EmptyResultDataAccessException</summary>
+			<description>ldapTemplate#authenticate does not throw EmptyResultDataAccessException when zero entry was found.  In that case, it returns authentication exception which is unable to distinguish with password mismatch error.</description>
+			<version>2.0.0</version>
+			<fixedVersion>2.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.core.LdapTemplate.java</file>
+			<file type="M">org.springframework.ldap.core.LdapTemplateTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="295" opendate="2014-02-13 19:11:39" fixdate="2014-02-14 12:16:37" resolution="Complete">
+		<buginformation>
+			<summary>DefaultObjectDirectoryMapper#isAtLeast30() produces NullPointerException when bundled into an uberjar</summary>
+			<description>I was trying to leverage Spring LDAP 2.0 within a self contained JAR project (basically, a WAR which is packaged in a JAR file using the maven shade plugin).  When doing so, I get the following exception:
+Caused by: java.lang.NullPointerException: null
+	at org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper.isAtLeast30(DefaultObjectDirectoryMapper.java:80)
+Tracing this back, I determined the following call was failing: 
+
+
+
+
+
+
+    private boolean isAtLeast30() {
+
+
+
+
+        return SpringVersion.getVersion().compareTo("3.0") &amp;gt; 0;
+
+
+
+
+    }
+
+
+
+
+
+
+According to the Spring API documentation, it&amp;amp;apos;s perfectly valid for getVersion to return null, but this code doesn&amp;amp;apos;t check for that scenario.
+There needs to be some fallback scenario for this code to handle that issue.</description>
+			<version>2.0.0</version>
+			<fixedVersion>2.0.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapper.java</file>
+			<file type="M">org.springframework.ldap.odm.core.impl.DefaultObjectDirectoryMapperTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">11726</link>
+		</links>
+	</bug>
+</bugrepository>

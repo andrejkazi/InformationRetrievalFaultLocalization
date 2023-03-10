@@ -1,0 +1,293 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="283" opendate="2013-02-15 09:04:59" fixdate="2013-02-15 09:43:57" resolution="Fixed">
+		<buginformation>
+			<summary>Improve exception message for failed instantiations in ReflectionEntityInstatiator</summary>
+			<description>In case we see an exception invoking the constructor of an entity class in ReflectionEntityInstantiator there&amp;amp;apos;s no information about why this has actually failed. We should capture more context such as the type to be instantiated, the constructor being used and the resolved parameters.</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.5.1, 1.6 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.ReflectionEntityInstantiator.java</file>
+			<file type="M">org.springframework.data.mapping.model.MappingInstantiationException.java</file>
+			<file type="M">org.springframework.data.convert.ReflectionEntityInstantiatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="281" opendate="2013-02-08 12:25:43" fixdate="2013-02-27 06:22:29" resolution="Fixed">
+		<buginformation>
+			<summary>Change Order class so that case insensitive sorts can be performed by setting an ignore case flag</summary>
+			<description>I would like to allow the setting of an ignore case flag to be set on the Order class so that case insensitive sorts can be supported.</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.6 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.Sort.java</file>
+			<file type="M">org.springframework.data.domain.SortUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">296</link>
+		</links>
+	</bug>
+	<bug id="300" opendate="2013-03-21 15:42:28" fixdate="2013-03-25 05:49:25" resolution="Fixed">
+		<buginformation>
+			<summary>ReflectionEntityInstantiator should actually throw created exception</summary>
+			<description>In the catch block a new exception is instanciated, which I assume should be thrown, but misses the throw keyword and therefore currently does nothing.
+https://github.com/SpringSource/spring-data-commons/blob/master/src/main/java/org/springframework/data/convert/ReflectionEntityInstantiator.java#L64
+Simplistic test that demonstrates this: https://github.com/SpringSource/spring-data-commons/pull/25/files</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.5.1, 1.6 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.ReflectionEntityInstantiator.java</file>
+			<file type="M">org.springframework.data.convert.ReflectionEntityInstantiatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="309" opendate="2013-04-05 11:37:35" fixdate="2013-04-10 11:26:43" resolution="Fixed">
+		<buginformation>
+			<summary>TypeDiscoverer does not correctly resolve nested property path expressions</summary>
+			<description>
+
+
+
+
+
+class Foo {
+
+
+
+
+  Bar bar;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+class Bar {
+
+
+
+
+  Long id;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+TypeInformation&amp;lt;?&amp;gt; type = ClassTypeInformation.from(Foo.class);
+
+
+
+
+assertThat(type.getProperty("bar.id"), is(notNullValue()));
+
+
+
+
+
+
+The assertion fails as TypeDiscoverer.getProperty() does not recursively resolve the properties but looks up the head in the cache only (line 180).</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.5.1, 1.6 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.util.TypeDiscoverer.java</file>
+			<file type="M">org.springframework.data.util.ClassTypeInformationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">324</link>
+		</links>
+	</bug>
+	<bug id="323" opendate="2013-04-30 02:56:33" fixdate="2013-05-14 08:02:59" resolution="Fixed">
+		<buginformation>
+			<summary>PageImpl.getTotalPages() possibly returns incorrect result when PageImpl is instantiated with simple constructor</summary>
+			<description>I wonder, why PageImpl.getTotalPages() returns 0, when instantiated with simple constructor, with non zero element collection as argument.
+
+
+
+
+
+
+PageImplTest.java
+
+
+
+
+
+
+import org.junit.*;
+
+
+
+
+import org.springframework.data.domain.*;
+
+
+
+
+
+
+
+
+
+import java.util.*;
+
+
+
+
+
+
+
+
+
+import static org.hamcrest.CoreMatchers.*;
+
+
+
+
+import static org.junit.Assert.*;
+
+
+
+
+
+
+
+
+
+public class PageImplTest {
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void getTotalPagesReturnSameResultForAllConstructors() {
+
+
+
+
+        List&amp;lt;String&amp;gt; content = Arrays.asList("a", "b");
+
+
+
+
+
+
+
+
+
+        Page&amp;lt;String&amp;gt; pageWithSimpleConstructor = new PageImpl&amp;lt;&amp;gt;(content);
+
+
+
+
+
+
+
+
+
+        Pageable pageable = new PageRequest(0, content.size());
+
+
+
+
+
+
+
+
+
+        Page&amp;lt;String&amp;gt; pageWithComplexConstructor = new PageImpl&amp;lt;&amp;gt;(content, pageable, content.size());
+
+
+
+
+
+
+
+
+
+        assertThat(pageWithComplexConstructor.getTotalPages(), is(1));
+
+
+
+
+        assertThat(pageWithSimpleConstructor.getTotalPages(), is(1));
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.6 M1, 1.5.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.PageImpl.java</file>
+			<file type="M">org.springframework.data.domain.PageImplUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="304" opendate="2013-03-27 03:33:58" fixdate="2013-08-13 03:41:42" resolution="Fixed">
+		<buginformation>
+			<summary>Misleading documentation of page parameter resolved by PageableArgumentResolver</summary>
+			<description>PageableArgumentResolver is not resolving page parameter. To use pagination, you will have to use page.page
+So either table 1.1. needs an update or PageableArgumentResolver has to be changed to use the documented parameter
+</description>
+			<version>1.5 Final</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">359</link>
+		</links>
+	</bug>
+</bugrepository>

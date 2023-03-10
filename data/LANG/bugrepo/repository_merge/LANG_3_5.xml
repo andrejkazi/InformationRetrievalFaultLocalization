@@ -1,0 +1,43 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="6" master="1189" duplicate="1235" opendate="2015-12-03 19:54:28" fixdate="2016-06-02 10:48:54" resolution="Fixed">
+		<buginformation>
+			<summary>Add getAndIncrement/getAndDecrement/getAndAdd/incrementAndGet/decrementAndGet/addAndGet in Mutable* classes Add decrementAndGet/incrementAndGet to MutableInt class</summary>
+			<description>Add below methods to Mutable* classes:
+    getAndIncrement
+    getAndDecrement
+    getAndAdd
+    incrementAndGet
+    decrementAndGet
+    addAndGet Frequently when incrementing or decrementing a number, one needs to compare it to a limit. For example in loops.
+At present that requires two calls:
+MutableInt.decrement()
+MutableInt.getValue()
+It would be convenient to have a method that combined the two.
+c.f. AtomicInteger.decrementAndGet()
+There is less likelihood of needing these methods for other Mutable Number types as they are not often used in loops.</description>
+			<version>3.5</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShort.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDouble.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableInt.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloat.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLong.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByte.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableIntTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableDoubleTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableShortTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableLongTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableFloatTest.java</file>
+			<file type="M">org.apache.commons.lang3.mutable.MutableByteTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1235</link>
+			<link type="Duplicate" description="duplicates">1189</link>
+			<link type="Reference" description="relates to">1176</link>
+		</links>
+	</bug>
+</bugrepository>

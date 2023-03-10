@@ -1,0 +1,206 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="328" opendate="2007-04-16 23:11:44" fixdate="2007-05-01 23:50:11" resolution="Fixed">
+		<buginformation>
+			<summary>LocaleUtils.toLocale() rejects strings with only language+variant</summary>
+			<description>LocaleUtils.toLocale() throws an exception on strings containing a language and a variant but no country code. For example : fr__POSIX
+This string can be produced with the JDK by instanciating a Locale with an empty string for the country : new Locale("fr", "", "POSIX").toString(). According to the javadoc for the Locale class a variant is allowed with just a language code or just a country code.
+Commons Configuration handles this case in its PropertyConverter.toLocale() method. I&amp;amp;apos;d like to replace our implementation by the one provided by LocaleUtils, but our tests fail due to this case.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.LocaleUtils.java</file>
+			<file type="M">org.apache.commons.lang.LocaleUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="361" opendate="2007-10-22 15:24:05" fixdate="2007-10-23 05:32:23" resolution="Fixed">
+		<buginformation>
+			<summary>BooleanUtils toBooleanObject javadoc does not match implementation</summary>
+			<description>The javadoc description for the BooleanUtils method toBooleanObject(String, String, String, String) states that it returns null if the input string does not match the true, false, or null string values.  However, the implementation throws and IllegalArgumentException when the input string does not match the other string values.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.BooleanUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="364" opendate="2007-10-24 18:32:41" fixdate="2007-10-25 06:25:23" resolution="Fixed">
+		<buginformation>
+			<summary>Documentation bug for ignoreEmptyTokens accessors in StrTokenizer</summary>
+			<description>The javadoc for the accessors of the ignoreEmptyTokens property currently states that the default value is false, when it is actually true.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.StrTokenizer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="363" opendate="2007-10-23 07:12:48" fixdate="2007-10-26 06:09:17" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJavaScript() method did not escape &amp;apos;/&amp;apos; into &amp;apos;\/&amp;apos;, it will make IE render page uncorrectly</summary>
+			<description>If Javascripts including&amp;amp;apos;/&amp;amp;apos;, IE will parse the scripts uncorrectly, actually &amp;amp;apos;/&amp;amp;apos; should be escaped to &amp;amp;apos;\/&amp;amp;apos;.
+For example, document.getElementById("test").value = &amp;amp;apos;&amp;lt;script&amp;gt;alert(\&amp;amp;apos;aaa\&amp;amp;apos;);&amp;lt;/script&amp;gt;&amp;amp;apos;;this expression will make IE render page uncorrect, it should be document.getElementById("test").value = &amp;amp;apos;&amp;lt;script&amp;gt;alert(\&amp;amp;apos;aaa\&amp;amp;apos;);&amp;lt;\/script&amp;gt;&amp;amp;apos;;
+Btw, Spring&amp;amp;apos;s JavascriptEscape behavor is correct.
+Try  to run below codes, you will find the difference:
+  String s = "&amp;lt;script&amp;gt;alert(&amp;amp;apos;aaa&amp;amp;apos;);&amp;lt;/script&amp;gt;";
+  String str = org.springframework.web.util.JavaScriptUtils.javaScriptEscape(s);
+  System.out.println("Spring JS Escape : "+str);
+  str = org.apache.commons.lang.StringEscapeUtils.escapeJavaScript(s);
+  System.out.println("Apache Common Lang JS Escape : "+ str);</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">437</link>
+		</links>
+	</bug>
+	<bug id="380" opendate="2007-11-29 16:24:43" fixdate="2007-11-29 16:34:28" resolution="Fixed">
+		<buginformation>
+			<summary>infinite loop in Fraction.reduce when numerator == 0</summary>
+			<description>Summary pretty much says it all.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.math.Fraction.java</file>
+			<file type="M">org.apache.commons.lang.math.FractionTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="381" opendate="2007-11-30 13:17:41" fixdate="2008-01-06 23:59:19" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.min(floatArray) returns wrong value if floatArray[0] happens to be Float.NaN</summary>
+			<description>The min() method of NumberUtils returns the wrong result if  the first value of the array happens to be Float.NaN. The following code snippet shows the behaviour:
+        float a[] = new float[] 
+{(float) 1.2, Float.NaN, (float) 3.7, (float) 27.0, (float) 42.0, Float.NaN}
+;
+        float b[] = new float[] 
+{Float.NaN, (float) 1.2, Float.NaN, (float) 3.7, (float) 27.0, (float) 42.0, Float.NaN}
+;
+        float min = NumberUtils.min(a);
+        System.out.println("min(a): " + min); // output: 1.2
+        min = NumberUtils.min(b);
+        System.out.println("min(b): " + min); // output: NaN
+This problem may exist for double-arrays as well. 
+Proposal: Use Float.compare(float, float) or NumberUtils.compare(float, float) to achieve a consistent result.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.math.NumberUtils.java</file>
+			<file type="M">org.apache.commons.lang.math.NumberUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="393" opendate="2008-01-03 13:46:49" fixdate="2008-01-13 07:00:40" resolution="Fixed">
+		<buginformation>
+			<summary>EqualsBuilder don&amp;apos;t compare BigDecimals correctly </summary>
+			<description>When comparing a BigDecimal, the comparing is made using equals, not compareTo, which is more appropriate in the case of BigDecimal.  </description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilderTest.java</file>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1113</link>
+			<link type="Reference" description="is related to">468</link>
+		</links>
+	</bug>
+	<bug id="412" opendate="2008-02-13 04:23:25" fixdate="2008-02-13 05:45:03" resolution="Fixed">
+		<buginformation>
+			<summary>StrBuilder appendFixedWidth does not handle nulls</summary>
+			<description>Appending a null value with fixed width causes a null pointer exception if getNullText() has not been set.</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.StrBuilderTest.java</file>
+			<file type="M">org.apache.commons.lang.text.StrBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="dependent" description="depends upon">407</link>
+		</links>
+	</bug>
+	<bug id="478" opendate="2009-01-09 10:12:28" fixdate="2009-03-01 21:18:29" resolution="Fixed">
+		<buginformation>
+			<summary>StopWatch does not resist to system time changes</summary>
+			<description>org.apache.commons.lang.time.StopWatch seems to be relying on wall clock, i.e. by calling java.lang.System.currentTimeMillis() to sample current time.
+When a system time change occurs (user action, NTP synchronization...) between 2 calls to StopWatch.getTime(), the difference between the 2 samples is wrong: the measured duration may noticeably differ from the real one. Moreover, should the system time change consist in a backward adjustment, the difference could be negative.
+In order to make StopWatch resistant to system time changes, would it be possible to use the process time, i.e. by making implementation calling java.lang.System.nanoTime() -multiplied by appropriate factor, of course.
+Thanks a lot,
+Regis.</description>
+			<version>2.3</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.StopWatch.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">323</link>
+		</links>
+	</bug>
+	<bug id="323" opendate="2007-02-15 09:18:44" fixdate="2009-03-14 09:29:32" resolution="Duplicate">
+		<buginformation>
+			<summary>StopWatch: increase precision by using System.nanoTime()</summary>
+			<description>In Java5, theres a new, more precise way to measure elapsed timespans:
+http://java.sun.com/j2se/1.5.0/docs/api/java/lang/System.html#nanoTime()
+It will probably break the class contract of the current StopWatch class, as the returned timestamps cannot be transformed to Dates etc., but it will add precision to the stopwatch aspect (as opposed to the timewatch aspect) of the class.
+Perhaps the way to go is to introduce a new HighPrecisionStopWatch class.</description>
+			<version>2.3</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.time.StopWatch.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">478</link>
+		</links>
+	</bug>
+	<bug id="339" opendate="2007-06-10 15:30:53" fixdate="2009-07-19 18:41:12" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeHtml() escapes multibyte characters like Chinese, Japanese, etc.</summary>
+			<description>StringEscapeUtils.escapeHtml() escapes multibyte characters like Chinese, Japanes, etc.</description>
+			<version>2.3</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">66</link>
+			<link type="Reference" description="relates to">505</link>
+			<link type="Reference" description="relates to">515</link>
+		</links>
+	</bug>
+	<bug id="428" opendate="2008-04-24 10:28:10" fixdate="2011-03-01 06:32:13" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.isNumeric</summary>
+			<description>StringUtils.isNumeric.
+if we put empty string as parameter we got true.
+StringUtils.isNumeric("") return true.</description>
+			<version>2.3</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtilsIsTest.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

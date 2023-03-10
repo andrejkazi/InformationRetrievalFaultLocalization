@@ -1,0 +1,139 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="791" opendate="2016-03-31 08:19:00" fixdate="2016-04-01 08:42:45" resolution="Fixed">
+		<buginformation>
+			<summary>Repository with EntityLookup not resolving for POST on an Association-Ressource</summary>
+			<description>POST /user/olivergierke/friends
+content-type: text/uri-list
+content: /person/
+{username}
+(username=asterix, user_Id=12345)
+Generate SQL with "user_ID" in where-Clause, but the "username" as param.
+select person.user_id as user_id,  ... , person.username as username
+from persontable person
+where person.user_id=&amp;amp;apos;asterix&amp;amp;apos;
+URI for User-Resource "asterix" is /person/asterix
+Using the person/12345 instead of person/asterix as paylod works fine, but  thats not as intended.
+(see config.withEntityLookup().forRepository(PersonRepository.class, Person::getUsername, PersonRepository::findByUsername)
+Otherwise, following example works fine:
+PATCH /user/olivergierke/
+{"friends": [ "/person/asterix" ]}
+
+
+(see https://jira.spring.io/browse/DATAREST-724)</description>
+			<version>2.5 RC1 (Hopper)</version>
+			<fixedVersion>2.5 GA (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.AbstractRepositoryRestController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">724</link>
+		</links>
+	</bug>
+	<bug id="792" opendate="2016-03-31 08:40:11" fixdate="2016-04-02 17:00:13" resolution="Fixed">
+		<buginformation>
+			<summary>PUT request for item resource with customized entity lookup fails</summary>
+			<description>PUT /user/olivergierke
+content-type: application/jason
+content: indenpendent e.g.: 
+{"alias" : ["OG","Ollie"]}
+
+(Repos-Customization: config.withEntityLookup().forRepository(UserRepository.class, Person::getUsername, UserRepository::findByUsername , see https://jira.spring.io/browse/DATAREST-724)
+results in a NumberFormatException:
+ ERROR o.s.d.r.w.RepositoryRestExceptionHandler - Failed to convert from type [java.lang.String] to type [java.lang.Long] for value &amp;amp;apos;olivergierke&amp;amp;apos;; nested exception is java.lang.NumberFormatException: For input string: "olivergierke"
+&amp;gt; org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [java.lang.Long] for value &amp;amp;apos;olivergierke&amp;amp;apos;; nested exception is java.lang.NumberFormatException: For input string: "olivergierke"
+&amp;gt; at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:41) ~[spring-core-4.2.4.RELEASE.jar:4.2.4.RELEASE]
+...</description>
+			<version>2.5 RC1 (Hopper)</version>
+			<fixedVersion>2.5 GA (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="937" opendate="2016-11-11 19:44:22" fixdate="2016-12-06 08:49:35" resolution="Fixed">
+		<buginformation>
+			<summary>Transient properties in JSON should be included in merge</summary>
+			<description>When using the repository domain object update end point (via the PATCH method with JSON data), fields that are not persisted (marked as @Transient or simply not marked for persistence) are not updated.
+For example, given this class:
+
+
+
+
+
+
+@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+
+
+
+
+static class SampleWithTransient {
+
+
+
+
+
+
+
+
+
+	String name;
+
+
+
+
+	@org.springframework.data.annotation.Transient String temporary;
+
+
+
+
+}
+
+
+
+
+
+
+if an HTTP PATCH is done to update that object with this request body:
+
+
+
+
+
+
+{
+
+
+
+
+  "temporary": "new temp"
+
+
+
+
+}
+
+
+
+
+
+
+the result will be that the value of temporary was not changed to "new temp" as expected.</description>
+			<version>2.4.6 (Gosling SR6)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.4.7 (Gosling SR7), 2.5.6 (Hopper SR6), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

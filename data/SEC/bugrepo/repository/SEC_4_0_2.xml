@@ -1,0 +1,281 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="3122" opendate="2015-10-08 14:00:10" fixdate="2015-10-08 15:38:43" resolution="Duplicate">
+		<buginformation>
+			<summary>DelegatingSecurityContextScheduledExecutorService only sets SecurityContext at first run of a scheduled task - subsequent runs do not have the SecurityContext set</summary>
+			<description>When using DelegatingSecurityContextScheduledExecutorService to set a security context for a scheduled task, it works perfectly fine for the first task execution, but subsequent executions are (re-)scheduled by the same thread which was used to execute the task for the first time - this is done in ReschedulingRunnable.run()
+Thread.currentThread() is used to set the originalThread variable in DelegatingSecurityContextRunnable - therefore DelegatingSecurityContextRunnable thinks it&amp;amp;apos;s being executed in the original thread and does skip the set security context.
+This means originalThread variable (in DelegatingSecurityContextRunnable) does contain the wrong value for all executions except the first one. Therefore all subsequent executions do fail because no security context is set ...
+
+
+
+
+
+
+@Scheduled(cron="*/30 * * * * *", zone="UTC")
+
+
+
+
+	public void myScheduledTask() {
+
+
+
+
+//call to secured method
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@Override
+
+
+
+
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+
+
+
+
+        taskRegistrar.setScheduler(taskExecutor());
+
+
+
+
+    }
+
+
+
+
+ 
+
+
+
+
+    public Executor taskExecutor() {
+
+
+
+
+        ScheduledExecutorService delegateExecutor = Executors.newSingleThreadScheduledExecutor();
+
+
+
+
+        SecurityContext schedulerContext = createSchedulerSecurityContext();
+
+
+
+
+        return new DelegatingSecurityContextScheduledExecutorService(delegateExecutor, schedulerContext);
+
+
+
+
+    }
+
+
+
+
+ 
+
+
+
+
+    private SecurityContext createSchedulerSecurityContext() {
+
+
+
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+
+
+
+ 
+
+
+
+
+        Collection&amp;lt;GrantedAuthority&amp;gt; authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+
+
+
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+
+
+
+
+                "user",
+
+
+
+
+                "user",
+
+
+
+
+                authorities
+
+
+
+
+        );
+
+
+
+
+        context.setAuthentication(authentication);
+
+
+
+
+ 
+
+
+
+
+        return context;
+
+
+
+
+    }
+
+
+
+
+
+</description>
+			<version>4.0.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnable.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnableTests.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextCallable.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">3109</link>
+		</links>
+	</bug>
+	<bug id="3108" opendate="2015-09-18 08:48:30" fixdate="2015-10-27 19:00:38" resolution="Fixed">
+		<buginformation>
+			<summary>DigestAuthenticationFilter should use SecurityContextHolder.createEmptyContext()</summary>
+			<description>When using Digest authentication and there are concurrent requests from the same session, it is possible that the Authentication object returned by SessionContextHolder.getContext().getAuthentication() does not have its authorities set. Then, e.g. HttpServletRequest.isUserInRole() returns sometimes incorrectly false even if the user actually has that role.
+This happens because with Digest authentication, constructing the Authentication object is done in two steps, but the incomplete Authentication object is made visible to another threads after first step.
+Consider the following scenario:
+
+User logs in to the system, a session is created, JSESSIONID is set, and user uses the system for some time.
+User makes request 1 to the server. This request has a header "Authorization: Digest ..."
+DigestAuthenticationFilter starts the authentication process and places an incomplete Authentication object (without authorities) into SecurityContext.
+Simultaneously with request 1, the same user makes request 2 to the server. This request does not have "Authorization: Digest ..." header, so no re-authentication is done. While processing request 2, request.isUserInRole() returns now false, because the Authentication object in SecurityContext does not have any authorities. User gets incorrectly a 403 Forbidden response.
+Request 1 continues the authentication process, and in AbstractSecurityInterceptor, a fully populated Authentication object is created and put into SecurityContext.
+
+I could set createAuthenticatedToken = true in DigestAuthenticationFilter, but the comment on the set method says that user flags like isEnabled() or isAccountNonExpired() are not checked in that case, so this is not a solution.</description>
+			<version>4.0.2</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.www.DigestAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.authentication.www.DigestAuthenticationFilterTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="3135" opendate="2015-10-27 17:44:05" fixdate="2015-10-29 17:59:21" resolution="Complete">
+		<buginformation>
+			<summary>authorizeRequests().antMatchers(&lt;any-method&gt;).authenticated() fails</summary>
+			<description>When chaining ant matchers, the last one needs a URL pattern else it throws exception.
+
+
+
+
+
+
+protected void configure(HttpSecurity http) throws Exception {
+
+
+
+
+	.authorizeRequests()
+
+
+
+
+	.antMatchers(GET, SECURE_PATTERNS).authenticated()
+
+
+
+
+	.antMatchers(POST).hasAnyRole("ADMIN") 
+
+
+
+
+	.antMatchers(DELETE).hasAnyRole("ADMIN") 
+
+
+
+
+	.antMatchers(PUT).hasAnyRole("ADMIN") 
+
+
+
+
+	// the last one needs a URL, else throws exception
+
+
+
+
+	.antMatchers(PATCH, WILDCARD_PATTERN).hasAnyRole("ADMIN").and()
+
+
+
+
+	.httpBasic()
+
+
+
+
+	.and().csrf().disable()
+
+
+
+
+	.userDetailsService(userDetailsService); 
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>4.0.2</version>
+			<fixedVersion>3.2.9, 4.0.3, 4.1.0 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.annotation.web.AbstractRequestMatcherRegistry.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.AuthorizeRequestsTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

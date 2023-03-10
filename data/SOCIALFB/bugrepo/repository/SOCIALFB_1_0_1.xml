@@ -1,0 +1,27 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SOCIALFB">
+	<bug id="92" opendate="2012-08-23 09:57:31" fixdate="2012-08-30 13:22:32" resolution="Complete">
+		<buginformation>
+			<summary>Changes to page pictures property will break API binding</summary>
+			<description>On 10/3/2012 the Facebook API will be changed such that the pictures property on page objects will no longer be a string, but will instead be an object. This will break the existing API binding when trying to deserialize the picture property. In mid-August 2012, Facebook applied this breaking change, but apps can be reconfigured (temporarily) to opt out of the change.
+See https://developers.facebook.com/roadmap/#october-2012 for details.
+The Spring Social Facebook API binding should be fixed to address this change in time for the October 3rd change. </description>
+			<version>1.0.1.RELEASE</version>
+			<fixedVersion>1.0.2.RELEASE</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PageMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.VideoMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.MediaTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.Video.java</file>
+			<file type="M">org.springframework.social.facebook.api.Photo.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PostMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.FeedTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.Post.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PhotoMixin.java</file>
+			<file type="M">org.springframework.social.facebook.api.LikeTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.Page.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

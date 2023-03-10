@@ -1,0 +1,189 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="22" master="183" duplicate="233" opendate="2006-02-09 08:58:38" fixdate="2006-04-23 23:32:22" resolution="Fixed">
+		<buginformation>
+			<summary>Avoid unnecessary HttpSession creation when using Anonymous and Remember-Me authentication AnonymousProcessingFilter - redundant creation of Authentication object causes IllegalStateException</summary>
+			<description>A small number of users use HttpSessionContextIntegrationFilter.allowSessionCreation = false, as they are using an authentication mechanism (such as BASIC) which relies upon the user agent for representing authentication information on each web request. For such users, changes made as part of SEC-168 and SEC-182 will cause issues because these changes will always create a HttpSession (in order to obtain a Session ID that in turn was needed by the concurrent session capabilities). In the finally block of the doFilter method, it seems the WebAuthenticationDetails object is created again in order to compare against the current Security Context&amp;amp;apos;s Authentication object to see that it has not changed over the course of the request.  This rendundant creation can potentially cause an IllegalStateException: a session cannot be created sine the response is commited.  The response may be commited anytime down the filter pipeline.  Why create another Authentication object just to check for equality.   A references should be held before the filter chain is invoked since this is the only safe time to create a session and that reference should be used for comparison after the filter chain returns.  This will avoid the unnessary and invalid creation of a session.  </description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">233</link>
+			<link type="Duplicate" description="duplicates">183</link>
+		</links>
+	</bug>
+	<bug id="23" master="105" duplicate="109" opendate="2005-11-18 01:26:15" fixdate="2005-11-24 14:30:10" resolution="Fixed">
+		<buginformation>
+			<summary>Mis-named method signature in n.s.a.util.PortMapperImpl PortMapperImpl property mistake</summary>
+			<description>Forum discussion :
+http://forum.springframework.org/showthread.php?t=19903
+yielded a little problem with PortMappingImpl.  The javadocs state that use the following in a spring config file
+   &amp;lt;property name="httpsPortMapping"&amp;gt;
+     &amp;lt;map&amp;gt;
+       &amp;lt;entry key="80"&amp;gt;&amp;lt;value&amp;gt;443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+       &amp;lt;entry key="8080"&amp;gt;&amp;lt;value&amp;gt;8443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+     &amp;lt;/map&amp;gt;
+   &amp;lt;/property&amp;gt;
+Looking into the source of PortMappingImpl and there&amp;amp;apos;s no corresponding setHttpsPortMapping for spring to inject.  Spring falls over.  
+Solution : either update the javadocs or better in my opinion change the existing method from setPortMapping(Map m) to setHttpsPortMapping(Map m)  In accordance wuth Acegi Security System Platform Documentation, you can set a custom definition of socket port mapping (by default this is set in this way HTTP: 80/8080, HTTPS: 443/8443).
+The definition of the setter method public void setPortMappings(Map newMappings) set this property httpsPortMapping. 
+But this definition cause an Exception on the property writing. 
+To allow the settings the property in applicationContext must be set as "portMapping".
+Again, API&amp;amp;apos;s report this specifics for method setPortMappiungs:
+public void setPortMappings(Map newMappings)
+Set to override the default HTTP port to HTTPS port mappings of 80:443, 
+and 8080:8443. In a Spring XML ApplicationContext, a definition would look something like 
+this:
+   &amp;lt;property name="httpsPortMapping"&amp;gt;
+     &amp;lt;map&amp;gt;
+       &amp;lt;entry key="80"&amp;gt;&amp;lt;value&amp;gt;443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+       &amp;lt;entry key="8080"&amp;gt;&amp;lt;value&amp;gt;8443&amp;lt;/value&amp;gt;&amp;lt;/entry&amp;gt;
+     &amp;lt;/map&amp;gt;
+   &amp;lt;/property&amp;gt;
+Parameters:
+newMappings - A Map consisting of String keys and String values, where 
+for each entry the key is the string representation of an integer HTTP port 
+number, and the value is the string representation of the corresponding 
+integer HTTPS port number. 
+Throws:
+IllegalArgumentException - if input map does not consist of String 
+keys and values, each representing an integer port number in the range 
+1-65535 for that mapping.
+Thanks for attention.
+Kind Regards
+</description>
+			<version>0.8.3</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.util.PortMapperImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">109</link>
+			<link type="Duplicate" description="duplicates">105</link>
+		</links>
+	</bug>
+	<bug id="24" master="243" duplicate="197" opendate="2006-02-21 17:41:01" fixdate="2006-04-25 14:05:59" resolution="Fixed">
+		<buginformation>
+			<summary>SessionRegistryImpl.getAllSessions(Object) incorrectly includes expired and destroyed sessions ConcurrentSessionController should count non-expired Sessions only</summary>
+			<description>The function SessionRegistryImpl.getAllSessions(principal) returns all session associated with the principal, even it is marked as expired. This is in violation of the SessionRegistry interface contract.
+The fix is to filter out any expired session information return by function sessionRegistry.getAllSessions(principal) With ConcurrentSession support enabled, its very common for a user to close their browser without logging out, thereby locking themselves out of the app until their session expires.  
+I have added a function to my admin to "logout" an active user, bascially calling SessionInformation.expireNow() for each session beloging to him.  
+But, after doing this the user still can&amp;amp;apos;t logon because ConcurrentSessionController just counts how many SessionInformation objects are returned from getAllSessions.  Until the HttpSession expires or the logged out user hits the site again (triggering a HttpSession invalidation) the user cannot login again.  
+If the ConcurrentSessionController.checkAuthenticationAllowed method counted non-expired sessions instead of all sessions, this would allow the user to log back in (even though he has an abondonded HttpSession) and continue to use the system.</description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImplTests.java</file>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistry.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">197</link>
+			<link type="Duplicate" description="duplicates">243</link>
+		</links>
+	</bug>
+	<bug id="29" master="108" duplicate="117" opendate="2005-11-21 21:53:15" fixdate="2005-12-02 22:24:12" resolution="Fixed">
+		<buginformation>
+			<summary>Change JdbcDaoImpl fields to be protected (not private) JdbcDaoImpl not properly extensible</summary>
+			<description>In the previous version we were able to get to the authoritiesByUsernameMapping via a getter. As of version 0.9.0 this getter is no longer available. We need this in the subclasses of JdbcDaoImpl. While the javadoc for JdbcDaoImpl suggests that it is possible to override the initMappingSqlQueries() if the default strategy for customizing the SQL queries doesn&amp;amp;apos;t provide enough flexibility, this is in fact impossible because authoritiesByUsernameMapping and usersByUsernameMapping are declared private while they should be protected.
+This as far as I can see prevents using this class against an Oracle database that doesn&amp;amp;apos;t support boolean fields.</description>
+			<version>0.9.0</version>
+			<fixedVersion>1.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.jdbc.JdbcDaoImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">117</link>
+			<link type="Duplicate" description="duplicates">108</link>
+		</links>
+	</bug>
+	<bug id="50" master="99" duplicate="353" opendate="2005-11-14 14:27:20" fixdate="2008-03-24 11:45:11" resolution="Fixed">
+		<buginformation>
+			<summary>MethodDefinitionMap must support superclass declared methods Acegi only checks current class interfaces against rules</summary>
+			<description>As reported by Tom Dunstan, MethodDefinitionMap line 168 by default will only locate methods declared for the class, and not for superclasses (ie uses clazz.getMethods() instead of clazz.getDeclaredMethods()). Whilst this is consistent with Spring&amp;amp;apos;s transaction handling, it does present an issue for those relying on generic superclasses and wanting to define authorization configuration attributes against them. It is proposed to add a new keyword to the property editor to direct MethodDefinitionMap to use getDeclaredMethods() vs getMethods(), such that by default the existing behaviour is preserved (to be consistent with transaction services) but the superclass search behaviour can be used instead. Alternatively, we could introduce an optional prefix the method name, such as "+", which denotes "locate the matching methods in the superclass". This would have the added advantage of ensuring only patterns where you deliberately want to use getDeclaredMethods() will use that method. A implements I
+B extends A
+If method definition specifies I methods ( eg. I.myMethod() ) and the invoked class is B then method is not securited.
+MethodDefinitionMap 201-202
+        // Add attributes explicitly defined for this method invocation&amp;amp;apos;s interfaces
+        Class[] interfaces = method.getDeclaringClass().getInterfaces();</description>
+			<version>1.0.0</version>
+			<fixedVersion>2.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditorTests.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.intercept.method.MethodDefinitionMap.java</file>
+			<file type="M">org.springframework.security.util.SimpleMethodInvocation.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributesTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditor.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.MockMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.OtherTargetObject.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisorTests.java</file>
+			<file type="M">org.springframework.security.config.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.ConfigAttributeDefinition.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.aspectj.AspectJSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.springframework.security.annotation.MethodDefinitionSourceEditorTigerTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.MockJoinPoint.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.springframework.security.util.MethodInvocationUtils.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributes.java</file>
+			<file type="M">org.springframework.security.vote.BasicAclEntryVoterTests.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributesTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">428</link>
+			<link type="Duplicate" description="is duplicated by">424</link>
+			<link type="Duplicate" description="is duplicated by">353</link>
+			<link type="Related" description="is related to">734</link>
+			<link type="Duplicate" description="duplicates">99</link>
+		</links>
+	</bug>
+	<bug id="64" master="199" duplicate="230" opendate="2006-02-23 16:04:59" fixdate="2006-04-25 15:11:27" resolution="Fixed">
+		<buginformation>
+			<summary>Contacts sample throws NestedServletException (500) instead of Access denied! (403) page ExceptionTranslationFilter does not catch AccessDeniedException with Spring MVC M2/M3</summary>
+			<description>Logged on as 
+Manually entered URL http://localhost:8080/contacts/secure/del.htm?contactId=2
+NB - You have to manually enter the URL, but still, the behaviour doesn&amp;amp;apos;t appear to be as intended
+Tomcat throws:
+org.springframework.web.util.NestedServletException: Request processing failed; nested exception is org.acegisecurity.AccessDeniedException: Access is denied
+...
+root cause
+org.acegisecurity.AccessDeniedException: Access is denied I am writing a SpringMVC-based web application with Acegi Security.  I have a Spring Controller object that invokes a method that is protected by an Acegi MethodSecurityInterceptor.  When the MethodSecurityInterceptor throws an AccessDeniedException, it is getting wrapped by the Spring FrameworkServlet in a org.springframework.web.util.NestedServletException.  Because of this wrapping, the ExceptionTranslationFilter never catches an AccessDeniedException, thus causing a 500 server error to bubble up instead of a 403/redirect to authenticationEntryPoint. 
+I&amp;amp;apos;m not sure whose problem this is - the Acegi code could inspect the root cause of the NestedServletException, or the FrameworkServlet could pass on RuntimeExceptions without wrapping. </description>
+			<version>1.0.0 RC2</version>
+			<fixedVersion>1.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.ExceptionTranslationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">220</link>
+			<link type="Duplicate" description="is duplicated by">230</link>
+			<link type="Duplicate" description="duplicates">199</link>
+		</links>
+	</bug>
+</bugrepository>

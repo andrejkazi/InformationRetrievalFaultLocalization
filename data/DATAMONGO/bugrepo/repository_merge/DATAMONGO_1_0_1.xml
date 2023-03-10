@@ -1,0 +1,296 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="2" master="392" duplicate="459" opendate="2012-02-07 04:28:15" fixdate="2013-07-08 06:13:48" resolution="Fixed">
+		<buginformation>
+			<summary>Updating an object does not write type information for objects to be updated Using Update.set in nested arrays does not save the _class attribute</summary>
+			<description>I&amp;amp;apos;m using quite complex domain model, that consist of instantiable domain classes as well as of abstract ones. I used 1.0.0.M5 version, and the type information (under _class key) was stored with object when it was necessary to be able to read it from database later. That worked perfectly for me till my upgrade to 1.0.0.RELEASE version that broke my application as it saves the objects without type information and later it is impossible to read it back to java model. 
+What I found is that MappingMongoConverter.writeInternal(...) method that in turn calls addCustomTypeIfNecessary(...) (line 330) which puts type information into DBObject. During execution of convertToMongoType(...) (at line 851) removeTypeInfoRecursively(...) is called which clears type data saved earlier under _class key. I had to comment out this call in order to 
+The first point is that there is a contradiction: why to save type information to DBObject if it is later removed by other method? The second point is that there should be a way to persist the type information inferred from runtime along the persisted object and not just the class definition.
+ I have a service method like that:
+
+
+
+
+
+
+	public Goal save(Goal goal) {
+
+
+
+
+		Match match = this.mongoTemplate.findAndModify(
+
+
+
+
+				query(where("goals").elemMatch(where("id").is(goal.getId()))),
+
+
+
+
+				new Update().set("goals.$", goal), Match.class);
+
+
+
+
+		return match.findGoalById(goal.getId());
+
+
+
+
+	}
+
+
+
+
+
+
+classes:
+
+
+
+
+
+
+class Match {
+
+
+
+
+     List&amp;lt;Goal&amp;gt; goals;
+
+
+
+
+}
+
+
+
+
+class Goal {
+
+
+
+
+     Player player;
+
+
+
+
+}
+
+
+
+
+abstract class Player {}
+
+
+
+
+class Forward extends Player {}
+
+
+
+
+class Defender extends Player{}
+
+
+
+
+
+
+When running the method above, the _class information for the Player object in the Goal class does not get saved in the database. This makes the saved document unloadable by Spring MongoDB.
+Doing like that however will work:
+
+
+
+
+
+
+Goal g = match.getGoal(&amp;lt;id&amp;gt;);
+
+
+
+
+g.setPlayer(&amp;lt;a player&amp;gt;);
+
+
+
+
+
+
+matchRepository.save(match);</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">459</link>
+			<link type="Relate" description="relates to">407</link>
+			<link type="Relate" description="relates to">724</link>
+			<link type="Duplicate" description="duplicates">392</link>
+		</links>
+	</bug>
+	<bug id="19" master="354" duplicate="410" opendate="2011-12-20 00:14:49" fixdate="2014-02-17 02:55:12" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate does not support multiple $pushAll in one update Update with pushAll doesnt recognize defined Converter</summary>
+			<description>Update.push uses "addMultiFieldOperation". For some reason Update.pushAll does not. Second pushAll over-writes the first one. I am not being lazy, but i think this quote from the code that i attach can describe better :
+
+
+
+
+
+
+List&amp;lt;MyNested&amp;gt; someValues = Arrays.asList(new MyNested("my"), new MyNested("name"), new MyNested("is"));
+
+
+
+
+MyNested[] array = new MyNested[someValues.size()];
+
+
+
+
+this.ops.updateFirst(
+
+
+
+
+	Query.query(Criteria.where("id").is("testId")),
+
+
+
+
+	new Update().pushAll("nestedList", someValues.toArray(array)), // fails with exception
+
+
+
+
+// new Update().set("nestedList", someValues.toArray()), // this works fine !
+
+
+
+
+// new Update().set("myNested", new MyNested("my")), // this works fine !
+
+
+
+
+	COLLECTION_NAME);
+
+
+
+
+
+
+Using pushAll() will results in exception, and also i notice that the converter&amp;amp;apos;s debugging message is not displayed. And the error message seems to say that it can&amp;amp;apos;t serialize my custom class where it should be the dbObject that should be serialized.
+Here&amp;amp;apos;s the exception trace :
+
+
+
+
+
+
+Exception in thread "main" java.lang.RuntimeException: json can&amp;amp;apos;t serialize type : class kam.albert.domain.test.post.TestConverterThatFails$MyNested
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:261)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:210)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:141)
+
+
+
+
+	at com.mongodb.util.JSON.serialize(JSON.java:58)
+
+
+
+
+	at com.mongodb.BasicDBObject.toString(BasicDBObject.java:84)
+
+
+
+
+	at java.lang.String.valueOf(Unknown Source)
+
+
+
+
+	at java.lang.StringBuilder.append(Unknown Source)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:840)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate$12.doInCollection(MongoTemplate.java:826)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.execute(MongoTemplate.java:368)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doUpdate(MongoTemplate.java:826)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.updateFirst(MongoTemplate.java:812)
+
+
+
+
+	at kam.albert.domain.test.post.TestConverterThatFails.test(TestConverterThatFails.java:50)
+
+
+
+
+	at kam.albert.domain.test.post.TestConverterThatFails.main(TestConverterThatFails.java:30)
+
+
+
+
+
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.4 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.UpdateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.Update.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">410</link>
+			<link type="Relate" description="is related to">812</link>
+			<link type="Duplicate" description="duplicates">354</link>
+		</links>
+	</bug>
+</bugrepository>

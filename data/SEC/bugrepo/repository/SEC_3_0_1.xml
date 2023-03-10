@@ -1,0 +1,579 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1380" opendate="2010-01-22 08:45:04" fixdate="2010-01-22 09:05:49" resolution="Fixed">
+		<buginformation>
+			<summary>"access" attribute in "intercept-url" should trim whitespace from attributes</summary>
+			<description>Currently "ROLE_A, ROLE_B" will map to two attributes, the second being " ROLE_B". Whitespace should be trimmed.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.SecurityConfig.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1395</link>
+		</links>
+	</bug>
+	<bug id="1388" opendate="2010-01-26 06:16:44" fixdate="2010-01-26 06:20:50" resolution="Duplicate">
+		<buginformation>
+			<summary>Support for custom AuthenticationDetailsSource in form-login tag.</summary>
+			<description>When using the &amp;lt;form-login /&amp;gt; tag, theres no way to configure a custom AuthenticationDetailsSource.
+The workaround is to reconfigure UsernamePasswordAuthenticationFilter as a custom filter and reconfigure LoginUrlAuthenticationEntryPoint with its loginFormUrl property. Spring XML becomes more polluted and some minor functionality like the &amp;lt;http&amp;gt; auto-config and the built-in form login page are lost.</description>
+			<version>3.0.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.FormLoginBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1133</link>
+		</links>
+	</bug>
+	<bug id="1395" opendate="2010-02-01 09:39:54" fixdate="2010-02-02 02:33:51" resolution="Duplicate">
+		<buginformation>
+			<summary>intercept-url access attribute should support spaces when specifying a list of authorized roles</summary>
+			<description>The "extra" space in access definition is not supported, it should be allowed.
+If this is the desired behavior, the xsd should be updated to reflect the constraint.
+
+
+
+
+
+
+
+
+
+
+
+
+
+&amp;lt;security:intercept-url pattern="/app/*.action" access="ROLE_ANONYMOUS, ROLE_USER" /&amp;gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+it produces
+
+
+
+
+
+
+2010-02-02 00:17:40.500:WARN::Nested in org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.web.access.intercept.FilterSecurityInterceptor#0&amp;amp;apos;: Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Unsupported configuration attributes: [ ROLE_USER]: java.lang.IllegalArgumentException: Unsupported configuration attributes: [ ROLE_USER]
+
+
+
+
+        at org.springframework.security.access.intercept.AbstractSecurityInterceptor.afterPropertiesSet(AbstractSecurityInterceptor.java:153)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1460)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1398)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:512)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:450)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:290)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:222)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:287)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:189)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:557)
+
+
+
+
+        at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:842)
+
+
+
+
+        at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:416)
+
+
+
+
+
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.SecurityConfig.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1380</link>
+		</links>
+	</bug>
+	<bug id="1390" opendate="2010-01-26 07:46:56" fixdate="2010-02-06 02:10:05" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in OpenID4JavaConsumer.endConsumption</summary>
+			<description>
+Log+Exception
+=====
+INFO  YadisResolver                  - Yadis discovered 0 endpoints from: http://&amp;lt;domain&amp;gt;/openid?id=11001259674714705...
+INFO  Discovery                      - No OpenID service endpoints discovered through Yadis; attempting HTML discovery...
+INFO  HttpCache                      - Cached GET response does not match the required content type, removing.
+INFO  HttpCache                      - Removing cached GET for http://&amp;lt;domain&amp;gt;/openid?id=11001259674714705...
+INFO  HttpCache                      - Removing cached GET response for http://&amp;lt;domain&amp;gt;/openid?id=11001259674714705...
+INFO  HtmlResolver                   - HTML discovery completed on: http://&amp;lt;domain&amp;gt;/openid?id=11001259674714705...
+INFO  Discovery                      - Discovered 0 OpenID endpoints.
+ERROR ConsumerManager                - No service element found to match the ClaimedID / OP-endpoint in the assertion.
+ERROR ConsumerManager                - Discovered information verification failed.
+java.lang.NullPointerException
+	at org.springframework.security.openid.OpenID4JavaConsumer.endConsumption(OpenID4JavaConsumer.java:172)
+	at org.springframework.security.openid.OpenIDAuthenticationFilter.attemptAuthentication(OpenIDAuthenticationFilter.java:152)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:199)
+Code
+====
+call to discovered.getClaimedIdentifier() returns null in the following lines:
+return new OpenIDAuthenticationToken(OpenIDAuthenticationStatus.FAILURE,
+                    discovered.getClaimedIdentifier().getIdentifier(),
+                    "Verification status message: [" + verification.getStatusMsg() + "]", attributes);</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.openid.OpenID4JavaConsumer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1384" opendate="2010-01-24 18:44:08" fixdate="2010-02-06 04:06:17" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultWebInvocationPrivilegeEvaluator bypass the accessDecisionManager when authorities are empty</summary>
+			<description>defaultWebInvocationPrivilegeEvaluator.isAllowed(...) always return false when authorities are empty.
+Here is the simple security configuration used:
+	&amp;lt;http access-decision-manager-ref="accessDecisionManager"&amp;gt;
+		&amp;lt;intercept-url pattern="/images/**" filters="none" /&amp;gt;
+		&amp;lt;intercept-url pattern="/scripts/**" filters="none" /&amp;gt;
+		&amp;lt;intercept-url pattern="/styles/**" filters="none" /&amp;gt;
+		&amp;lt;intercept-url pattern="/csmprobe.html*" filters="none" /&amp;gt;
+		&amp;lt;intercept-url pattern="/login.htm*" access="ROLE_ANONYMOUS" /&amp;gt;
+		&amp;lt;intercept-url pattern="/**" access="IS_AUTHENTICATED_FULLY" /&amp;gt;
+		&amp;lt;form-login login-page="/login.htm"
+			always-use-default-target="true"
+			default-target-url="/siteSelection.htm"
+			authentication-failure-url="/login.htm?login_error=1" /&amp;gt;
+		&amp;lt;logout /&amp;gt;
+	&amp;lt;/http&amp;gt;
+	&amp;lt;ldap-server
+		url="$
+{ldap.url}
+/$
+{ldap.base}
+"
+		manager-dn="$
+{ldap.managerDn}
+"
+		manager-password="$
+{ldap.managerPassword}
+" /&amp;gt;
+	&amp;lt;authentication-manager alias="authenticationManager"&amp;gt;
+		&amp;lt;ldap-authentication-provider user-search-filter="(uid=
+{0}
+)"
+			user-search-base="$
+{ldap.userSearchBase}
+"
+			group-search-base="$
+{ldap.groups}
+" /&amp;gt;
+	&amp;lt;/authentication-manager&amp;gt;
+	&amp;lt;beans:bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased"&amp;gt;
+		&amp;lt;beans:property name="decisionVoters"&amp;gt;
+			&amp;lt;beans:list&amp;gt;
+				&amp;lt;beans:bean class="org.springframework.security.access.vote.AuthenticatedVoter" /&amp;gt;
+				&amp;lt;beans:bean class="org.springframework.security.access.vote.RoleVoter" /&amp;gt;
+			&amp;lt;/beans:list&amp;gt;
+		&amp;lt;/beans:property&amp;gt;
+	&amp;lt;/beans:bean&amp;gt;
+Users with no authorities have access to all pages (IS_AUTHENTICATED_FULLY) according to the filter configuration but defaultWebInvocationPrivilegeEvaluator.isAllowed(...) says the opposite. The implementation has this check: 
+        if (authentication == null || authentication.getAuthorities().isEmpty()) 
+{
+            return false;
+        }
+
+authentication.getAuthorities().isEmpty() should be removed to allow decision voters do their work.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1412" opendate="2010-02-16 13:05:28" fixdate="2010-02-17 10:44:18" resolution="Fixed">
+		<buginformation>
+			<summary>Login page redisplays when used with Spring 3&amp;apos;s ShallowEtagHeaderFilter</summary>
+			<description>Adding ShallowEtagHeaderFilter to a web application that uses Spring Security will cause the redisplay of the Spring Security login page on the second login attempt. This was initially reported widely within the Spring Roo community and resulted in bug report ROO-579.
+The problem can be seen by:
+1. Active ShallowEtagHeaderFilter in a Spring Security application that has a normal login page
+2. Visit the home page, attempt to access a secure page, and view the login page
+3. Complete the login page, submit, and you should see the secure page (correct)
+4. Logout
+5. Attempt to access the same secure page again
+6. The login page will display (correct)
+7. Enter valid credentials and submit
+   --&amp;gt; The login page will re-display (incorrect)
+   --&amp;gt; What should have happened is the secure page would display, as you&amp;amp;apos;ve now authenticated
+I have reproduced this with the Spring Security tutorial 3.0.1 web application WAR. I have made no changes to the WAR except modifying the web.xml to the following (I have included both filters for clarification of the order):
+
+
+
+
+
+
+    &amp;lt;filter&amp;gt;
+
+
+
+
+        &amp;lt;filter-name&amp;gt;springSecurityFilterChain&amp;lt;/filter-name&amp;gt;
+
+
+
+
+        &amp;lt;filter-class&amp;gt;org.springframework.web.filter.DelegatingFilterProxy&amp;lt;/filter-class&amp;gt;
+
+
+
+
+    &amp;lt;/filter&amp;gt;
+
+
+
+
+
+
+
+
+
+	&amp;lt;filter&amp;gt;
+
+
+
+
+		&amp;lt;filter-name&amp;gt;etagFilter&amp;lt;/filter-name&amp;gt;
+
+
+
+
+		&amp;lt;filter-class&amp;gt;org.springframework.web.filter.ShallowEtagHeaderFilter&amp;lt;/filter-class&amp;gt;
+
+
+
+
+	&amp;lt;/filter&amp;gt;
+
+
+
+
+
+
+
+
+
+    &amp;lt;filter-mapping&amp;gt;
+
+
+
+
+      &amp;lt;filter-name&amp;gt;springSecurityFilterChain&amp;lt;/filter-name&amp;gt;
+
+
+
+
+      &amp;lt;url-pattern&amp;gt;/*&amp;lt;/url-pattern&amp;gt;
+
+
+
+
+    &amp;lt;/filter-mapping&amp;gt;
+
+
+
+
+
+
+
+
+
+	&amp;lt;filter-mapping&amp;gt;
+
+
+
+
+		&amp;lt;filter-name&amp;gt;etagFilter&amp;lt;/filter-name&amp;gt;
+
+
+
+
+		&amp;lt;url-pattern&amp;gt;/*&amp;lt;/url-pattern&amp;gt;
+
+
+
+
+	&amp;lt;/filter-mapping&amp;gt;
+
+
+
+
+
+
+I have attached the tutorial WAR where you can see the problem by deploying to Tomcat. Simply access the "secure page", login as normal, and it will display. Then logout and click to view the "secure page" again. The login page will display. Login as normal, and on submission you will erroneously see the login page again. The problem can be avoided by disabling the ShallowEtagHeaderFilter in web.xml.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequest.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequestTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">579</link>
+		</links>
+	</bug>
+	<bug id="1410" opendate="2010-02-15 07:28:24" fixdate="2010-02-17 10:48:24" resolution="Fixed">
+		<buginformation>
+			<summary>Remember Me doesn&amp;apos;t work with OpenID urls contatining "https://"</summary>
+			<description>As of 3.0.1, AbstractRememberMeServices.decodeCookie() treats usernames with "http://" as a special case for compatibility with OpenID. But some OpenID providers use "https://..." in their identity urls, and cookies with such usernames are decoded incorrectly.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServicesTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1385" opendate="2010-01-24 21:22:54" fixdate="2010-03-04 09:33:16" resolution="Duplicate">
+		<buginformation>
+			<summary>AbstractRetryEntryPoint should use DefaultRedirectStrategy for redirects to support proxies</summary>
+			<description>The AbstractRetryEntryPoint builds the redirect url for the redirect itself in its commence method. The problem is, that the context-path is always used.
+If you run your application through a proxy with a change of the path, than the redirects leeds to a wrong url.
+Example:
+The app is deployed on Tomcat as ajp://localhost:8009/app1 and is accessed via a apache proxy through http://yourdomain.com/. The redirect url of a secured resource /resource.html will be http://yourdomain.com/app1/resource.html instead of the correct one http://yourdomain.com/resource.html.
+Other parts of Spring Security are using the DefaultRedirectStrategy, which works as expected when setting the contextRelative to true.
+I think if the AbstractRetryEntryPoint uses the same convention (DefaultRedirectStrategy), then the problem with the http-&amp;gt;https redirect in DefaultRedirectStrategy (see comment on the class) will also be fixed.
+As a workaround we implemented our own RetryWithHttpsEntryPoint, which processes the contextRelative flag, and it works. But this is heavily to configure, because you cannot use the namespace configuration any more.
+https://fisheye.springsource.org/browse/spring-security/web/src/main/java/org/springframework/security/web/access/channel/AbstractRetryEntryPoint.java</description>
+			<version>3.0.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpEntryPointTests.java</file>
+			<file type="M">org.springframework.security.web.access.channel.AbstractRetryEntryPoint.java</file>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpsEntryPointTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1413</link>
+		</links>
+	</bug>
+	<bug id="1448" opendate="2010-03-20 03:59:12" fixdate="2010-03-27 05:26:48" resolution="Fixed">
+		<buginformation>
+			<summary>LocalVariableTableParameterNameDiscoverer doesn&amp;apos;t find Generic method parameters</summary>
+			<description>I&amp;amp;apos;m using spring security to secure my service. Here is a sample secured method:
+public interface Foo&amp;lt;T extends MyModel&amp;gt; {
+	@PreAuthorize("hasPermission(#item, &amp;amp;apos;create&amp;amp;apos;)")
+	public T create(T item);
+}
+In my junit test I get a NullPointerException when spring parses the EL:
+java.lang.NullPointerException
+	at org.springframework.security.access.expression.method.MethodSecurityEvaluationContext.addArgumentsAsVariables(MethodSecurityEvaluationContext.java:66)
+	at org.springframework.security.access.expression.method.MethodSecurityEvaluationContext.lookupVariable(MethodSecurityEvaluationContext.java:48)
+	at org.springframework.expression.spel.ExpressionState.lookupVariable(ExpressionState.java:122)
+	at org.springframework.expression.spel.ast.VariableReference.getValueInternal(VariableReference.java:52)
+	at org.springframework.expression.spel.ast.MethodReference.getValueInternal(MethodReference.java:59)
+	at org.springframework.expression.spel.ast.SpelNodeImpl.getValue(SpelNodeImpl.java:93)
+	at org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:98)
+	at org.springframework.security.access.expression.ExpressionUtils.evaluateAsBoolean(ExpressionUtils.java:11)
+	at org.springframework.security.access.expression.method.ExpressionBasedPreInvocationAdvice.before(ExpressionBasedPreInvocationAdvice.java:42)
+	at org.springframework.security.access.prepost.PreInvocationAuthorizationAdviceVoter.vote(PreInvocationAuthorizationAdviceVoter.java:55)
+	at org.springframework.security.access.vote.AffirmativeBased.decide(AffirmativeBased.java:50)
+	at org.springframework.security.access.intercept.AbstractSecurityInterceptor.beforeInvocation(AbstractSecurityInterceptor.java:204)
+	at org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor.invoke(MethodSecurityInterceptor.java:65)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:202)
+	at $Proxy25.create(Unknown Source)
+[snip here comes the junit invocation part]
+Debugging the offending code, I noticed that:
+org.springframework.core.LocalVariableTableParameterNameDiscoverer#getParameterNames(Method method) returns null.
+I guess it is because the method&amp;amp;apos;s parameter type is Generic. Can I fix it? Do you have any idea where in the class it&amp;amp;apos;s going "wrong" ?
+I&amp;amp;apos;d be happy to fix it and submitt a patch but I&amp;amp;apos;, not sure where I have to change the code.
+Cheers,
+Jan
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.expression.method.MethodSecurityEvaluationContext.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1454" opendate="2010-04-06 01:00:36" fixdate="2010-07-30 07:29:54" resolution="Fixed">
+		<buginformation>
+			<summary>@PreAutorize(#username == principal.username) issues - when target is AOPProxy</summary>
+			<description>Hi Luke/Anybody,
+When used @PreAutorize(#username == principal.username) issues - when target is AOPProxy I always get an NullPointerExpression in MethodSecurityEvaluationContext addArgumentsAsVariables method. I have compiled with debug info, no issues with that. 
+I have looked at the bug report which is the same case for Genrics http://jira.springframework.org/browse/SEC-1448
+However, in my case my target object is wrapped in a AOPproxy(JdkDynamicProxy), but when used with AopUtils.getMostSpecificMethod(method, target) it always returns the class as $Proxy which cannot be read by the parameterDiscoverer. May be I have a wrapper of AOPProxy inside another AOPProxy which wraps my target. I guess it is a valid case. 
+I could able to get around it by having custom EvaluationContext which first try run through a loop and get the target object as below 
+while (candidate instanceof TargetClassAware) { // This is to ensure that we get to the final target object - most specific.
+if (candidate instanceof TargetSource) {
+candidate = ((TargetSource)candidate).getTarget(); 
+} else if (candidate instanceof Advised){
+candidate =((Advised) candidate).getTargetSource();
+}
+}
+return AopUtils.getTargetClass(candidate);
+However I still consider this as a work around and it would be nice that spring-security supports this out of the box, as it is so common that we use AOPproxy&amp;amp;apos;s as target object. 
+-----------------------------------------------------------------------------------------------------------
+I just copy below source code from Spring-sec MethodSecurityEvaluationContext class
+private void addArgumentsAsVariables() {
+Object[] args = mi.getArguments();
+Object targetObject = mi.getThis();
+Method method = ClassUtils.getMostSpecificMethod(mi.getMethod(), targetObject.getClass());
+String[] paramNames = parameterNameDiscoverer.getParameterNames(method);
+for(int i=0; i &amp;lt; args.length; i++) {
+super.setVariable(paramNames[i], args[i]);
+}
+}
+I was talking about targetObject in this method, which is the class/interface that is annotated with preAuthorize. And in my application context the bean is wrapped in multi levels of AOPproxy&amp;amp;apos;s. 
+I am not sure whether it is Spring issue or Spring sec issue, because in 3.0.3 even spring sec uses AopUtils.getMostSpecificmethod(method, target) this issue will not be solved as AopUtils just looks one level not recursively until it hits the right target. 
+I would open a JIRA issue, if possible with a test case.
+Luke,
+I told I will open JIRA with a test case, but it is difficult that I trim down my application context to make this test case. Please let me know if you cant reproduce it then i will fetch some time to create a test case. </description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.expression.method.MethodSecurityEvaluationContext.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="depends on">7074</link>
+		</links>
+	</bug>
+	<bug id="1413" opendate="2010-02-16 15:54:50" fixdate="2010-08-10 13:21:15" resolution="Complete">
+		<buginformation>
+			<summary>AbstractRetryEntryPoint should use RedirectStrategy</summary>
+			<description>For consistency, AbstractRetryEntryPoint should probably use RedirectStrategy as implemented in SEC-1226. Possible use cases include URL pre-processing, which users might want consistently applied.
+Let me know if you agree and I am happy to supply a patch.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpEntryPointTests.java</file>
+			<file type="M">org.springframework.security.web.access.channel.AbstractRetryEntryPoint.java</file>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpsEntryPointTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1385</link>
+			<link type="Related" description="is related to">1500</link>
+		</links>
+	</bug>
+	<bug id="1133" opendate="2009-04-01 20:45:14" fixdate="2010-08-14 07:11:35" resolution="Complete">
+		<buginformation>
+			<summary>Allow setting authenticationDetailsSource ref via form-login namespace URL</summary>
+			<description></description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.AuthenticationConfigBuilder.java</file>
+			<file type="M">org.springframework.security.config.http.FormLoginBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.http.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1388</link>
+		</links>
+	</bug>
+	<bug id="1561" opendate="2010-09-07 09:21:50" fixdate="2010-11-10 05:08:38" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSecurityContextRepository fails to store security context to a newly authenticated session</summary>
+			<description>When a second (or later subsequent) authentication attempt arrives on an already authenticated session and session attribute migration is disabled the security context is not always persisted to the new session.
+With an existing authenticated session, subsequent POST requests to the form-login login-processing url will destroy the old session and create a new session. Occasionally the hash code of the persisted security context does not change and so the HttpSecurityContextRepository does not "update" the context stored in the session. The problem is that the old session held the unchanged security context but the new session does not hold any security context. After successfully authenticating another authentication is required because the new session does not contain a SecurityContext.
+One factor causing the HttpSecurityContextRepository to not update/store the SecurityContext is that the session id stored in the security context is the old session id, even after that session has been destroyed and a new one created to replace it. This allows the SecurityContext hashCode to remain the same even though some aspect of the SecurityContext has indeed changed.
+The check to set the security context attribute in HttpSecurityContextRepository.SaveToSessionResponseWrapper.saveContext should probably include something to ensure that the current session actually does contain the context, whether it has changed or not. In the case that the context has not changed, but the session has, the context should be stored to the new session.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.0.5, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpSessionSecurityContextRepository.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1661" opendate="2011-01-25 13:48:23" fixdate="2011-02-01 10:49:10" resolution="Fixed">
+		<buginformation>
+			<summary>LDAP search base should not require JNDI escaping in addition to LDAP escaping for special characters</summary>
+			<description>Having double quotes in the base dn (search base) does not work.  
+The following base dn value is valid, but does not work:
+
+OU="Admin Users",OU=TEST-NC,DC=TESTCustomers,DC=Com
+
+</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1.0.RC1, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.AbstractLdapIntegrationTests.java</file>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,223 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="4" master="328" duplicate="341" opendate="2006-07-27 19:49:15" fixdate="2006-09-14 14:37:09" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractUserDetailsAuthenticationProvider makes two hits when no cache is used Retrieving User after AuthenticationException</summary>
+			<description>if you look at AbstractUserDetailsAuthenticationProvider.authenticate, you&amp;amp;apos;ll notice that in case of failure, Acegi suppose that it is due to a cache synchronization problem and make a second retrieveUser.
+But if you use no cache, your information were already up to date and retrieveUser is still called...
+I think that this snippet (l. 148-151):
+ // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+cacheWasUsed = false;
+user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+has to be changed to that :
+if(cacheWasUsed) 
+{
+            // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+            cacheWasUsed = false;
+            user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+            additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+ }
+ else {
+            throw exception
+}
+It&amp;amp;apos;ll avoid an useless double check... In AbstractUserDetailsAuthenticationProvider the authenticate() method calls the additionalAuthenticationChecks() method in a try block and can catch an AuthenticationException.  The code in the catch block (line 147 for rel 1.0.1) calls the retrieveUser() and additionalAuthenticationChecks() methods.  If the user details used for the call in the try block came from the cache, I understand why this makes sense.  However, if cacheWasUsed is false, the call to retrieve the user details obtains the exact same user details.
+Perhaps the catch block should only repeat those method calls if cacheWasUsed is true, and throws the caught AuthenticationException if cacheWasUsed is false.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">350</link>
+			<link type="Duplicate" description="is duplicated by">341</link>
+			<link type="Duplicate" description="duplicates">328</link>
+		</links>
+	</bug>
+	<bug id="27" master="297" duplicate="355" opendate="2006-06-05 19:27:55" fixdate="2006-11-12 09:00:09" resolution="Fixed">
+		<buginformation>
+			<summary>defaultTargetUrl Scheme Scheme not supported in AbstractProcessingFilter.defaultTargetUrl</summary>
+			<description>Documentation regarding inclusion of http://or https:// scheme in the defaultTargetUrl :
+defaultTargetUrl indicates the URL that should be used for redirection if the HttpSession attribute named ACEGI_SAVED_REQUEST_KEY does not indicate the target URL once authentication is completed successfully. eg: /. The defaultTargetUrl will be treated as relative to the web-app&amp;amp;apos;s context path, and should include the leading /. Alternatively, inclusion of a scheme name (eg http:// or https://) as the prefix will denote a fully-qualified URL and this is also supported.
+Snippet of acegi configuration file:
+    &amp;lt;bean id="authenticationProcessingFilter" class="org.acegisecurity.ui.webapp.AuthenticationProcessingFilter"&amp;gt;
+        &amp;lt;property name="authenticationManager"&amp;gt;&amp;lt;ref local="authenticationManager"/&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="authenticationFailureUrl"&amp;gt;&amp;lt;value&amp;gt;/login.do?error=true&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="defaultTargetUrl"&amp;gt;&amp;lt;value&amp;gt;https://bpz.fluxweb.com/ctxroot/home.do?method=home&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+        &amp;lt;property name="filterProcessesUrl"&amp;gt;&amp;lt;value&amp;gt;/j_security_check&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+    &amp;lt;/bean&amp;gt;
+However the defaultTargetUrl is always prefixed with the context root (based on the debugging information below):
+[app] DEBUG [TP-Processor2] AbstractProcessingFilter.successfulAuthentication(384) | Redirecting to target URL from HTTP Session (or default): /ctxroothttps://bpz.fluxweb.com/ctxroot/home.do?method=home The JavaDoc for AbstractProcessingFilter states that the defaultTargetUrl supports absolute URLs by starting with a scheme name (the JavaDoc says: The &amp;lt;code&amp;gt;defaultTargetUrl&amp;lt;/code&amp;gt; will be treated as relative to the web-app&amp;amp;apos;s context path, and should include the leading &amp;lt;code&amp;gt;/&amp;lt;/code&amp;gt;. Alternatively, inclusion of a scheme name (eg http:// or https://) as the prefix will denote a fully-qualified URL and this is also supported.)
+However, the actual code that builds the redirect URL looks like:
+            targetUrl = request.getContextPath() + getDefaultTargetUrl();
+and therefore the full URL just gets appended to the contextPath.
+As an aside, it would also be useful if the code for determining the targetUrl was factored out so that it could be overridden easily. 
+Regards,
+Damien</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.SiteminderAuthenticationProcessingFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">355</link>
+			<link type="Duplicate" description="duplicates">297</link>
+		</links>
+	</bug>
+	<bug id="33" master="305" duplicate="361" opendate="2006-06-23 10:21:23" fixdate="2007-05-23 13:05:02" resolution="Fixed">
+		<buginformation>
+			<summary>HttpSessionContextIntegrationFilter to retain SecurityContext when rendering error pages &lt;auth:authorize ifNotGranted="ROLE_ANONYMOUS"&gt; doesn&amp;apos;t work sometimes</summary>
+			<description>This happens when you want to set up error pages as described in SRV.9.9.2 Error Pages in Java Servlet Specification
+Version 2.4.
+If for example want to display the current user name on an error page, the security context does not contain the authenticated user.
+The reason is believed to be that HttpSessionContextIntegrationFilter is only applied once per request.
+Seehttp://forum.springframework.org/showthread.php?t=21534 web.xml:
+...........
+&amp;lt;error-page&amp;gt;
+  &amp;lt;error-code&amp;gt;404&amp;lt;/error-code&amp;gt;
+  &amp;lt;location&amp;gt;/common/documentnotfound.do&amp;lt;/location&amp;gt;
+&amp;lt;/error-page&amp;gt;
+...........
+If the requested page not found tomcat redirect user to the pointed url (documentnotfount.do) and in this case &amp;lt;auth:authorize ifNotGranted="ROLE_ANONYMOUS"&amp;gt; doesn&amp;amp;apos;t work.
+SecurityContextHolder.getContext() = org.acegisecurity.context.SecurityContextImpl@ffffffff: Null authentication (AuthorizeTag.java: 129)
+SecurityContextHolder.getContext().getAuthentication() = null (AuthorizeTag.java: 129)
+granted = [] (AuthorizeTag.java: 80)
+evaledIfNotGranted = ROLE_ANONYMOUS (AuthorizeTag.java: 82)
+grantedCopy = [] (AuthorizeTag.java: 86)</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">361</link>
+			<link type="Duplicate" description="duplicates">305</link>
+		</links>
+	</bug>
+	<bug id="39" master="328" duplicate="350" opendate="2006-07-27 19:49:15" fixdate="2006-09-14 14:37:09" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractUserDetailsAuthenticationProvider makes two hits when no cache is used Second access to database when NullUserCache is used</summary>
+			<description>if you look at AbstractUserDetailsAuthenticationProvider.authenticate, you&amp;amp;apos;ll notice that in case of failure, Acegi suppose that it is due to a cache synchronization problem and make a second retrieveUser.
+But if you use no cache, your information were already up to date and retrieveUser is still called...
+I think that this snippet (l. 148-151):
+ // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+cacheWasUsed = false;
+user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+has to be changed to that :
+if(cacheWasUsed) 
+{
+            // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+            cacheWasUsed = false;
+            user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+            additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+ }
+ else {
+            throw exception
+}
+It&amp;amp;apos;ll avoid an useless double check... I am use DaoAuthenticationProvider.
+When user enter right login and wrong  password, AbstractUserDetailsAuthenticationProvider makes 2 queries to database.
+This happends when this class uses NullUserCache (by default) for user caching.
+In these lines we load user details from database if there is no user in the cache (and remember that in cacheWasUsed) :
+        UserDetails user = this.userCache.getUserFromCache(username);
+        if (user == null) {
+            cacheWasUsed = false;
+            try 
+{
+                user = retrieveUser(username,
+                    (UsernamePasswordAuthenticationToken) authentication);
+                    ......
+            }
+....
+        }
+But when user enter wrong password we just load user one more time:
+       // This check must come here, as we don&amp;amp;apos;t want to tell users
+        // about account status unless they presented the correct credentials
+        try 
+{
+            additionalAuthenticationChecks(user,
+                (UsernamePasswordAuthenticationToken) authentication);
+        }
+ catch (AuthenticationException exception) 
+{
+            // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+            cacheWasUsed = false;
+            user = retrieveUser(username,
+                    (UsernamePasswordAuthenticationToken) authentication);
+            additionalAuthenticationChecks(user,
+                (UsernamePasswordAuthenticationToken) authentication);
+        }</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">350</link>
+			<link type="Duplicate" description="is duplicated by">341</link>
+			<link type="Duplicate" description="duplicates">328</link>
+		</links>
+	</bug>
+	<bug id="46" master="272" duplicate="325" opendate="2006-05-22 22:44:38" fixdate="2008-01-14 07:57:54" resolution="Fixed">
+		<buginformation>
+			<summary>Provide user group support Add support for Groups</summary>
+			<description>As discussed at The Spring Experience in December 2005, the community would like a way of grouping users together and assigning those groups roles. We&amp;amp;apos;ll add this feature - which will involve an extra table. http://forum.springframework.org/showthread.php?p=53307
+&amp;lt;quote from="raible"&amp;gt;I attended a BOF at The Spring Experience where there was much debate about having a "Groups" concept in Acegi. Colin was for it, Ben against. However, in the end, I believe Ben said it&amp;amp;apos;d only take 10 minutes to add - so he&amp;amp;apos;d do it.&amp;lt;/quote&amp;gt;
+&amp;lt;quote from="alex"&amp;gt;It&amp;amp;apos;s a semantic thing. People who want an "administrative" / "management" interface for security would like to see groups etc. I would not modify the GrantedAuthority concept to not recognise groups - I would merely add a GROUP table which the out-of-the-box DAOs would recognise and then generate additional GrantedAuthority[]s accordingly.&amp;lt;/quote&amp;gt;</description>
+			<version>1.0.1</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.userdetails.GroupsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManagerTests.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImpl.java</file>
+			<file type="M">org.springframework.security.PopulatedDatabase.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImplTests.java</file>
+			<file type="M">org.acegisecurity.PopulatedDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">325</link>
+			<link type="Related" description="is related to">513</link>
+			<link type="Related" description="is related to">391</link>
+			<link type="Duplicate" description="duplicates">272</link>
+		</links>
+	</bug>
+	<bug id="56" master="308" duplicate="315" opendate="2006-06-29 03:03:56" fixdate="2006-09-14 07:46:34" resolution="Fixed">
+		<buginformation>
+			<summary>Lookup of headers in SavedRequestAwareWrapper is not case insensitive SavedRequest header names are case insensitive</summary>
+			<description>According to the servlet spec, lookups using HttpServletRequest.getHeader and getHeaders should be case insensitive.  The current implementation of SavedRequest uses a HashMap to store saved headers.  The result is that the lookup of headers by name is case sensitive when SavedRequestAwareWrapper delegates to a SavedRequest.
+We use a library that relies on the User-Agent header for rendering.  We experienced problems with rendering on the first page after login.  After debugging we found that the library was not able to get the correct value for the User-Agent due to the case sensitivity of the SavedRequest implementation.  I am attaching a patch that fixes this problem.  The patch is against the 1.0.1 tag.
+After redirect after login:
+request.getHeader("User-Agent") returns null;
+request.getHeader("user-agent") returns the correct value;
+Normal Request:
+request.getHeader("User-Agent") returns the correct value;
+request.getHeader("user-agent") returns the correct value; HTTP header names are case insensitive. We does not take it into account in org.acegisecurity.ui.savedrequest.SavedRequest 
+We should reduce the header names to canonical form in the beginning of addHeader and getHeaderValues methods.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.acegisecurity.ui.savedrequest.SavedCookieTest.java</file>
+			<file type="M">org.acegisecurity.ui.savedrequest.SavedRequest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">315</link>
+			<link type="Duplicate" description="is duplicated by">308</link>
+		</links>
+	</bug>
+</bugrepository>

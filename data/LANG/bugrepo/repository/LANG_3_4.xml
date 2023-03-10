@@ -1,0 +1,864 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="1112" opendate="2015-04-09 07:47:19" fixdate="2015-04-18 18:45:26" resolution="Fixed">
+		<buginformation>
+			<summary>MultilineRecursiveToStringStyle largely unusable due to being package-private</summary>
+			<description>The new MultilineRecursiveToStringStyle which was added under LANG-1052 is a package-private scoped class (no specific scope is specified for the class). I&amp;amp;apos;m assuming, like RecursiveToStringStyle, it should be public instead?</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1181</link>
+		</links>
+	</bug>
+	<bug id="1116" opendate="2015-04-17 20:46:09" fixdate="2015-04-30 23:29:12" resolution="Fixed">
+		<buginformation>
+			<summary>DateUtilsTest.testLang530 fails for some timezones</summary>
+			<description>Unit test for testLang530 fails when the isoDateStr comes out with just a Z instead of +00:00.
+
+
+Tests run: 38, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.014 sec &amp;lt;&amp;lt;&amp;lt; FAILURE! - in org.apache.commons.lang3.time.DateUtilsTest
+testLang530(org.apache.commons.lang3.time.DateUtilsTest)  Time elapsed: 0.005 sec  &amp;lt;&amp;lt;&amp;lt; ERROR!
+java.text.ParseException: Unable to parse the date: 2015-04-17T18:51:52Z
+        at org.apache.commons.lang3.time.DateUtils.parseDateWithLeniency(DateUtils.java:401)
+        at org.apache.commons.lang3.time.DateUtils.parseDate(DateUtils.java:301)
+        at org.apache.commons.lang3.time.DateUtils.parseDate(DateUtils.java:278)
+        at org.apache.commons.lang3.time.DateUtilsTest.testLang530(DateUtilsTest.java:1222)
+
+
+On a Linux machine where this test passes, isoDateStr is 2015-04-17T19:26:03+00:00.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1132" opendate="2015-05-06 03:32:29" fixdate="2015-05-07 18:46:07" resolution="Fixed">
+		<buginformation>
+			<summary>ReflectionToStringBuilder doesn&amp;apos;t throw IllegalArgumentException when the constructor&amp;apos;s object param is null</summary>
+			<description>Placeholder for https://github.com/apache/commons-lang/pull/85
+
+As described in it&amp;amp;apos;s javadoc, ReflectionToStringBuilder constructor will throw IllegalArgumentException if the Object to build a toStringfor is null, while in fact it won&amp;amp;apos;t.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.ReflectionToStringBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1147" opendate="2015-06-12 08:16:54" fixdate="2015-06-12 23:40:06" resolution="Fixed">
+		<buginformation>
+			<summary>EnumUtils *BitVector issue with more than 32 values Enum</summary>
+			<description>In EnumUtils all BitVector related methods fail in handling Enums with more than 32 values.
+This is due to a implicit int -&amp;gt; long conversion in generating the Enum value long mask.
+Bad code : here 1 is an int value so the &amp;lt;&amp;lt; operation is done into an int context and then, the result is converted to a long value
+
+
+long mask = 1 &amp;lt;&amp;lt; 32;    // -&amp;gt; mask = 1 and not 4294967296 (0x100000000)
+
+
+Good code : here 1L is a long value so the &amp;lt;&amp;lt; operation is done into an long context
+
+
+long mask = 1L &amp;lt;&amp;lt; 32;    // -&amp;gt; mask = 4294967296 (0x100000000)
+
+
+See PR#97 : https://github.com/apache/commons-lang/pull/97</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.EnumUtils.java</file>
+			<file type="M">org.apache.commons.lang3.EnumUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1141" opendate="2015-06-02 20:13:07" fixdate="2015-06-24 20:26:56" resolution="Fixed">
+		<buginformation>
+			<summary>StrLookup.systemPropertiesLookup() no longer reacts on changes on system properties</summary>
+			<description>In versions of Commons Lang before 3.4 a Lookup object created from the systemPropertiesLookup() method offered a live view of system properties. So if a system property was changed after the creation of the lookup object, the new value was visible. In version 3.4 this is no longer the case.
+The change seems to be related to LANG-1055. Here a fix was implemented which initializes a lookup object for system properties with a snapshot copy of the current properties. Changes made later on system properties are no longer reflected. I do not understand the background for this change because this is not really related to the original bug report.
+I would propose an implementation which fixes the reported problem in LANG-1055 and allows a live view on system properties. Maybe the snapshot use case could still be supported by an overloaded method.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.StrLookupTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.StrLookup.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1142" opendate="2015-06-05 17:24:33" fixdate="2015-07-19 08:27:07" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#capitalize: Javadoc says toTitleCase; code uses toUpperCase</summary>
+			<description>The capitalize Javadoc says the code uses  Character#toTitleCase, however the code actually uses Character#toUpperCase.
+Generally these produce the same result, but some charsets may have different characters for upper and title case - see for example the Javadoc [1] for Character#isTitleCase.
+The way I read this, the character that looks like "lj" is lower-case, "LJ" is upper case and "Lj" is title case - i.e. not the same.
+The question here is: should the code be corrected to use TitleCase or should the Javadoc be corrected to use UpperCase?
+[1] http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isTitleCase%28char%29</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1059</link>
+			<link type="Reference" description="is related to">1058</link>
+		</links>
+	</bug>
+	<bug id="1162" opendate="2015-08-10 21:11:38" fixdate="2015-08-11 13:28:00" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#equals fails with Index OOBE on non-Strings with identical leading prefix</summary>
+			<description>From the Commons User mailing list:
+
+StringUtils.equals(cs1,cs2) delegates to CharSequence.regionMatches(...) in a way that causes IndexOutOfBounds when either of cs1/cs2 isn&amp;amp;apos;t a String.
+Specifically, comparing "foo" and "foobar" for non-String CharSequences bombs due to CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length())) because regionMatches doesn&amp;amp;apos;t check for input exhaustion.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1207</link>
+			<link type="Duplicate" description="is duplicated by">1239</link>
+			<link type="Reference" description="relates to">1163</link>
+		</links>
+	</bug>
+	<bug id="1163" opendate="2015-08-11 13:26:46" fixdate="2015-08-11 13:30:50" resolution="Fixed">
+		<buginformation>
+			<summary>There are no tests for CharSequenceUtils.regionMatches</summary>
+			<description>There are no tests for CharSequenceUtils.regionMatches.
+It ought to behave the same way as the String version.
+This includes not failing with Index OOBE if the CharSequences are not long enough.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.CharSequenceUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.CharSequenceUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">1162</link>
+		</links>
+	</bug>
+	<bug id="1182" opendate="2015-10-31 00:13:27" fixdate="2015-11-16 19:19:34" resolution="Fixed">
+		<buginformation>
+			<summary>Clarify JavaDoc of StringUtils.containsAny()</summary>
+			<description>(1) The javadoc for StringUtils.containsAny(CharSequence cs, CharSequence... searchCharSequences) confusingly says 
+
+StringUtils.containsAny("abcd", "ab", "cd") = false
+
+You can verify this actually returns true by running this:
+        if (!StringUtils.containsAny("abcd", "ab", "cd")) 
+            throw new AssertionError("Third sample from StringUtils 3.4 javadoc");
+(2) The javadoc for containsAny(final CharSequence cs, final CharSequence searchChars) is inadequate, and could easily mislead naive readers to believe this containsAny() looks for a matching sequence (substring) rather than characters in a set:
+
+StringUtils.containsAny("zzabyycdxx", "za") = true
+StringUtils.containsAny("zzabyycdxx", "by") = true
+
+In other words, both examples would be equally true for StringUtils.contains().  I suggest adding clarifying examples, like:
+
+StringUtils.containsAny("zzabyycdxx", "\tx") = true
+StringUtils.containsAny("zzabyycdxx", "$.#yF") = true
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1181" opendate="2015-10-29 01:33:19" fixdate="2015-11-19 21:28:08" resolution="Duplicate">
+		<buginformation>
+			<summary>MultilineRecursiveToStringStyle is not public</summary>
+			<description>The public access modifier is missing from the MultilineRecursiveToStringStyle class. </description>
+			<version>3.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1112</link>
+		</links>
+	</bug>
+	<bug id="1193" opendate="2015-12-11 10:30:14" fixdate="2015-12-11 13:47:20" resolution="Fixed">
+		<buginformation>
+			<summary>ordinalIndexOf("abc", "ab", 1) gives incorrect answer of -1 (correct answer should be 0)</summary>
+			<description>In Apache Commons Lang 3.4, StringUtils.ordinalIndexOf("abc", "ab", 1) gives incorrect answer of -1 (correct answer should be 0)but StringUtils.ordinalIndexOf("abc", "a", 1) gives correct answer of 0.
+Based on the above mentioned observation, the bug occurrs if the searchStr is of length &amp;gt; 1, and locates at the index 0 of the str.
+In Apache Commons Lang 2.6, this bug is not observed.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1077</link>
+		</links>
+	</bug>
+	<bug id="1192" opendate="2015-12-10 08:16:10" fixdate="2015-12-25 20:50:17" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat does not support the week-year component (uppercase &amp;apos;Y&amp;apos;)</summary>
+			<description>The Java SimpleDateFormat supports two year-components, &amp;amp;apos;y&amp;amp;apos; for normal year and &amp;amp;apos;Y&amp;amp;apos; for &amp;amp;apos;Week year&amp;amp;apos;, see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+However when we try to use FastDateFormat to parse a format which uses the week-year, it fails with an exception
+
+java.lang.IllegalArgumentException: Illegal pattern component: YYYY
+	at org.apache.commons.lang3.time.FastDatePrinter.parsePattern(FastDatePrinter.java:282)
+	at org.apache.commons.lang3.time.FastDatePrinter.init(FastDatePrinter.java:149)
+	at org.apache.commons.lang3.time.FastDatePrinter.&amp;lt;init&amp;gt;(FastDatePrinter.java:142)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:384)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:369)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:91)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:88)
+	at org.apache.commons.lang3.time.FormatCache.getInstance(FormatCache.java:82)
+	at org.apache.commons.lang3.time.FastDateFormat.getInstance(FastDateFormat.java:119)
+
+
+Simple unit test to reproduce this:
+
+
+    @Test
+    public void testCommonsLang() {
+    	Date date = new Date();
+
+    	Format dateFormat = new SimpleDateFormat("YYYY");
+		assertNotNull(dateFormat.format(date));
+
+        dateFormat = FastDateFormat.getInstance("YYYY");
+		assertNotNull(dateFormat.format(date));
+    }
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="D">org.apache.commons.lang3.time.WeekYearTest.java</file>
+			<file type="D">org.apache.commons.lang3.time.CalendarReflection.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Blocker" description="is blocked by">1194</link>
+			<link type="Duplicate" description="is duplicated by">1209</link>
+		</links>
+	</bug>
+	<bug id="1200" opendate="2016-01-14 22:08:39" fixdate="2016-01-14 22:12:21" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.ordinalIndexOf: Add missing right parenthesis in JavaDoc example</summary>
+			<description>https://github.com/apache/commons-lang/pull/120</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1191" opendate="2015-12-08 11:56:20" fixdate="2016-01-26 18:52:03" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect Javadoc StringUtils.containsAny(CharSequence, CharSequence...) </summary>
+			<description>Javadoc for boolean org.apache.commons.lang3.StringUtils.containsAny(CharSequence cs, CharSequence... searchCharSequences) says:
+StringUtils.containsAny("abcd", "ab", "cd") = false
+which is not true. It should be:
+StringUtils.containsAny("abcd", "ab", "cd") = true</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1207" opendate="2016-02-24 14:23:59" fixdate="2016-02-24 14:45:03" resolution="Duplicate">
+		<buginformation>
+			<summary>StringUtils.equals with CharSequence - IndexOutOfBoundsException</summary>
+			<description>Good day,
+This is my first report here, so I&amp;amp;apos;m really sorry if I did not fill in the form right .
+I just ran into a bug with the method 
+public static boolean equals(final CharSequence cs1, final CharSequence cs2).
+If one of the object is not the String object, the method use the CharSequenceUtils to check the equality. 
+The problem is that using Math.max(cs1.length(), cs2.length()) give the max length of the 2 objects. Then 1 of the object throw IndexOutOfBoundsException.
+I think it will be better to check the size before using CharSequenceUtils as the method equalsIgnoreCase.
+Maybe this code could correct the bug :
+if (cs1 == cs2) 
+{
+    return true;
+}
+ else if (cs1 == null || cs2 == null) 
+{
+    return false;
+} else if (cs1.length() != cs2.length()) {
+    return false;
+}
+ else if (cs1 instanceof String &amp;amp;&amp;amp; cs2 instanceof String) 
+{
+    return cs1.equals(cs2);
+}
+ else 
+{
+    return CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, cs1.length());
+}
+
+Kind regards,</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="1219" opendate="2016-04-21 14:09:50" fixdate="2016-04-23 20:04:01" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat doesn&amp;apos;t respect summer daylight in localized strings</summary>
+			<description>FastDateFormat can&amp;amp;apos;t properly parse dates with daylight saving in the "z" pattern. It always returns date without daylight saving. Test case:
+
+
+		SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z", Locale.GERMANY);
+		Date d1 = format.parse("26.10.2014 02:00:00 MESZ");
+		Date d2 = format.parse("26.10.2014 02:00:00 MEZ");
+		System.out.println(d1);
+		System.out.println(d2);
+		FastDateFormat formatt = FastDateFormat.getInstance("dd.MM.yyyy HH:mm:ss z", Locale.GERMANY);
+		Date d3 = formatt.parse("26.10.2014 02:00:00 MESZ");
+		Date d4 = formatt.parse("26.10.2014 02:00:00 MEZ");
+		System.out.println(d3);
+		System.out.println(d4);	
+
+
+returns:
+SDF: Sun Oct 26 02:00:00 CEST 2014
+SDF: Sun Oct 26 02:00:00 CET 2014
+FDF: Sun Oct 26 02:00:00 CET 2014
+FDF:  Sun Oct 26 02:00:00 CET 2014
+FastDateFormat returns the same date, which is wrong.
+Bug is in the FastDateParser.TimeZoneStrategy.setCalendar:
+
+
+@Override
+        void setCalendar(final FastDateParser parser, final Calendar cal, final String value) {
+            TimeZone tz;
+            if(value.charAt(0)==&amp;amp;apos;+&amp;amp;apos; || value.charAt(0)==&amp;amp;apos;-&amp;amp;apos;) {
+                tz= TimeZone.getTimeZone("GMT"+value);
+            }
+            else if(value.startsWith("GMT")) {
+                tz= TimeZone.getTimeZone(value);
+            }
+            else {
+                tz= tzNames.get(value);
+                if(tz==null) {
+                    throw new IllegalArgumentException(value + " is not a supported timezone name");
+                }
+            }
+            cal.setTimeZone(tz);
+        }
+
+
+It&amp;amp;apos;s not enough to just call: cal.setTimeZone.
+If zone names in standard and daylight time are different, you have to check the name in DateFormatSymbols.getInstance(locale).getZoneStrings(); and if it&amp;amp;apos;s &amp;gt;= 3, you have to activate daylight mode.Just like SimpleDateFormat does it:
+
+
+1491            // (abbreviation) for both standard and daylight time,
+1492            // let the time zone in the Calendar decide which one.
+1493            if (!useSameName) {
+1494                calendar.set(Calendar.ZONE_OFFSET, tz.getRawOffset());
+1495                calendar.set(Calendar.DST_OFFSET,
+1496                             j &amp;gt;= 3 ? tz.getDSTSavings() : 0);
+1497            }
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser_TimeZoneStrategyTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1232" opendate="2016-05-19 17:39:34" fixdate="2016-05-19 17:54:38" resolution="Fixed">
+		<buginformation>
+			<summary>DiffBuilder: Add null check on fieldName when appending Object or Object[]</summary>
+			<description>The other append methods throw an IllegalArgumentException if fieldName is null. So, append(Object) and append(Object[]) should also do this.
+source: https://github.com/apache/commons-lang/pull/121</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.DiffBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1239" opendate="2016-05-27 07:59:56" fixdate="2016-05-27 10:04:19" resolution="Duplicate">
+		<buginformation>
+			<summary>StringUtils.equals("",new StringBuffer("foo")) throws StringIndexOutOfBoundsException</summary>
+			<description></description>
+			<version>3.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="1120" opendate="2015-04-28 09:55:33" fixdate="2016-05-28 10:57:43" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.stripAccents from "" and ""</summary>
+			<description>
+
+import org.apache.commons.lang3.StringUtils;
+
+public class Main {
+
+    public static void main(String[] args) {
+        System.out.println(StringUtils.stripAccents(" "));
+    }
+}
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTrimEmptyTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1178" opendate="2015-10-24 13:42:12" fixdate="2016-05-28 11:16:42" resolution="Fixed">
+		<buginformation>
+			<summary>ArrayUtils.removeAll(Object array, int... indices) should do the clone, not its callers</summary>
+			<description>The method ArrayUtils.removeAll(Object array, int... indices) currently sorts the input indices array. Therefore the array needs to be cloned; this is currently done by the callers.
+However the sort is an implementation detail of the method, so should be done by the method itself, not by the callers, which is fragile (easy to overlook when creating a new method) and unnecessary.
+This would also allow the method to be more easily changed to a different implementation that does not need to sort the array (e.g. using BitSet)</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ArrayUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1242" opendate="2016-05-30 18:59:30" fixdate="2016-06-02 20:16:24" resolution="Fixed">
+		<buginformation>
+			<summary> "\u2284":"&amp;nsub;" mapping missing from EntityArrays#HTML40_EXTENDED_ESCAPE</summary>
+			<description>see: https://github.com/apache/commons-lang/pull/159</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.EntityArrays.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1199" opendate="2016-01-13 15:54:32" fixdate="2016-06-05 15:40:28" resolution="Fixed">
+		<buginformation>
+			<summary>Fix implementation of StringUtils.getJaroWinklerDistance()</summary>
+			<description>The current implementation of StringUtils.getJaroWinklerDistance() does not compute the correct result in some cases. See #LANG-944 for the initial code contribution.
+StringUtils.getJaroWinklerDistance("Haus Ingeborg", "Ingeborg Esser") == 0.0
+This is due to the incorrect computation of common characters, which causes the algorithm to exit prematurely.
+In contrast, the implementation in Lucene gives ~0.63, which is about right.
+    JaroWinklerDistance d = new JaroWinklerDistance();
+    getDistance("Haus Ingeborg", "Ingeborg Esser");
+See https://lucene.apache.org/core/3_0_3/api/contrib-spellchecker/org/apache/lucene/search/spell/JaroWinklerDistance.html</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">26</link>
+		</links>
+	</bug>
+	<bug id="1187" opendate="2015-11-24 12:06:49" fixdate="2016-06-12 08:27:24" resolution="Duplicate">
+		<buginformation>
+			<summary>Method createNumber from NumberUtils doesn&amp;apos;t work for floating point numbers other than Float</summary>
+			<description>demo:
+ Number n = org.apache.commons.lang3.math.NumberUtils.createNumber("6264583.33");
+        System.out.println("lang3_createNumber_6264583.33----&amp;gt;" + n);
+while n will be 6264583.5. not 6264583.33</description>
+			<version>3.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="1248" opendate="2016-07-05 14:54:04" fixdate="2016-07-17 02:33:37" resolution="Fixed">
+		<buginformation>
+			<summary>FastDatePrinter Memory allocation regression</summary>
+			<description>when the code was migrated from StringBuffer to Appendable in LANG-1152.
+We&amp;amp;apos;ve lost the ability to modify the buffer (setCharAt) 
+The new implementation of appendFullDigits allocate a temporary char array to work around that limitation.
+This is a major source of memory allocation which is not present in version 3.4.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1202" opendate="2016-01-18 16:34:59" fixdate="2016-07-26 03:18:58" resolution="Fixed">
+		<buginformation>
+			<summary>parseDateStrictly does&amp;apos;t pass specified locale</summary>
+			<description>LANG-799 added support for specifying a locale, but parseDateStrictly() doesn&amp;amp;apos;t pass it to the final parseDateWithLeniency() method.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">799</link>
+		</links>
+	</bug>
+	<bug id="1226" opendate="2016-05-08 18:10:16" fixdate="2016-07-31 17:58:59" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#normalizeSpace does not trim the string anymore</summary>
+			<description>These work with 3.3.2, but fail with 3.4:
+
+
+assertEquals("b", StringUtils.normalizeSpace("\u0000b"));
+assertEquals("b", StringUtils.normalizeSpace("b\u0000"));
+
+
+Java doc still says "... Additionally #trim(String)} removes control characters (char &amp;lt;= 32) from both ends of this String."</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Regression" description="is broken by">1020</link>
+		</links>
+	</bug>
+	<bug id="1190" opendate="2015-12-07 19:39:32" fixdate="2016-07-31 18:03:21" resolution="Fixed">
+		<buginformation>
+			<summary>TypeUtils.isAssignable throws NullPointerException when fromType has type variables and toType generic superclass specifies type variable</summary>
+			<description>
+
+import static org.apache.commons.lang3.reflect.TypeUtils.*;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
+public class Demonstration {
+
+    public static &amp;lt;U&amp;gt; Iterable&amp;lt;U&amp;gt; someMethod() { return null; }
+    
+    public static class WorkingClass extends ArrayList { }
+    public static class FailingClass extends ArrayList&amp;lt;Object&amp;gt; { }
+    
+    
+    public static void main(String[] args) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Type fromType = Demonstration.class.getDeclaredMethod("someMethod").getGenericReturnType();
+        Type workingToType = wildcardType().withLowerBounds(WorkingClass.class).build();
+        Type failingToType = wildcardType().withLowerBounds(FailingClass.class).build();
+        
+        System.out.println(fromType);
+        System.out.println(workingToType);
+        System.out.println(failingToType);
+        
+        System.out.println(isAssignable(fromType, workingToType));
+        System.out.println(isAssignable(fromType, failingToType));
+    }
+}
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.reflect.TypeUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1214" opendate="2016-03-29 10:36:34" fixdate="2016-08-21 11:19:10" resolution="Fixed">
+		<buginformation>
+			<summary>ClassUtils.getClass(ClassLoader, String) fails for "void"</summary>
+			<description>ClassUtils.getClass(ClassUtils.class.getClassLoader(), "void") throws "ClassNotFoundException: [V".
+Root cause: ClassUtils contains an abbreviationMap for use in dealing with abbreviated primitive types like "[I" and "[J". However, this commit introduces a "void -&amp;gt; V" mapping for "completeness".
+This seems wholly erroneous, since the maps are used only for primitive array abbreviations, and "void/V" is not among them.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ClassUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.ClassUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1262" opendate="2016-08-29 19:44:21" fixdate="2016-08-30 19:54:41" resolution="Fixed">
+		<buginformation>
+			<summary>CompareToBuilder.append(Object,Object,Comparator) method is too big to be inlined</summary>
+			<description>Issue is the same as in LANG-1218: CompareToBuilder.append(Object,Object,Comparator) is quite big, due to in-place arrays processing, and thus breaching inlining threshold (325 bytecodes):
+
+....
+o.a.c.l.b.CompareToBuilder::append (346 bytes)   hot method too big
+....
+
+
+This prevents CompareToBuilder object itself from being scalarized.
+Fix may be the same, as in LANG-1218: extract arrays processing into separate method.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.CompareToBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1264" opendate="2016-09-11 15:47:30" fixdate="2016-09-11 19:54:58" resolution="Duplicate">
+		<buginformation>
+			<summary>JavaVersion does not correctly handle Java 9</summary>
+			<description>See http://markmail.org/message/bgrhxr6ef2axubcf
+JavaVersion assumes that the version String for Java 9 will be "1.9".</description>
+			<version>3.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1197</link>
+		</links>
+	</bug>
+	<bug id="1252" opendate="2016-07-28 11:33:31" fixdate="2016-09-11 20:36:38" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.isNumber and NumberUtils.createNumber resolve inconsistently</summary>
+			<description>In considering the issues LANG-1060, LANG-1040, LANG-1038, and LANG-992, it seems that there are times when NumberUtils.isNumber resolves to false while NumberUtils.createNumber, given the same input, does not throw an exception, returning a valid java.lang.Number. This inconsistency should be resolved either by making isNumber more lenient or createNumber more stringent.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.package-info.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">1060</link>
+			<link type="Reference" description="relates to">992</link>
+			<link type="Reference" description="relates to">1038</link>
+			<link type="Reference" description="relates to">1040</link>
+			<link type="Reference" description="is related to">992</link>
+			<link type="Reference" description="is related to">1038</link>
+			<link type="Reference" description="is related to">1040</link>
+		</links>
+	</bug>
+	<bug id="1197" opendate="2016-01-10 17:56:49" fixdate="2016-09-17 14:37:37" resolution="Fixed">
+		<buginformation>
+			<summary>Prepare Java 9 detection</summary>
+			<description>In anticipation of Java 9 and JEP 223, the versioning scheme will change completely. We need to reflect that in SystemUtils, JavaVersion, etc.:
+
+SystemUtils: Deprecate IS_JAVA_1_9 and replace with IS_JAVA_9
+JavaVersion: Deprecate JAVA_1_9 in JavaVersion and replace with JAVA_9
+
+and other places in the library.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Task</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1264</link>
+		</links>
+	</bug>
+	<bug id="1261" opendate="2016-08-23 08:33:12" fixdate="2016-09-18 16:02:58" resolution="Fixed">
+		<buginformation>
+			<summary>ArrayUtils.contains returns false for instances of subtypes</summary>
+			<description>ArrayUtils.contains(Object[] array, Object objectToFind) wrongly returns false.
+STEPS TO REPRODUCE
+=========================================================
+-Create a superclass "Parent" and override equals and hashcode based on some member id variable.
+-Create a class "Child" extending "Parent". Do not override equals nor hashcode.
+-Let "childrens" be an array of type Child[] containing several instances.
+Create an instance of Parent "p" with the same id as childrens[0], such that childrens[0].equals(p) returns true and p.equals(childrens[0]) returns true as well.
+Because they are equals, ArrayUtils.contains(childrens, p) should return true. However it returns false.
+WHERE THE BUG IS LOCATED
+=====================================================
+-Go to ArrayUtils.class, line 1917. In the "indexOf" method implementation, before going into calling equals for each element of the input array, there is some sort of optimization check to make sure the instance to be found is an instance of the array type:
+} else if (array.getClass().getComponentType().isInstance(objectToFind)) {
+That line is wrong. In our case, the array contains elements of type "Child", whereas the object to be found is of type "Parent". They are equals according to the equals implementation of "Parent", but obviously Children.class.isInstance(p) is false.
+EXPECTED BEHAVIOR
+================================================
+Since the method signature accepts an array of Object[] and an instance of Object, it should ignore the classes of the arguments. It should be possible to call "ArrayUtils.contains(Child[] children, Parent p)", in fact it should be possible to do this with any combination of classes, not only the ones assignable from the class hierarchy.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ArrayUtils.java</file>
+			<file type="M">org.apache.commons.lang3.ArrayUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1216" opendate="2016-04-08 08:13:00" fixdate="2016-10-22 12:31:21" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.isNumber bug</summary>
+			<description>I found that when using NumberUtilsorg.apache.commons.lang3.math.NumberUtils.isNumber(version3.4) isNumber method the following phenomenon, 
+when the parameter is 1.0 is true, but when the parameter is 0.1 is displayed is false.
+When I use 0.1 as the parameter tuning isNumber method, 
+view the source code in the method of the method of line 1370 discovered a problem.
+When the analytical parameter is ". ", this time the chars [I] value is 46, direct return false.
+I think to do so is not very reasonable, please give me your guidance.</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1144" opendate="2015-06-10 20:07:28" fixdate="2016-10-23 17:37:32" resolution="Fixed">
+		<buginformation>
+			<summary>Multiple calls of org.apache.commons.lang3.concurrent.LazyInitializer.initialize() are possible</summary>
+			<description>It is possible to create a construct, that allows multiple calls of LazyInitializer.initialize, when calculations (which can be very expensive) return null as result. 
+In the Javadoc is described that the initialize method will be called only on the first access
+
+
+    /**
+     * Creates and initializes the object managed by this {@code
+     * LazyInitializer}. This method is called by {@link #get()} when the object
+     * is accessed for the first time. An implementation can focus on the
+     * creation of the object. No synchronization is needed, as this is already
+     * handled by {@code get()}.
+     *
+     * @return the managed data object
+     * @throws ConcurrentException if an error occurs during object creation
+     */
+    protected abstract T initialize() throws ConcurrentException;
+
+
+The Junit Test can be something like this:
+(fix can be appplied from attached patch-file)
+
+
+package edu.test;
+
+import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
+import org.junit.Test;
+
+public class LazyInitializerTest {
+
+  private int lazyinitCounter = 0;
+
+  private LazyInitializer&amp;lt;Object&amp;gt; lazyIinit = new LazyInitializer&amp;lt;Object&amp;gt;() {
+
+    @Override
+    protected Object initialize() throws ConcurrentException {
+      lazyinitCounter++;
+      return doSomeVeryExpensiveOperations();
+    }
+  };
+  
+  
+  private Object doSomeVeryExpensiveOperations() {
+    // do db calls
+    // do some complex math calculations
+    // the result of them all is null
+    return null;
+  }
+  
+  
+  @Test
+  public void testInitialization() throws Exception {
+    lazyIinit.get();
+    lazyIinit.get();
+    assertEquals("Multiple call of LazyInitializer#initialize", 1, lazyinitCounter);
+  }
+
+}
+
+
+
+</description>
+			<version>3.4</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.concurrent.LazyInitializer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1188" opendate="2015-11-26 12:45:17" fixdate="2016-10-23 19:59:46" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#join(T...): warning: [unchecked] Possible heap pollution from parameterized vararg type T</summary>
+			<description>commons-lang3-3.4-src/src/main/java/org/apache/commons/lang3/StringUtils.java:3302: warning: [unchecked] Possible heap pollution from parameterized vararg type T
+    public static &amp;lt;T&amp;gt; String join(final T... elements) {
+                                             ^
+usage: String.join(" ", stringarray)</description>
+			<version>3.4</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

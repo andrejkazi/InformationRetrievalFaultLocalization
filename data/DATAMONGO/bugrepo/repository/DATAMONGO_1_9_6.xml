@@ -1,0 +1,15 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1476" opendate="2016-08-19 13:44:31" fixdate="2016-08-23 08:16:05" resolution="Fixed">
+		<buginformation>
+			<summary>New stream method only partially makes use of collection name</summary>
+			<description>The new stream Method allowing to specify the collection name, should also make use of the collection name on read callback time. </description>
+			<version>1.10 M1 (Ingalls)</version>
+			<fixedVersion>1.10 RC1 (Ingalls)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,1041 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="24" master="7478" duplicate="7650" opendate="2010-08-20 03:23:50" fixdate="2012-06-19 03:22:28" resolution="Complete">
+		<buginformation>
+			<summary>Setup of JMS message listener invoker failed for destination when upgrading from 3.0.2 to 3.0.4 NPE in DefaultMessageListenerContainer while committing and no message was received</summary>
+			<description>Hi. I just upgraded from 3.0.2 to 3.0.4 and my log is flooded with WARN messages. The app still seems to work, but jms communication seems to take some extra time...
+Looking at the code in the debugger, and the error message, a session seems to be null where expected not to. Is there a workaround, or something that I have missed in my config that is exposed now in 3.0.4, or is this a bug?
+&amp;lt;bean id="transactionalMessageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer" abstract="true"&amp;gt;
+    	&amp;lt;property name="cacheLevelName" value="CACHE_NONE"/&amp;gt;
+    	&amp;lt;property name="concurrentConsumers" value="1"/&amp;gt;
+    	&amp;lt;property name="connectionFactory" ref="connectionFactory"/&amp;gt;
+    	&amp;lt;property name="sessionTransacted" value="true"/&amp;gt;
+    	&amp;lt;property name="transactionManager" ref="transactionManager"/&amp;gt;
+        &amp;lt;property name="autoStartup" value="false" /&amp;gt;
+    &amp;lt;/bean&amp;gt;
+&amp;lt;bean id="addressDefectTrackerContainer" parent="transactionalMessageListenerContainer"&amp;gt;
+        &amp;lt;property name="concurrentConsumers" value="#
+{settings.addressDefectTracker.messageListener.concurrentConsumers}
+" /&amp;gt;
+        &amp;lt;property name="maxConcurrentConsumers" value="#
+{settings.addressDefectTracker.messageListener.maxConcurrentConsumers}
+" /&amp;gt;
+        &amp;lt;property name="idleTaskExecutionLimit" value="#
+{settings.addressDefectTracker.messageListener.idleTaskExecutionLimit}
+" /&amp;gt;
+        &amp;lt;property name="maxMessagesPerTask" value="#
+{settings.addressDefectTracker.messageListener.maxMessagesPerTask}
+" /&amp;gt;
+        &amp;lt;property name="destination" ref="jmsAddressDefectTrackerChannel" /&amp;gt;
+    &amp;lt;/bean&amp;gt;
+&amp;lt;si-jms:message-driven-channel-adapter 
+		channel="defectTrackerChannel" container="addressDefectTrackerContainer" acknowledge="transacted" connection-factory="connectionFactory"/&amp;gt;
+2010-08-20 12:00:44,312 [addressDefectTrackerContainer-2] DEBUG Initiating transaction rollback on listener exception at org.springframework.jms.listener.DefaultMessageListenerContainer.rollbackOnException(AbstractPollingMessageListenerContainer.java:388)
+java.lang.NullPointerException
+	at org.springframework.jms.listener.AbstractMessageListenerContainer.commitIfNecessary(AbstractMessageListenerContainer.java:571)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:354)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:241)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1056)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1048)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:947)
+	at java.lang.Thread.run(Thread.java:619)
+2010-08-20 12:00:49,349 [addressDefectTrackerContainer-2] WARN Setup of JMS message listener invoker failed for destination &amp;amp;apos;Queue[LM.UTV_maghei.ORIGO.GEODATA.ADDRESS.DEFECTTRACKER]&amp;amp;apos; - trying to recover. Cause: null at org.springframework.jms.listener.DefaultMessageListenerContainer.handleListenerSetupFailure(DefaultMessageListenerContainer.java:818)
+java.lang.NullPointerException
+	at org.springframework.jms.listener.AbstractMessageListenerContainer.commitIfNecessary(AbstractMessageListenerContainer.java:571)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:354)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:241)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1056)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1048)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:947)
+	at java.lang.Thread.run(Thread.java:619)
+2010-08-20 12:00:49,350 [addressDefectTrackerContainer-2] INFO  Successfully refreshed JMS Connection at org.springframework.jms.listener.DefaultMessageListenerContainer.refreshConnectionUntilSuccessful(DefaultMessageListenerContainer.java:862)
+ In the class AbstractPollingMessageListenerContainer used by DefaultMessageListenerContainer, if no message is received, the commit is called (this was added in 3.0.4)
+But the session passed to 
+                               commitIfNecessary(session, message);
+is the wrong one.
+Instead, the variable sessionToUse should be passed:
+                               commitIfNecessary(sessionToUse, message);
+This is the diff.
+ 3.0.4/AbstractPollingMessageListenerContainer.java       2010-08-18 13:41:34.000000000 +0200
++++ 3.0.5/AbstractPollingMessageListenerContainer.java        2010-10-13 10:12:38.505882405 +0200
+@@ -351,7 +351,7 @@
+                                }
+                                noMessageReceived(invoker, sessionToUse);
+                                // Nevertheless call commit, in order to reset the transaction timeout (if any).
+
+commitIfNecessary(session, message);
++                               commitIfNecessary(sessionToUse, message);
+                                // Indicate that no message has been received.
+                                return false;
+                        }
+
+</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.listener.AbstractPollingMessageListenerContainer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7650</link>
+			<link type="Duplicate" description="is duplicated by">7603</link>
+			<link type="Related" description="is related to">7366</link>
+			<link type="Duplicate" description="duplicates">7478</link>
+		</links>
+	</bug>
+	<bug id="25" master="7482" duplicate="7638" opendate="2010-08-21 09:03:38" fixdate="2010-10-10 15:05:12" resolution="Complete">
+		<buginformation>
+			<summary>Exception (SpelEvaluationException: EL1021E) when using spring:eval with Jetty spring:eval causes SpelEvaluationException when page is opened in second user-session</summary>
+			<description>I have a JSP page using spring:eval tag as below
+
+
+
+
+
+
+&amp;lt;spring:eval expression="command.products" var="items" /&amp;gt;
+
+
+
+
+
+
+When run the mvn jetty:run command (both jetty 6.1.22 and jetty 6.1.25), I always receive the below NullPointerException (see the stacktrace at the bottom) when I access JSP page on the second time (I don&amp;amp;apos;t receive any error for the first time).After debugging the code, I find out that sometimes EvalTag reuses instance variable evaluationContext for the next requests, which was initialized with the PageContext of the some previous request. Here is the code which caching evaluationContext through many requests
+
+
+
+
+
+
+EvalTag.java
+
+
+
+
+
+
+if (this.evaluationContext == null) {
+
+
+
+
+    this.evaluationContext = createEvaluationContext(pageContext);
+
+
+
+
+}
+
+
+
+
+.... 
+
+
+
+
+String result = this.expression.getValue(this.evaluationContext, String.class);
+
+
+
+
+...
+
+
+
+
+
+
+Here are the steps which lead to the exception:
+1. User sends a request to page
+2. Jetty creates EvalTag#1, which will initialize EvalTag#1.evaluationContext using PageContextImpl#1 (at the moment, PageContextImpl#1.request=HttpServletRequest#1). The tag will be called successfully.
+3. Result is returned to user. 
+4. Jetty recycles PageContextImpl#1 by calling release() method. PageContextImpl#1.request=null
+Jetty recycles EvalTag#1 by calling release() method. But EvalTag#1.evaluationContext still != null.  EvalTag#1.evaluationContext still have references to PageContextImpl#1 indirectly
+6. User clicks Refresh button to reload the page
+7. Jetty reuses EvalTag#1 to evaluate expression and as a result, the old value of EvalTag#1.evaluationContext is also be reused. This time Jetty creates a new object PageContextImpl#2 (note: somehow Jetty doesn&amp;amp;apos;t reuse the PageContextImpl#1 here on my page). At the moment, Jetty will throw NPE when EvalTag#1.doEndTag() is called because EvalTag#1.evaluationContext...PageContextImpl#1.request is null (it should be EvalTag#1.evaluationContext...PageContextImpl#2.request)
+For other pages (which this NPE doesn&amp;amp;apos;t happen), at step 7 the PageContextImpl#1 is reused by Jetty and PageContextImpl#1.request is initialized correctly by Jetty so the NPE doesn&amp;amp;apos;t happen. 
+I think EvalTag.evaluationContext should NOT be cached to avoid this error.
+
+
+
+
+
+
+2010-08-21 21:40:13,093 [501538@qtp-18977449-3] ERROR [org.mortbay.log] - Nested in org.apache.jasper.JasperException: org.springframework.expression.spel.SpelEvaluationException: EL1021E:(pos 0): A problem occurred whilst attempting to access the property &amp;amp;apos;command&amp;amp;apos;: &amp;amp;apos;Unexpected exception occurred accessing &amp;amp;apos;command&amp;amp;apos; as an implicit variable&amp;amp;apos;:
+
+
+
+
+org.springframework.expression.spel.SpelEvaluationException: EL1021E:(pos 0): A problem occurred whilst attempting to access the property &amp;amp;apos;command&amp;amp;apos;: &amp;amp;apos;Unexpected exception occurred accessing &amp;amp;apos;command&amp;amp;apos; as an implicit variable&amp;amp;apos;
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:199)
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:71)
+
+
+
+
+	at org.springframework.expression.spel.ast.CompoundExpression.getValueInternal(CompoundExpression.java:52)
+
+
+
+
+	at org.springframework.expression.spel.ast.SpelNodeImpl.getValue(SpelNodeImpl.java:93)
+
+
+
+
+	at org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:88)
+
+
+
+
+	at org.springframework.web.servlet.tags.EvalTag.doEndTag(EvalTag.java:108)
+
+
+
+
+	at org.apache.jsp.search_jsp._jspx_meth_spring_eval_3(org.apache.jsp.search_jsp:320)
+
+
+
+
+	at org.apache.jsp.search_jsp._jspService(org.apache.jsp.search_jsp:120)
+
+
+
+
+	at org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:109)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
+
+
+
+
+	at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:389)
+
+
+
+
+	at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:486)
+
+
+
+
+	at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:380)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1166)
+
+
+
+
+	at com.opensymphony.sitemesh.webapp.SiteMeshFilter.doFilter(SiteMeshFilter.java:59)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
+
+
+
+
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+
+
+
+
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
+
+
+
+
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
+
+
+
+
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:440)
+
+
+
+
+	at org.mortbay.jetty.servlet.Dispatcher.forward(Dispatcher.java:327)
+
+
+
+
+	at org.mortbay.jetty.servlet.Dispatcher.forward(Dispatcher.java:126)
+
+
+
+
+	at org.springframework.web.servlet.view.InternalResourceView.renderMergedOutputModel(InternalResourceView.java:238)
+
+
+
+
+	at org.springframework.web.servlet.view.AbstractView.render(AbstractView.java:250)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1031)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:815)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:717)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:644)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:560)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1166)
+
+
+
+
+	at com.opensymphony.sitemesh.webapp.SiteMeshFilter.obtainContent(SiteMeshFilter.java:129)
+
+
+
+
+	at com.opensymphony.sitemesh.webapp.SiteMeshFilter.doFilter(SiteMeshFilter.java:77)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.tuckey.web.filters.urlrewrite.RuleChain.handleRewrite(RuleChain.java:176)
+
+
+
+
+	at org.tuckey.web.filters.urlrewrite.RuleChain.doRules(RuleChain.java:145)
+
+
+
+
+	at org.tuckey.web.filters.urlrewrite.UrlRewriter.processRequest(UrlRewriter.java:92)
+
+
+
+
+	at org.tuckey.web.filters.urlrewrite.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:381)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at net.sf.ehcache.constructs.web.filter.GzipFilter.doFilter(GzipFilter.java:80)
+
+
+
+
+	at net.sf.ehcache.constructs.web.filter.Filter.doFilter(Filter.java:86)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at myapp.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:83)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:343)
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:109)
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:83)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:97)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:100)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:78)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:35)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.authentication.www.BasicAuthenticationFilter.doFilter(BasicAuthenticationFilter.java:177)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter.doFilter(DefaultLoginPageGeneratingFilter.java:91)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:187)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:105)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:79)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:149)
+
+
+
+
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+
+
+
+
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:77)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.springframework.web.multipart.support.MultipartFilter.doFilterInternal(MultipartFilter.java:113)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1157)
+
+
+
+
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
+
+
+
+
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+
+
+
+
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
+
+
+
+
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
+
+
+
+
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:440)
+
+
+
+
+	at org.mortbay.jetty.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:230)
+
+
+
+
+	at org.mortbay.jetty.handler.HandlerCollection.handle(HandlerCollection.java:114)
+
+
+
+
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+
+
+
+
+	at org.mortbay.jetty.Server.handle(Server.java:326)
+
+
+
+
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
+
+
+
+
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:943)
+
+
+
+
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
+
+
+
+
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
+
+
+
+
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
+
+
+
+
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:410)
+
+
+
+
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:582)
+
+
+
+
+Caused by: org.springframework.expression.AccessException: Unexpected exception occurred accessing &amp;amp;apos;command&amp;amp;apos; as an implicit variable
+
+
+
+
+	at org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.resolveImplicitVariable(EvalTag.java:186)
+
+
+
+
+	at org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.canRead(EvalTag.java:159)
+
+
+
+
+	at org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:189)
+
+
+
+
+	... 102 more
+
+
+
+
+Caused by: java.lang.NullPointerException
+
+
+
+
+	at org.apache.jasper.runtime.PageContextImpl.doFindAttribute(PageContextImpl.java:541)
+
+
+
+
+	at org.apache.jasper.runtime.PageContextImpl.findAttribute(PageContextImpl.java:527)
+
+
+
+
+	at javax.servlet.jsp.el.ScopedAttributeELResolver.getValue(ScopedAttributeELResolver.java:123)
+
+
+
+
+	at javax.el.CompositeELResolver.getValue(CompositeELResolver.java:175)
+
+
+
+
+	at org.apache.jasper.runtime.VariableResolverImpl.resolveVariable(VariableResolverImpl.java:97)
+
+
+
+
+	at org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.resolveImplicitVariable(EvalTag.java:183)
+
+
+
+
+	... 104 more
+
+
+
+
+
+ I want to display a java.util.Date value from the model using the spring:eval-tag like this:
+&amp;lt;spring:eval expression="dateOfBirth" /&amp;gt;
+Now I start Tomcat and open the page let&amp;amp;apos;s say in Firefox. It works fine, the page displays as expected. Now I start another web-browser, let&amp;amp;apos;s say Safari, to simulate another user-session. When I try to open the page with Safari, I get the following Exception:
+org.apache.jasper.JasperException: 
+org.springframework.expression.spel.SpelEvaluationException: 
+EL1021E:(pos 0): A problem occurred whilst attempting to access the 
+property &amp;amp;apos;dateOfBirth&amp;amp;apos;: &amp;amp;apos;Unexpected exception occurred accessing 
+&amp;amp;apos;dateOfBirth&amp;amp;apos; as an implicit variable&amp;amp;apos;
+When I refresh the page in Safari the exception continues to show up.
+When I refresh the page in Firefox, it works without any problem.
+It seems to me, that spring:eval only works in the first user-session in this case but not in any further user-sessions.
+This problem exists since version 3.0.4.
+Steps to reproduce:
+-------------------
+1. With STS create a new Spring Template Project of type MVC.
+2. Open pom.xml and change the spring-version to 3.0.4.
+3. Change the welcome()-method in WelcomeController.java to:
+public void welcome(Model model) {
+   model.addAttribute("dateOfBirth", new Date());
+}
+4. Open the welcome.jsp file and add this spring:eval-tag below the h1-tag:
+&amp;lt;spring:eval expression="dateOfBirth" /&amp;gt;
+5. Start Tomcat and try to open the site with to different web-browsers. In the second browser the exception is shown.
+I have attached the sample-project to reproduce the problem.
+The complete exception shown:
+----------------------------
+org.apache.jasper.JasperException: org.springframework.expression.spel.SpelEvaluationException: EL1021E:(pos 0): A problem occurred whilst attempting to access the property &amp;amp;apos;dateOfBirth&amp;amp;apos;: &amp;amp;apos;Unexpected exception occurred accessing &amp;amp;apos;dateOfBirth&amp;amp;apos; as an implicit variable&amp;amp;apos;
+	org.apache.jasper.servlet.JspServletWrapper.handleJspException(JspServletWrapper.java:527)
+	org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:419)
+	org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:313)
+	org.apache.jasper.servlet.JspServlet.service(JspServlet.java:260)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.springframework.web.servlet.view.InternalResourceView.renderMergedOutputModel(InternalResourceView.java:238)
+	org.springframework.web.servlet.view.AbstractView.render(AbstractView.java:250)
+	org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1031)
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:815)
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:717)
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:644)
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:549)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.tuckey.web.filters.urlrewrite.NormalRewrittenUrl.doRewrite(NormalRewrittenUrl.java:195)
+	org.tuckey.web.filters.urlrewrite.RuleChain.handleRewrite(RuleChain.java:159)
+	org.tuckey.web.filters.urlrewrite.RuleChain.doRules(RuleChain.java:141)
+	org.tuckey.web.filters.urlrewrite.UrlRewriter.processRequest(UrlRewriter.java:90)
+	org.tuckey.web.filters.urlrewrite.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:417)
+root cause
+org.springframework.expression.spel.SpelEvaluationException: EL1021E:(pos 0): A problem occurred whilst attempting to access the property &amp;amp;apos;dateOfBirth&amp;amp;apos;: &amp;amp;apos;Unexpected exception occurred accessing &amp;amp;apos;dateOfBirth&amp;amp;apos; as an implicit variable&amp;amp;apos;
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:199)
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:71)
+	org.springframework.expression.spel.ast.SpelNodeImpl.getTypedValue(SpelNodeImpl.java:102)
+	org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:97)
+	org.springframework.web.servlet.tags.EvalTag.doEndTag(EvalTag.java:113)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspx_meth_spring_005feval_005f0(welcome_jsp.java:99)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspService(welcome_jsp.java:69)
+	org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:70)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:377)
+	org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:313)
+	org.apache.jasper.servlet.JspServlet.service(JspServlet.java:260)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.springframework.web.servlet.view.InternalResourceView.renderMergedOutputModel(InternalResourceView.java:238)
+	org.springframework.web.servlet.view.AbstractView.render(AbstractView.java:250)
+	org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1031)
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:815)
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:717)
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:644)
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:549)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.tuckey.web.filters.urlrewrite.NormalRewrittenUrl.doRewrite(NormalRewrittenUrl.java:195)
+	org.tuckey.web.filters.urlrewrite.RuleChain.handleRewrite(RuleChain.java:159)
+	org.tuckey.web.filters.urlrewrite.RuleChain.doRules(RuleChain.java:141)
+	org.tuckey.web.filters.urlrewrite.UrlRewriter.processRequest(UrlRewriter.java:90)
+	org.tuckey.web.filters.urlrewrite.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:417)
+root cause
+org.springframework.expression.AccessException: Unexpected exception occurred accessing &amp;amp;apos;dateOfBirth&amp;amp;apos; as an implicit variable
+	org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.resolveImplicitVariable(EvalTag.java:186)
+	org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.canRead(EvalTag.java:159)
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:189)
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:71)
+	org.springframework.expression.spel.ast.SpelNodeImpl.getTypedValue(SpelNodeImpl.java:102)
+	org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:97)
+	org.springframework.web.servlet.tags.EvalTag.doEndTag(EvalTag.java:113)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspx_meth_spring_005feval_005f0(welcome_jsp.java:99)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspService(welcome_jsp.java:69)
+	org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:70)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:377)
+	org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:313)
+	org.apache.jasper.servlet.JspServlet.service(JspServlet.java:260)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.springframework.web.servlet.view.InternalResourceView.renderMergedOutputModel(InternalResourceView.java:238)
+	org.springframework.web.servlet.view.AbstractView.render(AbstractView.java:250)
+	org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1031)
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:815)
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:717)
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:644)
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:549)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.tuckey.web.filters.urlrewrite.NormalRewrittenUrl.doRewrite(NormalRewrittenUrl.java:195)
+	org.tuckey.web.filters.urlrewrite.RuleChain.handleRewrite(RuleChain.java:159)
+	org.tuckey.web.filters.urlrewrite.RuleChain.doRules(RuleChain.java:141)
+	org.tuckey.web.filters.urlrewrite.UrlRewriter.processRequest(UrlRewriter.java:90)
+	org.tuckey.web.filters.urlrewrite.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:417)
+root cause
+java.lang.NullPointerException
+	org.apache.jasper.runtime.PageContextImpl.doFindAttribute(PageContextImpl.java:467)
+	org.apache.jasper.runtime.PageContextImpl.findAttribute(PageContextImpl.java:457)
+	javax.servlet.jsp.el.ScopedAttributeELResolver.getValue(ScopedAttributeELResolver.java:53)
+	javax.el.CompositeELResolver.getValue(CompositeELResolver.java:54)
+	org.apache.jasper.el.VariableResolverImpl.resolveVariable(VariableResolverImpl.java:32)
+	org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.resolveImplicitVariable(EvalTag.java:183)
+	org.springframework.web.servlet.tags.EvalTag$JspPropertyAccessor.canRead(EvalTag.java:159)
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:189)
+	org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:71)
+	org.springframework.expression.spel.ast.SpelNodeImpl.getTypedValue(SpelNodeImpl.java:102)
+	org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:97)
+	org.springframework.web.servlet.tags.EvalTag.doEndTag(EvalTag.java:113)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspx_meth_spring_005feval_005f0(welcome_jsp.java:99)
+	org.apache.jsp.WEB_002dINF.views.welcome_jsp._jspService(welcome_jsp.java:69)
+	org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:70)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:377)
+	org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:313)
+	org.apache.jasper.servlet.JspServlet.service(JspServlet.java:260)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.springframework.web.servlet.view.InternalResourceView.renderMergedOutputModel(InternalResourceView.java:238)
+	org.springframework.web.servlet.view.AbstractView.render(AbstractView.java:250)
+	org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1031)
+	org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:815)
+	org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:717)
+	org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:644)
+	org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:549)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:617)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	org.tuckey.web.filters.urlrewrite.NormalRewrittenUrl.doRewrite(NormalRewrittenUrl.java:195)
+	org.tuckey.web.filters.urlrewrite.RuleChain.handleRewrite(RuleChain.java:159)
+	org.tuckey.web.filters.urlrewrite.RuleChain.doRules(RuleChain.java:141)
+	org.tuckey.web.filters.urlrewrite.UrlRewriter.processRequest(UrlRewriter.java:90)
+	org.tuckey.web.filters.urlrewrite.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:417)
+note The full stack trace of the root cause is available in the Apache Tomcat/6.0.26 logs.</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.tags.RequestContextAwareTag.java</file>
+			<file type="M">org.springframework.web.servlet.tags.EvalTag.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7638</link>
+			<link type="Duplicate" description="duplicates">7482</link>
+		</links>
+	</bug>
+	<bug id="32" master="7478" duplicate="7603" opendate="2010-08-20 03:23:50" fixdate="2010-09-30 10:48:49" resolution="Complete">
+		<buginformation>
+			<summary>Setup of JMS message listener invoker failed for destination when upgrading from 3.0.2 to 3.0.4 NPE in AbstractPollingMessageListenerContainer when committing transaction after message receive timeout</summary>
+			<description>Hi. I just upgraded from 3.0.2 to 3.0.4 and my log is flooded with WARN messages. The app still seems to work, but jms communication seems to take some extra time...
+Looking at the code in the debugger, and the error message, a session seems to be null where expected not to. Is there a workaround, or something that I have missed in my config that is exposed now in 3.0.4, or is this a bug?
+&amp;lt;bean id="transactionalMessageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer" abstract="true"&amp;gt;
+    	&amp;lt;property name="cacheLevelName" value="CACHE_NONE"/&amp;gt;
+    	&amp;lt;property name="concurrentConsumers" value="1"/&amp;gt;
+    	&amp;lt;property name="connectionFactory" ref="connectionFactory"/&amp;gt;
+    	&amp;lt;property name="sessionTransacted" value="true"/&amp;gt;
+    	&amp;lt;property name="transactionManager" ref="transactionManager"/&amp;gt;
+        &amp;lt;property name="autoStartup" value="false" /&amp;gt;
+    &amp;lt;/bean&amp;gt;
+&amp;lt;bean id="addressDefectTrackerContainer" parent="transactionalMessageListenerContainer"&amp;gt;
+        &amp;lt;property name="concurrentConsumers" value="#
+{settings.addressDefectTracker.messageListener.concurrentConsumers}
+" /&amp;gt;
+        &amp;lt;property name="maxConcurrentConsumers" value="#
+{settings.addressDefectTracker.messageListener.maxConcurrentConsumers}
+" /&amp;gt;
+        &amp;lt;property name="idleTaskExecutionLimit" value="#
+{settings.addressDefectTracker.messageListener.idleTaskExecutionLimit}
+" /&amp;gt;
+        &amp;lt;property name="maxMessagesPerTask" value="#
+{settings.addressDefectTracker.messageListener.maxMessagesPerTask}
+" /&amp;gt;
+        &amp;lt;property name="destination" ref="jmsAddressDefectTrackerChannel" /&amp;gt;
+    &amp;lt;/bean&amp;gt;
+&amp;lt;si-jms:message-driven-channel-adapter 
+		channel="defectTrackerChannel" container="addressDefectTrackerContainer" acknowledge="transacted" connection-factory="connectionFactory"/&amp;gt;
+2010-08-20 12:00:44,312 [addressDefectTrackerContainer-2] DEBUG Initiating transaction rollback on listener exception at org.springframework.jms.listener.DefaultMessageListenerContainer.rollbackOnException(AbstractPollingMessageListenerContainer.java:388)
+java.lang.NullPointerException
+	at org.springframework.jms.listener.AbstractMessageListenerContainer.commitIfNecessary(AbstractMessageListenerContainer.java:571)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:354)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:241)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1056)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1048)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:947)
+	at java.lang.Thread.run(Thread.java:619)
+2010-08-20 12:00:49,349 [addressDefectTrackerContainer-2] WARN Setup of JMS message listener invoker failed for destination &amp;amp;apos;Queue[LM.UTV_maghei.ORIGO.GEODATA.ADDRESS.DEFECTTRACKER]&amp;amp;apos; - trying to recover. Cause: null at org.springframework.jms.listener.DefaultMessageListenerContainer.handleListenerSetupFailure(DefaultMessageListenerContainer.java:818)
+java.lang.NullPointerException
+	at org.springframework.jms.listener.AbstractMessageListenerContainer.commitIfNecessary(AbstractMessageListenerContainer.java:571)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:354)
+	at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:241)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1056)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1048)
+	at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:947)
+	at java.lang.Thread.run(Thread.java:619)
+2010-08-20 12:00:49,350 [addressDefectTrackerContainer-2] INFO  Successfully refreshed JMS Connection at org.springframework.jms.listener.DefaultMessageListenerContainer.refreshConnectionUntilSuccessful(DefaultMessageListenerContainer.java:862)
+ We use AbstractPollingMessageListenerContainer with default receiveTimeout. When timeout expires the following code executes:
+
+
+
+
+
+
+noMessageReceived(invoker, sessionToUse);
+
+
+
+
+// Nevertheless call commit, in order to reset the transaction timeout (if any).
+
+
+
+
+commitIfNecessary(session, message);
+
+
+
+
+
+
+but session is null, causing NPE in commitIfNecessary(). Shouldn&amp;amp;apos;t it be commitIfNecessary(sessionToUse, message) instead?</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.jms.listener.AbstractPollingMessageListenerContainer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7650</link>
+			<link type="Duplicate" description="is duplicated by">7603</link>
+			<link type="Related" description="is related to">7366</link>
+			<link type="Duplicate" description="duplicates">7478</link>
+		</links>
+	</bug>
+	<bug id="55" master="6180" duplicate="7645" opendate="2009-10-02 22:33:04" fixdate="2011-04-11 06:15:15" resolution="Fixed">
+		<buginformation>
+			<summary>Upgrade Apache HttpClient to version 4.0 Provide support for Http Client 4 now that it is available</summary>
+			<description>Folks,
+Please consider upgrading HttpClient to version 4.0 which is the latest stable (GA) version of the library. Commons HttpClient 3.1 is very likely to be deprecated / officially declared end of life very soon (3 - 6 months). There have been no bug fixes in the 3.x branch for over a year. 
+Patch attached. Unfortunately I was unable to fix the Ivy build which I am not very familiar with.
+Oleg  The Commons Http Client project has been promoted to a top-level project called "Http Components" and released a major new version at http://hc.apache.org.  It is now recommended that those using Http Client 3.x upgrade to version 4.x.  It would be great to see support for Http Client 4.x in Spring Framework for use with RestTemplate.
+As a side note, we&amp;amp;apos;ve also noticed some resourcing issues with Http Client 3.1 reported by tc Server on app shutdown:
+
+
+
+
+
+
+11-Oct-2010 19:20:21.156 SEVERE org.apache.catalina.loader.WebappClassLoader.clearReferencesThreads The web application [] appears to have started a thread named [MultiThreadedHttpConnectionManager cleanup] but has failed to stop it. This is very likely to create a memory leak.
+
+
+
+
+
+
+When I was troubleshooting this leak I noticed the Http Client library has had a major upgrade.</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.1 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.http.client.CommonsClientHttpResponse.java</file>
+			<file type="M">org.springframework.web.client.RestTemplateIntegrationTests.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequest.java</file>
+			<file type="M">org.springframework.http.client.CommonsClientHttpRequestFactory.java</file>
+			<file type="M">org.springframework.http.client.AbstractHttpRequestFactoryTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7645</link>
+			<link type="Duplicate" description="is duplicated by">6719</link>
+			<link type="Relate" description="is related to">10728</link>
+			<link type="Duplicate" description="duplicates">6180</link>
+		</links>
+	</bug>
+</bugrepository>

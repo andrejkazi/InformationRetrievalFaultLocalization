@@ -1,0 +1,243 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="875" opendate="2008-06-09 04:05:42" fixdate="2008-06-11 04:48:59" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequestAwareRequestWrapper causes duplication of URL parameters</summary>
+			<description>The changes for SEC-830 and SEC-857 appear to have cause an issue with duplicate parameter values appearing when getParameterValues() is called on the wrapper. This will only apply to URL parameters. When deciding how to combine the values from the saved and wrapped request (or if we should), then whether they both contain the same values should be take into account.</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.wrapper.SavedRequestAwareWrapper.java</file>
+			<file type="M">org.springframework.security.wrapper.SavedRequestAwareWrapperTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">830</link>
+			<link type="Related" description="is related to">857</link>
+		</links>
+	</bug>
+	<bug id="880" opendate="2008-06-12 04:19:58" fixdate="2008-06-12 21:59:00" resolution="Fixed">
+		<buginformation>
+			<summary>ArrayIndexOutOfBoundsException in AuthenticationDetailsSourceImpl</summary>
+			<description>I believe that line 61 in AuthenticationDetailsSourceImpl.java should change from:
+			if (parameterTypes.length == 1 &amp;amp;&amp;amp; (object == null || parameterTypes[i].isInstance(object))) {
+To:
+			if (parameterTypes.length == 1 &amp;amp;&amp;amp; (object == null || parameterTypes[0].isInstance(object))) {
+(always use the first element of parameterTypes, not the i-th element).
+Stack trace:
+java.lang.ArrayIndexOutOfBoundsException: 1
+	at org.springframework.security.ui.AuthenticationDetailsSourceImpl.getFirstMatchingConstructor(AuthenticationDetailsSourceImpl.java:61)
+	at org.springframework.security.ui.AuthenticationDetailsSourceImpl.buildDetails(AuthenticationDetailsSourceImpl.java:30)
+	at org.springframework.security.ui.preauth.j2ee.AbstractPreAuthenticatedAuthenticationDetailsSource.buildDetails(AbstractPreAuthenticatedAuthenticationDetailsSource.java:51)
+	at org.springframework.security.ui.preauth.AbstractPreAuthenticatedProcessingFilter.doAuthenticate(AbstractPreAuthenticatedProcessingFilter.java:86)
+	at org.springframework.security.ui.preauth.AbstractPreAuthenticatedProcessingFilter.doFilterHttp(AbstractPreAuthenticatedProcessingFilter.java:58)
+	at org.springframework.security.ui.SpringSecurityFilter.doFilter(SpringSecurityFilter.java:53)</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ui.AuthenticationDetailsSourceImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="890" opendate="2008-06-17 21:18:17" fixdate="2008-06-17 22:51:11" resolution="Fixed">
+		<buginformation>
+			<summary>RememberMeBeanDefinitionParser uses wrong name for data source</summary>
+			<description>The parser attempts to use data-source-ref as the bean property name (i.e. the namespace attribute)
+http://forum.springframework.org/showthread.php?t=56057</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.RememberMeBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="892" opendate="2008-06-18 20:42:17" fixdate="2008-06-19 00:48:46" resolution="Fixed">
+		<buginformation>
+			<summary>Value of attribute create-session in schema based configuration should set property ExceptionTranslationFilter.createSessionAllowed</summary>
+			<description>I am trying to set up a security configuration for a simple web service application using basic (and digest) authentication. There is a requirement that my application should never create HttpSessions, but this is violated as a result of the default value of ExceptionTranslationFilter.createSessionAllowed (true). There seems to be no way to set the value of this property when using schema based configuration.
+In my opinion the attribute create-session should affect the value of ExceptionTranslationFilter.createSessionAllowed;
+ifRequired: true
+always: true
+never: false
+A relatively easy workaround is to not use schema based configuration......</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="933" opendate="2008-07-23 00:31:57" fixdate="2008-08-05 22:11:14" resolution="Fixed">
+		<buginformation>
+			<summary>global-method-security and aop:aspectj-autoproxy throws NullPointerException in some situations</summary>
+			<description>Hello, 
+there is an situation where the combination of global-method-security and aop:aspectj-autoproxy throws a NullPointerException.
+This happens if you have a custom UserDetailsService implementation which itself uses an secured collaborator class (DAO/Repository) to load 
+user objects from the database.
+I.e. You have a UserRepository with finder/update methods, and you want to secure the full repository except one finder method to load the user 
+objects from the database. The UserDetailsService implementation will use that repository to load the objects.
+If you don&amp;amp;apos;t use the aop:aspectj-autoproxy functionality the scenario above works without any error. But if you add aop-aspectj-autoproxy to 
+the configuration (without any aspect!) you will get an nullpointerexception.
+Here is the stacktrace 
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;org.springframework.security.providers.dao.DaoAuthenticationProvider#0&amp;amp;apos;: Cannot resolve reference to bean &amp;amp;apos;userDetailsService&amp;amp;apos; while setting bean property &amp;amp;apos;userDetailsService&amp;amp;apos;; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;userDetailsService&amp;amp;apos; defined in class path resource [security-config.xml]: Initialization of bean failed; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:275)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:104)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1244)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1008)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:470)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory$1.run(AbstractAutowireCapableBeanFactory.java:409)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:380)
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:264)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:220)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:261)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:185)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:164)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:269)
+	... 69 more
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;userDetailsService&amp;amp;apos; defined in class path resource [security-config.xml]: Initialization of bean failed; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:478)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory$1.run(AbstractAutowireCapableBeanFactory.java:409)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:380)
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:264)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:220)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:261)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:185)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:164)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:269)
+	... 82 more
+Caused by: java.lang.NullPointerException
+	at org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor$MethodDefinitionSourcePointcut.matches(MethodDefinitionSourceAdvisor.java:120)
+	at org.springframework.aop.support.AopUtils.canApply(AopUtils.java:214)
+	at org.springframework.aop.support.AopUtils.canApply(AopUtils.java:253)
+	at org.springframework.aop.support.AopUtils.findAdvisorsThatCanApply(AopUtils.java:287)
+	at org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator.findAdvisorsThatCanApply(AbstractAdvisorAutoProxyCreator.java:113)
+	at org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator.findEligibleAdvisors(AbstractAdvisorAutoProxyCreator.java:85)
+	at org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator.getAdvicesAndAdvisorsForBean(AbstractAdvisorAutoProxyCreator.java:66)
+	at org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator.wrapIfNecessary(AbstractAutoProxyCreator.java:345)
+	at org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator.postProcessAfterInitialization(AbstractAutoProxyCreator.java:309)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization(AbstractAutowireCapableBeanFactory.java:361)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1342)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:471)
+	... 91 more
+This should be fixed, or at least the should be a better error message in this situations.
+Rgds
+Agim
+</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.CustomAuthenticationProviderBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.providers.ProviderManager.java</file>
+			<file type="M">org.springframework.security.config.AuthenticationManagerBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.LdapProviderBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.AuthenticationProviderBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.RememberMeBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.ConfigUtils.java</file>
+			<file type="M">org.springframework.security.providers.ProviderManagerTests.java</file>
+			<file type="M">org.springframework.security.config.AnonymousBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.X509BeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.ui.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="896" opendate="2008-06-24 21:32:11" fixdate="2008-08-08 03:07:47" resolution="Fixed">
+		<buginformation>
+			<summary>Authentication tag throws NPE if custom principal property evaluates to null</summary>
+			<description>Stacktrace:
+java.lang.NullPointerException
+	at org.springframework.security.taglibs.authz.AuthenticationTag.doEndTag(AuthenticationTag.java:123)
+Caused by the following JSP code:
+&amp;lt;s:authentication property="principal.customProperty"/&amp;gt;
+Where the custom UserDetails property "customProperty" is set to null. To fix, change line org/springframework/security/taglibs/authz/AuthenticationTag.java:123 from 
+            writeMessage(result.toString());  
+to
+            writeMessage(String.valueOf(result));
+in order to avoid NPE where a property returns null.</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.taglibs.authz.AuthenticationTag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="953" opendate="2008-08-11 04:14:13" fixdate="2008-08-11 06:23:51" resolution="Fixed">
+		<buginformation>
+			<summary>Query string isn&amp;apos;t ignored while url - filterchain pattern matching</summary>
+			<description>While upgrading from Acegi Security 1.0.7 to Spring Security 2.0.2 I noticed that url matching doesn&amp;amp;apos;t work as it was before.
+In Acegi I used the following url - filter chaing mapping:
+&amp;lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&amp;gt;
+    &amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+	&amp;lt;value&amp;gt;
+	     CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON 
+	     PATTERN_TYPE_APACHE_ANT
+                  j_acegi_security_check=httpSessionContextIntegrationFilter,....................			
+	    j_acegi_logout=httpSessionContextIntegrationFilter,.......................
+                 /*/.htm=httpSessionContextIntegrationFilter,.....................
+            &amp;lt;/value&amp;gt;
+  &amp;lt;/property&amp;gt;
+&amp;lt;/bean&amp;gt;
+I Spring Security the same mapping looks as follows:
+&amp;lt;bean id="filterChainProxy" class="org.springframework.security.util.FilterChainProxy"&amp;gt;
+    &amp;lt;security:filter-chain-map path-type="ant"&amp;gt;
+            &amp;lt;security:filter-chain pattern="/j_spring_security_check" filters="httpSessionContextIntegrationFilter, ..............." /&amp;gt;
+	&amp;lt;security:filter-chain pattern="/j_spring_security_logout" filters="httpSessionContextIntegrationFilter,....." /&amp;gt;
+	&amp;lt;security:filter-chain pattern="/*/.htm" filters="httpSessionContextIntegrationFilter,....." /&amp;gt;			
+    &amp;lt;/security:filter-chain-map&amp;gt;	
+&amp;lt;/bean&amp;gt;
+But  I received NullPointerException while performing some requests.  It appears because these requests bypass filterchain and Security Context isn&amp;amp;apos;t integrated into a session. Such situation occurs for requests which includes parameters in url.
+For instance, request url &amp;amp;apos;page1.htm&amp;amp;apos; matches to pattern &amp;amp;apos;/*/.htm&amp;amp;apos; but url &amp;amp;apos;page1.htm?param=value&amp;amp;apos; doesn&amp;amp;apos;t. 
+It caused by changes in url - filterchain pattern matching. In Acegi PathBasedFilterInvocationDefinitionMap ignores query string (any symbols after first &amp;amp;apos;?&amp;amp;apos;) but in Spring FilterChainProxy provides full requests url to matcher (in this case AntUrlPathMatcher) :
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException 
+{
+
+        FilterInvocation fi = new FilterInvocation(request, response, chain);
+        List filters = getFilters(fi.getRequestUrl());
+       .................
+
+}
+
+public List getFilters(String url)  {
+      Iterator filterChains = filterChainMap.entrySet().iterator();
+        while (filterChains.hasNext()) {
+            Map.Entry entry = (Map.Entry) filterChains.next();
+            Object path = entry.getKey();
+            if (matcher.requiresLowerCaseUrl()) {
+                url = url.toLowerCase();
+                if (logger.isDebugEnabled()) 
+{
+                    logger.debug("Converted URL to lowercase, from: &amp;amp;apos;" + url + "&amp;amp;apos;; to: &amp;amp;apos;" + url + "&amp;amp;apos;");
+                }
+            }
+            boolean matched = matcher.pathMatchesUrl(path, url);
+             ......
+}
+To keep backward compatibility I offer to change doFilter() implementation to pass request url without query string into getFilters() method.
+</description>
+			<version>2.0.2</version>
+			<fixedVersion>2.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.util.FilterChainProxyTests.java</file>
+			<file type="M">org.springframework.security.util.FilterChainProxy.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

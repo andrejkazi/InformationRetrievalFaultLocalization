@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="4" master="381" duplicate="411" opendate="2014-09-04 05:27:11" fixdate="2014-11-16 23:28:17" resolution="Fixed">
+		<buginformation>
+			<summary>Controllers for Alps and repository listing get listed under the root even if a base URI is configured BaseUrl mapping not workig</summary>
+			<description> Not sure if the issue is with Data-Rest or Spring Boot but extending RepositoryRestConfiguration and setting a BaseUri (to say /rest) using 1.1.9.RELEASE move the list repository controller from / to /rest allowing / to get to the index.html page in src/main/resource/public/ amending to version
+&amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+&amp;lt;artifactId&amp;gt;spring-boot-starter-parent&amp;lt;/artifactId&amp;gt;
+&amp;lt;version&amp;gt;1.2.0.M2&amp;lt;/version&amp;gt;
+Make the list repository controller work on BOTH / and /rest</description>
+			<version>2.2 GA (Evans)</version>
+			<fixedVersion>2.2.1 (Evans SR1), 2.3 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">411</link>
+			<link type="Duplicate" description="duplicates">381</link>
+		</links>
+	</bug>
+</bugrepository>

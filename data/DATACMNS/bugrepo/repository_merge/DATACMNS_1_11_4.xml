@@ -1,0 +1,73 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="6" master="883" duplicate="882" opendate="2016-07-15 07:42:08" fixdate="2016-07-25 18:13:29" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException for Querydsl bindings referring to collection element attributes Allow to filter value inside list of object via query URL</summary>
+			<description>Assume you have a domain model like this:
+
+
+
+
+
+
+class User {
+
+
+
+
+  List&amp;lt;Address&amp;gt; addresses;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+class Address {
+
+
+
+
+  String street;
+
+
+
+
+}
+
+
+
+
+
+
+Referring to the property addresses.street via Querydsl-backed web requests doesn&amp;amp;apos;t work as we&amp;amp;apos;re inspecting the properties in the Querydsl generated classes, and the ListPath generated for addresses needs a dedicated any() lookup to get back to the EntityPath for the element predicates.
+Manually specifying a binding, doesn&amp;amp;apos;t help either as the translation into a PropertyPath fails, as we currently rely on the toString() representation of the PathMetadata, which in case of the usage of any() returns any(user.addresses).street.
+We need to fix the to-dot-path translation in that step and should add the implicit call to any() for derived path expressions in case we encounter a Path that points to a collection. Create a support for query inside list of object, see issue in this link.
+I&amp;amp;apos;m trying to implement by myself, see code here but I also hit a roadblock with issue of querydsl itself (here issue).
+If you think that the issue of querydsl is not important, I can improve code quality and then create a pull request to your repo.
+I think my code quality is not as good as yours, please give me an advice.</description>
+			<version>1.11.4 (Gosling SR4)</version>
+			<fixedVersion>1.13 M1 (Ingalls), 1.12.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">882</link>
+			<link type="Duplicate" description="duplicates">883</link>
+		</links>
+	</bug>
+</bugrepository>

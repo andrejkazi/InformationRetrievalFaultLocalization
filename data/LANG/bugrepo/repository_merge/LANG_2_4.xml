@@ -1,0 +1,195 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="2" master="421" duplicate="423" opendate="2008-04-02 15:42:39" fixdate="2008-04-11 17:53:14" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava(String) escapes &amp;apos;/&amp;apos; characters StringEscapeUtils.escapeJava() behavior changed; backslash escapes &amp;apos;/&amp;apos; characters</summary>
+			<description>Commons Lang 2.4 StringEscapeUtils.escapeJava(String) now escapes &amp;amp;apos;/&amp;amp;apos; characters, which is not a valid "escapable" character in Java strings.  I haven&amp;amp;apos;t tried the other Java escape/unescape methods to see if they have a similar problem, or that only Java "escapable" characters are escaped by escapeJava(String).
+This bug may have appeared as an unintended side-effect of the fix for LANG-363.
+Also the javadoc for escapeJava is now a little off, in that &amp;amp;apos;/&amp;amp;apos; should now be included in the sentence describing the differences between Java and Javascript strings, with respect to escaping rules.
+The following is a JUnit3 test demonstrating the bug.
+import junit.framework.TestCase;
+import org.apache.commons.lang.StringEscapeUtils;
+public class StringEscapeUtilsTest extends TestCase {
+    public void testEscapeJavaWithSlash() 
+{
+        final String input = "String with a slash (/) in it";
+        
+        final String expected = input;
+        final String actual   = StringEscapeUtils.escapeJava( input );
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes &amp;amp;apos;/&amp;amp;apos; characters,
+         * which are not a valid character to escape in a Java string.  
+         */
+        assertEquals( expected, actual );
+    }
+}
+ StringEscapeUtils.escapeJava(String str) escapes forward-slash ("/") characters.  Prior to 2.4, this was not the case.  This is caused by the patch in LANG-363, which changed the behavior of StringEscapeUtils.escapeJavaScript(String str) to escape forward-slashes for compatibliity with IE.  The change was implemented in code common to both methods; StringEscapeUtils.escapeJavaStyleString() .
+This side-effect change to StringEscapeUtils.escapeJava() is a problem in my project.  I don&amp;amp;apos;t see any reason why it is necessary to escape forward-slashes in escapeJava(), so I suggest the behavior be changed so that escapeJavaScript() escapes forward-slashes, but escapeJava() does not.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">423</link>
+			<link type="Duplicate" description="is duplicated by">473</link>
+			<link type="Reference" description="is related to">437</link>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="12" master="477" duplicate="509" opendate="2009-01-09 10:05:53" fixdate="2009-06-09 19:13:40" resolution="Fixed">
+		<buginformation>
+			<summary>ExtendedMessageFormat: OutOfMemory with custom format registry and a pattern containing single quotes OutOfMemory Error caused by ExtendedMessageFormat</summary>
+			<description>When using ExtendedMessageFormat with a custom format registry and a pattern conatining single quotes, an OutOfMemoryError will occur.
+Example that will cause error:
+ExtendedMessageFormatTest.java
+
+
+private static Map&amp;lt;String, Object&amp;gt; formatRegistry = new HashMap&amp;lt;String, Object&amp;gt;();    
+    static {
+        formatRegistry.put(DummyFormatFactory.DUMMY_FORMAT, new DummyFormatFactory());
+    }
+    
+    public static void main(String[] args) {
+        ExtendedMessageFormat mf = new ExtendedMessageFormat("it&amp;amp;apos;&amp;amp;apos;s a {dummy} &amp;amp;apos;test&amp;amp;apos;!", formatRegistry);
+        String formattedPattern = mf.format(new String[] {"great"});
+        System.out.println(formattedPattern);
+    }
+}
+
+
+
+The following change starting at line 421 on the 2.4 release seems to fix the problem:
+ExtendedMessageFormat.java
+
+CURRENT (Broken):
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+WORKING:
+if (escapingOn &amp;amp;&amp;amp; c[start] == QUOTE) {
+        next(pos);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+}
+
+ It is possible to let ExtendedMessageFormat cause an OutOfMemory Error (Java heap space) - no matter how large you define the memory, because the code produces an endless loop that extends a StringBuffer ad infinitum.
+Code to reproduce:
+instantiate an ExtendedMessageFormat object using the constructor 
+public ExtendedMessageFormat(String pattern, Locale locale, Map registry) 
+locale and registry (not null) don&amp;amp;apos;t matter actually, but pattern as String looks like this:
+{{The field &amp;amp;apos;&amp;amp;apos;
+{0}
+&amp;amp;apos;&amp;amp;apos; must be completed}}
+notice the doubled single quotes.
+The constructor then executes applyPattern(pattern)
+In applyPattern, line 158 (that is inside the loop over the pattern length)  appendQuotedString(pattern, pos, stripCustom, true); is called, it is the last statement for that case in the loop. 
+In  appendQuotedString, line 422 the quote character gets appended to the return StringBuffer, then return. The problem in fact is, that the pointer (ParsePosition pos) isn&amp;amp;apos;t updated and after return the procedure will check the same character again and again and again. 
+Primitive workaround: no use of single quotes in messages as input of ExtendedMessageFormat.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormatTest.java</file>
+			<file type="M">org.apache.commons.lang.text.ExtendedMessageFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">509</link>
+			<link type="Duplicate" description="duplicates">477</link>
+		</links>
+	</bug>
+	<bug id="13" master="421" duplicate="473" opendate="2008-04-02 15:42:39" fixdate="2010-02-25 20:39:52" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.escapeJava(String) escapes &amp;apos;/&amp;apos; characters StringEscapeUtils.escapeJava () not escaping forward slash correctly.</summary>
+			<description>Commons Lang 2.4 StringEscapeUtils.escapeJava(String) now escapes &amp;amp;apos;/&amp;amp;apos; characters, which is not a valid "escapable" character in Java strings.  I haven&amp;amp;apos;t tried the other Java escape/unescape methods to see if they have a similar problem, or that only Java "escapable" characters are escaped by escapeJava(String).
+This bug may have appeared as an unintended side-effect of the fix for LANG-363.
+Also the javadoc for escapeJava is now a little off, in that &amp;amp;apos;/&amp;amp;apos; should now be included in the sentence describing the differences between Java and Javascript strings, with respect to escaping rules.
+The following is a JUnit3 test demonstrating the bug.
+import junit.framework.TestCase;
+import org.apache.commons.lang.StringEscapeUtils;
+public class StringEscapeUtilsTest extends TestCase {
+    public void testEscapeJavaWithSlash() 
+{
+        final String input = "String with a slash (/) in it";
+        
+        final String expected = input;
+        final String actual   = StringEscapeUtils.escapeJava( input );
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes &amp;amp;apos;/&amp;amp;apos; characters,
+         * which are not a valid character to escape in a Java string.  
+         */
+        assertEquals( expected, actual );
+    }
+}
+ We are trying to escape forward slash using StringEscapeUtils.escapeJava ()  method. The output returned by this method is no longer a valid Java String. 
+e.g. 
+String s = "a/b/c";
+System.out.println(StringEscapeUtils.escapeJava (s));
+The output returned is a\/b\/c which is not a even a valid Java String.
+This was working fine in 2.0 release of this jar.
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang.StringEscapeUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">423</link>
+			<link type="Duplicate" description="is duplicated by">473</link>
+			<link type="Reference" description="is related to">437</link>
+			<link type="Duplicate" description="duplicates">421</link>
+		</links>
+	</bug>
+	<bug id="17" master="460" duplicate="679" opendate="2008-09-17 08:27:57" fixdate="2011-03-03 23:55:30" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong, interchanged parameters in Dokumentation of StringUtils.startsWith[IgnoreCase](String, String) StringUtils.startsWithIgnoreCase whrong documentation</summary>
+			<description>The parameters in the examples of the JavaDoc of StringUtils.startsWithIgnoreCase(String, String) and StringUtils.startsWith(String, String) are interchanged. Examples within JavaDoc misleads about parameters - according to examples the string and the prefix misplaced.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.StringUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">679</link>
+			<link type="Duplicate" description="duplicates">460</link>
+		</links>
+	</bug>
+	<bug id="22" master="464" duplicate="468" opendate="2008-10-01 20:54:42" fixdate="2008-11-06 20:36:54" resolution="Duplicate">
+		<buginformation>
+			<summary>EqualsBuilder doesn&amp;apos;t compile in 2.4 source code release JDK 1.5 build/runtime failure on LANG-393 (EqualsBuilder)</summary>
+			<description>Line 381 of org.apache.commons.lang.EqualsBuilder fails to compile because the compareTo call requires a BigDecimal rather than an object.
+376 public EqualsBuilder append(Object lhs, Object rhs) {
+...
+379         if (!lhsClass.isArray()) {
+380             if (lhs instanceof java.math.BigDecimal) 
+{
+381                 isEquals = (((java.math.BigDecimal)lhs).compareTo(rhs) == 0);
+382             }
+ else {
+I&amp;amp;apos;m using Sun&amp;amp;apos;s JDK 1.6.0_07 in Eclipse, not sure if this is a JDK version issue or not. See LANG-393</description>
+			<version>2.4</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">468</link>
+			<link type="Duplicate" description="duplicates">464</link>
+			<link type="Reference" description="relates to">393</link>
+		</links>
+	</bug>
+</bugrepository>

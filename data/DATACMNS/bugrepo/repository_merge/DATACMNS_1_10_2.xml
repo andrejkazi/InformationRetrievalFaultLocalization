@@ -1,0 +1,151 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="3" master="789" duplicate="906" opendate="2015-11-23 16:13:06" fixdate="2016-08-31 11:58:06" resolution="Fixed">
+		<buginformation>
+			<summary>Fix typo in JavaDoc of Page Typo in Javadoc of Page.getTotalPages()</summary>
+			<description> In the javadoc of org.springframework.data.domain.Page, method getTotalPages, the word total is not written correctly in @return. Thank&amp;amp;apos;s </description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.11.2 (Gosling SR2), 1.12 M1 (Hopper), 1.10.3 (Fowler SR3)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.Page.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">906</link>
+			<link type="Duplicate" description="duplicates">789</link>
+		</links>
+	</bug>
+	<bug id="7" master="773" duplicate="772" opendate="2015-09-25 04:43:18" fixdate="2015-10-05 16:46:04" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for persisting ZoneId instances out of the box Add converter for ZoneId to String and vice versa</summary>
+			<description>The JSR-310 mapping support can read a simple string (e.g., "US/Central") into a ZoneId field, but when it&amp;amp;apos;s saved, it&amp;amp;apos;s saved as a complex serialized object, with _class: "java.time.ZoneRegion" and all the internal state.
+However, the mapper can&amp;amp;apos;t read this saved object, presumably because of the lack of a cooperative constructor; the exception message is
+
+
+
+
+
+
+org.springframework.data.mapping.model.MappingException: No property null found on entity class java.time.ZoneRegion to bind constructor parameter to!
+
+
+
+
+
+
+I suggest that the ZoneId should be saved as the simple string identifier. </description>
+			<version>1.11 GA (Gosling)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.ThreeTenBackPortConvertersUnitTests.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310Converters.java</file>
+			<file type="M">org.springframework.data.convert.ThreeTenBackPortConverters.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310ConvertersUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">772</link>
+			<link type="Duplicate" description="duplicates">773</link>
+		</links>
+	</bug>
+	<bug id="14" master="843" duplicate="690" opendate="2015-05-07 12:31:58" fixdate="2016-05-31 16:33:20" resolution="Fixed">
+		<buginformation>
+			<summary>Raise log level of repositories that get dropped in strict configuration mode to INFO Multi-store silently ignores repository creation failures</summary>
+			<description> Basic use case is presented here
+https://github.com/spring-projects/spring-data-examples/tree/master/multi-store
+In my use case we did not put @Document on mongo annotations. Therefore, when I migrated our application to the latest version of spring boot (hence the latest version of spring data), my repositories were not created in the context.
+It was very hard to guess that this happened as this is notified on a DEBUG level.
+Fyi, we have a @Enable*Repositories which points to separate packages to avoid confusion on repository creation, therefore, it is was not trivial to understand the existence of this "strict" mode.</description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.10.3 (Fowler SR3), 1.11.5 (Gosling SR5), 1.12.2 (Hopper SR2), 1.13 M1 (Ingalls)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.RepositoryConfigurationDelegate.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">690</link>
+			<link type="Relate" description="relates to">1413</link>
+			<link type="Duplicate" description="duplicates">843</link>
+		</links>
+	</bug>
+	<bug id="15" master="761" duplicate="799" opendate="2015-09-02 14:08:24" fixdate="2015-12-29 12:41:26" resolution="Fixed">
+		<buginformation>
+			<summary>PageableHandlerMethodArgumentResolver reduces page size by one if on-indexed parameters are used Pageable&amp;apos;s size should not be dependent on 1-based or 0-based paging.</summary>
+			<description> In this controller :
+
+
+
+
+
+
+@RequestMapping("/list")
+
+
+
+
+public String list(Model model , Pageable pageable) {
+
+
+
+
+  logger.info("pageable = {}" , pageable);
+
+
+
+
+  // ... skipped
+
+
+
+
+}
+
+
+
+
+
+
+My goal : I want Spring automatically build this pageable object from page and size parameter of URL , which page starts from 1.
+The solution is here : http://stackoverflow.com/questions/34459658
+First , I feel the API design of `addArgumentResolvers` is problematic . It has to call super.addArgumentResolvers(argumentResolvers) at the end of the method.
+It should be able to designed to just add the resolver to argumentResolvers and make it work.
+And here is the point : resolver.setOneIndexedParameters(true) will also change the meaning of size , it is very counter-intuitive.
+In most people&amp;amp;apos;s intuition , no matter page starts from 1 or 0 , size should not be dependent on that value.
+But when I code : 
+
+
+
+
+
+
+resolver.setMaxPageSize(10);
+
+
+
+
+resolver.setOneIndexedParameters(true);
+
+
+
+
+
+
+And pass ?page=1&amp;amp;size=10 in the URL . The receiving size becomes 9 . It should be fixed.</description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.11.1 (Gosling SR1), 1.12 M1 (Hopper), 1.10.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">799</link>
+			<link type="Duplicate" description="duplicates">761</link>
+		</links>
+	</bug>
+</bugrepository>

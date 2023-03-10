@@ -1,0 +1,83 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="8" master="617" duplicate="646" opendate="2013-02-20 02:13:42" fixdate="2013-04-08 11:15:14" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in MongoTemplate.initializeVersionProperty() Can&amp;apos;t insert DBObjects through MongoTemplate</summary>
+			<description>If mongoPersistentEntity is null, NullPointerException is thrown (line 671).
+Write this (ligne 669) : 
+
+
+
+
+
+
+if (mongoPersistentEntity != null &amp;amp;&amp;amp; mongoPersistentEntity.hasVersionProperty()) 
+
+
+
+
+
+
+Instead of : 
+
+
+
+
+
+
+if (mongoPersistentEntity == null || mongoPersistentEntity.hasVersionProperty())
+
+
+
+
+
+ It appears that inserting DBObject instances directly through MongoTemplate is no longer possible in 1.2.0. Is this supposed to be the case?
+When I try to insert a raw DBObject (to test conversion logic from old schema to new upon read), the following exception is thrown:
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.initializeVersionProperty(MongoTemplate.java:671)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.doInsert(MongoTemplate.java:651)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.insert(MongoTemplate.java:613)
+
+
+
+
+	at com.portalify.a.project.AnITCase.testThatRequiresInsertionOfRawObjects(AnITCase.java:123)
+
+
+
+
+
+
+The direct problem is that initializeVersionProperty() doesn&amp;amp;apos;t do proper null checking before calling mongoPersistentEntity.getVersionProperty(). In fact, it specifically allows proceeding to the problematic branch when mongoPersistentEntity is null.</description>
+			<version>1.2 GA</version>
+			<fixedVersion>1.2.1, 1.3 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">646</link>
+			<link type="Duplicate" description="duplicates">617</link>
+		</links>
+	</bug>
+</bugrepository>

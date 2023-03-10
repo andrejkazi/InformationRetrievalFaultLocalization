@@ -1,0 +1,248 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1025" opendate="2014-08-14 02:42:25" fixdate="2014-08-26 06:28:53" resolution="Fixed">
+		<buginformation>
+			<summary>Duplicate index creation on embedded documents </summary>
+			<description>Having the documents:
+
+
+
+
+
+
+@CompoundIndexes({ @CompoundIndex(collection="timeRead", name = "eventIdAndChip", def = "{eventId : 1, chip : 1}"),
+
+
+
+
+        @CompoundIndex(collection="timeRead", name = "eventIdAndPublish", def = "{ eventId : 1, publish : 1}"),
+
+
+
+
+        @CompoundIndex(collection="timeRead", name = "chipAndTimeReadTickIndex", def = "{&amp;amp;apos;chip&amp;amp;apos; : -1, &amp;amp;apos;timeReadTick&amp;amp;apos; : 1}") })
+
+
+
+
+@Document
+
+
+
+
+public class TimeRead { }
+
+
+
+
+
+
+and 
+
+
+
+
+
+
+@Document
+
+
+
+
+public class TimeReadChip {
+
+
+
+
+
+
+
+
+
+    private Map&amp;lt;String, TimeRead&amp;gt; timeReads;
+
+
+
+
+    private Map&amp;lt;String, TimeRead&amp;gt; pointNameToTimeRead;
+
+
+
+
+}
+
+
+
+
+
+
+The Mongo driver tries to create the same indexes twice: once because they are defined as compound on TimeRead (which is correct), and a second time when parsing the TimeReadChip document (incorrect). I&amp;amp;apos;m assuming it sees the Map&amp;lt;String, TimeRead&amp;gt; and tries to create indexes on timeRead collection (again). This bug was introduced after 1.3.5.RELEASE.</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.5.4 (Dijkstra SR4), 1.6 GA (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.Indexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.GeoSpatialIndexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.CompoundIndex.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1027</link>
+		</links>
+	</bug>
+	<bug id="1027" opendate="2014-08-16 13:49:22" fixdate="2014-08-26 06:29:39" resolution="Duplicate">
+		<buginformation>
+			<summary>Collection inherits complex index from embedded class/object</summary>
+			<description>Say I have two collections:
+Books and Author
+Author has a unique compound index and Book has a list of authors as property.
+Now if I add different book with the same author to books, the insert is ignored because books inherits the index from authors.
+On a subsequent context restart I&amp;amp;apos;m also getting a duplicate key exception:
+
+
+
+
+
+
+com.mongodb.MongoException$DuplicateKey: { "serverUsed" : "" , "err" : "E11000 duplicate key error index: db.books.$name_appId_idx  dup key
+
+
+
+
+
+
+</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.5.4 (Dijkstra SR4), 1.6 GA (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.Indexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.GeoSpatialIndexed.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.CompoundIndex.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1025</link>
+		</links>
+	</bug>
+	<bug id="1030" opendate="2014-08-21 00:39:07" fixdate="2014-08-26 06:34:45" resolution="Fixed">
+		<buginformation>
+			<summary>Query methods retuning a single entity does not work with projecting types</summary>
+			<description>Assume the following repository:
+
+
+
+
+
+
+interface UserRepository extends CrudRepository&amp;lt;User, BigInteger&amp;gt; {
+
+
+
+
+
+
+
+
+
+  UserSummary findSummaryByLastnameLike(String lastname);
+
+
+
+
+}
+
+
+
+
+
+
+Assuming that UserSummary does not extend User executing the query method will always return null as the collection the query is run against will be derived from UserSummary which it shouldn&amp;amp;apos;t in this case.
+The issue is that SingleEntityExecution does not hand the collection name of the MongoEntityMetadata to the template so that the collection is derived from the return type only.</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.5.4 (Dijkstra SR4), 1.6 GA (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1072" opendate="2014-10-14 16:04:48" fixdate="2014-10-22 05:17:56" resolution="Fixed">
+		<buginformation>
+			<summary>Query placeholders in keys no longer correctly substituted</summary>
+			<description>Between 1.5.1.RELEASE and 1.5.2.RELEASE, processing of query parameters for keys was broken.  Example, this query:
+
+
+
+
+
+
+  @Query("{?0 : ?1}")
+
+
+
+
+  List&amp;lt;T&amp;gt; findAllByKeyValue(String key, String value);
+
+
+
+
+
+
+When called with these parameters:
+
+
+
+
+
+
+  findAllByKeyValue("name", "Joe");
+
+
+
+
+
+
+becomes this with 1.5.1: {"name" : "Joe"}
+But with 1.5.2, the ?0 is not correctly substituted so this is the broken query that is created: {"?0" : "Joe"}</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">420</link>
+		</links>
+	</bug>
+	<bug id="1043" opendate="2014-09-01 05:30:48" fixdate="2014-11-28 11:27:09" resolution="Fixed">
+		<buginformation>
+			<summary>SpEL Expressions in @Document annotations are not re-evaluated for query executions</summary>
+			<description>Based on the idea of Oliver Gierke in https://jira.spring.io/browse/DATAMONGO-525 I followed some post like the ones below
+http://stackoverflow.com/questions/18129291/mongodb-and-spel-expressions-in-document-annotations
+and
+http://stackoverflow.com/questions/19807733/mongodb-multi-tenacy-spel-with-document?rq=1
+but in the end I realized that the problem is that AbstractMongoQuery is cached between requests(maybe a problem in my config?), and its query-method object of type MongoQueryMethod, which holds the metadata, MongoEntityMetadata. And thus make this approach (use SpEL in @Document annotation) not fully working.
+AbstractMongoQuery deals with different kind of executions. All of them but SingleEntityExecution suffers from this problem, and it&amp;amp;apos;s because in SingleEntityExecution mongoOperations is called without passing collectionName and thus letting, in the end, BasicMongoPersistentEntity.getCollection apply SpEL over entity class to obtain the runtime collection name.</description>
+			<version>1.5.2 (Dijkstra SR2)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.SimpleMongoEntityMetadata.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryMethod.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

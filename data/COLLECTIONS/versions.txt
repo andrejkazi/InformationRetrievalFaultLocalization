@@ -1,0 +1,15 @@
+{
+	"COLLECTIONS":{
+		"2.0":"COLLECTIONS_2_0", 
+		"1.0":"COLLECTIONS_1_0", 
+		"3.2.2":"COLLECTIONS_3_2_2", 
+		"3.2":"COLLECTIONS_3_2", 
+		"3.2.1":"COLLECTIONS_3_2_1", 
+		"3.0":"COLLECTIONS_3_0", 
+		"3.1":"COLLECTIONS_3_1", 
+		"4.1":"COLLECTIONS_4_1", 
+		"2.1":"COLLECTIONS_2_1", 
+		"2.1.1":"COLLECTIONS_2_1_1", 
+		"4.0":"COLLECTIONS_4_0"
+	}
+}

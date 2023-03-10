@@ -1,0 +1,141 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="388" opendate="2012-01-08 08:29:22" fixdate="2012-04-09 17:16:33" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent Javadoc comment and code for prototypeFactory(T) in org.apache.commons.collections.FactoryUtils</summary>
+			<description>The Javadoc comment below states that the method "throws IllegalArgumentException if the prototype is null":
+   	    /**	     
+	     ..
+
+@param prototype  the object to clone each time in the factory
+@return the &amp;lt;code&amp;gt;prototype&amp;lt;/code&amp;gt; factory
+@throws IllegalArgumentException if the prototype is null
+@throws IllegalArgumentException if the prototype cannot be cloned
+	     */
+	    public static &amp;lt;T&amp;gt; Factory&amp;lt;T&amp;gt; prototypeFactory(T  prototype) 
+{
+	        return PrototypeFactory.&amp;lt;T&amp;gt;prototypeFactory(prototype);
+	    }
+
+However, the method returns a NULL_INSTANCE object instead of throwing IllegalArgumentException when called with null.
+Suggested Fixes:
+1. Change "@throws IllegalArgumentException if the prototype is null" and "@return" to "@return NULL_INSTANCE if the prototype is null".
+or
+2. Remove the entire "throws IllegalArgumentException if the prototype is null".</description>
+			<version>4.x</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.functors.PrototypeFactory.java</file>
+			<file type="M">org.apache.commons.collections.FactoryUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="389" opendate="2012-01-08 08:31:44" fixdate="2012-04-09 17:21:07" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent Javadoc comment and code for mapTransformer(Map&lt;? super I, ? extends O&gt;) in org.apache.commons.collections.TransformerUtils</summary>
+			<description>The Javadoc comment below states that the method "throws IllegalArgumentException if the map is null":
+   	    /** 
+	     ....
+
+@param map  the map to use to transform the objects
+@return the transformer
+@throws IllegalArgumentException if the map is null
+	     */
+	    public static &amp;lt;I, O&amp;gt; Transformer&amp;lt;I, O&amp;gt; mapTransformer(Map&amp;lt;? super I, ? extends O&amp;gt; map) 
+{
+	        return MapTransformer.mapTransformer(map);
+	    }
+However, the method returns a NULL_INSTANCE object instead of throwing IllegalArgumentException when called with null.
+
+Suggested Fixes:
+1. Change "@throws IllegalArgumentException if the map is null" and "@return" to "@return NULL_INSTANCE if the map is null".
+or
+2. Remove the entire "throws IllegalArgumentException if the map is null".</description>
+			<version>4.x</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.TransformerUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="391" opendate="2012-01-08 08:38:34" fixdate="2012-04-09 18:03:18" resolution="Fixed">
+		<buginformation>
+			<summary>Inconsistent Javadoc comment and code for toProperties(final Map&lt;K, V&gt;) in org.apache.commons.collections.MapUtils</summary>
+			<description>The Javadoc comment below states that the parameter map "..., may not be null":
+   	   /**
+	    ..
+
+@param map  the map to convert to a Properties object, may not be null
+@return the properties object
+	     */
+	    public static &amp;lt;K, V&amp;gt; Properties toProperties(final Map&amp;lt;K, V&amp;gt; map) 
+Unknown macro: {	        Properties answer = new Properties();	        if (map != null) {
+	            ...
+	        }	        return answer;	    } 
+However, the method return normally without throwing any exception when called with null.
+
+Suggested Fixes:
+1. Change "@param map  the map to convert to a Properties object, may not be null" to "@param map  the map to convert to a Properties object, may be null"
+or
+2. Remove "may not be null" from @param.</description>
+			<version>4.x</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.MapUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="372" opendate="2011-03-18 12:45:26" fixdate="2013-03-06 19:52:38" resolution="Fixed">
+		<buginformation>
+			<summary>ComparatorUtils.transformedComparator wrongly typed (generics)</summary>
+			<description>ComparatorUtils.transformedComparator is currently typed as follows :
+public static &amp;lt;I,O&amp;gt; Comparator&amp;lt;O&amp;gt; transformedComparator(Comparator&amp;lt;I&amp;gt; comparator, Transformer&amp;lt;I, O&amp;gt; transformer)
+It should be typed as follows so that is can be used without removing generics typing:
+public static &amp;lt;I,O&amp;gt; Comparator&amp;lt;I&amp;gt; transformedComparator(Comparator&amp;lt;O&amp;gt; comparator, Transformer&amp;lt;I, O&amp;gt; transformer)
+Here is a unit test for it : 
+Transformer&amp;lt;Integer, String&amp;gt; itosTransformer = TransformerUtils.stringValueTransformer();
+		Comparator&amp;lt;Integer&amp;gt; c = new Comparator&amp;lt;Integer&amp;gt;() {
+			@Override
+			public int compare(Integer o1, Integer o2) 
+{
+				return o1.compareTo(o2);
+			}
+		};
+		Comparator&amp;lt;String&amp;gt; stringComparator = ComparatorUtils.transformedComparator(c, itosTransformer);
+		stringComparator.compare("string1", "string2");</description>
+			<version>4.x</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections.comparators.TransformingComparator.java</file>
+			<file type="M">org.apache.commons.collections.comparators.TransformingComparatorTest.java</file>
+			<file type="M">org.apache.commons.collections.ComparatorUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">333</link>
+		</links>
+	</bug>
+	<bug id="470" opendate="2013-05-14 15:15:22" fixdate="2013-06-11 20:29:41" resolution="Fixed">
+		<buginformation>
+			<summary>TransformedMap class exists in two packages</summary>
+			<description>It&amp;amp;apos;s very confusing to have two different TransformedMap classes in different packages: map, splitmap.
+Indeed the Test class has to take special care with the serialised file name to avoid a clash.
+Since we can break binary compat in v4, now is the time to rename one of the classes.
+Perhaps rename as follows:
+splitmap/TransformedMap =&amp;gt; splitmap/TransformedGetPutMap</description>
+			<version>4.x</version>
+			<fixedVersion>4.0-alpha1, 4.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.map.TransformedMap.java</file>
+			<file type="M">org.apache.commons.collections4.SplitMapUtilsTest.java</file>
+			<file type="D">org.apache.commons.collections4.splitmap.TransformedMapTest.java</file>
+			<file type="D">org.apache.commons.collections4.splitmap.TransformedMap.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

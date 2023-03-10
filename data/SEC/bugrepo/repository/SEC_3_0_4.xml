@@ -1,0 +1,87 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1607" opendate="2010-11-02 04:08:53" fixdate="2010-11-02 04:21:00" resolution="Fixed">
+		<buginformation>
+			<summary>Spring Security version checking reports Spring Version instead of Spring Security version</summary>
+			<description></description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1608" opendate="2010-11-02 04:44:29" fixdate="2010-11-02 05:20:17" resolution="Fixed">
+		<buginformation>
+			<summary>FirewalledRequest.reset() is not called for a resource with no filters</summary>
+			<description></description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5, 3.1.0.M2, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.FilterChainProxyTests.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1838</link>
+			<link type="Duplicate" description="is duplicated by">1614</link>
+			<link type="Relate" description="is related to">1606</link>
+		</links>
+	</bug>
+	<bug id="1614" opendate="2010-11-05 05:36:57" fixdate="2010-11-10 04:00:27" resolution="Duplicate">
+		<buginformation>
+			<summary>Status 404 with Apache Tiles</summary>
+			<description>We use Apache Tiles 2.1.4 to render our pages. After we&amp;amp;apos;ve upgraded to Spring Security 3.0.4 we received a "HTTP Status 404" error page from tomcat when accessing some pages.
+When we use a custom HttpFirewall and FirewalledRequest, which does nothing, the errors disappear.
+As far as I found out all pages are impacted which are "excluded" from Spring Security&amp;amp;apos;s FilterChainProxy, as our login and logout pages for example.
+I think that issue is related to SEC-1608. 
+Tiles does various forwards/includes during the rendering phase which (obviously) will change the ServletPath and PathInfo
+To track down the error, I&amp;amp;apos;ve developed a custom "RequestWrapper" which outputs the original and stripped version of the ServletPath and PathInfo:
+Constructor - StrippedServletPath: /main - StrippedPathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /WEB-INF/layouts/plain.jsp
+As you can see at the end of the request the "strippedServletPath" and "servletPath" are different while "stripPaths" is still true. Therefore the "wrong" stripped ServletPath gets returned and Tiles fails to render the response correctly.
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: null</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.FilterChainProxyTests.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1608</link>
+		</links>
+	</bug>
+	<bug id="1701" opendate="2011-03-25 00:56:02" fixdate="2011-03-25 13:19:44" resolution="Fixed">
+		<buginformation>
+			<summary>OpenId identifier should be trimmed</summary>
+			<description>The authentication fails if a user copy&amp;amp;pastes his OpenId identity and it includes a white sprace at the end.
+An additional space is often append by copy it from hmtl pages or emails.
+I&amp;amp;apos;ve got this problem with 3.0.4, but I&amp;amp;apos;m sure all other versions are also affected.
+Fix would look like this at OpenIDAuthenticationFilter.attemptAuthentication():
+String identity = request.getParameter("openid.identity");
+if (!StringUtils.hasText(identity)) {
+       identity = identity.trim(); // FIX
+       String claimedIdentity = obtainUsername(request);
+Stracktrace:
+org.springframework.security.authentication.AuthenticationServiceException: Unable to process claimed identity &amp;amp;apos;http://alice-franz.myopenid.com/ &amp;amp;apos;
+	at org.springframework.security.openid.OpenIDAuthenticationFilter.attemptAuthentication(OpenIDAuthenticationFilter.java:143) ~[org.springframework.security.openid_3.0.4.RELEASE.jar:3.0.4.RELEASE]</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.1.0.RC2, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationFilterTests.java</file>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationFilter.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

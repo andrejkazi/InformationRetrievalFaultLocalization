@@ -1,0 +1,74 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="744" opendate="2011-08-22 10:41:12" fixdate="2011-10-10 02:22:20" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils throws java.security.AccessControlException on Google App Engine</summary>
+			<description>In the static initializer of org.apache.commons.lang3.StringUtils, there is an attempt to load the class sun.text.Normalizer.
+Such a class is prohibited on Google App Engine, and the static intializer throws a java.security.AccessControlException.
+
+
+Caused by: java.security.AccessControlException: access denied (java.lang.RuntimePermission accessClassInPackage.sun.text)
+	at java.security.AccessControlContext.checkPermission(AccessControlContext.java:374)
+	at java.security.AccessController.checkPermission(AccessController.java:546)
+	at java.lang.SecurityManager.checkPermission(SecurityManager.java:532)
+	at com.google.appengine.tools.development.DevAppServerFactory$CustomSecurityManager.checkPermission(DevAppServerFactory.java:166)
+	at java.lang.SecurityManager.checkPackageAccess(SecurityManager.java:1512)
+	at java.lang.Class.checkMemberAccess(Class.java:2164)
+	at java.lang.Class.getMethod(Class.java:1602)
+	at org.apache.commons.lang3.StringUtils.&amp;lt;clinit&amp;gt;(StringUtils.java:739)
+
+
+The exception should be caught in the catch clauses around loadClass("sun.text.Normalizer").
+Commons lang 2 worked fine on GAE.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="772" opendate="2011-11-15 12:37:17" fixdate="2011-11-16 03:14:41" resolution="Fixed">
+		<buginformation>
+			<summary>ClassUtils.PACKAGE_SEPARATOR javadoc contains garbage text</summary>
+			<description>javadoc description of ClassUtils.PACKAGE_SEPARATOR is as follows:
+The package separator String: "&amp;amp;#x2e;".
+It should be something like the following:
+The package separator String: ".".</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ClassUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="764" opendate="2011-11-09 12:26:40" fixdate="2011-12-28 06:33:45" resolution="Fixed">
+		<buginformation>
+			<summary>StrBuilder has a serialVersionUID but is not serializable - this is inconsistent</summary>
+			<description>StrBuilder has a serialVersionUID but is not serializable.
+Is StrBuilder supposed to be Serializable?
+If so, then add the interface; if not remove the field.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.StrBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="819" opendate="2012-09-09 18:40:37" fixdate="2014-01-10 15:42:32" resolution="Fixed">
+		<buginformation>
+			<summary>EnumUtils.generateBitVector needs a "? extends"</summary>
+			<description>    public static &amp;lt;E extends Enum&amp;lt;E&amp;gt;&amp;gt; long generateBitVector(Class&amp;lt;E&amp;gt; enumClass, Iterable&amp;lt;E&amp;gt; values) {
+Should be Iterable&amp;lt;? extends E&amp;gt;.
+This is because although no subclasses of E can exist, the "? extends" is a common idiom for marking the collection as readonly, or not "owned" by the current object.</description>
+			<version>3.0.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.EnumUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

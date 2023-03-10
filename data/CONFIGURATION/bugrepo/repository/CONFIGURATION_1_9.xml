@@ -1,0 +1,176 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="521" opendate="2013-01-17 11:07:47" fixdate="2013-01-23 20:50:49" resolution="Fixed">
+		<buginformation>
+			<summary>fileFromUrl: decoding of encoded % character does not work</summary>
+			<description>If ConfigurationUtils.fileFromUrl(URL) should create a file from a URL containing an enoced % sign (%25), then it does not work.
+I saw that the code apache.commons.io now is really different, but seems to work. Why isn&amp;amp;apos;t apache.commons.io directly used?</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="525" opendate="2013-02-14 19:35:14" fixdate="2013-03-16 17:54:43" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfigurationLayout does not preserve comments at bottom of a file</summary>
+			<description>Example:
+helloWorld.properties
+hello = world
+#this comments would not be preserved</description>
+			<version>1.9</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfigurationLayout.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">552</link>
+		</links>
+	</bug>
+	<bug id="534" opendate="2013-03-16 20:28:18" fixdate="2013-03-17 18:12:06" resolution="Fixed">
+		<buginformation>
+			<summary>PropertyConfiguration&amp;apos;s handling of includes depends on the existence of a base path</summary>
+			<description>PropertiesConfiguration has a property which controls whether include files are allowed. This property does not have a set method, it is set to true automatically if a base path is set. There may be scenarios in which it makes sense to support include files anyway, e.g. if they are specified as fully qualified file names or URIs or can be retrieved by the standard lookup mechanism.
+So the set method should be public, and it makes sense to set this property to true per default. If a file contains an include property, the files it refers to should propably be loaded.
+Also the get method for the property which controls file inclusion does not conform to the Java Beans specification; returning a boolean, it should start with the prefix is.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="537" opendate="2013-03-24 16:19:53" fixdate="2013-03-24 20:28:06" resolution="Fixed">
+		<buginformation>
+			<summary>Remove deprecated ConfigurationFactory class</summary>
+			<description>ConfigurationFactory has been deprecated in the 1.x series. In version 2.0, this class can be removed.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.configuration.ConfigurationFactory.java</file>
+			<file type="D">org.apache.commons.configuration.TestConfigurationFactory.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubsetConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestEqualBehaviour.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">310</link>
+		</links>
+	</bug>
+	<bug id="516" opendate="2012-11-20 15:44:19" fixdate="2013-04-05 13:12:22" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfiguration.save escapes double qoutes " unecessary</summary>
+			<description>Add a property with a value containing " (double quote character) and saving it back to file will result in the value being modified and unecessary escaping of the quote character.
+The reason is that PropertiesConfig calls into the StringEscapeUtils#escapeJavaStyleString that escapes quotes. This is not correct for propertiesfiles. http://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader) says "Escapes are not necessary for single and double quotes"
+Here is a test case:
+@Test
+public void shouldNotEscapeQuotesInTheResult() throws ConfigurationException, IOException {
+    final String value = "-Djava.io.tmpdir=\"$
+{TEST_TEMP_DIR}
+\"";
+    PropertiesConfiguration testConfig = new PropertiesConfiguration();
+    testConfig.addProperty("testKey1", value);
+    File testFile = new File(tempTestDir.getPath() + "prop-with-quotes.properties");
+    testConfig.save(testFile) ;
+    String testFileContent = FileUtils.readFileToString(testFile);
+    Assert.assertTrue(testFileContent.contains(value));
+}</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">515</link>
+		</links>
+	</bug>
+	<bug id="552" opendate="2013-08-12 09:54:02" fixdate="2013-08-12 20:26:57" resolution="Duplicate">
+		<buginformation>
+			<summary>save() causes trailing comments to be deleted</summary>
+			<description>If there are comments at the end of a properties file, they are dropped when save is called.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfigurationLayout.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">525</link>
+		</links>
+	</bug>
+	<bug id="555" opendate="2013-09-24 23:14:48" fixdate="2013-09-29 20:20:08" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration doesn&amp;apos;t seem to be preserving whitespace for the current node where xml:space="preserve" is set.</summary>
+			<description>if I give this in the configuration:
+&amp;lt;test xml:space="preserve"&amp;gt; a b c &amp;lt;/test&amp;gt;
+It does not seem to preserve the whitespace on the current node.  However, if I do
+&amp;lt;space xml:space="preserve&amp;gt;
+   &amp;lt;test&amp;gt; a b c &amp;lt;/test&amp;gt;
+&amp;lt;/space&amp;gt;
+it does preserve it. I would like to be able to turn on whitespace preservation on the current node without changing the path to my node.
+I tested my values by printing out values retrieved from getList() method.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="310" opendate="2008-02-19 10:57:14" fixdate="2014-09-13 19:10:54" resolution="Duplicate">
+		<buginformation>
+			<summary>Remove ConfigurationFactory</summary>
+			<description>ConfigurationBuilder provides an equivalent alternative to ConfigurationFactory and can be removed. Without this class we no longer depend on Digester.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Task</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.configuration.ConfigurationFactory.java</file>
+			<file type="D">org.apache.commons.configuration.TestConfigurationFactory.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubsetConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestEqualBehaviour.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">537</link>
+		</links>
+	</bug>
+	<bug id="632" opendate="2016-05-23 01:25:02" fixdate="2016-05-27 18:46:00" resolution="Fixed">
+		<buginformation>
+			<summary>Composite configuration list variable interpolation return first element only</summary>
+			<description>CompositeConfiguration.getStringArray, with variable interpolation returns only the first element of the list
+e.g.
+key1=a,b,c
+key2=$
+{key1}
+
+CompositeConfiguration.getStringArray(key2) = a</description>
+			<version>1.9</version>
+			<fixedVersion>2.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration2.CompositeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration2.TestCompositeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,944 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="485" opendate="2015-03-03 00:30:02" fixdate="2015-03-03 00:53:11" resolution="Fixed">
+		<buginformation>
+			<summary>RepositoryPropertyReferenceController.createPropertyReference() does not work for empty content supplied on Spring 4.1</summary>
+			<description>Spring 4.1&amp;amp;apos;s RequestResponseBodyMethodProcessor rejects a request with an empty payload if a parameter annotated with @RequestBody is not configured to required = true. Even in this case it forcibly returns null so that a HandlerMethodArgumentResolver that could even deal with an empty payload is not even invoked.
+We need to switch to required = false to not run into the rejection and manually default the Resources&amp;lt;Object&amp;gt; in case it&amp;amp;apos;s null</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.3 RC1 (Fowler), 2.2.3 (Evans SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">499</link>
+			<link type="Relate" description="relates to">12778</link>
+		</links>
+	</bug>
+	<bug id="490" opendate="2015-03-11 04:38:42" fixdate="2015-03-11 07:39:03" resolution="Fixed">
+		<buginformation>
+			<summary>Repository controllers not invoked if resource is handled manually in dedicated media type</summary>
+			<description>I have a Spring Data REST project. For some URLs I want to create a @Controller that renders the resources as HTML. I am using a @RequestMapping with produces = MediaType.TEXT_HTML_VALUE. In fact this controller is called if the URL is requested. However, if I do a request for JSON I get a 406 - while in fact the Spring Data REST controller should be called. I noticed that the log output says that the Spring Data REST controller doesn&amp;amp;apos;t register with any value for produces.
+I think a value for produces should be given. Maybe there is a way to do this but I didn&amp;amp;apos;t find it in the reference documentation. Maybe there are other ways to get different representations of the REST resources but that doesn&amp;amp;apos;t seem to be documented either. I guess different representations for the same resource are an important part of REST so I think there should be a way to do what I want to do.</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.3 GA (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">522</link>
+		</links>
+	</bug>
+	<bug id="491" opendate="2015-03-11 07:07:06" fixdate="2015-03-20 02:00:16" resolution="Fixed">
+		<buginformation>
+			<summary>PersistentEntityResourceHandlerMethodArgumentResolver dump in PUT requests with HashMap</summary>
+			<description>When updating a existing resource with a JSON PUT with this sample code
+
+
+
+
+
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Ticket {
+
+
+
+
+
+
+
+
+
+	@Id
+
+
+
+
+	private String id;
+
+
+
+
+
+
+
+
+
+	@Version
+
+
+
+
+	private Long version;
+
+
+
+
+
+
+
+
+
+	private String type;
+
+
+
+
+
+
+
+
+
+	private Map&amp;lt;String, String&amp;gt; texts;
+
+
+
+
+}
+
+
+
+
+
+
+and JSON
+
+
+
+
+
+
+{
+
+
+
+
+  "version" : 1,
+
+
+
+
+  "type" : "HR",
+
+
+
+
+  "texts" : {
+
+
+
+
+    "description" : "Let&amp;amp;apos;s test1234"
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+I get the following stack trace:
+
+
+
+
+
+
+ 
+
+
+
+
+2015-03-11 14:34:08.049 ERROR 39988 --- [nio-8080-exec-2] s.d.r.w.AbstractRepositoryRestController : Could not read an object of type class demo.Ticket from the request!; nested exception is org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+
+
+
+
+
+org.springframework.http.converter.HttpMessageNotReadableException: Could not read an object of type class demo.Ticket from the request!; nested exception is org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:197)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.read(PersistentEntityResourceHandlerMethodArgumentResolver.java:169)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.resolveArgument(PersistentEntityResourceHandlerMethodArgumentResolver.java:125)
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:77)
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:162)
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:129)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:110)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:777)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:706)
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:879)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:647)
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:725)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:291)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+	at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:77)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88)
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239)
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+
+
+
+
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:219)
+
+
+
+
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106)
+
+
+
+
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:501)
+
+
+
+
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:142)
+
+
+
+
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79)
+
+
+
+
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88)
+
+
+
+
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:516)
+
+
+
+
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1086)
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:659)
+
+
+
+
+	at org.apache.coyote.http11.Http11NioProtocol$Http11ConnectionHandler.process(Http11NioProtocol.java:223)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1558)
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1515)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+
+
+
+
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+
+
+
+
+	at java.lang.Thread.run(Thread.java:745)
+
+
+
+
+Caused by: org.springframework.http.converter.HttpMessageNotReadableException: Could not read payload!; nested exception is java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:137)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.readPut(DomainObjectReader.java:129)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.JsonPatchHandler.applyPut(JsonPatchHandler.java:133)
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.PersistentEntityResourceHandlerMethodArgumentResolver.readPutForUpdate(PersistentEntityResourceHandlerMethodArgumentResolver.java:194)
+
+
+
+
+	... 45 common frames omitted
+
+
+
+
+Caused by: java.lang.NullPointerException: null
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.getJacksonProperties(DomainObjectReader.java:204)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:157)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.doMerge(DomainObjectReader.java:185)
+
+
+
+
+	at org.springframework.data.rest.webmvc.json.DomainObjectReader.merge(DomainObjectReader.java:135)
+
+
+
+
+	... 48 common frames omitted
+
+
+
+
+
+
+The reason seems to be that in DomainObjectReader the PersistentEntity for a HashMap is null.
+
+
+
+
+
+
+public class DomainObjectReader {
+
+
+
+
+	public &amp;lt;T&amp;gt; T readPut(final ObjectNode source, T target, final ObjectMapper mapper) {
+
+
+
+
+
+
+
+
+
+		Assert.notNull(source, "ObjectNode must not be null!");
+
+
+
+
+		Assert.notNull(target, "Existing object instance must not be null!");
+
+
+
+
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+
+
+
+
+
+
+
+
+		final PersistentEntity&amp;lt;?, ?&amp;gt; entity = entities.getPersistentEntity(target.getClass());
+
+
+
+
+
+
+This works before DATAREST-461 was included. 
+You can find a example, to reproduce here https://github.com/sebastian-sch/mongo_data_rest</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.3 GA (Fowler), 2.2.3 (Evans SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.Profile.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.MongoWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">461</link>
+		</links>
+	</bug>
+	<bug id="502" opendate="2015-04-02 05:44:30" fixdate="2015-04-07 08:04:35" resolution="Fixed">
+		<buginformation>
+			<summary>Not convenient to search a repository by a related entity using links</summary>
+			<description>It doesn&amp;amp;apos;t seem to be very convenient to search a repository using an related entity as a query parameter. Consider the following repository:
+
+
+
+
+
+
+@RepositoryRestResource
+
+
+
+
+public interface TagRepository extends PagingAndSortingRepository&amp;lt;Tag, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+    Page&amp;lt;Tag&amp;gt; findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc(@Param("name") String name,
+
+
+
+
+                                                                             @Param("organisation") Organisation organisation,
+
+
+
+
+                                                                             Pageable pageable);
+
+
+
+
+}
+
+
+
+
+
+
+Organisations have many tags, a tag has one organisation. The HATEOAS semantics return entity relationships as links, however we cannot pass one of these links as the "organisation" query parameter above.
+As far as I can tell, the only way to pass an organisation parameter is by using the ID (primary key) of the entity directly. This is quite inconvenient as it means we need to resolve links on the client first in order to determine the ID we need and also means that we need to expose the IDs in our DTOs (which is not default and seems like a bad idea), or attempt to parse it from the URI link.
+This is how I would expect it to be able to work:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=http://localhost:8080/api/organisations/1
+However we are currently required to use it like this:
+http://localhost:8080/api/tags/search/findAllByNameContainingIgnoreCaseAndOrganisationOrderByNameAsc?name=tagName&amp;amp;organisation=1
+Is this the only way to query using a related entity?</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.UriToEntityConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.BookRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">678</link>
+			<link type="Duplicate" description="is duplicated by">599</link>
+		</links>
+	</bug>
+	<bug id="537" opendate="2015-05-08 17:26:36" fixdate="2015-05-09 08:00:51" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot remove an element of an array using JSON Patch request</summary>
+			<description>The ||JsonPatchHandler}} applies a customization to remove operations. Instead of removing the node, it replace it with a null object. It works well for objects, but it doesn&amp;amp;apos;t for elements of an array. The element won&amp;amp;apos;t be removed from the array, instead it will be replaced with a null object.
+I think if the path of the remove operation defines an element of an array, the original remove operation should be used instead of the customized ReplaceOperation.</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling), 2.3.1 (Fowler SR1), 2.2.3 (Evans SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.JsonPatchHandlerUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.JsonPatchHandler.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="523" opendate="2015-04-20 01:08:19" fixdate="2015-05-19 07:34:57" resolution="Fixed">
+		<buginformation>
+			<summary>Unable to augment collection association using POST</summary>
+			<description>It seems that POSTing an item to an associated collection does not work as documented.
+According to the Spring Data REST documentation, POST method is supported for collections, so 
+
+
+
+
+
+
+curl -i -X POST -H &amp;amp;apos;Content-type: text/uri-list&amp;amp;apos; -d &amp;amp;apos;http://localhost:8080/artifacts/1&amp;amp;apos; http://localhost:8080/collectors/1/artifacts
+
+
+
+
+
+
+should add an artifact to the (yet empty) collection. Unfortunately, it does not:
+
+
+
+
+
+
+    HTTP/1.1 405 Method Not Allowed
+
+
+
+
+    Server: Apache-Coyote/1.1
+
+
+
+
+    Allow: GET, DELETE, PATCH, PUT
+
+
+
+
+    Content-Type: application/json;charset=UTF-8
+
+
+
+
+    Transfer-Encoding: chunked
+
+
+
+
+    Date: Fri, 17 Apr 2015 22:54:59 GMT
+
+
+
+
+    
+
+
+
+
+    {"timestamp":1429311299117,"status":405,"error":"Method Not Allowed","exception":"org.springframework.web.HttpRequestMethodNotSupportedException","message":"Request method &amp;amp;apos;POST&amp;amp;apos; not supported","path":"/collectors/1/artifacts"}
+
+
+
+
+
+
+My entities:
+
+
+
+
+
+
+    @Data
+
+
+
+
+    @Entity
+
+
+
+
+    public class Collector {
+
+
+
+
+        @Id
+
+
+
+
+        @GeneratedValue
+
+
+
+
+        private Long id;
+
+
+
+
+    
+
+
+
+
+        private String name;
+
+
+
+
+    
+
+
+
+
+        @OneToMany(mappedBy = "owner")
+
+
+
+
+        private List&amp;lt;Artifact&amp;gt; artifacts;
+
+
+
+
+    }
+
+
+
+
+    
+
+
+
+
+    @Data
+
+
+
+
+    @Entity
+
+
+
+
+    @Accessors(chain = true, fluent = true)
+
+
+
+
+    public class Artifact {
+
+
+
+
+    
+
+
+
+
+        @Id
+
+
+
+
+        @GeneratedValue
+
+
+
+
+        private Long id;
+
+
+
+
+    
+
+
+
+
+        private String title;
+
+
+
+
+    
+
+
+
+
+        @ManyToOne
+
+
+
+
+        @JoinColumn(name = "collector_id")
+
+
+
+
+        private Collector owner;
+
+
+
+
+    }
+
+
+
+
+
+
+The complete code is on Github.</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling), 2.3.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RestMediaTypes.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.CrudMethodsSupportedHttpMethodsUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RootResourceInformation.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.CrudMethodsSupportedHttpMethods.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RootResourceInformationIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.SupportedHttpMethods.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="556" opendate="2015-05-26 07:33:21" fixdate="2015-05-26 09:57:45" resolution="Fixed">
+		<buginformation>
+			<summary>PUT/PATCH does not consider custom Jackson field naming strategy</summary>
+			<description>1. git clone https://github.com/spring-guides/gs-accessing-data-rest.git
+2. use spring.jackson.property-naming-strategy=PASCAL_CASE_TO_CAMEL_CASE
+3. PUT/PATCH fails.
+org.springframework.data.rest.webmvc.json.DomainObjectReader:170 will remove valid property names required by the objectMapper later on. 
+If one posts camelCase properties instead, the objectMapper will ignore them.
+Possible fix is to simply not remove properties so eagerly (Line 170) and let the objectMapper decide.
+</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling), 2.3.1 (Fowler SR1), 2.2.3 (Evans SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="597" opendate="2015-06-25 06:43:32" fixdate="2015-07-09 09:01:24" resolution="Fixed">
+		<buginformation>
+			<summary>AlpsController not working on Spring 4.2</summary>
+			<description></description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvConfigurationIntegrationTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="599" opendate="2015-06-27 04:33:55" fixdate="2015-07-17 13:40:39" resolution="Duplicate">
+		<buginformation>
+			<summary>findBy + @Param expects an Id, which is not visible via REST</summary>
+			<description>Hi,
+here is another issue I came across while trying out Spring Data REST: 
+IDs are, if I&amp;amp;apos;m correct, intentionally not exposed in the resource body, as you&amp;amp;apos;re supposed to use the URL as primary identifier. 
+This is a problem, because by exposing a repository finder Spring Data REST expects me to put the primary key as query param.
+I put up a small example on github:
+https://github.com/otrosien/spring-data-examples/tree/findQueryParamMismatch
+This is the interesting part: How am I, as REST client, suppose to fill the query param for customer1?
+
+
+
+
+
+
+public interface RelationshipRepository extends PagingAndSortingRepository&amp;lt;Relationship, Long&amp;gt; {
+
+
+
+
+ Page&amp;lt;Relationship&amp;gt; findByCustomer1(@Param("customer1") Customer customer1, Pageable pageable);
+
+
+
+
+
+</description>
+			<version>2.2.2 (Evans SR2)</version>
+			<fixedVersion>2.4 M1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchControllerIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.UriToEntityConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.BookRepository.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">502</link>
+		</links>
+	</bug>
+</bugrepository>

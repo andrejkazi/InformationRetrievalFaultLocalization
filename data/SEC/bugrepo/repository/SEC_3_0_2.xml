@@ -1,0 +1,387 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="1425" opendate="2010-02-27 04:50:46" fixdate="2010-02-28 00:13:27" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractRememberMeServices not handling properly empty cookie</summary>
+			<description>Whwn empty cookie is sent to AbstractRememberMeServices, it will throw java.lang.ArrayIndexOutOfBoundsException instead of org.springframework.security.web.authentication.rememberme.InvalidCookieException
+This can be fixed by adding 
+if (tokens.length == 0) {
+    throw new InvalidCookieException( "No cookie!?");
+}
+after 
+String[] tokens = StringUtils.delimitedListToStringArray(cookieAsPlainText, DELIMITER);
+</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServicesTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1432" opendate="2010-03-05 03:42:23" fixdate="2010-03-05 03:58:56" resolution="Fixed">
+		<buginformation>
+			<summary>UserMap should convert supplied maps to lower case</summary>
+			<description>Since it converts a username to lower-case before doing a lookup in the map, it makes sense that the keys should also be converted when a new map is supplied.</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.authentication.UserServiceBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.config.authentication.UserServiceBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.core.userdetails.memory.UserMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1439" opendate="2010-03-11 20:02:57" fixdate="2010-03-12 01:55:28" resolution="Fixed">
+		<buginformation>
+			<summary>getRequest() / getResponse() is not public in org.springframework.security.web.context.HttpRequestResponseHolder</summary>
+			<description>Custom SecurityContextRepository implementation relies on HttpRequestResponseHolder parameter in method  
+public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder).
+Since getters and setters of HttpRequestResponseHolder properties are not public, pluggable repository mechanism is broken. 
+</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.HttpRequestResponseHolder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1443" opendate="2010-03-19 01:05:05" fixdate="2010-03-22 04:28:08" resolution="Fixed">
+		<buginformation>
+			<summary>Jsr250Voter will return access denied for allowed roles</summary>
+			<description>Method vote() from Jsr250Voter.java will return ACCESS_DENIED if the FIRST role from definition does not exists in authentication.getAuthorities() list.
+ public int vote(Authentication authentication, Object object, Collection&amp;lt;ConfigAttribute&amp;gt; definition) {
+        for (ConfigAttribute attribute : definition) {
+           //...
+            if (supports(attribute)) {
+                // Attempt to find a matching granted authority
+                for (GrantedAuthority authority : authentication.getAuthorities()) {
+                    if (attribute.getAttribute().equals(authority.getAuthority())) 
+{
+                        return ACCESS_GRANTED;
+                    }
+                }
+                // No match - deny access
+                return ACCESS_DENIED; // &amp;lt;-------- will return ACCESS_DENIED too soon
+            }
+        } 
+        return ACCESS_ABSTAIN;
+    }</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.annotation.Jsr250Voter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1444" opendate="2010-03-19 11:49:38" fixdate="2010-03-27 03:37:50" resolution="Fixed">
+		<buginformation>
+			<summary>BindAuthentiator Fails for Active Directory DN Containing Special Chars</summary>
+			<description>BindAuthenticator.java (3.0.2) line 115, change userDN:
+Attributes attrs = ctx.getAttributes(userDn, getUserAttributes());
+to fullDn:
+Attributes attrs = ctx.getAttributes(fullDn, getUserAttributes());
+The reason is that when you use fullDn the DN string is generated using the LdapEncoder from Spring-LDAP.   If you use the raw userDn string that encoding isn&amp;amp;apos;t used, so special characters in a username (admittedly rare) can prevent the user from authenticating.
+</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.search.FilterBasedLdapUserSearchTests.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticator.java</file>
+			<file type="M">org.springframework.security.ldap.SpringSecurityLdapTemplate.java</file>
+			<file type="M">org.springframework.security.ldap.authentication.BindAuthenticatorTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1480" opendate="2010-05-14 04:26:06" fixdate="2010-05-14 12:33:01" resolution="Fixed">
+		<buginformation>
+			<summary>LdapUserDetailsImpl does not override equals/hashCode</summary>
+			<description>result is that namespace session management config does not work with default LdapUserDetailsImpl.</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.userdetails.LdapUserDetailsImpl.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.InetOrgPersonTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1500" opendate="2010-06-17 03:41:39" fixdate="2010-06-17 12:21:31" resolution="Fixed">
+		<buginformation>
+			<summary>Target-URL changes while switching between secure and insecure channel, when it was encoded according to RFC 3986</summary>
+			<description>This issue is simmilar to the issue SEC-1255 "Target-URL after successfull login differes from original URL, when it was encoded according to RFC 3986"
+http://jira.springframework.org/browse/SEC-1255
+When switching the channel, AbstractRetryEntryPoint rebuilds the URL from its decoded parts.
+So, when switching on a URL, that containes a special character (like &amp;amp;apos;?&amp;amp;apos;), which is encoded according to RFC 3986, it changes the URL.
+For example, the URL "/foo%3Fbar.html", where "%3F" encodes the "?", becomes "/foo?bar.html", which is not encoded correctly, thus resulting in a 404-Error.
+Encoding the rebuild URL would not work, becaus all special characters (like contained slashes for example) would be encoded than, which is, as far as I know, not correct. 
+I fixed the issue in my local git repository by calling the UrlUtils, which were fixed in issue SEC-1255, for building the redirect URL.
+I will apply my patch to this bug-report.
+</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpEntryPointTests.java</file>
+			<file type="M">org.springframework.security.web.access.channel.AbstractRetryEntryPoint.java</file>
+			<file type="M">org.springframework.security.web.util.UrlUtils.java</file>
+			<file type="M">org.springframework.security.web.access.channel.RetryWithHttpsEntryPointTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">1413</link>
+		</links>
+	</bug>
+	<bug id="1501" opendate="2010-06-18 05:04:02" fixdate="2010-06-25 05:48:14" resolution="Fixed">
+		<buginformation>
+			<summary>Documention uses incorrect package in example bean definition</summary>
+			<description>The JavaDoc page for SwitchUserFilter lists an example bean definition:
+ &amp;lt;bean id="switchUserProcessingFilter" class="org.springframework.security.web.authentication.SwitchUserFilter"&amp;gt;
+    &amp;lt;property name="userDetailsService" ref="userDetailsService" /&amp;gt;
+    &amp;lt;property name="switchUserUrl"&amp;gt;&amp;lt;value&amp;gt;/j_spring_security_switch_user&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+    &amp;lt;property name="exitUserUrl"&amp;gt;&amp;lt;value&amp;gt;/j_spring_security_exit_user&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;
+    &amp;lt;property name="targetUrl"&amp;gt;&amp;lt;value&amp;gt;/index.jsp&amp;lt;/value&amp;gt;&amp;lt;/property&amp;gt;&amp;lt;/bean&amp;gt;
+The package is incorrectly stated as org.springframework.security.web.authentication; it should be org.springframework.security.web.authentication.switchuser</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.3, 3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.switchuser.SwitchUserFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1507" opendate="2010-07-02 00:52:38" fixdate="2010-07-02 06:14:36" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in RoleVoter if original UserDetails#getAuthorities() is empty and if RoleHierarchy is enabled</summary>
+			<description>I have a custom UserDetailsService implementation which may not provide any role for some user, i.e. the UserDetails#getAuthorities() returns is an empty Collection.
+If this user try to access a secured resource with a given role (e.g. not IS_AUTHENTICATED_REMEMBERED) then the following exception occurs:
+java.lang.NullPointerException
+	at org.springframework.security.access.vote.RoleVoter.vote(RoleVoter.java:103)
+	at org.codehaus.groovy.grails.plugins.springsecurity.AuthenticatedVetoableDecisionManager.checkOtherVoters(AuthenticatedVetoableDecisionManager.java:90)
+	at org.codehaus.groovy.grails.plugins.springsecurity.AuthenticatedVetoableDecisionManager.decide(AuthenticatedVetoableDecisionManager.java:44)
+	at org.springframework.security.access.intercept.AbstractSecurityInterceptor.beforeInvocation(AbstractSecurityInterceptor.java:203)
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:106)
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:83)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:97)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:78)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter.doFilter(RememberMeAuthenticationFilter.java:119)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:54)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:188)
+	at org.codehaus.groovy.grails.plugins.springsecurity.RequestHolderAuthenticationFilter.doFilter(RequestHolderAuthenticationFilter.java:40)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:188)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.codehaus.groovy.grails.plugins.springsecurity.MutableLogoutFilter.doFilter(MutableLogoutFilter.java:79)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:79)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:149)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter.doFilterInternal(GrailsReloadServletFilter.java:104)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.doFilterInternal(GrailsWebRequestFilter.java:67)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:66)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:88)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:76)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.jasig.cas.client.session.SingleSignOutFilter.doFilter(SingleSignOutFilter.java:106)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.jasig.cas.client.session.SingleSignOutFilter.doFilter(SingleSignOutFilter.java:106)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:293)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:849)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$Worker.run(JIoEndpoint.java:454)
+	at java.lang.Thread.run(Thread.java:619)
+After looking at SEC-1325, I found that RoleHierarchyImpl.java still uses null when the authorities Collection is empty.
+I have attached a patch to fix this and i have tested it against current master.
+My current workaround is to provide at least the "ROLE_DUMMY" role to users.</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.1.0.M1, 3.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl.java</file>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImplTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1577</link>
+		</links>
+	</bug>
+	<bug id="1521" opendate="2010-07-22 10:57:15" fixdate="2010-07-23 02:01:47" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException in SecurityContextPersistenceFilter with null SecurityContextRepository</summary>
+			<description>According to documentation in section 8.3.1, the SecurityContextPersistenceFilter should support a null SecurityContextRepository, which would prevent a SecurityContext from ever being persisted.
+However, configuring a null SecurityContextRepository results in a NullPointerException. Either the documentation is incorrect or misleading, or the SecurityContextPersistenceFilter should perform null checks on the field.
+	&amp;lt;bean id="securityContextPersistenceFilter"
+		class="org.springframework.security.web.context.SecurityContextPersistenceFilter"&amp;gt;
+		&amp;lt;property name="securityContextRepository"&amp;gt;
+			&amp;lt;null /&amp;gt;
+		&amp;lt;/property&amp;gt;
+	&amp;lt;/bean&amp;gt;
+SEVERE: Servlet.service() for servlet classes/com.turner.playon.event threw exception
+java.lang.NullPointerException
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:74)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:355)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:149)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:237)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:167)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:233)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:128)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:293)
+	at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:849)
+	at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:583)
+	at org.apache.tomcat.util.net.JIoEndpoint$Worker.run(JIoEndpoint.java:454)
+	at java.lang.Thread.run(Thread.java:637)
+</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.1.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.context.SecurityContextPersistenceFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1543" opendate="2010-08-18 07:13:48" fixdate="2010-10-27 09:45:54" resolution="Fixed">
+		<buginformation>
+			<summary>IpAddressMatcher does not act like expected</summary>
+			<description>When configuring a constraint like "hasIpAddress(&amp;amp;apos;X.X.X.X&amp;amp;apos;)", Spring-Security usees the class org.springframework.security.web.util.IpAddressMatcher to compare the given IP with the IP from the request.
+Unfortunatly, IpAddressMatcher throws an IllegalArgumentException, when the given IP and the IP from the request are of different type. This happens for example, when the request uses an IPv6-Address, but the Address used in "hasIpAddress()" was an IPv4-Address. The unexpected outcome of this behavior is, that any IPv6-request matching the resource will only see an error-page!
+I suggest, that IpAddressMatcher responds with "false", if the given Address and the Address in the Request are of different type. That would solve this issue and is also the behavior I would expect: two IP-Addresses of different type are simply always not equal!</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.0.4, 3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.util.IpAddressMatcher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1418" opendate="2010-02-23 21:24:53" fixdate="2010-12-06 04:56:50" resolution="Fixed">
+		<buginformation>
+			<summary>equals of GrantedAuthorityImpl isn&amp;apos;t symmetric</summary>
+			<description>The implementation of equals in GrantedAuthorityImpl returns true if it sees a String with the same content as its role field. So
+new GrantedAuthorityImpl("ROLE_ADMIN").equals("ROLE_ADMIN") will return true, but "ROLE_ADMIN".equals(new GrantedAuthorityImpl("ROLE_ADMIN")) won&amp;amp;apos;t!
+The equals method is required to be symetric, but this implementation isn&amp;amp;apos;t symmetric.
+Apart from that equals should be final or test explicit for GrantedAuthorityImpl.class. Using instanceof in non-final classes with a non-final equals method is not ok.
+Please read: Joshua Bloch - Effective Java - Second Edition - Item 8 Page 33 following.
+I attached a SimpleGrantedAuthority.java which uses a very save implementation. This class is final. I know that GrantedAuthorityImpl has subclasses, but it should be consindered if the trivial sharing of the role field justify the equals problems. It always very difficult to design proper equals and hashCode for subclassable classes.
+Since GrantedAuthorityImpl is really a value class like String, it should be really final and immutable like String itself.</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.authentication.jaas.JaasGrantedAuthority.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategyTests.java</file>
+			<file type="M">org.springframework.security.taglibs.velocity.AuthzImplAuthorizeTagTest.java</file>
+			<file type="M">org.springframework.security.provisioning.JdbcUserDetailsManagerTests.java</file>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplementationSecurityCheckTests.java</file>
+			<file type="M">org.springframework.security.core.authority.mapping.SimpleAttributes2GrantedAuthoritiesMapper.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.LdapUserDetailsManager.java</file>
+			<file type="M">org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.LdapUserDetailsMapper.java</file>
+			<file type="M">org.springframework.security.cas.userdetails.GrantedAuthorityFromAssertionAttributesUserDetailsService.java</file>
+			<file type="M">org.springframework.security.config.ldap.LdapUserServiceBeanDefinitionParserTests.java</file>
+			<file type="M">org.springframework.security.access.vote.ConsensusBasedTests.java</file>
+			<file type="M">org.springframework.security.acls.sid.SidTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.AnonymousAuthenticationFilterTests.java</file>
+			<file type="M">org.springframework.security.authentication.AbstractAuthenticationTokenTests.java</file>
+			<file type="M">org.springframework.security.cas.authentication.CasAuthenticationProviderTests.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.EhCacheBasedAclCacheTests.java</file>
+			<file type="M">org.springframework.security.core.authority.mapping.MapBasedAttributes2GrantedAuthoritiesMapperTest.java</file>
+			<file type="M">org.springframework.security.web.authentication.switchuser.SwitchUserFilterTests.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagAttributeTests.java</file>
+			<file type="M">org.springframework.security.authentication.anonymous.AnonymousAuthenticationProviderTests.java</file>
+			<file type="M">org.springframework.security.core.authority.GrantedAuthorityImpl.java</file>
+			<file type="M">org.springframework.security.provisioning.JdbcUserDetailsManager.java</file>
+			<file type="D">org.springframework.security.core.authority.GrantedAuthorityImplTests.java</file>
+			<file type="M">org.springframework.security.cas.authentication.CasAuthenticationTokenTests.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator.java</file>
+			<file type="M">org.springframework.security.core.userdetails.memory.UserAttribute.java</file>
+			<file type="M">org.springframework.security.core.authority.mapping.MapBasedAttributes2GrantedAuthoritiesMapper.java</file>
+			<file type="M">org.springframework.security.taglibs.velocity.AuthzImplAttributeTest.java</file>
+			<file type="M">org.springframework.security.performance.FilterChainPerformanceTests.java</file>
+			<file type="M">org.springframework.security.access.intercept.RunAsManagerImpl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplTests.java</file>
+			<file type="M">org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl.java</file>
+			<file type="M">org.springframework.security.core.authority.AuthorityUtils.java</file>
+			<file type="M">org.springframework.security.authentication.jaas.JaasAuthenticationProviderTests.java</file>
+			<file type="M">org.springframework.security.access.intercept.RunAsImplAuthenticationProviderTests.java</file>
+			<file type="M">org.springframework.security.core.userdetails.UserTests.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AuthorizeTagExpressionLanguageTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1592" opendate="2010-10-13 08:22:21" fixdate="2011-01-27 08:52:41" resolution="Complete">
+		<buginformation>
+			<summary>CAS proxy receptor requests must not pass through the filter chain</summary>
+			<description>I configured spring-security-cas in my webapp for generating proxy tickets.
+During ticket validation we provide a pgtUrl parameter and then the CAS server tries
+to connect to our webapp (using the configured proxyReceptorUrl) to determine is this
+URL is a valid end-point but it result in a 404 because the request is passed trough
+the servlet but is not handled (because no controller is mapped for this URL).
+If we set the grails.plugins.springsecurity.rejectIfNoRule parameter [1] to true or if I mark this
+proxy receptor URL with the role "IS_AUTHENTICATED_REMEMBERED" then it works:
+
+the ping request [2] result in a 302 (redirection to CAS because the request needs to be authenticated)
+the pgtId/pgtIou request result also in a 302 (therefore without the proper XML fragment) but the mapping is stored
+
+This works because the CAS server is not strict about the expected XML fragment,
+only the a proper status code is mandatory [2].
+Current workaround is to create a controller for this URL with anonymous access and
+always respond with a 200 and some text.
+I believe this issue is not related to Grails and may impact any webapp using
+spring-security-cas and wanting to generate proxy tickets.
+Furthermore, the default behaviour in cas-client [3] is already to stop processing the
+request once it has been handled by the Cas20ProxyReceivingTicketValidationFilter [3].
+[1] http://burtbeckwith.github.com/grails-spring-security-core/docs/manual/index.html
+[2] https://source.jasig.org/cas3/tags/cas-3-3-5-1-final/cas-server-core/src/main/java/org/jasig/cas/authentication/handler/support/HttpBasedServiceCredentialsAuthenticationHandler.java
+[2] https://source.jasig.org/cas3/tags/cas-3-3-5-1-final/cas-server-core/src/main/java/org/jasig/cas/util/HttpClient.java
+[3] https://source.jasig.org/cas-clients/java-client/tags/cas-client-3.1.12/cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ProxyReceivingTicketValidationFilter.java
+[3] https://source.jasig.org/cas-clients/java-client/tags/cas-client-3.1.12/cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractTicketValidationFilter.java</description>
+			<version>3.0.2</version>
+			<fixedVersion>3.1.0.RC1, 3.0.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.cas.web.CasAuthenticationFilterTests.java</file>
+			<file type="M">org.springframework.security.cas.web.CasAuthenticationFilter.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

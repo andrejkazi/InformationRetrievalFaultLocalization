@@ -1,0 +1,365 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="197" opendate="2009-02-20 17:52:34" fixdate="2010-09-29 01:29:43" resolution="Fixed">
+		<buginformation>
+			<summary>BoundedInputStream</summary>
+			<description>Apache Jackrabbit has an interesting InputStream implementation that reads up to a specified amount of bytes from an underlying stream, and then acts as if the end of the stream was reached:
+http://svn.apache.org/repos/asf/jackrabbit/trunk/jackrabbit-jcr-server/src/main/java/org/apache/jackrabbit/server/io/BoundedInputStream.java
+Similar classes are also found in other projects:
+http://svn.mucommander.com/cgi-bin/viewvc.cgi/trunk/source/com/mucommander/io/BoundedInputStream.java?content-type=text%2Fplain&amp;amp;view=co
+https://www.sunspotworld.com/docs/Purple/javadoc/com/sun/spot/peripheral/BoundedInputStream.html</description>
+			<version>2.4</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BoundedInputStream.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">339</link>
+			<link type="Reference" description="is related to">236</link>
+		</links>
+	</bug>
+	<bug id="362" opendate="2013-01-01 01:05:26" fixdate="2013-01-04 15:57:58" resolution="Fixed">
+		<buginformation>
+			<summary>IOUtils.contentEquals* methods returns false if input1 == input2, should return true</summary>
+			<description>The fix should be relatively simple, just add an identity check to the beginning of the method:
+if(is1 == is2) 
+{
+  return true;
+}
+
+The methods affected are:
+
+org.apache.commons.io.IOUtils.contentEquals(InputStream, InputStream)
+org.apache.commons.io.IOUtils.contentEquals(Reader, Reader)
+org.apache.commons.io.IOUtils.contentEqualsIgnoreEOL(Reader, Reader)
+
+</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.IOUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="374" opendate="2013-04-07 21:46:15" fixdate="2013-04-07 22:09:08" resolution="Fixed">
+		<buginformation>
+			<summary>WildcardFileFilter ctors should not use null to mean IOCase.SENSITIVE when delegating to other ctors</summary>
+			<description>WildcardFileFilter ctors should not use null to mean IOCase.SENSITIVE when delegating to other ctors.
+Just because null happens to mean case-sensitive, does not mean that internal calls to ctors should use that feature. It makes the code harder to read.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.filefilter.WildcardFileFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="343" opendate="2012-08-22 07:20:31" fixdate="2013-04-17 23:54:48" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.io.comparator Javadoc is inconsistent with real code</summary>
+			<description>Package org.apache.commons.io.comparator has a lot of inconsistent JavaDocs. 
+For example this class org.apache.commons.io.comparator.NameFileComparator
+http://svn.apache.org/viewvc/commons/proper/io/trunk/src/main/java/org/apache/commons/io/comparator/NameFileComparator.java?view=markup
+has JavaDocs
+ List&amp;lt;File&amp;gt; list = ...
+ NameFileComparator.NAME_COMPARATOR.sort(list); ....
+ File[] array = ...
+ NameFileComparator.NAME_INSENSITIVE_REVERSE.sort(array);
+but this will not work because all static members of NameFileComparator declared as Comparator&amp;lt;File&amp;gt; for example 
+ public static final Comparator&amp;lt;File&amp;gt; NAME_REVERSE = new ReverseComparator(NAME_COMPARATOR);
+public static final Comparator&amp;lt;File&amp;gt; NAME_INSENSITIVE_REVERSE = new ReverseComparator(NAME_INSENSITIVE_COMPARATOR);
+and Comparator class doesn&amp;amp;apos;t have the sort() method.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.comparator.SizeFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.PathFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.LastModifiedFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.NameFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.CompositeFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.DefaultFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.ExtensionFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.DirectoryFileComparator.java</file>
+			<file type="M">org.apache.commons.io.comparator.DefaultFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.ExtensionFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.ComparatorAbstractTestCase.java</file>
+			<file type="M">org.apache.commons.io.comparator.CompositeFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.NameFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.SizeFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.DirectoryFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.PathFileComparatorTest.java</file>
+			<file type="M">org.apache.commons.io.comparator.LastModifiedFileComparatorTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="356" opendate="2012-11-06 16:28:54" fixdate="2013-04-24 00:17:31" resolution="Fixed">
+		<buginformation>
+			<summary>CharSequenceInputStream#reset() behaves incorrectly in case when buffer size is not dividable by data size</summary>
+			<description>The size effect happens when buffer size of input stream is not dividable by requested data size. The bug is hidden in CharSequenceInputStream#reset() method which should also call (I think) bbuf.limit(0) otherwise next call to CharSequenceInputStream#read() will return the remaining tail which bbuf has accumulated.
+In the attached test case the test fails, if dataSize = 13 (not dividable by 10) and runs OK if dataSize = 20 (dividable by 10).</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.CharSequenceInputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.input.CharSequenceInputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="339" opendate="2012-07-24 17:12:48" fixdate="2013-05-16 14:38:59" resolution="Duplicate">
+		<buginformation>
+			<summary>MaxBytesInputStream to limit size of bytes read</summary>
+			<description>I wrote an input stream that stops when it reaches a configured size in bytes.  I found it useful for applications that download web pages and images, but want to enforce a max size to avoid memory problems for extremely large pages/images.
+I was thinking that this class is generic and useful enough to include in the commons-io distribution.  Please consider it, and if it isn&amp;amp;apos;t appropriate for inclusion here, please recommend a better place to open source and share it.
+
+
+
+package org.apache.commons.io.input;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * An input stream that will end when the amount of bytes read reaches
+ * the configured amount of maxBytes.
+ * This is useful for preventing OutOfMemoryExceptions when downloading
+ * very large files in cases where getting partial content is acceptable.
+ * @author Ken Weiner
+ */
+public class MaxBytesInputStream extends CountingInputStream {
+    private long maxBytes;
+
+    public MaxBytesInputStream(InputStream is, long maxBytes) {
+        super(is);
+        this.maxBytes = maxBytes;
+    }
+
+    @Override
+    protected void afterRead(int n) {
+        super.afterRead((int) Math.min(n, this.maxBytes - getByteCount()));
+    }
+
+    @Override
+    public int read() throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read();
+        }
+        return -1;
+    }
+
+    @Override
+    public int read(byte[] b) throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read(b);
+        }
+        return -1;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (getByteCount() &amp;lt; this.maxBytes) {
+            return super.read(b, off, len);
+        }
+        return -1;
+    }
+}
+
+</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BoundedInputStream.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">197</link>
+		</links>
+	</bug>
+	<bug id="383" opendate="2013-06-02 11:53:45" fixdate="2013-06-02 13:18:10" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.doCopyFile caches the file size; needs to be documented</summary>
+			<description>FileUtils.doCopyFile saves the input file size before starting the copy.
+The copy is considered complete when the original file size is reached.
+The method then checks the new input file size against the destination size.
+This will fail if the file has changed in size since the copy started.
+This behaviour should be documented; also it would help if the two sizes were shown in the exception message.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">384</link>
+			<link type="Reference" description="is related to">385</link>
+		</links>
+	</bug>
+	<bug id="390" opendate="2013-07-10 09:44:56" fixdate="2013-07-10 11:49:38" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.sizeOfDirectoryAsBigInteger can overflow</summary>
+			<description>FileUtils.sizeOfDirectoryAsBigInteger can overflow.
+This is because it calls FileUtils.sizeOf(file) which calls sizeOfDirectory() for processing subdirectories.
+As it stands, the method only works properly at the top level.
+A possible solution would be to create private "Big" versions of the called methods; these would not need all the checks so should be faster.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="436" opendate="2014-04-10 12:34:39" fixdate="2014-04-10 14:08:40" resolution="Fixed">
+		<buginformation>
+			<summary>Improper JavaDoc comment for FilenameUtils.indexOfExtension</summary>
+			<description>The method FilenameUtils.indexOfExtension contains this JavaDoc comment:
+  * @param filename  the filename to find the last path separator in, null returns -1
+  * @return the index of the last separator character, or -1 if there
+  * is no such character
+This comment was obviously copied from the FilenameUtils.indexOfLastSeparator method, where it makes perfect sense.
+The JavaDoc comment for FilenameUtils.indexOfExtension should rather read e.g. as follows:
+  * @param filename  the filename to find the last extension separator in, null returns -1
+  * @return the index of the last extension separator character, or -1 if there
+  * is no such character</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="423" opendate="2014-01-30 22:57:15" fixdate="2014-07-16 21:35:26" resolution="Invalid">
+		<buginformation>
+			<summary>FilenameUtils.directoryContains assumes separator at end of parent path</summary>
+			<description>FilenameUtils.directoryContains("/abc", "/abcd") returns true, while FilenameUtils.directoryContains("/abc/", "/abcd") returns false.
+The implementation does a simple checkStartsWith() without taking the separator into consideration.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsDirectoryContainsTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">466</link>
+		</links>
+	</bug>
+	<bug id="462" opendate="2014-12-03 12:48:42" fixdate="2014-12-09 13:49:43" resolution="Fixed">
+		<buginformation>
+			<summary>IOExceptionWithCause no longer needed</summary>
+			<description>The class IOExceptionWithCause is no longer needed in Java 6, because IOException now includes a constructor that takes a Throwable.
+The class should be deprecated and internal usage can revert to using IOException directly.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOExceptionWithCause.java</file>
+			<file type="M">org.apache.commons.io.IOExceptionWithCauseTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+			<file type="M">org.apache.commons.io.TaggedIOException.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="466" opendate="2015-01-06 21:35:56" fixdate="2015-06-23 06:02:09" resolution="Duplicate">
+		<buginformation>
+			<summary>FileUtils.directoryContains returns wrong response due to startsWith comparison</summary>
+			<description>Consider the following:
+
+
+File fooDir = new File("/temp/foo");
+File fooFile = new File("/temp/foo.txt");
+FileUtils.directoryContains(fooDir, fooFile); // returns true, should return false
+
+
+fooFile is a sibling of fooDir.  fooDir does not contain fooFile.
+This is due to the way FilenameUtils.directoryContains is implemented in that this method uses a simple &amp;amp;apos;startsWith&amp;amp;apos; comparison.  A related bug is filed for the FilenameUtils method that I believe should be fixed as well.</description>
+			<version>2.4</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtilsDirectoryContainsTestCase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">423</link>
+		</links>
+	</bug>
+	<bug id="481" opendate="2015-06-19 18:19:48" fixdate="2015-06-23 17:42:48" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.io.FileUtils#waitFor waits too long</summary>
+			<description>The timing algorithm is basically broken, since Thread.sleep is imprecise. There is also a counter error in the looping code. 
+The following testcase will never run in less than 4 seconds on my machine
+  public void testRealWallTime() 
+{
+        long start = System.currentTimeMillis();
+        FileUtils.waitFor(new File(""), 2);
+        System.out.println("elapsed = " + (System.currentTimeMillis() - start));
+    }</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="484" opendate="2015-08-06 11:15:06" fixdate="2015-08-06 11:48:50" resolution="Fixed">
+		<buginformation>
+			<summary>FilenameUtils should handle embedded null bytes</summary>
+			<description>embedding nulls in filenames exposes injection vectors if the application passes unsanitized data to some functions in FileNameUtils</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FilenameUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FilenameUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="492" opendate="2015-12-29 12:12:43" fixdate="2015-12-29 15:40:37" resolution="Fixed">
+		<buginformation>
+			<summary>Typo: In an IOUtils.java comment it says "focussed" instead of "focused"</summary>
+			<description>See here: https://github.com/apache/commons-io/blob/trunk/src/main/java/org/apache/commons/io/IOUtils.java#L101</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="494" opendate="2016-01-06 16:40:12" fixdate="2016-01-07 21:18:17" resolution="Fixed">
+		<buginformation>
+			<summary>Mismatch return type in api docs of class DirectoryWalker.</summary>
+			<description>In the api docs of class org.apache.commons.io.DirectoryWalker&amp;lt;T&amp;gt;, topic of 3.1 External / Multi-threaded.Method handleIsCancelled in demo code returns boolean but with a void return type.</description>
+			<version>2.4</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.DirectoryWalker.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="502" opendate="2016-04-25 14:20:08" fixdate="2016-04-27 17:32:47" resolution="Fixed">
+		<buginformation>
+			<summary>Exceptions are suppressed incorrectly when copying files.</summary>
+			<description>When copying files or directories, exceptions thrown on closing streams are suppressed incorrectly and need to be propagated to the caller.</description>
+			<version>2.4</version>
+			<fixedVersion>2.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

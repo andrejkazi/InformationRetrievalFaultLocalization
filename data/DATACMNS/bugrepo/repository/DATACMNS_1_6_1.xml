@@ -1,0 +1,229 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="385" opendate="2013-10-23 05:58:59" fixdate="2013-10-23 09:53:41" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultRepositoryInformation#getTargetClassMethod matches wrong save-Method if Entity implements Iterable</summary>
+			<description>If an entity implements Iterable and I try to use SimpleJpaRepository#save(Iterable) to save a list of these entities, the code sometimes fails because DefaultRepositoryInformation#getTargetClassMethod(Method, Class) matches the save(Object)-method, depending which of the two save-methods is checked first in the loop.
+To reproduce this behaviour reliably, I had to set a breakpoint in the for-Loop of getTargetClassMethod() and make sure, that the method save(Object) is called before the save(Iterable) for a list of iterable entities.</description>
+			<version>1.6.1</version>
+			<fixedVersion>1.6.2 (Babbage SR1), 1.7 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="408" opendate="2013-12-04 09:59:28" fixdate="2013-12-05 01:49:09" resolution="Fixed">
+		<buginformation>
+			<summary>Guard against invalid values when resolving pagination and sorting parameters from web requests</summary>
+			<description>[example of invalid value]
+
+page=-1 (negative numeric)
+size=a (not numeric)
+sort= (not specified)
+sort=,DESC (not specified property of sort target)
+etc ...
+
+Current implementation of the PageableHandlerMethodArgumentResolver is occurred IllegalArgumentException, and http response status is returned 500(Internal Server Error) on the default settings of SpringMVC.
+I think a best that http response status is returned 400(Bad Request).</description>
+			<version>1.6.1</version>
+			<fixedVersion>1.6.3 (Babbage SR2), 1.7 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">379</link>
+			<link type="Relate" description="relates to">753</link>
+			<link type="Relate" description="relates to">195</link>
+		</links>
+	</bug>
+	<bug id="377" opendate="2013-10-03 20:29:30" fixdate="2013-12-05 02:02:37" resolution="Complete">
+		<buginformation>
+			<summary>All elements are returned if pageSize = 0</summary>
+			<description>All elements are returned if pageSize = 0 in splite of new option maxPageSize in PageableHandlerMethodArgumentResolver introduced from v1.6.
+Consider the example below
+
+
+
+
+
+
+@ContextConfiguration
+
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+
+
+
+@Transactional
+
+
+
+
+@TransactionConfiguration(defaultRollback = true)
+
+
+
+
+public class CustomerRepositoryTest {
+
+
+
+
+    @Inject
+
+
+
+
+    protected CustomerRepository customerRepository;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Test
+
+
+
+
+    public void testFindAllPageable() {
+
+
+
+
+        System.out.println(customerRepository.findAll(new PageRequest(0, 3)));
+
+
+
+
+        System.out.println(customerRepository.findAll(new PageRequest(0, 0)));
+
+
+
+
+        System.out.println(customerRepository.findAll(new PageRequest(0, -1)));
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+Fist case, only 3 elements are returned with the following SQL
+
+
+
+
+
+
+5. /* select count(*) from Customer as generatedAlias0 */ select count(*) as col_0_0_ from customer customer0_ {executed in 5 msec}
+
+
+
+
+5. /* select generatedAlias0 from Customer as generatedAlias0 */ select customer0_.customer_code as customer1_3_, customer0_.customer_add as customer2_3_, customer0_.customer_birth as customer3_3_, customer0_.customer_job as customer4_3_, customer0_.customer_kana as customer5_3_, customer0_.customer_mail as customer6_3_, customer0_.customer_name as customer7_3_, customer0_.customer_pass as customer8_3_, customer0_.customer_post as customer9_3_, customer0_.customer_tel as custome10_3_ from customer customer0_ limit 3 {executed in 8 msec}
+
+
+
+
+
+
+Third case, IllegalArgumentException is thrown with a message, "Page size must not be less than zero!".
+I think these are correct result.
+However, in second case, all elements are returned with the following SQL
+
+
+
+
+
+
+5. /* select count(*) from Customer as generatedAlias0 */ select count(*) as col_0_0_ from customer customer0_ {executed in 2 msec}
+
+
+
+
+5. /* select generatedAlias0 from Customer as generatedAlias0 */ select customer0_.customer_code as customer1_3_, customer0_.customer_add as customer2_3_, customer0_.customer_birth as customer3_3_, customer0_.customer_job as customer4_3_, customer0_.customer_kana as customer5_3_, customer0_.customer_mail as customer6_3_, customer0_.customer_name as customer7_3_, customer0_.customer_pass as customer8_3_, customer0_.customer_post as customer9_3_, customer0_.customer_tel as custome10_3_ from customer customer0_ {executed in 7 msec}
+
+
+
+
+
+
+Note that there is no &amp;amp;apos;limit&amp;amp;apos; statement.
+I&amp;amp;apos;m afraid tha it will cause OutOfMemoryError easily and weak for DDoS atack.
+I think it&amp;amp;apos;s better to throw IllegalArgumentException if pageSize=0 or replace pageSize by maxPageSize.</description>
+			<version>1.6.1</version>
+			<fixedVersion>1.7 M1 (Codd), 1.6.3 (Babbage SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.domain.PageRequest.java</file>
+			<file type="M">org.springframework.data.domain.PageRequestUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="379" opendate="2013-10-08 11:52:55" fixdate="2013-12-05 06:01:44" resolution="Fixed">
+		<buginformation>
+			<summary>SortHanderMethodArgumentResolver fails to resolve comma-only sort parameter</summary>
+			<description>If specified ","(comma only) in parameter value of sort, occurred the ArrayIndexOutOfBoundsException.
+I expected that IllegalArgumentException occurs.
+Other patterns is occurred IllegalArgumentException.</description>
+			<version>1.6.1</version>
+			<fixedVersion>1.6.3 (Babbage SR2), 1.7 RC1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.SortHandlerMethodArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">408</link>
+		</links>
+	</bug>
+	<bug id="429" opendate="2014-01-22 07:45:22" fixdate="2014-01-23 03:24:30" resolution="Fixed">
+		<buginformation>
+			<summary>PageRequest constructor documentation parameter order incorrect.</summary>
+			<description>The documentation for the constructor PageRequest(int page, int size) is incorrect as it has the parameters listed in the wrong order.</description>
+			<version>1.6.1</version>
+			<fixedVersion>1.7 RC1 (Codd), 1.6.4 (Babbage SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.Sort.java</file>
+			<file type="M">org.springframework.data.domain.PageRequest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

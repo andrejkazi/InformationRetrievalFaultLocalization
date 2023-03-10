@@ -1,0 +1,190 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="487" opendate="2012-03-17 17:03:03" fixdate="2012-03-17 20:11:31" resolution="Fixed">
+		<buginformation>
+			<summary>DataConfiguration.get() cannot handle a trivial conversion</summary>
+			<description>A call to DataConfiguration.get() eventually invokes the PropertyConverter.to() method. Here a number of supported data types are checked and corresponding conversions are done.
+However, the case that the value does not need to be converted at all - because it already has the expected type - is not taken into account. This is especially a problem for string values: there is not conversion to string, so the get() method fails even if the value is already a string.</description>
+			<version>1.8</version>
+			<fixedVersion>1.9</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.PropertyConverter.java</file>
+			<file type="M">org.apache.commons.configuration.TestDataConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertyConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="495" opendate="2012-04-25 20:14:15" fixdate="2012-04-26 06:13:50" resolution="Fixed">
+		<buginformation>
+			<summary>If delimiter parsing is disabled, adding of list properties to an AbstractConfiguration does not work correctly</summary>
+			<description>When calling addProperty() or setProperty() with a collection or an array as value it is expected that the single elements are added rather than the container. However, if delimiter parsing is disabled, this check is not performed, and the complex value is directly added. This causes strange effects, for instance when the configuration is saved: then the complex value is just converted to a string. Loading the same configuration again will then produce different values for those properties.</description>
+			<version>1.8</version>
+			<fixedVersion>1.9</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="501" opendate="2012-07-30 19:52:32" fixdate="2012-07-30 20:02:13" resolution="Fixed">
+		<buginformation>
+			<summary>XMLPropertyListConfiguration swallows exceptions about invalid date properties</summary>
+			<description>XMLPropertyListConfiguration.PListNode in its setDateValue() method just ignores parsing exceptions caused by invalid date property values. The values are not added to the newly created configuration object.
+It makes sense that parsing is robust and error-tolerant. However, rather than simply swallowing exceptions, there should at least be a log output, so that users have a chance to determine that something went wrong during loading of a configuration.
+Maybe we can later add a strict mode which fails on loading configuration files with invalid properties.</description>
+			<version>1.8</version>
+			<fixedVersion>1.9</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.plist.XMLPropertyListConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.plist.TestXMLPropertyListConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="504" opendate="2012-08-21 14:18:46" fixdate="2012-09-21 19:13:10" resolution="Fixed">
+		<buginformation>
+			<summary>HierarchicalConfiguration clear() method doesn&amp;apos;t remove the node from its parent anymore in XML source</summary>
+			<description>Using an XML source file, I used to call HierarchicalConfiguration.clear() on an object to remove it from its parent. Now, it just clear the text and the subnodes, but not the node itself, nor its own attribute, when the file is saved.
+Here is the code that works :
+
+
+ConfigurationNode oldNode = configuration.getRootNode();
+oldNode.getParentNode().removeChild(oldNode);
+
+
+configuration belong to a list of HierarchicalConfiguration that I obtained from configurationsAt. I didn&amp;amp;apos;t see any other way to remove a node I got from that method, without explicit casting to SubnodeConfiguration.</description>
+			<version>1.8</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestDefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.PatternSubtreeConfigurationWrapper.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.XMLBeanDeclaration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.MultiFileHierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.DynamicCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.DefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="540" opendate="2013-04-11 10:43:44" fixdate="2013-04-13 14:46:37" resolution="Fixed">
+		<buginformation>
+			<summary>SystemConfiguration copies System.getProperties() instead of directly using it since 1.8</summary>
+			<description>In commons-configuration-1.7 the SystemConfiguration directly used the Map of System.getProperties(). Thus when changing the properties inside the SystemConfiguration, the changes were visible in the Map of System.getProperties().
+Since commons-configuration-1.8 the SystemConfiguration creates a new Map as a copy of System.getProperties() and thus changes in the SystemConfiguration Map are not visible in the System.getProperties() Map.
+In 1.7 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Map map) {
+    this.map = map;
+}
+
+
+In 1.9 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Properties props) {
+    map = convertPropertiesToMap(props);
+}
+
+
+A fix could look like this:
+
+
+public SystemConfiguration() {
+    super((Map)System.getProperties());
+}
+
+
+This breaks the functionality I expected to be able to use SystemConfiguration as a replacement API for accessing and manipulating SystemProperties. For me this is a regression.
+My workaround is currently not to use:
+
+
+new SystemConfiguration();
+
+
+but instead use:
+
+
+new MapConfiguration((Map) System.getProperties());
+
+</description>
+			<version>1.8</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.MapConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSystemConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">581</link>
+		</links>
+	</bug>
+	<bug id="546" opendate="2013-06-09 12:02:54" fixdate="2013-06-12 20:12:58" resolution="Fixed">
+		<buginformation>
+			<summary>ClassCastException in BeanHelper constructing beans with a list of child beans</summary>
+			<description>If you wish to create a bean that has a collection as a property where that collection contains multiple beans, the code crashes as it assumes that you can only ever have single bean declarations as children. 
+For example the following brief construct is not possible to build
+class A 
+{
+   String name;
+}
+
+class B 
+{
+   List&amp;lt;A&amp;gt; children;
+}
+
+The result is the following stack trace 
+Caused by: java.lang.ClassCastException: java.util.ArrayList cannot be cast to org.apache.commons.configuration.beanutils.BeanDeclaration
+	at org.apache.commons.configuration.beanutils.BeanHelper.initBean(BeanHelper.java:212)
+	at org.apache.commons.configuration.beanutils.TestBeanHelper$TestBeanFactory.createBean(TestBeanHelper.java:579)
+	at org.apache.commons.configuration.beanutils.BeanHelper.createBean(BeanHelper.java:342)
+	... 33 more
+It&amp;amp;apos;s pretty easy to see why when you look at the code beginning line 208:
+  for (Map.Entry&amp;lt;String, Object&amp;gt; e : nestedBeans.entrySet())
+  {
+     String propName = e.getKey();
+     Class&amp;lt;?&amp;gt; defaultClass = getDefaultClass(bean, propName);
+     initProperty(bean, propName, createBean(
+ 	   (BeanDeclaration) e.getValue(), defaultClass));
+  }
+
+Note the silly assumption that e.getValue() only ever has BeanDeclaration instances, where it could be BeanDeclaration[], or Collection&amp;lt;BeanDeclaration&amp;gt; as other possible options - which is what the above example show. 
+Extended version of the existing unit test to follow that illustrates the problem.</description>
+			<version>1.8</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.beanutils.TestBeanHelper.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.BeanHelper.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="564" opendate="2014-01-29 15:43:09" fixdate="2014-11-26 21:24:20" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesReader.doParseProperty() version 1.8+ not backward compatible</summary>
+			<description>We have a legacy application using a library with properties configuration files where some properties are only keys; Example:
+property.key
+instead of 
+property.key=value or property.key=
+Until version 1.7 those properties where present with no value in our CompositeConfiguration instance.
+Starting with version 1.8 (introducing a private not overridable regex pattern) those properties are now left out of our application configuration.
+Since we don&amp;amp;apos;t own the lib we can&amp;amp;apos;t move to latest version of commons-configuration and are stuck with version 1.7</description>
+			<version>1.8</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration2.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration2.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,48 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="62" master="1606" duplicate="1633" opendate="2010-11-01 14:46:17" fixdate="2010-12-08 06:01:26" resolution="Complete">
+		<buginformation>
+			<summary>FirewalledRequest.reset() not called when Filters in the FilterChainProxy do not complete the FilterChain jsp:forward goes into a loop</summary>
+			<description>When the FilterChain is not completed within FilterChainProxy, FirewalledRequest.reset() is not called. This can cause the wrong pathInfo and servletPath to be exposed when a forward or include is performed within the FilterChainProxy&amp;amp;apos;s filters and using DefaultHttpFirewall. The reason is because the pathInfo and the servletPath are still cached from the original request and reset was never called.
+The following configuration will demonstrate the issue. When an invalid username/password is submitted, the request is forwarded to /login.jsp?login_error=1. However, when the JspServlet attempts to process the URL it sees the HttpServeltRequest.servletPath as RequestWrapper.strippedServletPath (/j_spring_security_check) instead of the new servletPath /login.jsp. 
+&amp;lt;http auto-config="true"&amp;gt;
+  &amp;lt;intercept-url pattern="/admin/secure.jsp" access="ROLE_ADMIN"/&amp;gt;
+  &amp;lt;form-login login-page="/login.jsp" authentication-failure-handler-ref="afh"/&amp;gt;		
+&amp;lt;/http&amp;gt;	
+&amp;lt;b:bean id="afh" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler"
+  p:defaultFailureUrl="/login.jsp?login_error=1"  
+  p:useForward="true"/&amp;gt;
+&amp;lt;authentication-manager&amp;gt;
+  &amp;lt;authentication-provider&amp;gt;
+    &amp;lt;user-service&amp;gt;
+      &amp;lt;user name="un" password="pwd" authorities="ROLE_ADMIN"/&amp;gt;
+    &amp;lt;/user-service&amp;gt;
+  &amp;lt;/authentication-provider&amp;gt;
+&amp;lt;/authentication-manager&amp;gt;
+I have not yet validated this occurs in 3.1.0.M2 but marked it as impacted to ensure it at least gets looked at. I wanted to upgrade to Spring Security 2.0.6 from Spring Security 2.0.5. That is upgrade one minor version up. I use struts 1.3.10. When I replaced the 4 jar files with the ones from 2.0.6, I started getting strange error messages from Struts saying that no action path could be found. 
+The following are the 4 jars that I replace with the 2.0.6 versions.
+spring-security-acl-2.0.5.RELEASE.jar
+spring-security-core-2.0.5.RELEASE.jar
+spring-security-core-tiger-2.0.5.RELEASE.jar
+spring-security-taglibs-2.0.5.RELEASE.jar
+After trying various things unsuccessfully, I decided to create a bare bones functional project and try my upgrade there.
+What I discovered is that 2.0.6 appears to have problems dealing with jsp forward. In 2.0.5 things work fine but 2.0.6 things go into a loop while running inside of Eclipse/Tomcat 5.5.
+I create a fresh Eclipse Dynamic Web project. I add an index.jsp which has one line to perform a jsp:forward to another .jsp page. I tested with no Spring and it works as expected. I then introduce Spring Security 2.0.5 and Spring 2.5.5 into the mix and things still work as expected. (Index.jsp has intercept-url has filters=none).
+I then replace the above mentioned 4 files with the 2.0.6 versions. Then when I try to navigate to the index.jsp via browser (Fire Fox 3.6.12), the tomcat server goes into a loop spewing out a very large stack trace.
+I&amp;amp;apos;m attaching the eclipse project as well as the tomcat log file.
+The main reason I wanted to upgrade to 2.0.6 is because for some reason, I am not able to get "access-denied-page" attribute to work on the http element.</description>
+			<version>2.0.6</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapperTests.java</file>
+			<file type="M">org.springframework.security.web.firewall.RequestWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1633</link>
+			<link type="Relate" description="relates to">1608</link>
+			<link type="Duplicate" description="duplicates">1606</link>
+		</links>
+	</bug>
+</bugrepository>

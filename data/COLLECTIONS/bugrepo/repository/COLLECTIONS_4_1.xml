@@ -1,0 +1,176 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="COLLECTIONS">
+	<bug id="544" opendate="2015-01-12 05:55:51" fixdate="2015-01-12 14:06:25" resolution="Fixed">
+		<buginformation>
+			<summary>Undocumented performance issue in the retainAll method in CollectionUtils </summary>
+			<description>The method retainAll in CollectionUtils is inefficient when the parameter collection has a slow containment method.
+The following is the current implementation with its documentation:
+
+ /**
+     * Returns a collection containing all the elements in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+     * that are also in &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt;. The cardinality of an element &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+     * in the returned collection is the same as the cardinality of &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+     * in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; unless &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt; does not contain &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;, in which
+     * case the cardinality is zero. This method is useful if you do not wish to modify
+     * the collection &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt; and thus cannot call &amp;lt;code&amp;gt;c.retainAll(retain);&amp;lt;/code&amp;gt;.
+     *
+     * @param &amp;lt;C&amp;gt;  the type of object the {@link Collection} contains
+     * @param collection  the collection whose contents are the target of the #retailAll operation
+     * @param retain  the collection containing the elements to be retained in the returned collection
+     * @return a &amp;lt;code&amp;gt;Collection&amp;lt;/code&amp;gt; containing all the elements of &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+     * that occur at least once in &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt;.
+     * @throws NullPointerException if either parameter is null
+     * @since 3.2
+     */
+    public static &amp;lt;C&amp;gt; Collection&amp;lt;C&amp;gt; retainAll(final Collection&amp;lt;C&amp;gt; collection, final Collection&amp;lt;?&amp;gt; retain) {
+        return ListUtils.retainAll(collection, retain);
+    }
+
+
+We can notice the inefficiency by looking at the retainAll method in ListUtils.
+The retainAll method from ListUtils is implemented and documented as follows:
+
+  /**
+     * Returns a List containing all the elements in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;
+     * that are also in &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt;. The cardinality of an element &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+     * in the returned list is the same as the cardinality of &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;
+     * in &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt; unless &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt; does not contain &amp;lt;code&amp;gt;e&amp;lt;/code&amp;gt;, in which
+     * case the cardinality is zero. This method is useful if you do not wish to modify
+     * the collection &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt; and thus cannot call &amp;lt;code&amp;gt;collection.retainAll(retain);&amp;lt;/code&amp;gt;.
+     * &amp;lt;p&amp;gt;
+     * This implementation iterates over &amp;lt;code&amp;gt;collection&amp;lt;/code&amp;gt;, checking each element in
+     * turn to see if it&amp;amp;apos;s contained in &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt;. If it&amp;amp;apos;s contained, it&amp;amp;apos;s added
+     * to the returned list. As a consequence, it is advised to use a collection type for
+     * &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt; that provides a fast (e.g. O(1)) implementation of
+     * {@link Collection#contains(Object)}.
+     *
+     * @param &amp;lt;E&amp;gt;  the element type
+     * @param collection  the collection whose contents are the target of the #retailAll operation
+     * @param retain  the collection containing the elements to be retained in the returned collection
+     * @return a &amp;lt;code&amp;gt;List&amp;lt;/code&amp;gt; containing all the elements of &amp;lt;code&amp;gt;c&amp;lt;/code&amp;gt;
+     * that occur at least once in &amp;lt;code&amp;gt;retain&amp;lt;/code&amp;gt;.
+     * @throws NullPointerException if either parameter is null
+     * @since 3.2
+     */
+    public static &amp;lt;E&amp;gt; List&amp;lt;E&amp;gt; retainAll(final Collection&amp;lt;E&amp;gt; collection, final Collection&amp;lt;?&amp;gt; retain) {
+        final List&amp;lt;E&amp;gt; list = new ArrayList&amp;lt;E&amp;gt;(Math.min(collection.size(), retain.size()));
+
+        for (final E obj : collection) {
+            if (retain.contains(obj)) {
+                list.add(obj);
+            }
+        }
+        return list;
+    }
+
+
+In the case of ListUtils#retainAll, the inefficiency is properly documented.
+Perhaps the disclaimer about potential inefficiencies depending on the type 
+of the parameter collection in ListUtils:retainAll should also be included in CollectionUtils#retainAll.</description>
+			<version>4.1</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.CollectionUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="555" opendate="2015-02-16 17:03:59" fixdate="2015-02-17 22:03:17" resolution="Fixed">
+		<buginformation>
+			<summary>Undefined NullPointerException in TreeBag.java</summary>
+			<description>In add(final E object) method of TreeBag.java, the parameter object is not null-checked in throw IlligalArgumentException statement. Thus, it crashes with an inappropriate type of exceptions when the parameter, object is null. object can be null from the argument, transform(object) in TransformedCollection.add(final E object).
+I think object ==null should be added in the predicate of the throw IlligalArgumentException statement like below.
+
+
+    public boolean add(final E object) {
+        if((object==null) || (comparator() == null &amp;amp;&amp;amp; !(object instanceof Comparable))) {
+            throw new IllegalArgumentException("Objects of type " + object.getClass() + " cannot be added to " +
+                                               "a naturally ordered TreeBag as it does not implement Comparable");
+        }
+        return super.add(object);
+    }
+
+</description>
+			<version>4.1</version>
+			<fixedVersion>4.1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.bag.TreeBagTest.java</file>
+			<file type="M">org.apache.commons.collections4.bag.TreeBag.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="586" opendate="2016-04-12 21:59:19" fixdate="2016-08-04 17:33:10" resolution="Fixed">
+		<buginformation>
+			<summary>PatriciaTrie prefixMap clear throws NullPointerException</summary>
+			<description>Clearing all entries of a prefixMap returned by PatriciaTrie using the clear method throws a NullPointerException. The workaround of removing each entry using the remove method seems to work.
+Here are the test cases for the bug and the workaround:
+
+
+public class PatriciaTrieTest {
+
+    private Trie&amp;lt;String, Integer&amp;gt; trie;
+
+    @Before
+    public void setUp() {
+        trie = new PatriciaTrie&amp;lt;Integer&amp;gt;();
+        trie.put("Anna", 1);
+        trie.put("Anael", 2);
+        trie.put("Analu", 3);
+        trie.put("Andreas", 4);
+        trie.put("Andrea", 5);
+        trie.put("Andres", 6);
+        trie.put("Anatole", 7);
+    }
+
+    @Test
+    public void testPrefixMapClear() {
+        SortedMap&amp;lt;String, Integer&amp;gt; prefixMap = trie.prefixMap("And");
+        assertEquals(new HashSet&amp;lt;&amp;gt;(Arrays.asList("Andrea", "Andreas", "Andres")), prefixMap.keySet());
+        assertEquals(Arrays.asList(5, 4, 6), new ArrayList&amp;lt;&amp;gt;(prefixMap.values()));
+
+        prefixMap.clear();
+        assertTrue(prefixMap.keySet().isEmpty());
+        assertTrue(prefixMap.values().isEmpty());
+        assertEquals(new HashSet&amp;lt;&amp;gt;(Arrays.asList("Anael", "Analu", "Anatole", "Anna")), trie.keySet());
+        assertEquals(Arrays.asList(2, 3, 7, 1), new ArrayList&amp;lt;&amp;gt;(trie.values()));
+    }
+
+    @Test
+    public void testPrefixMapClearUsingRemove() {
+        SortedMap&amp;lt;String, Integer&amp;gt; prefixMap = trie.prefixMap("And");
+        assertEquals(new HashSet&amp;lt;&amp;gt;(Arrays.asList("Andrea", "Andreas", "Andres")), prefixMap.keySet());
+        assertEquals(Arrays.asList(5, 4, 6), new ArrayList&amp;lt;&amp;gt;(prefixMap.values()));
+
+        Set&amp;lt;String&amp;gt; keys = new HashSet&amp;lt;String&amp;gt;(prefixMap.keySet());
+        for (final String key : keys) {
+            prefixMap.remove(key);
+        }
+        assertTrue(prefixMap.keySet().isEmpty());
+        assertTrue(prefixMap.values().isEmpty());
+        assertEquals(new HashSet&amp;lt;&amp;gt;(Arrays.asList("Anael", "Analu", "Anatole", "Anna")), trie.keySet());
+        assertEquals(Arrays.asList(2, 3, 7, 1), new ArrayList&amp;lt;&amp;gt;(trie.values()));
+    }
+
+}
+
+
+The stacktrace of the NullPointerException thrown by the testPrefixMapClear test case is:
+
+java.lang.NullPointerException
+	at org.apache.commons.collections4.trie.AbstractPatriciaTrie$PrefixRangeEntrySet$EntryIterator.remove(AbstractPatriciaTrie.java:2370)
+	at java.util.AbstractCollection.clear(AbstractCollection.java:432)
+	at java.util.AbstractMap.clear(AbstractMap.java:288)
+	at PatriciaTrieTest.testPrefixMapClear(PatriciaTrieTest.java:39)
+
+</description>
+			<version>4.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.collections4.trie.AbstractPatriciaTrie.java</file>
+			<file type="M">org.apache.commons.collections4.trie.PatriciaTrieTest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

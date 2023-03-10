@@ -1,0 +1,333 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="353" opendate="2014-07-11 03:15:09" fixdate="2014-07-16 08:49:09" resolution="Fixed">
+		<buginformation>
+			<summary>Deleting a non-existing resource leads to NullPointerException in RepositoryEntityController</summary>
+			<description>When trying to access resources from Spring MVC (named custom DELETEs/PUTs above) like this:
+DELETE 
+http://172.16.56.1:8080/service/entity/removeBySubInstanceId?subInstanceId=ec81d9fc48f328052fc59e1c6a34ea2f
+A NPE in AbstractRepositoryRestController is thrown.
+
+
+
+
+
+
+OGBACK:12:02:59.986 [tomcat-http--5] ERROR o.s.d.r.w.AbstractRepositoryRestController - null source
+
+
+
+
+java.lang.IllegalArgumentException: null source
+
+
+
+
+	at java.util.EventObject.&amp;lt;init&amp;gt;(EventObject.java:56) ~[na:1.7.0_45]
+
+
+
+
+	at org.springframework.context.ApplicationEvent.&amp;lt;init&amp;gt;(ApplicationEvent.java:42) ~[spring-context-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.data.rest.core.event.RepositoryEvent.&amp;lt;init&amp;gt;(RepositoryEvent.java:15) ~[spring-data-rest-core-2.2.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+	at org.springframework.data.rest.core.event.BeforeDeleteEvent.&amp;lt;init&amp;gt;(BeforeDeleteEvent.java:13) ~[spring-data-rest-core-2.2.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.RepositoryEntityController.deleteItemResource(RepositoryEntityController.java:356) ~[spring-data-rest-webmvc-2.2.0.BUILD-SNAPSHOT.jar:na]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.7.0_45]
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57) ~[na:1.7.0_45]
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.7.0_45]
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:606) ~[na:1.7.0_45]
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:215) ~[spring-web-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:132) ~[spring-web-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:104) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandleMethod(RequestMappingHandlerAdapter.java:749) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:690) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:83) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:945) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:876) ~[spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:961) [spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doDelete(FrameworkServlet.java:885) [spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:653) [servlet-api.jar:na]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:837) [spring-webmvc-4.0.2.RELEASE.jar:4.0.2.RELEASE]
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:728) [servlet-api.jar:na]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305) [catalina.jar:7.0.42.A]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210) [catalina.jar:7.0.42.A]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:330) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:118) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:84) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:113) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:113) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:342) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:154) [spring-security-web-3.2.0.RELEASE.jar:3.2.0.RELEASE]
+
+
+
+
+
+
+Same behaviour applies for custom PUT operations afaik.</description>
+			<version>2.2 M1 (Evans)</version>
+			<fixedVersion>2.1.2 (Dijkstra SR2), 2.2 RC1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="381" opendate="2014-09-04 05:27:11" fixdate="2014-09-04 05:36:55" resolution="Fixed">
+		<buginformation>
+			<summary>Controllers for Alps and repository listing get listed under the root even if a base URI is configured</summary>
+			<description></description>
+			<version>2.2 RC1 (Evans)</version>
+			<fixedVersion>2.2.1 (Evans SR1), 2.3 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">411</link>
+		</links>
+	</bug>
+	<bug id="411" opendate="2014-11-16 12:25:13" fixdate="2014-11-16 23:28:17" resolution="Duplicate">
+		<buginformation>
+			<summary>BaseUrl mapping not workig</summary>
+			<description>Not sure if the issue is with Data-Rest or Spring Boot but extending RepositoryRestConfiguration and setting a BaseUri (to say /rest) using 1.1.9.RELEASE move the list repository controller from / to /rest allowing / to get to the index.html page in src/main/resource/public/ amending to version
+&amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt;
+&amp;lt;artifactId&amp;gt;spring-boot-starter-parent&amp;lt;/artifactId&amp;gt;
+&amp;lt;version&amp;gt;1.2.0.M2&amp;lt;/version&amp;gt;
+Make the list repository controller work on BOTH / and /rest</description>
+			<version>2.2 GA (Evans)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.alps.AlpsController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">381</link>
+		</links>
+	</bug>
+	<bug id="388" opendate="2014-09-26 06:05:58" fixdate="2014-12-04 10:21:32" resolution="Fixed">
+		<buginformation>
+			<summary>Can&amp;apos;t use controller advices if annotation based event handling is used</summary>
+			<description>Spring Data REST is capturing any exceptions thrown by event handler methods and re-throwing them as IllegalStateException. By doing this, Spring Data REST makes it very hard to adopt any exception handling mechanism offered by Spring MVC (controller advices, for example) because we cannot pinpoint which exception we would like to handle in each exception handler of the controller advice (the only exception that we can handle is IllegalStateException).
+The patch in the pull request corrects this behavior. If a event handler throws a unchecked exception, than it makes sure that this very exception is thrown. Otherwise (if it is a checked exception), it resorts to the old behavior, encapsulating the checked exception in a IllegalStateException. Without this patch, the controller advice shown below does not work.
+
+
+
+
+
+
+@ControllerAdvice
+
+
+
+
+public class ExceptionHandlingControllerAdvice {
+
+
+
+
+  @ExceptionHandler(UnauthorizedException.class)
+
+
+
+
+  public ResponseEntity handleUnauthorizedException(UnauthorizedException exception) {
+
+
+
+
+    String stackTrace = ExceptionUtils.getStackTrace(exception);
+
+
+
+
+    return new ResponseEntity(stackTrace, HttpStatus.FORBIDDEN); 
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+By applying this patch, I believe Spring Data REST better fits the Spring MVC world.</description>
+			<version>2.2 GA (Evans)</version>
+			<fixedVersion>2.1.5 (Dijkstra SR5), 2.2.2 (Evans SR2), 2.3 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.event.AfterLinkDeleteEvent.java</file>
+			<file type="M">org.springframework.data.rest.core.event.AfterLinkSaveEvent.java</file>
+			<file type="D">org.springframework.data.rest.core.support.Methods.java</file>
+			<file type="D">org.springframework.data.rest.core.event.LinkSaveEvent.java</file>
+			<file type="M">org.springframework.data.rest.core.domain.jpa.PersonBeforeSaveHandler.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.RepositoryEventHandler.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleBeforeLinkDelete.java</file>
+			<file type="M">org.springframework.data.rest.core.context.RepositoryEventIntegrationTests.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleAfterLinkDelete.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleBeforeDelete.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleBeforeLinkSave.java</file>
+			<file type="M">org.springframework.data.rest.core.event.BeforeLinkSaveEvent.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleBeforeCreate.java</file>
+			<file type="D">org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcessor.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleAfterCreate.java</file>
+			<file type="D">org.springframework.data.rest.core.util.UUIDConverter.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleBeforeSave.java</file>
+			<file type="M">org.springframework.data.rest.core.event.BeforeLinkDeleteEvent.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleAfterDelete.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleAfterLinkSave.java</file>
+			<file type="M">org.springframework.data.rest.core.domain.jpa.AnnotatedPersonEventHandler.java</file>
+			<file type="M">org.springframework.data.rest.core.annotation.HandleAfterSave.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

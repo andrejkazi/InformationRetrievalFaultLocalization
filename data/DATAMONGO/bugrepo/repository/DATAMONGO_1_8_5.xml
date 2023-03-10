@@ -1,0 +1,17 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1497" opendate="2016-09-22 08:53:43" fixdate="2016-09-22 16:10:20" resolution="Fixed">
+		<buginformation>
+			<summary>MappingMongoConverter&amp;apos;s check for whether a value is available for a property should use DbObjectAccessor</summary>
+			<description>MappingMongoConverter&amp;amp;apos;s read method when dealing with remaining properties and associations not already set in the constructor should use a DBObjectAccessor instead of accessing the DBObject directly.
+</description>
+			<version>1.8.5 (Gosling SR5)</version>
+			<fixedVersion>1.7.3 (Fowler SR3), 1.9.4 (Hopper SR4), 1.8.6 (Gosling SR6)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

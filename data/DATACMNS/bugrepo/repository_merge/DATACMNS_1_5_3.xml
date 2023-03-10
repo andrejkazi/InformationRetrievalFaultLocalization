@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="8" master="304" duplicate="359" opendate="2013-03-27 03:33:58" fixdate="2013-08-21 23:41:04" resolution="Fixed">
+		<buginformation>
+			<summary>Misleading documentation of page parameter resolved by PageableArgumentResolver Incorrect deprecation message in PageableArgumentResolver</summary>
+			<description>PageableArgumentResolver is not resolving page parameter. To use pagination, you will have to use page.page
+So either table 1.1. needs an update or PageableArgumentResolver has to be changed to use the documented parameter
+ PageableArgumentResolver is deprecated in 1.6.RC1 to favor PageableWebHandlerArgumentResolver. However the class PageableWebHandlerArgumentResolver does not exist. I believe the new class to be used now should be PageableHandlerMethodArgumentResolver i.e. without Web after Pageable.</description>
+			<version>1.6 RC1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">359</link>
+			<link type="Duplicate" description="duplicates">304</link>
+		</links>
+	</bug>
+</bugrepository>

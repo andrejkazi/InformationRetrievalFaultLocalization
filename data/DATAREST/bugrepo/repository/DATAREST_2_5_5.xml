@@ -1,0 +1,264 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="953" opendate="2016-12-06 12:39:55" fixdate="2016-12-07 17:58:13" resolution="Fixed">
+		<buginformation>
+			<summary>PUT empties nested collection</summary>
+			<description>In the following scenario Parent and Child are entities and Item is either a Embeddable or an Entity. Only Parent has a repository that is also exported.
+
+Posting such a structure works fine but the PUT empties the Item collection in Child. 
+Please see this project to reproduce the issue - https://github.com/mduesterhoeft/sdr-put-nested-list.
+Such a scenario has been working in Hopper-SR4 and started to be broken since Hopper-SR5.
+
+Here are the requests I am issuing:
+
+Create parent
+
+
+
+
+
+
+POST /parents -&amp;gt; 201
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test"}]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+update parent
+
+
+
+
+
+
+PUT /parents/id -&amp;gt; 204
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test123"} ]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+After the PUT the items collection is empty.</description>
+			<version>2.5.5 (Hopper SR5)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.5.6 (Hopper SR6), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">944</link>
+			<link type="Relate" description="is related to">938</link>
+			<link type="Relate" description="is related to">954</link>
+		</links>
+	</bug>
+	<bug id="956" opendate="2016-12-07 21:15:45" fixdate="2016-12-08 09:13:14" resolution="Fixed">
+		<buginformation>
+			<summary>PUT does not apply new items in nested collection</summary>
+			<description>In the following scenario Parent and Child are entities and Item is either a Embeddable or an Entity. Only Parent has a repository that is also exported.
+
+PUT updates existing items but does not add new items.
+Please see this project to reproduce the issue - https://github.com/mduesterhoeft/sdr-put-nested-list. See test ParentRestIntegrationTest#should_add_new_item
+
+Here are the requests I am issuing:
+
+Create parent
+
+
+
+
+
+
+POST /parents -&amp;gt; 201
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test"}]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+update parent
+
+
+
+
+
+
+PUT /parents/id -&amp;gt; 204
+
+
+
+
+{
+
+
+
+
+    "child": {
+
+
+
+
+        "items": [
+
+
+
+
+          {"some": "test123"},
+
+
+
+
+          {"some": "test1235"}]
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+After the PUT the items collection still has size 1.</description>
+			<version>2.5.5 (Hopper SR5)</version>
+			<fixedVersion>2.6 RC1 (Ingalls), 2.5.6 (Hopper SR6), 3.0 M2 (Kay)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">958</link>
+		</links>
+	</bug>
+	<bug id="958" opendate="2016-12-08 15:12:03" fixdate="2016-12-08 16:50:49" resolution="Duplicate">
+		<buginformation>
+			<summary>PUT of Document with List&lt;&gt; fails to add entries post Hopper-SR5+</summary>
+			<description>As demonstrated in the following project:
+
+https://github.com/timtebeek/mongo-datarest-put-nested
+https://travis-ci.org/timtebeek/mongo-datarest-put-nested
+
+I use Spring Data Mongo with Spring Data Rest.
+
+POST object with a single element in an array
+PUT to the resulting url an updated object with two elements in array
+GET the resulting url and inspect the array
+https://github.com/timtebeek/mongo-datarest-put-nested/blob/master/src/test/java/com/github/timtebeek/PetProjectTest.java#L23
+
+Under Hopper-SR4 the array is updated to now contain two elements.
+Under Hopper-SR5 the array only contains the original single element.
+This seems like a regression and breaks our application, leaving us stuck on Hopper-SR4 for now. Can you confirm and fix this please? </description>
+			<version>2.5.5 (Hopper SR5)</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.DomainObjectReader.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">956</link>
+		</links>
+	</bug>
+</bugrepository>

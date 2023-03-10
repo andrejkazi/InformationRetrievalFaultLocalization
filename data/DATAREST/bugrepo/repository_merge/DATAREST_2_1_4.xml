@@ -1,0 +1,345 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="12" master="394" duplicate="408" opendate="2014-09-26 12:26:22" fixdate="2014-12-01 10:18:42" resolution="Fixed">
+		<buginformation>
+			<summary>Projections are not applied to collection attributes Nested projections not loading nested lists</summary>
+			<description>When a projection has an attribute which is a collection of another projection, Spring Data REST is not populating the collection with projections but with entities. This patch allows Spring Data REST to apply projections to collection attributes as well. When nesting projections, Lists/Maps are not included in the processing. Sample:
+The following snippet represents the nested projection, which contains a list of limitations.
+
+
+
+
+
+
+"name" : "Light",
+
+
+
+
+    "description" : "Light",
+
+
+
+
+    "enabled" : true,
+
+
+
+
+    "limitations" : [ {
+
+
+
+
+      "name" : "Request",
+
+
+
+
+      "description" : "Number of requests per billing period",
+
+
+
+
+      "type" : null,
+
+
+
+
+      "value" : 20.0
+
+
+
+
+    } ],
+
+
+
+
+    "links" : [ ],
+
+
+
+
+    "content" : [ ],
+
+
+
+
+    "links" : [ {
+
+
+
+
+      "rel" : "self",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310{?projection}"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "limitations",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310/limitations"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "product",
+
+
+
+
+      "href" : "http://localhost:8080/web/specifications/1310/product"
+
+
+
+
+    }
+
+
+
+
+
+
+Using the parent projection, which contains the nested projection
+
+
+
+
+
+
+"name" : "Light",
+
+
+
+
+    "description" : "Light",
+
+
+
+
+    "prices" : [ {
+
+
+
+
+      "value" : -1.0,
+
+
+
+
+      "currency" : "USD",
+
+
+
+
+      "unit" : "Request",
+
+
+
+
+      "period" : "Month",
+
+
+
+
+      "interval" : 1,
+
+
+
+
+      "approximation" : false,
+
+
+
+
+      "component" : null
+
+
+
+
+    } ],
+
+
+
+
+    "productCategory" : {
+
+
+
+
+      "name" : "Price comparison",
+
+
+
+
+      "description" : "Blablablaba"
+
+
+
+
+    },
+
+
+
+
+    "specifications" : [ {
+
+
+
+
+      "name" : "Light",
+
+
+
+
+      "description" : "Light",
+
+
+
+
+      "enabled" : true
+
+
+
+
+    } ],
+
+
+
+
+    "trialPeriod" : null,
+
+
+
+
+    "trialInterval" : 0,
+
+
+
+
+    "links" : [ ],
+
+
+
+
+    "content" : [ ],
+
+
+
+
+    "links" : [ {
+
+
+
+
+      "rel" : "self",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300{?projection}"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "specifications",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/specifications"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "product",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/product"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "productCategory",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/productCategory"
+
+
+
+
+    }, {
+
+
+
+
+      "rel" : "accounts",
+
+
+
+
+      "href" : "http://localhost:8080/web/products/1300/accounts"
+
+
+
+
+    } ]
+
+
+
+
+
+
+one can see, that all types (int, string) etc. are rendered, but the list not. </description>
+			<version>2.1.4 (Dijkstra SR4)</version>
+			<fixedVersion>2.3 M1 (Fowler), 2.1.5 (Dijkstra SR5), 2.2.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptor.java</file>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">408</link>
+			<link type="Duplicate" description="duplicates">394</link>
+			<link type="Duplicate" description="is duplicated by">477</link>
+		</links>
+	</bug>
+</bugrepository>

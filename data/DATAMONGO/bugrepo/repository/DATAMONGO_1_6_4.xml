@@ -1,0 +1,550 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1087" opendate="2014-11-06 15:06:49" fixdate="2014-11-28 03:04:36" resolution="Fixed">
+		<buginformation>
+			<summary>Incorrect warning for MongoPersistentEntityIndexResolver$CyclicPropertyReferenceException: Found cycle for field...</summary>
+			<description>The below class returns an incorrect warning about finding a cycle.  It is caused by the names of the fields.  If the name- prefix in nameLast is changed to a different string then the warning is not output.  The class:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class CycleExample implements Serializable {
+
+
+
+
+
+
+
+
+
+    public class NameComponent {
+
+
+
+
+
+
+
+
+
+        private String component;
+
+
+
+
+
+
+
+
+
+        public String getComponent() {
+
+
+
+
+            return component;
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        public void setNumber(String component) {
+
+
+
+
+            this.component = component;
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private NameComponent name;
+
+
+
+
+    private NameComponent nameLast;
+
+
+
+
+
+
+
+
+
+    public NameComponent getName() {
+
+
+
+
+        return name;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setName(NameComponent name) {
+
+
+
+
+        this.name = name;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public NameComponent getNameLast() {
+
+
+
+
+        return nameLast;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public void setNameLast(NameComponent nameLast) {
+
+
+
+
+        this.nameLast = nameLast;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+014-11-06 15:04:56,033 [main] WARN  org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver - Found cycle for field &amp;amp;apos;component&amp;amp;apos; in type &amp;amp;apos;NameComponent&amp;amp;apos; for path &amp;amp;apos;name&amp;amp;apos;
+
+
+
+
+org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$CyclicPropertyReferenceException: Found cycle for field &amp;amp;apos;component&amp;amp;apos; in type &amp;amp;apos;NameComponent&amp;amp;apos; for path &amp;amp;apos;name&amp;amp;apos;
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$CycleGuard.protect(MongoPersistentEntityIndexResolver.java:472)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:231)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+        at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.access$400(MongoPersistentEntityIndexResolver.java:56)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:256)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver$3.doWithPersistentProperty(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+        at org.springframework.data.mapping.model.BasicPersistentEntity.doWithProperties(BasicPersistentEntity.java:294)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.appendTextIndexInformation(MongoPersistentEntityIndexResolver.java:226)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.potentiallyCreateTextIndexDefinition(MongoPersistentEntityIndexResolver.java:205)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForEntity(MongoPersistentEntityIndexResolver.java:99)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:79)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.resolveIndexForClass(MongoPersistentEntityIndexResolver.java:56)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForAndCreateIndexes(MongoPersistentEntityIndexCreator.java:128)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.checkForIndexes(MongoPersistentEntityIndexCreator.java:121)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.onApplicationEvent(MongoPersistentEntityIndexCreator.java:105)
+
+
+
+
+        at org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator.onApplicationEvent(MongoPersistentEntityIndexCreator.java:46)
+
+
+
+
+        at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:151)
+
+
+
+
+        at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:128)
+
+
+
+
+        at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:331)
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.addPersistentEntity(AbstractMappingContext.java:307)
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:181)
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:141)
+
+
+
+
+        at org.springframework.data.mapping.context.AbstractMappingContext.getPersistentEntity(AbstractMappingContext.java:67)
+
+
+
+
+        at org.springframework.data.mongodb.repository.support.MongoRepositoryFactory.getEntityInformation(MongoRepositoryFactory.java:141)
+
+
+
+
+        at org.springframework.data.mongodb.repository.support.MongoRepositoryFactory.getTargetRepository(MongoRepositoryFactory.java:83)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:177)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.initAndReturn(RepositoryFactoryBeanSupport.java:239)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.afterPropertiesSet(RepositoryFactoryBeanSupport.java:225)
+
+
+
+
+...
+
+
+
+
+
+</description>
+			<version>1.7 M1 (Fowler)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1121</link>
+		</links>
+	</bug>
+	<bug id="1208" opendate="2015-04-22 06:03:21" fixdate="2015-05-21 00:02:48" resolution="Fixed">
+		<buginformation>
+			<summary>MongoTemplate.stream() does not consider limit, order, sort etc.</summary>
+			<description>I am trying to introduce the operation mongoTemplate.stream in my project.
+This is the code I use to create the query-object
+
+
+
+
+
+
+    private Query createQuery(Criteria criteria, int pageSize, boolean disableTimeout, boolean limitFrom) {
+
+
+
+
+        Query query = query(criteria)
+
+
+
+
+                .with(
+
+
+
+
+                        new PageRequest(
+
+
+
+
+                                0, pageSize,
+
+
+
+
+                                new Sort(limitFrom ? Sort.Direction.ASC : Sort.Direction.DESC, "timestamp")));
+
+
+
+
+
+
+
+
+
+        if (disableTimeout) {
+
+
+
+
+            query = query.maxTime(4, TimeUnit.HOURS);
+
+
+
+
+        }
+
+
+
+
+        return query;
+
+
+
+
+    }
+
+
+
+
+
+
+The resulting query contains a value for the limit-field. However, when executing the stream-operation, the limit-value is not taken into account and I retrieve all matching documents.</description>
+			<version>1.7 GA (Fowler)</version>
+			<fixedVersion>1.8 M1 (Gosling), 1.7.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1193" opendate="2015-04-01 01:30:33" fixdate="2015-05-31 23:13:28" resolution="Fixed">
+		<buginformation>
+			<summary>Prevent unnecessary database lookups when resolving DBRefs on 2.x driver</summary>
+			<description>DefaultDbRefResolver looks up a DB instance via the MongoDbFactory whose output will not actually be used in the case of using the MongoDB 2.x Java driver.
+This causes a performance degradation especially in collections of DBRef instances.</description>
+			<version>1.7 GA (Fowler)</version>
+			<fixedVersion>1.8 M1 (Gosling), 1.7.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.ReflectiveDBRefResolver.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1194</link>
+		</links>
+	</bug>
+	<bug id="1229" opendate="2015-06-02 11:17:53" fixdate="2015-06-04 22:07:53" resolution="Fixed">
+		<buginformation>
+			<summary>MongoQueryCreator incorrectly rejects ignoreCase on nested String path</summary>
+			<description>I have an embedded field foo.bar in my document class. I can use a repository to define findByFooBar(String bar), but findByFooBarIgnoreCase(String bar) throws an exception at query time:
+
+
+
+
+
+
+java.lang.IllegalArgumentException: part Doc.foo.bar must be of type String but was SIMPLE_PROPERTY (1): [Is, Equals]
+
+
+
+
+
+</description>
+			<version>1.7 GA (Fowler)</version>
+			<fixedVersion>1.6.3 (Evans SR3), 1.7.1 (Fowler SR1), 1.5.6 (Dijkstra SR6), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1204" opendate="2015-04-15 06:14:25" fixdate="2015-11-20 11:52:10" resolution="Fixed">
+		<buginformation>
+			<summary>ObjectPath equality check breaks due to changes MongoDB V3.</summary>
+			<description>The equality check for ObjectPathItem item id&amp;amp;apos;s in ObjectPath seems to break when used with MongoDB V3 due to contract changes of MongoDB&amp;amp;apos;s ObjectID. 
+From the referenced commit in the mongo-java-driver:
+https://github.com/mongodb/mongo-java-driver/commit/aa4b4355c808e045ce00cc1dfbdd0bf78fb6901a
+(ObjectId.)equals method will no longer compare equal to anything but an ObjectId</description>
+			<version>1.7 GA (Fowler)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1425" opendate="2016-04-26 13:04:25" fixdate="2016-05-09 11:31:21" resolution="Fixed">
+		<buginformation>
+			<summary>NOT_CONTAINS keyword issues CONTAINS query.</summary>
+			<description></description>
+			<version>1.6.4 (Evans SR4)</version>
+			<fixedVersion>1.9.2 (Hopper SR2), 1.10 M1 (Ingalls), 1.8.5 (Gosling SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1437" opendate="2016-05-24 09:54:42" fixdate="2016-06-02 07:27:07" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultDbRefResolver swallows cause of non DataAccessException translatable Exception.</summary>
+			<description></description>
+			<version>1.6.4 (Evans SR4)</version>
+			<fixedVersion>1.9.2 (Hopper SR2), 1.10 M1 (Ingalls), 1.8.5 (Gosling SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.data.mongodb.core.convert.LazyLoadingInterceptorUntiTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

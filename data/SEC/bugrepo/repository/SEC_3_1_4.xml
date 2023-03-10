@@ -1,0 +1,189 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2223" opendate="2013-07-21 12:28:59" fixdate="2013-07-22 09:36:13" resolution="Fixed">
+		<buginformation>
+			<summary>FirewallRequest#reset() has incomplete javadoc</summary>
+			<description></description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.firewall.FirewalledRequest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2237</link>
+		</links>
+	</bug>
+	<bug id="2295" opendate="2013-08-29 08:15:52" fixdate="2013-08-29 14:52:20" resolution="Fixed">
+		<buginformation>
+			<summary>Remove ERROR log when Spring Security is embedded into an UberJar</summary>
+			<description>We embed Spring Security and Spring DI into a common Uber-Jar as part of a Dropwizard application.
+We use the Gradle Shadow plugin to do this (the Gradle version of the Maven Shade plugin).
+However, as soon as we add an implementation version to the generated JAR
+Spring Security logs an ERROR at start up:
+e.g.
+ERROR [2013-08-29 15:09:23,322] org.springframework.security.core.SpringSecurityCoreVersion: *** Spring Major version &amp;amp;apos;3&amp;amp;apos; expected, but you are running with version: 1.1.4-SNAPSHOT. Please check your classpath for unwanted jar files.
+This error should be changed to either a WARN or an INFO. 
+It is very unnerving for customers to see an ERROR like this at start up and they will raise support tickets or alert sysadmins.
+Alternatively, there should be a way to disable this check programmatically or via configuration.
+See reproducible test case:
+https://github.com/jacek99/dropwizard-spring-di-security-onejar-example
+git clone it and then using Gradle 1.6 or higher execute
+gradle runShadow
+You will see the error on the screen.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersionTests.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2308" opendate="2013-09-06 03:49:14" fixdate="2013-09-13 15:54:41" resolution="Complete">
+		<buginformation>
+			<summary>DefaultSpringSecurityContextSource should accept empty Base DNs</summary>
+			<description>If DefaultSpringSecurityContextSource is constructed through DefaultSpringSecurityContextSource(List&amp;lt;String&amp;gt; urls, String baseDn) with an empty string for baseDn,it fails as follows in line 127
+
+
+
+
+
+
+            if (trimmedUrl.contains(trimmedBaseDn)) {
+
+
+
+
+                throw new IllegalArgumentException("LDAP URL string must not include the base DN! &amp;amp;apos;" + trimmedUrl + "&amp;amp;apos;");
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+This check is over-eager if the Base DN is empty. This is the case with at least one of our customers, where their directory has an anonymous base.
+I suggest to amend that check with a condition that trimmedBaseDn is longer than zero.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0.RC2</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.ldap.DefaultSpringSecurityContextSource.java</file>
+			<file type="M">org.springframework.security.ldap.DefaultSpringSecurityContextSourceTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2246" opendate="2013-08-06 02:17:01" fixdate="2013-09-20 14:06:07" resolution="Complete">
+		<buginformation>
+			<summary>HttpSessionRequestCache.getRequest performs cast to concrete DefaultSavedRequest instead of interface SavedRequest</summary>
+			<description>org.springframework.security.web.savedrequest.HttpSessionRequestCache.getRequest loads the SavedRequest object form session. The method signature is using the correct SavedRequest interface. The implementation performs a cast to DefaultSavedRequest. 
+Using a custom implementation of the interface SavedRequest in the security context causes ClassCastException when the method is used to load the SavedRequest.
+The interface should be used for cast since the method getRequest itself is not using any method of the concrete default implementation.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.savedrequest.HttpSessionRequestCacheTests.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.HttpSessionRequestCache.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2306" opendate="2013-09-05 07:59:52" fixdate="2013-10-06 15:35:12" resolution="Complete">
+		<buginformation>
+			<summary>Session Fixation protection can improperly log warning about not being protected</summary>
+			<description></description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.session.AbstractSessionFixationProtectionStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2165" opendate="2013-05-07 01:17:59" fixdate="2013-11-15 12:59:33" resolution="Fixed">
+		<buginformation>
+			<summary>Can not parameterize remember me "token-validity-seconds"</summary>
+			<description>A property expression is not resolved for attribute "token-validity-seconds". Other expressions in the very same file are resolved however. The xml file is included into this ticket.
+Providing the markup:
+&amp;lt;s:remember-me key="optimus-remember-me" use-secure-cookie="true" token-validity-seconds="$
+{security.rememberme.ttl}"/&amp;gt;
+
+Will result in the exception:
+
+Caused by: org.xml.sax.SAXParseException: cvc-datatype-valid.1.2.1: &amp;amp;apos;${security.rememberme.ttl}
+&amp;amp;apos; is not a valid value for &amp;amp;apos;integer&amp;amp;apos;.
+	at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.createSAXParseException(ErrorHandlerWrapper.java:195)
+	at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.error(ErrorHandlerWrapper.java:131)
+	at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:384)
+	at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:318)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator$XSIErrorReporter.reportError(XMLSchemaValidator.java:423)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator.reportSchemaError(XMLSchemaValidator.java:3188)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator.processOneAttribute(XMLSchemaValidator.java:2783)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator.processAttributes(XMLSchemaValidator.java:2720)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator.handleStartElement(XMLSchemaValidator.java:2072)
+	at com.sun.org.apache.xerces.internal.impl.xs.XMLSchemaValidator.emptyElement(XMLSchemaValidator.java:731)
+	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.scanStartElement(XMLNSDocumentScannerImpl.java:377)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2756)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:647)
+	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:140)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:511)
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:808)
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:737)
+	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:119)
+	at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(DOMParser.java:232)
+	at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(DocumentBuilderImpl.java:284)
+	at org.springframework.beans.factory.xml.DefaultDocumentLoader.loadDocument(DefaultDocumentLoader.java:75)
+	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.doLoadBeanDefinitions(XmlBeanDefinitionReader.java:388)
+	... 66 more
+It works okay when providing a an integer constant.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.http.RememberMeBeanDefinitionParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2327" opendate="2013-09-15 10:50:43" fixdate="2013-11-20 14:59:26" resolution="Fixed">
+		<buginformation>
+			<summary>Document SecurityExpressionRoot</summary>
+			<description>None of the methods in SecurityExpressionRoot have any API documentation. Without reading the code, it&amp;amp;apos;s not clear what some of them do. For example, it&amp;amp;apos;s not clear that hasRole and hasAuthority are just synonyms and don&amp;amp;apos;t do anything different.
+Normally I&amp;amp;apos;d look for help in the reference documentation for the root expressions, but it&amp;amp;apos;s missing most of the methods (probably hasn&amp;amp;apos;t been updated since 3.0, and maybe earlier).
+The documentation for this class (Javadoc) and the expressions (reference) could be improved a good deal.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionRoot.java</file>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionOperations.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2410" opendate="2013-11-22 03:57:41" fixdate="2013-11-22 11:11:57" resolution="Fixed">
+		<buginformation>
+			<summary>AclFormattingUtils.printBinary does not handle negative</summary>
+			<description>When printBinary in invoked with negative argument i it will either throw StringIndexOutOfBoundsException or return wrong result. All versions are affected.
+Problem is in Integer.toString(i, 2) which is prepending minus sign in the front of the string for negative numbers.
+Solution is to replace that call by Integer.toBinaryString
+Attached are diff with patch and two simple tests that are failing with current implementation.</description>
+			<version>3.1.4</version>
+			<fixedVersion>3.2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.AclFormattingUtilsTests.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclFormattingUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

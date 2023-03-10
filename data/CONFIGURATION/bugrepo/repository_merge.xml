@@ -1,0 +1,166 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="1" master="418" duplicate="547" opendate="2010-05-31 14:49:18" fixdate="2013-07-13 19:48:04" resolution="Fixed">
+		<buginformation>
+			<summary>incorrect backslash parsing Handling of backslashes</summary>
+			<description>I am using Commons Configuration (PropertiesConfiguration) and some of my data are windows shares: share1 or share2. The problem is the parsing return different things depending how the keys are defined. For example, these keys
+share=\\\\share1
+share=\\\\share2
+are different than:
+share=\\\\share1, \\\\share2
+The first one returns two backslashes ("share1" and "share2") and the second returns just one ("\share1" and "\share2"). I think the problem is in PropertyConverter line 525, cos the backslash is hidden twice when multivalue parsing is done:
+if (c != delimiter &amp;amp;&amp;amp; c != LIST_ESC_CHAR) 
+                {
+                    // no, also add escape character
+                    token.append(LIST_ESC_CHAR);
+                }
+
+In my understanding the second condition produces this strange issue and it should be like this:
+
+if (c != delimiter) 
+                {
+                    // no, also add escape character
+                    token.append(LIST_ESC_CHAR);
+                }
+
+Check that cos I can be missing something...
+TIA Consider the following Unit Test:
+
+
+    @Test
+    public void properlyProcessesBackslash() throws Exception
+    {
+        final String key = "key";
+        final String value = "\\\\";
+
+        final XMLConfiguration xmlConfig = new XMLConfiguration();
+        xmlConfig.addProperty(key, value);
+        final StringWriter stringWriter = new StringWriter();
+        xmlConfig.save(stringWriter);
+
+        final String xml = stringWriter.toString();
+
+        final XMLConfiguration roundTrippedXmlConfig = new XMLConfiguration();
+        roundTrippedXmlConfig.load(new StringReader(xml));
+
+        assertEquals(xmlConfig.getString(key), roundTrippedXmlConfig.getString(key));
+    }
+
+
+The test case fails and I think it shouldn&amp;amp;apos;t. The version that introduced this behaviour was 1.7, 1.6 works fine.</description>
+			<version>1.7</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">547</link>
+			<link type="Duplicate" description="duplicates">418</link>
+		</links>
+	</bug>
+	<bug id="2" master="540" duplicate="581" opendate="2013-04-11 10:43:44" fixdate="2014-06-10 20:34:29" resolution="Fixed">
+		<buginformation>
+			<summary>SystemConfiguration copies System.getProperties() instead of directly using it since 1.8 SystemConfiguration can not get the correct system property</summary>
+			<description>In commons-configuration-1.7 the SystemConfiguration directly used the Map of System.getProperties(). Thus when changing the properties inside the SystemConfiguration, the changes were visible in the Map of System.getProperties().
+Since commons-configuration-1.8 the SystemConfiguration creates a new Map as a copy of System.getProperties() and thus changes in the SystemConfiguration Map are not visible in the System.getProperties() Map.
+In 1.7 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Map map) {
+    this.map = map;
+}
+
+
+In 1.9 this super constructor is used by SystemProperties:
+
+
+public MapConfiguration(Properties props) {
+    map = convertPropertiesToMap(props);
+}
+
+
+A fix could look like this:
+
+
+public SystemConfiguration() {
+    super((Map)System.getProperties());
+}
+
+
+This breaks the functionality I expected to be able to use SystemConfiguration as a replacement API for accessing and manipulating SystemProperties. For me this is a regression.
+My workaround is currently not to use:
+
+
+new SystemConfiguration();
+
+
+but instead use:
+
+
+new MapConfiguration((Map) System.getProperties());
+
+ Currently the SystemConfiguration does not handle the scenario like below
+  System.setProperty("demoId", "demoValue");
+  SystemConfiguration sysConf = new SystemConfiguration ();
+  System.setProperties(new Properties(System.getProperties())));
+ System.setProperty("demoId", "newDemoValue");
+ String propertyFromSysConf = sysConf.getProperty("demoId")
+In the above code the value of propertyFromSysConf is demoValue but not newDemoValue, and I think the correct value should be newDemoValue</description>
+			<version>1.10</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.MapConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSystemConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">581</link>
+			<link type="Duplicate" description="is duplicated by">540</link>
+		</links>
+	</bug>
+	<bug id="3" master="525" duplicate="552" opendate="2013-02-14 19:35:14" fixdate="2013-08-12 20:26:57" resolution="Fixed">
+		<buginformation>
+			<summary>PropertiesConfigurationLayout does not preserve comments at bottom of a file save() causes trailing comments to be deleted</summary>
+			<description>Example:
+helloWorld.properties
+hello = world
+#this comments would not be preserved If there are comments at the end of a properties file, they are dropped when save is called.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0, 1.10</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfigurationLayout.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfigurationLayout.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">552</link>
+			<link type="Duplicate" description="is duplicated by">525</link>
+		</links>
+	</bug>
+	<bug id="4" master="537" duplicate="310" opendate="2008-02-19 10:57:14" fixdate="2014-09-13 19:10:54" resolution="Fixed">
+		<buginformation>
+			<summary>Remove deprecated ConfigurationFactory class Remove ConfigurationFactory</summary>
+			<description>ConfigurationFactory has been deprecated in the 1.x series. In version 2.0, this class can be removed. ConfigurationBuilder provides an equivalent alternative to ConfigurationFactory and can be removed. Without this class we no longer depend on Digester.</description>
+			<version>1.9</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.apache.commons.configuration.ConfigurationFactory.java</file>
+			<file type="D">org.apache.commons.configuration.TestConfigurationFactory.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubsetConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestEqualBehaviour.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">310</link>
+			<link type="Duplicate" description="is duplicated by">537</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,117 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="214" opendate="2006-05-26 21:35:46" fixdate="2006-06-02 02:55:45" resolution="Fixed">
+		<buginformation>
+			<summary>Adding an integer and getting it as a long causes an exception</summary>
+			<description>Try this in a BeanShell:
+bsh % p = new org.apache.commons.configuration.PropertiesConfiguration();
+bsh % p.setProperty("foo", 6);
+bsh % p.getLong("foo");
+// Error: // Uncaught Exception: Method Invocation p.getLong : at Line: 3 : in file: &amp;lt;unknown file&amp;gt; : p .getLong ( "foo" )
+Target exception: org.apache.commons.configuration.ConversionException: &amp;amp;apos;foo&amp;amp;apos; doesn&amp;amp;apos;t map to a Long object
+org.apache.commons.configuration.ConversionException: &amp;amp;apos;foo&amp;amp;apos; doesn&amp;amp;apos;t map to a Long object
+        at org.apache.commons.configuration.AbstractConfiguration.getLong(AbstractConfiguration.java:667)
+The problem is that when an object in a property is not a Long, the only attempt of PropertyConverter.toLong() is that of treating it as a string. It could try to convert it to a Number first and then try to convert it to a long. It is a very confusing behaviour, because if you save and reload the properties everything works fine (as now the integer is a string).</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestBaseConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertyConverter.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertyConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="220" opendate="2006-08-14 23:59:22" fixdate="2006-08-15 20:27:44" resolution="Fixed">
+		<buginformation>
+			<summary>getDateArray(String key, Date[] defaultValue, String format) ignores format argument</summary>
+			<description>getDateArray(String key, Date[] defaultValue, String format) in DataConfiguration takes a format argument, but it is not used in the call to getDateList(key). This call should probably be getDateList(key, format).</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestDataConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.DataConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="228" opendate="2006-09-22 11:34:34" fixdate="2006-10-16 20:26:45" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration.subset() with FileChangedReloadingStrategy does *not* &amp;apos;see&amp;apos; file changes</summary>
+			<description>XMLConfiguration.subset() with FileChangedReloadingStrategy does not &amp;amp;apos;see&amp;amp;apos; file changes
+Configuration.xml:
+&amp;lt;conf&amp;gt;
+    &amp;lt;parent-item&amp;gt;
+        &amp;lt;sub-item&amp;gt;old_value&amp;lt;/sub-item&amp;gt;
+    &amp;lt;/parent-item&amp;gt;
+&amp;lt;/conf&amp;gt;
+1. XMLConfiguration is loaded:
+            config = new XMLConfiguration("c:conf.xml");
+            config.setReloadingStrategy(new FileChangedReloadingStrategy());
+2. Now, &amp;lt;sub-item&amp;gt; node value changes to "new_value",
+and the code:
+            Configuration parentItemConfig = config.subset("parent-item"); [AA]
+            String ss2 = parentItemConfig.getString("sub-item");
+returns "old_value" !!!
+while:  config.getString("parent-item.sub-item"); returns new refreshed value.
+It is a bug, we have FileChangedReloadingStrategy, we create new subset in [AA] but receive old values.
+[for now, workaround for config users is to call config.reload() when strategy.hasChanged()]
+</description>
+			<version>1.2</version>
+			<fixedVersion>1.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="227" opendate="2006-09-18 19:53:39" fixdate="2006-10-30 20:24:56" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationDynaBean does not work well with all types of configurations</summary>
+			<description>The current implementation of ConfigurationDynaBean makes some assumptions about the underlying Configuration object that are not met by all configuration implementations. Especially setting values for indexed properties by calling getList() and manipulating mapped properties through a subset configuration do not work for configurations derived from HierarchicalConfiguration.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.beanutils.ConfigurationDynaBean.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="281" opendate="2007-06-20 18:31:05" fixdate="2007-06-21 20:00:56" resolution="Fixed">
+		<buginformation>
+			<summary>JNDIConfiguration::recursiveGetKeys goes out of stack</summary>
+			<description>There can be cycles in contexts. Websphere 5.1 certainly does have them.
+When getKeys() is called on a JNDIConfiguration, eventually recursiveGetKeys() is called, which calls itself for every subcontext. This will never stop if there is a cycle.
+I would like to suggest the following changes to recursiveGetKeys() to fix this:
+1) check for each subcontext if it has been processed before. If so, don&amp;amp;apos;t process it. An additional stack argument to recursiveGetKeys() should do the trick here.
+2) a maxDepth attribute, like &amp;lt;jndi maxDepth="4"/&amp;gt;. If the number of subcontexts is equal to maxDepth, stop processing. The maxDepth attribute should be optional of course, and have a default value like 911or so. The stack argument could be used to check the amount of subcontexts processed.
+Because I want to be able to dump the configuration for debugging purposes, this item is of somewhat importance to me.
+I tested this in 1.2 at work, so I cannot easily test this against 1.4. But as the code of 1.4 seems to be more or less the same, I think the problem still exists.
+</description>
+			<version>1.2</version>
+			<fixedVersion>1.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestJNDIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.JNDIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.MockInitialContextFactory.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="412" opendate="2010-03-17 21:39:01" fixdate="2010-04-07 20:28:47" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot use DatabaseConfiguration if the datasource has autocommit = false</summary>
+			<description>If using a DatabaseConfiguration object with a datasource that has autocommit = false, the setProperty method fails with a duplicate key error.
+This happens because in the setProperty method the two calls clearProperty(key) and addProperty(key, value) can retrieve two different connections from the database.</description>
+			<version>1.2</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DatabaseConfigurationTestHelper.java</file>
+			<file type="M">org.apache.commons.configuration.DatabaseConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestDatabaseConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

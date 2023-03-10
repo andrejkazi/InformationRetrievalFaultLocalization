@@ -1,0 +1,632 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="914" opendate="2014-04-17 04:25:59" fixdate="2014-04-23 00:39:27" resolution="Fixed">
+		<buginformation>
+			<summary>Improve resolving of LazyLoading proxies for classes that override equals/hashcode</summary>
+			<description></description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra), 1.4.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="913" opendate="2014-04-16 08:39:38" fixdate="2014-04-28 04:11:37" resolution="Fixed">
+		<buginformation>
+			<summary>Can&amp;apos;t query using lazy DBRef objects </summary>
+			<description>public class A {
+    @Id
+    private String id;
+    @DBRef(lazy = true)
+    B b;
+}
+public class B {
+    @Id
+    private String id;
+    private String name;
+}
+A c = this.mongoTemplate.findById("someId", A.class);
+        final Criteria criteria = Criteria.where("b").is(c.getB());
+        final A findOne = this.mongoTemplate.findOne(Query.query(criteria), A.class);
+org.springframework.data.mapping.model.MappingException: Cannot create a reference to an object with a NULL id.
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.createDBRef(MappingMongoConverter.java:800)
+	at org.springframework.data.mongodb.core.convert.MappingMongoConverter.toDBRef(MappingMongoConverter.java:311)</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra), 1.4.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="917" opendate="2014-04-23 01:23:51" fixdate="2014-04-28 04:22:08" resolution="Fixed">
+		<buginformation>
+			<summary>DefaultDbRefResolver throws NPE when bundled into an uberjar</summary>
+			<description>
+
+
+
+
+
+public class DefaultDbRefResolver implements DbRefResolver {
+
+
+
+
+
+
+
+
+
+	private static final boolean IS_SPRING_4_OR_BETTER = SpringVersion.getVersion().startsWith("4");
+
+
+
+
+
+
+According to the Spring API documentation, it&amp;amp;apos;s perfectly valid for getVersion to return null, but this code doesn&amp;amp;apos;t check for that scenario.
+The SpringVersion.getVersion() will return null when the dependency is packaged using e.g. maven-shade-plugin.
+</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra), 1.4.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.DefaultDbRefResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="is related to">11726</link>
+		</links>
+	</bug>
+	<bug id="924" opendate="2014-05-01 23:11:04" fixdate="2014-05-02 05:48:12" resolution="Fixed">
+		<buginformation>
+			<summary>Aggregation not working with as() method in project() pipeline operator</summary>
+			<description>
+Mongo Shell working command.
+
+
+
+
+
+
+db.person.aggregate( { $unwind: "$descriptors.carDescriptor.entries" }, {$project: {make: "$descriptors.carDescriptor.entries.make", model: "$descriptors.carDescriptor.entries.model", firstName:"$firstName", lastName: "$lastName"}}, {$group: {_id: "$make"}} )
+
+
+
+
+
+
+Equivalent Spring Data representation
+
+
+
+
+
+
+Aggregation agg = Aggregation.newAggregation(
+
+
+
+
+            unwind("descriptors.carDescriptor.entries"),
+
+
+
+
+            project()
+
+
+
+
+                .and("descriptors.carDescriptor.entries.make").as("make")
+
+
+
+
+                .and("descriptors.carDescriptor.entries.model").as("model")
+
+
+
+
+                .and("firstName").as("firstName")
+
+
+
+
+                .and("lastName").as("lastName"),
+
+
+
+
+            group("make")
+
+
+
+
+
+
+
+
+
+        );
+
+
+
+
+
+
+While the Mongo Shell query work fine, Spring MongoTemplate form does not and returns the following error
+
+
+
+
+
+
+java.lang.IllegalArgumentException: Invalid reference &amp;amp;apos;make&amp;amp;apos;!
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:92)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.getReference(ExposedFieldsAggregationOperationContext.java:62)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.GroupOperation.toDBObject(GroupOperation.java:292)
+
+
+
+
+	at org.springframework.data.mongodb.core.aggregation.Aggregation.toDbObject(Aggregation.java:247)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1323)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.aggregate(MongoTemplate.java:1306)
+
+
+
+
+	at com.example.samples.MongoTemplateTest.testAggregation(MongoTemplateTest.java:82)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:47)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:44)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestMethodCallbacks.evaluate(RunBeforeTestMethodCallbacks.java:74)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestMethodCallbacks.evaluate(RunAfterTestMethodCallbacks.java:83)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.SpringRepeat.evaluate(SpringRepeat.java:72)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:231)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.runChild(SpringJUnit4ClassRunner.java:88)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:238)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:63)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:236)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:53)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:229)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunBeforeTestClassCallbacks.evaluate(RunBeforeTestClassCallbacks.java:61)
+
+
+
+
+	at org.springframework.test.context.junit4.statements.RunAfterTestClassCallbacks.evaluate(RunAfterTestClassCallbacks.java:71)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:309)
+
+
+
+
+	at org.springframework.test.context.junit4.SpringJUnit4ClassRunner.run(SpringJUnit4ClassRunner.java:174)
+
+
+
+
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:160)
+
+
+
+
+	at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:74)
+
+
+
+
+	at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:211)
+
+
+
+
+	at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:67)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:134)
+
+
+
+
+
+
+Pojo classes
+
+
+
+
+
+
+
+
+
+
+
+// getter, setter omitted
+
+
+
+
+
+
+
+
+
+@Document
+
+
+
+
+public class Person {
+
+
+
+
+
+
+
+
+
+    @Id
+
+
+
+
+    private String id;
+
+
+
+
+    private String firstName;
+
+
+
+
+    private String lastName;
+
+
+
+
+    private Descriptors descriptors;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public class Descriptors {
+
+
+
+
+    private CarDescriptor carDescriptor;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public class CarDescriptor {
+
+
+
+
+    private List&amp;lt;Entry&amp;gt; entries;
+
+
+
+
+
+
+
+
+
+     class Entry {
+
+
+
+
+        private String make;
+
+
+
+
+        private String model;
+
+
+
+
+        private int year;
+
+
+
+
+      }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+To confirm if "make" is being returned remove the  group("make") operator from the fluent api and the output shows that the make is indeed being returned.
+Any pointers / work arounds ?
+Thank you,
+Adil Fulara
+</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.5 RC1 (Dijkstra), 1.4.3 (Codd SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ExposedFieldsAggregationOperationContext.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ExposedFields.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">834</link>
+		</links>
+	</bug>
+	<bug id="948" opendate="2014-06-08 02:37:12" fixdate="2014-06-17 23:30:06" resolution="Fixed">
+		<buginformation>
+			<summary>Assertion error in MongoTemplate.getMappedSortObject </summary>
+			<description>MongoTemplate.executeQuery(Query query, String collectionName, DocumentCallbackHandler dch) creates a QueryCursorPreparer with type=null. 
+Specifying a sort condition for a query in that case will cause an error in MongoTemplate.getMappedSortObject which REQUIRES QueryCursorPreparer.type != null
+The problem appeared around 1.4.2 I believe and it is still present in 1.5.0</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.4.3 (Codd SR3), 1.5.1 (Dijkstra SR1), 1.6 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplateUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="952" opendate="2014-06-10 22:45:47" fixdate="2014-06-18 03:56:07" resolution="Fixed">
+		<buginformation>
+			<summary>@Query annotation does not work with only field restrictions</summary>
+			<description>If you are using repository based queries and try to use @Query annotation to limit the fetched fields, it has zero effect.
+For example repository query:
+
+
+
+
+
+
+@Query(fields = "{ &amp;amp;apos;email&amp;amp;apos; : 1 }")
+
+
+
+
+User findByEmail(String email)
+
+
+
+
+
+
+The query above returns all fields of the User and the fields definition has no effect at all. If you are using @Query with value attribute to define the query, then the fields limitation is applied though.</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.4.3 (Codd SR3), 1.5.1 (Dijkstra SR1), 1.6 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.PartTreeMongoQuery.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1190" opendate="2015-03-26 00:50:50" fixdate="2015-11-26 14:10:22" resolution="Duplicate">
+		<buginformation>
+			<summary>Please consider adding BulkWriteOperations, in particular unorderedBulkInsert</summary>
+			<description>Please consider adding bulk write operations to mongoOperations.
+E.g. initializeUnorderedBulkOperation  which allows bulk writes that do not abort on the first error, and are potentially faster (allowing reordering &amp;amp; parallelism). 
+A naive start would be :
+class MongoTemplate {
+public BulkWriteResult  insert(List&amp;lt;Object&amp;gt; list, boolean isOrdered, String collectionName){
+        DBCollection col=mongoOperations.getCollection(colName);
+        BulkWriteOperation bulk=isOrdered?     
+              col.initializeOrderdBulkOperation():
+              col.initializeUnorderedBulkOperation();
+        MongoConverter converter= mongoOperations.getConverter();
+        for(String Object o:list)
+{
+            DBObject dbDoc=new BasicDBObject();
+            maybeEmitEvent(new BeforeConvertEvent&amp;lt;T&amp;gt;(o));
+            converter.write(element, dbDoc);
+            maybeEmitEvent(new BeforeSaveEvent&amp;lt;T&amp;gt;(o, dbDoc));
+            bulk.insert(dbDoc);                    	
+        }
+       ... // loop and emit "AfterSaveEvent"s
+        return bulk.execute(writeConcern);
+}
+This is a naive start, i&amp;amp;apos;d appreciate other people&amp;amp;apos;s view on additional design considerations:
+(1) Major issue - it&amp;amp;apos;s a problem to get the returned IDs and match them to the original objects!
+(2) should it be generalized to other bulk operations
+thanks,
+Pelit</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion></fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.BulkOperationException.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoExceptionTranslator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperations.java</file>
+			<file type="D">org.springframework.data.mongodb.util.Tuple.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperationsIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.BulkOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoActionOperation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">934</link>
+			<link type="Relate" description="is related to">665</link>
+		</links>
+	</bug>
+	<bug id="934" opendate="2014-05-14 01:45:14" fixdate="2015-11-26 17:00:21" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for the bulk operations introduced in MongoDB 2.6.</summary>
+			<description>Latest version of spring data mongodb have no support for the bulk operations introduced in MongoDB 2.6 and mongodb recommends using the new write protocols and new bulk api for bulk opertations.</description>
+			<version>1.4.2 (Codd SR2)</version>
+			<fixedVersion>1.9 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.BulkOperationException.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoExceptionTranslator.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperations.java</file>
+			<file type="D">org.springframework.data.mongodb.util.Tuple.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.DefaultBulkOperationsIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.BulkOperations.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoActionOperation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1190</link>
+		</links>
+	</bug>
+</bugrepository>

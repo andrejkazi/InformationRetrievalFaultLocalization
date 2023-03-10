@@ -1,0 +1,379 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="23" opendate="2012-07-23 23:50:43" fixdate="2012-07-31 11:48:16" resolution="Complete">
+		<buginformation>
+			<summary>Searches which returns null gives NPE</summary>
+			<description>A search which returns null gives NullPointerException in RepositoryRestController. 
+Example stack trace:
+java.lang.NullPointerException
+	at org.springframework.data.rest.webmvc.RepositoryRestController.query(RepositoryRestController.java:442)
+	at org.springframework.data.rest.webmvc.RepositoryRestController$$FastClassByCGLIB$$5ba1a185.invoke(&amp;lt;generated&amp;gt;)
+	at net.sf.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+	at org.springframework.aop.framework.Cglib2AopProxy$CglibMethodInvocation.invokeJoinpoint(Cglib2AopProxy.java:689)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
+	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:80)
+	at 
+xxx(xxx.java:31)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:621)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethod(AbstractAspectJAdvice.java:610)
+	at org.springframework.aop.aspectj.AspectJAroundAdvice.invoke(AspectJAroundAdvice.java:65)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:161)
+	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:80)
+	at 
+xxx(xxx.java:26)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:621)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethod(AbstractAspectJAdvice.java:610)
+	at org.springframework.aop.aspectj.AspectJAroundAdvice.invoke(AspectJAroundAdvice.java:65)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:161)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:90)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+	at org.springframework.aop.framework.Cglib2AopProxy$DynamicAdvisedInterceptor.intercept(Cglib2AopProxy.java:622)
+	at org.springframework.data.rest.webmvc.RepositoryRestController$$EnhancerByCGLIB$$eb30ada5.query(&amp;lt;generated&amp;gt;)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:213)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:96)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:617)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:578)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:80)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:923)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:852)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:882)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:778)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:735)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:848)
+A simple fix would be to add a if(null != result) before doing l.add(result) around line 429 in RepositoryRestController</description>
+			<version>1.0.0.RC1</version>
+			<fixedVersion>1.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="21" opendate="2012-07-11 05:49:56" fixdate="2012-07-31 11:49:25" resolution="Complete">
+		<buginformation>
+			<summary>paging with parameters</summary>
+			<description>missing parameter findBy in href .prev and .next
+Page&amp;lt;LoanInfo&amp;gt; findByNsn(@Param("nsn") String nsn, Pageable pageable);
+http://localhost:9090/hateos/loaninfo/search/findByNsn?nsn=2355-DE-004-0342&amp;amp;page=2&amp;amp;limit=5
+ 
+{
+        "rel": "loaninfo.prev",
+        "href": "http://localhost:9090/hateos/loaninfo/search/findByNsn?page=1&amp;amp;limit=5"
+    }
+,
+    {
+        "rel": "loaninfo.next",
+        "href": "http://localhost:9090/hateos/loaninfo/search/findByNsn?page=3&amp;amp;limit=5"
+    }
+
+]</description>
+			<version>1.0.0.RC1</version>
+			<fixedVersion>1.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestConfiguration.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.UriListView.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.JsonView.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter.java</file>
+			<file type="M">org.springframework.data.rest.core.util.FluentBeanSerializer.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+			<file type="D">org.springframework.data.rest.webmvc.RepositoryRestViewResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="41" opendate="2012-08-28 22:16:00" fixdate="2012-09-05 06:07:58" resolution="Complete">
+		<buginformation>
+			<summary>No update on objects</summary>
+			<description>When I try to update an object, the only think happening is a select of the persisted object in the database. The put object itself does not get updated.
+The SELECT statement occurs, during the execution of readIncoming(request, incomingMediaType, domainType).</description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryAwareJacksonModule.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="45" opendate="2012-08-31 07:11:04" fixdate="2012-09-05 06:09:20" resolution="Complete">
+		<buginformation>
+			<summary>No IDs in href of objects displayed</summary>
+			<description>Browsing to: http://localhost:8080/rest/sla results in the gist.</description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.EntityToResourceConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="38" opendate="2012-08-15 08:36:53" fixdate="2012-09-05 06:29:43" resolution="Complete">
+		<buginformation>
+			<summary>Listing relations with Accept:application/x-spring-data-compact-json does not contain self link.</summary>
+			<description>When loading a relation like this: 
+http://localhost:8080/rest/entity/6bf64863-2c1f-4661-b54b-7611971b36aa/relation/a6ae6a94-31f9-47a5-9904-329477ab54d0
+with: 
+"application/x-spring-data-compact+json" as Accept-Type, the result does not contain a self link. The same for "application/json" as Accept-Type.
+This worked before and also works for:
+http://localhost:8080/rest/entity/ etc.</description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="48" opendate="2012-09-13 05:17:17" fixdate="2012-09-13 12:00:12" resolution="Complete">
+		<buginformation>
+			<summary>Executing /search/findEntityById?id=823892389 with x-spring-data-compact+json does not return any value.</summary>
+			<description>When I try to execute a search with the following URL: 
+http://localhorst:8080/rest/entity/search/findEntityById?id=823892389 setting Accept : application/x-spring-data-compact+json the result is:
+{
+  "links" : [ ],
+  "content" : [ ]
+}
+Doing the exactly same request with 
+Accept : application/json returns
+{
+  "links" : [ ],
+  "content" : [ {
+    "links" : [  
+{
+      "rel" : "self",
+      "href" : "http://localhost:8080/rest/entity/453234243"
+    }
+,  ],
+    "enabled" : false,
+    ....
+  } ]
+}
+In the previous build it worked. </description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryRestController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="47" opendate="2012-09-07 03:54:18" fixdate="2012-09-13 12:00:46" resolution="Complete">
+		<buginformation>
+			<summary>POST fails, when links : null</summary>
+			<description>Since the last update fixing the update problem with links, there is a new error. Doing a POST with empty links results in a:
+org.springframework.http.converter.HttpMessageNotReadableException: Property &amp;amp;apos;links&amp;amp;apos; is not of array type. Either eliminate this property from the document or make it an array.
+Adding the links like this: 
+entity.setLinks(new ArrayList&amp;lt;LinkType&amp;gt;());
+and it works, without any issues. 
+From my point of view it should also work with Links : null.</description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.RepositoryAwareJacksonModule.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="44" opendate="2012-08-31 00:31:31" fixdate="2012-09-13 12:01:50" resolution="Complete">
+		<buginformation>
+			<summary>Issue on Entity without @Version attribute when using Eclipselink as provider</summary>
+			<description>If using EclipseLink as persistence provider, the exporter fails with this error:
+"java.lang.IllegalArgumentException: No @Version attribute exists on the identifiable type"
+I have isolated the error at line 35 of JpaEntityMetadata class, seems that the metod entityType.getVersion(Long.class) fails in eclipselink if no @Version is defined.
+In attachment the log file</description>
+			<version>1.0.0.RC2</version>
+			<fixedVersion>1.0.0.RC3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.repository.jpa.JpaEntityMetadata.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="50" opendate="2012-09-26 17:49:17" fixdate="2014-02-12 07:13:07" resolution="Fixed">
+		<buginformation>
+			<summary>Properties with null values are always omitted from the JSON</summary>
+			<description>When I export a repository using RepositoryRestMvcConfiguration the JSON representation I get back from the exported resources omits any property whose value is null.
+What I want:
+
+
+
+
+
+
+{
+
+
+
+
+  "links": ...snip...,
+
+
+
+
+  "content": [
+
+
+
+
+    {
+
+
+
+
+      "links": ...snip...,
+
+
+
+
+      "content": [
+
+
+
+
+        "someProperty": "non null value",
+
+
+
+
+        "someOtherProperty": null
+
+
+
+
+      ]
+
+
+
+
+    }
+
+
+
+
+  ]
+
+
+
+
+}
+
+
+
+
+
+
+What I actually get:
+
+
+
+
+
+
+{
+
+
+
+
+  "links": ...snip...,
+
+
+
+
+  "content": [
+
+
+
+
+    {
+
+
+
+
+      "links": ...snip...,
+
+
+
+
+      "content": [
+
+
+
+
+        "someProperty": "non null value",
+
+
+
+
+      ]
+
+
+
+
+    }
+
+
+
+
+  ]
+
+
+
+
+}
+
+
+
+
+
+
+I think this is because properties with null values are always omitted when converting from an object to a resource. See EntityToResourceConverter&amp;amp;apos;s convert method, which contains this snippet:
+
+
+
+
+
+
+if(null != (val = attrMeta.getValue().get(source))) {
+
+
+
+
+  entityDto.put(name, val);
+
+
+
+
+}
+
+
+
+
+
+
+This behavior may sometimes be desirable but it seems incorrect for the framework to assume that it is always desirable.
+It would be great if there was a way to specify the desired handling of null property values. A configuration option (somewhere) seems ideal; a hook method to override would also work.
+I could replace the entire EntityToResourceConverter with a custom converter but this is a lot of framework code to branch just to remove one if statement.</description>
+			<version>1.0.0.RC3</version>
+			<fixedVersion>2.0 GA (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.jpa.JpaWebTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

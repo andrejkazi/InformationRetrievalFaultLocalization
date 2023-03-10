@@ -1,0 +1,67 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="ELY">
+	<bug id="385" opendate="2015-12-01 11:04:10" fixdate="2016-03-15 08:30:20" resolution="Done">
+		<buginformation>
+			<summary>ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA"</summary>
+			<description>05:48:13 [33m05:48:13,801 WARN  [org.wildfly.security] (MSC service thread 1-2) ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA"</description>
+			<version>1.0.2.Final</version>
+			<fixedVersion>1.1.0.Beta5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.wildfly.security.ssl.MechanismDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="cloned from">2076</link>
+			<link type="Duplicate" description="is duplicated by">401</link>
+		</links>
+	</bug>
+	<bug id="401" opendate="2016-01-06 15:06:12" fixdate="2016-03-15 08:40:24" resolution="Duplicate Issue">
+		<buginformation>
+			<summary>ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA"</summary>
+			<description>Getting the following warning logged when filtering the ciphers available from Oracle Java 8 with unlimited strength policy files in place: -
+
+
+
+
+
+
+ELY01077: Invalid alias "TLS_RSA_WITH_DES_CBC_SHA" for missing mechanism database entry "TLS_RSA_FIPS_WITH_DES_CBC_SHA"
+
+
+
+
+
+
+The JCE policy is probably unrelated, mentioning it just in case.</description>
+			<version>1.0.2.Final</version>
+			<fixedVersion>1.1.0.Beta5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.wildfly.security.ssl.MechanismDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">385</link>
+		</links>
+	</bug>
+	<bug id="395" opendate="2015-12-14 09:45:24" fixdate="2016-06-01 13:52:37" resolution="Done">
+		<buginformation>
+			<summary>Undertow HTTPS listener offers no cipher suite for DEFAULT enabled-cipher-suites</summary>
+			<description>No cipher suites are available for handshake with HTTPS Undertow listener.
+According to OpenSSL documentation [1], cipher suites corresponding with ALL:!COMPLEMENTOFDEFAULT:!eNULL cipher string should be available for handshake.
+According to Elytron documentation [2], cipher suites corresponding with ALL:!aNULL:!eNULL cipher string should be available for handshake.
+[1] https://www.openssl.org/docs/manmaster/apps/ciphers.html#CIPHER-STRINGS
+[2] http://wildfly-security.github.io/wildfly-elytron/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-</description>
+			<version>1.0.2.Final</version>
+			<fixedVersion>1.1.0.Beta6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.wildfly.security.ssl.CipherSuiteSelector.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="cloned from">2198</link>
+		</links>
+	</bug>
+</bugrepository>

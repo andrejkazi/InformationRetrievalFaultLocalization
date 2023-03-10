@@ -1,0 +1,69 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="15" master="658" duplicate="705" opendate="2010-11-13 14:31:25" fixdate="2011-06-08 16:10:31" resolution="Fixed">
+		<buginformation>
+			<summary>Some Entitys like &amp;Ouml; are not matched properly against its ISO8859-1 representation StringEscapeUtil generate wrong output for some entities</summary>
+			<description>In EntityArrays 
+In
+ private static final String[][] ISO8859_1_ESCAPE 
+some matching is wrong, for example
+
+ 
+        {"\u00D7", "&amp;amp;Ouml;"}, //  - uppercase O, umlaut
+        {"\u00D8", "&amp;amp;times;"}, // multiplication sign
+
+
+but this must be   
+
+ 
+       {"\u00D6", "&amp;amp;Ouml;"}, //  - uppercase O, umlaut
+        {"\u00D7", "&amp;amp;times;"}, // multiplication sign
+
+
+according to http://www.fileformat.info/info/unicode/block/latin_supplement/list.htm
+First look:
+u00CA is missing in the array and all following entries are matched wrong by an offset of 1.
+Found on http://stackoverflow.com/questions/4172784/bug-in-apache-commons-stringescapeutil/4172915#4172915 The entities such as "" are not correctly encoded in the org.apache.commons.lang3.text.translate.EntityArrays. E.g. "" is encoded as "00E4" according to the ISO-8859-1 standard, but is assigned to "00E5" in the class EntityArrays.
+The consequence is, that StringEscapeUtil can not produce correct output.</description>
+			<version>3.0</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.EntityArrays.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="duplicates">658</link>
+			<link type="Duplicate" description="duplicates">659</link>
+		</links>
+	</bug>
+	<bug id="16" master="659" duplicate="705" opendate="2010-11-13 15:54:42" fixdate="2011-06-08 16:10:31" resolution="Fixed">
+		<buginformation>
+			<summary>EntityArrays typo: {"\u2122", "&amp;minus;"}, // minus sign, U+2212 ISOtech StringEscapeUtil generate wrong output for some entities</summary>
+			<description>EntityArrays typo in HTML40_EXTENDED_ESCAPE: 
+
+      {"\u2122", "&amp;amp;minus;"}, // minus sign, U+2212 ISOtech
+
+
+should be
+
+      {"\u2212", "&amp;amp;minus;"}, // minus sign, U+2212 ISOtech
+
+
+as is obvious from the comment and the position in the list. The entities such as "" are not correctly encoded in the org.apache.commons.lang3.text.translate.EntityArrays. E.g. "" is encoded as "00E4" according to the ISO-8859-1 standard, but is assigned to "00E5" in the class EntityArrays.
+The consequence is, that StringEscapeUtil can not produce correct output.</description>
+			<version>3.0</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.translate.EntityArrays.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="duplicates">658</link>
+			<link type="Duplicate" description="duplicates">659</link>
+		</links>
+	</bug>
+</bugrepository>

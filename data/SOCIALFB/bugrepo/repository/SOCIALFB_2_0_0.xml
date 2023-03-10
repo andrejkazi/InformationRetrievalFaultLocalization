@@ -1,0 +1,327 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SOCIALFB">
+	<bug id="165" opendate="2014-12-16 13:02:53" fixdate="2014-12-30 13:48:06" resolution="Complete">
+		<buginformation>
+			<summary>In Spring soical facebook 2.0.0.M release, though i set the birthdate in facebook and get the age range using the spring social Facebook api it returns only UNKNOW value</summary>
+			<description>FacebookProfile prof=con.getApi().userOperations().getUserProfile();
+System.out.println(prof.getAgeRange().toString());
+Result:
+The above output generates UNKNOWN as its value, though we set up the birthdate field in facebook.</description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.UserTemplateTest.java</file>
+			<file type="M">org.springframework.social.facebook.api.UserOperations.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.UserTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="153" opendate="2014-07-14 17:07:43" fixdate="2014-12-30 14:23:04" resolution="Complete">
+		<buginformation>
+			<summary>V2 API - FeedOperations.getFeed() throws exception deserializing photo post</summary>
+			<description>The following issue occurs in 2.0.0.M1 and I&amp;amp;apos;ve tested the same in 1.x and it works fine.
+Code that generated problem.
+
+
+
+
+
+
+        PagedList&amp;lt;Post&amp;gt; posts = facebook.feedOperations().getFeed("JimsMowingAU");
+
+
+
+
+
+
+Exception:
+
+
+
+
+
+
+org.springframework.social.UncategorizedApiException: Error deserializing photo post
+
+
+
+
+	at org.springframework.social.facebook.api.impl.FeedTemplate.deserializePost(FeedTemplate.java:299)
+
+
+
+
+	at org.springframework.social.facebook.api.impl.FeedTemplate.deserializeList(FeedTemplate.java:275)
+
+
+
+
+	at org.springframework.social.facebook.api.impl.FeedTemplate.getFeed(FeedTemplate.java:78)
+
+
+
+
+	at org.springframework.social.facebook.api.impl.FeedTemplate.getFeed(FeedTemplate.java:72)
+
+
+
+
+	... (my company classes and intellij/junit used to kick them off) ...
+
+
+
+
+
+
+
+
+
+Caused by: com.fasterxml.jackson.databind.JsonMappingException: Can not instantiate value of type [simple type, class org.springframework.social.facebook.api.Post$Privacy] from String value (&amp;amp;apos;&amp;amp;apos;); no single-String constructor/factory method (through reference chain: org.springframework.social.facebook.api.Post["privacy"]-&amp;gt;org.springframework.social.facebook.api.Privacy["value"])
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.std.StdValueInstantiator._createFromStringFallbacks(StdValueInstantiator.java:428)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.std.StdValueInstantiator.createFromString(StdValueInstantiator.java:299)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeFromString(BeanDeserializerBase.java:1150)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:139)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:126)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.SettableBeanProperty.deserialize(SettableBeanProperty.java:525)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:106)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.vanillaDeserialize(BeanDeserializer.java:242)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:118)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.SettableBeanProperty.deserialize(SettableBeanProperty.java:525)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:106)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.vanillaDeserialize(BeanDeserializer.java:242)
+
+
+
+
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:118)
+
+
+
+
+	at com.fasterxml.jackson.databind.ObjectReader._bindAndClose(ObjectReader.java:1270)
+
+
+
+
+	at com.fasterxml.jackson.databind.ObjectReader.readValue(ObjectReader.java:897)
+
+
+
+
+	at org.springframework.social.facebook.api.impl.FeedTemplate.deserializePost(FeedTemplate.java:297)
+
+
+
+
+	... 37 more
+
+
+
+
+
+</description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.FacebookModule.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PostMixin.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="163" opendate="2014-11-06 08:19:30" fixdate="2014-12-30 14:23:55" resolution="Fixed">
+		<buginformation>
+			<summary>JsonMappingException Upon FeedOperations.getPost( contentId ) Invocation</summary>
+			<description>This code, which worked on 1.1.0.RELEASE, is now throwing a JsonMappingException:
+
+
+
+
+
+
+FeedOperations fo = api.feedOperations();
+
+
+
+
+String contentId = "xyz"; // represents a photo post on a Facebook Page
+
+
+
+
+Post post = fo.getPost( contentId );
+
+
+
+
+
+
+
+
+
+
+
+
+Caused by: com.fasterxml.jackson.databind.JsonMappingException: Can not instantiate value of type [simple type, class org.springframework.social.facebook.api.Post$Privacy] from String value; no single-String constructor/factory method (through reference chain: org.springframework.social.facebook.api.Post["privacy"]-&amp;gt;org.springframework.social.facebook.api.Privacy["value"])
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.std.StdValueInstantiator._createFromStringFallbacks(StdValueInstantiator.java:428)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.std.StdValueInstantiator.createFromString(StdValueInstantiator.java:299)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeFromString(BeanDeserializerBase.java:1056)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:136)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:123)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.SettableBeanProperty.deserialize(SettableBeanProperty.java:464)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:107)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:295)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:121)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.SettableBeanProperty.deserialize(SettableBeanProperty.java:464)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.impl.FieldProperty.deserializeAndSet(FieldProperty.java:107)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:295)
+
+
+
+
+        at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:121)
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectReader._bindAndClose(ObjectReader.java:1216)
+
+
+
+
+        at com.fasterxml.jackson.databind.ObjectReader.readValue(ObjectReader.java:830)
+
+
+
+
+        at org.springframework.social.facebook.api.impl.FeedTemplate.deserializePost(FeedTemplate.java:297)
+
+
+
+
+        ... 82 more
+
+
+
+
+
+</description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.impl.json.FacebookModule.java</file>
+			<file type="M">org.springframework.social.facebook.api.impl.json.PostMixin.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="169" opendate="2015-03-22 14:46:38" fixdate="2015-04-02 09:47:12" resolution="Fixed">
+		<buginformation>
+			<summary>Add updated_time property to UserOperations.PROFILE_FIELDS</summary>
+			<description></description>
+			<version>2.0.0.M1</version>
+			<fixedVersion>2.0.0.RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.social.facebook.api.UserOperations.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

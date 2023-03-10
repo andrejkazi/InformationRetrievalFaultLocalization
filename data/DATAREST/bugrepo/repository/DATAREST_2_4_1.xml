@@ -1,0 +1,745 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="712" opendate="2015-11-24 10:19:46" fixdate="2015-11-24 14:38:25" resolution="Fixed">
+		<buginformation>
+			<summary>Search a repository that implements QueryDslPredicateExecutor by a related Entity doesn&amp;apos;t work anymore</summary>
+			<description>If you define a repository this way:
+
+
+
+
+
+
+@RepositoryRestResource(collectionResourceRel = "people", path = "people")
+
+
+
+
+public interface PersonRepository extends PagingAndSortingRepository&amp;lt;Person, Long&amp;gt; {
+
+
+
+
+  Page&amp;lt;Person&amp;gt; findByAddress(@Param("address") Address address, Pageable p);
+
+
+
+
+}
+
+
+
+
+
+
+where Address in another Entity, you can invoke the search method like this:
+http://localhost:8080/people/search/findByAddress?address=/addresses/1
+and everything works like a charm.
+Now suppose you want to use QueryDSL predicates on the repository, so the repository must implement QueryDslPredicateExecutor interface:
+
+
+
+
+
+
+@RepositoryRestResource(collectionResourceRel = "people", path = "people")
+
+
+
+
+public interface PersonRepository extends PagingAndSortingRepository&amp;lt;Person, Long&amp;gt;, QueryDslPredicateExecutor&amp;lt;Person&amp;gt;
+
+
+
+
+{
+
+
+
+
+  Page&amp;lt;Person&amp;gt; findByAddress(@Param("address") Address address, Pageable p);
+
+
+
+
+}
+
+
+
+
+
+
+By implementing this interface something changes in the REST behaviour of the repository and if you try to invoke the same search method:
+http://localhost:8080/people/search/findByAddress?address=/addresses/1
+you get this exception:
+
+
+
+
+
+
+org.springframework.core.convert.ConversionFailedException: Failed to convert from type java.lang.String to type java.lang.Long for value &amp;amp;apos;/addresses/1&amp;amp;apos;; nested exception is java.lang.NumberFormatException: For input string: "/addresses/1"
+
+
+
+
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:41) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:192) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:176) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.data.repository.support.DomainClassConverter$ToEntityConverter.convert(DomainClassConverter.java:159) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:35) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:192) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.convertToPropertyPathSpecificType(QuerydslPredicateBuilder.java:217) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.getPredicate(QuerydslPredicateBuilder.java:109) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver.postProcess(QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver.java:88) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver.resolveArgument(RootResourceInformationHandlerMethodArgumentResolver.java:92) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver.resolveArgument(RootResourceInformationHandlerMethodArgumentResolver.java:40) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:78) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	[...]
+
+
+
+
+Caused by: java.lang.NumberFormatException: For input string: "/addresses/1"
+
+
+
+
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65) ~[na:1.8.0_66]
+
+
+
+
+	at java.lang.Long.parseLong(Long.java:578) ~[na:1.8.0_66]
+
+
+
+
+	at java.lang.Long.valueOf(Long.java:803) ~[na:1.8.0_66]
+
+
+
+
+	at org.springframework.util.NumberUtils.parseNumber(NumberUtils.java:197) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.StringToNumberConverterFactory$StringToNumber.convert(StringToNumberConverterFactory.java:61) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.StringToNumberConverterFactory$StringToNumber.convert(StringToNumberConverterFactory.java:48) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService$ConverterFactoryAdapter.convert(GenericConversionService.java:425) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:35) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	... 60 common frames omitted
+
+
+
+
+
+
+Trying to use the "previous" format (by passing the id of the related entity)
+http://localhost:8080/people/search/findByAddress?address=1
+doesn&amp;amp;apos;t work either (this used to work with 2.2.3.RELEASE):
+
+
+
+
+
+
+java.lang.IllegalArgumentException: Cannot resolve URI 1. Is it local or remote? Only local URIs are resolvable.
+
+
+
+
+	at org.springframework.data.rest.core.UriToEntityConverter.convert(UriToEntityConverter.java:114) ~[spring-data-rest-core-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:35) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:192) ~[spring-core-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.data.repository.support.ReflectionRepositoryInvoker.convert(ReflectionRepositoryInvoker.java:248) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.support.ReflectionRepositoryInvoker.prepareParameters(ReflectionRepositoryInvoker.java:238) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.repository.support.ReflectionRepositoryInvoker.invokeQueryMethod(ReflectionRepositoryInvoker.java:203) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory$UnwrappingRepositoryInvoker.invokeQueryMethod(UnwrappingRepositoryInvokerFactory.java:153) ~[spring-data-rest-core-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter.invokeQueryMethod(QuerydslRepositoryInvokerAdapter.java:149) ~[spring-data-commons-1.11.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.RepositorySearchController.executeQueryMethod(RepositorySearchController.java:313) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.RepositorySearchController.executeSearch(RepositorySearchController.java:177) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+
+</description>
+			<version>2.4.1 (Gosling SR1)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.config.QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositoryEntityController.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.config.QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.MongoWebTests.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.mongodb.UserRepository.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySearchController.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="723" opendate="2015-12-07 16:02:47" fixdate="2015-12-16 17:01:22" resolution="Fixed">
+		<buginformation>
+			<summary>ConcurrentModificationException</summary>
+			<description>From time to time I am getting the following ConcurrentModificationException. Hopefully the stack trace helps:
+
+
+
+
+
+
+2015-12-03 14:54:42,255 ERROR    o.a.c.c.C.[.[localhost].[/].[dispatcherServlet]: 182 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is java.util.ConcurrentModificationException] with root cause
+
+
+
+
+java.util.ConcurrentModificationException: null
+
+
+
+
+	at java.util.HashMap$HashIterator.nextNode(HashMap.java:1429) ~[na:1.8.0_45]
+
+
+
+
+	at java.util.HashMap$ValueIterator.next(HashMap.java:1458) ~[na:1.8.0_45]
+
+
+
+
+	at org.springframework.data.rest.core.mapping.MappingResourceMetadata$PropertyMappings.getMappingFor(MappingResourceMetadata.java:186) ~[spring-data-rest-core-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.core.mapping.MappingResourceMetadata.getProperty(MappingResourceMetadata.java:118) ~[spring-data-rest-core-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.core.mapping.RepositoryAwareResourceMetadata.getProperty(RepositoryAwareResourceMetadata.java:93) ~[spring-data-rest-core-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.doWithReferencedProperty(RepositoryPropertyReferenceController.java:427) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController.followPropertyReference(RepositoryPropertyReferenceController.java:149) ~[spring-data-rest-webmvc-2.4.1.RELEASE.jar:na]
+
+
+
+
+	at sun.reflect.GeneratedMethodAccessor427.invoke(Unknown Source) ~[na:na]
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_45]
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_45]
+
+
+
+
+	at org.springsource.loaded.ri.ReflectiveInterceptor.jlrMethodInvoke(ReflectiveInterceptor.java:1432) ~[springloaded-1.2.4.RELEASE.jar:1.2.4.RELEASE]
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:222) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:137) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:110) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:814) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:737) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:959) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:893) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:861) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:622) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846) ~[spring-webmvc-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:729) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:291) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) ~[tomcat-embed-websocket-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration$ApplicationContextHeaderFilter.doFilterInternal(EndpointWebMvcAutoConfiguration.java:242) ~[spring-boot-actuator-1.3.0.RELEASE.jar:1.3.0.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.boot.actuate.trace.WebRequestTraceFilter.doFilterInternal(WebRequestTraceFilter.java:111) ~[spring-boot-actuator-1.3.0.RELEASE.jar:1.3.0.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:207) ~[spring-security-web-4.0.3.RELEASE.jar:4.0.3.RELEASE]
+
+
+
+
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:176) ~[spring-security-web-4.0.3.RELEASE.jar:4.0.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:99) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.web.filter.HttpPutFormContentFilter.doFilterInternal(HttpPutFormContentFilter.java:87) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:77) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:121) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.springframework.boot.actuate.autoconfigure.MetricsFilter.doFilterInternal(MetricsFilter.java:103) ~[spring-boot-actuator-1.3.0.RELEASE.jar:1.3.0.RELEASE]
+
+
+
+
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107) ~[spring-web-4.2.3.RELEASE.jar:4.2.3.RELEASE]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:217) ~[tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:676) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:142) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:518) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1091) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:673) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1500) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1456) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [na:1.8.0_45]
+
+
+
+
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_45]
+
+
+
+
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-8.0.28.jar:8.0.28]
+
+
+
+
+	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_45]
+
+
+
+
+
+</description>
+			<version>2.4.1 (Gosling SR1)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.mapping.MappingResourceMetadataUnitTests.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings.java</file>
+			<file type="M">org.springframework.data.rest.core.mapping.MappingResourceMetadata.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="716" opendate="2015-11-27 09:01:39" fixdate="2016-01-07 14:23:20" resolution="Fixed">
+		<buginformation>
+			<summary>Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts</summary>
+			<description>In some cases after application start some rest repositories fail to handle the http request and throw a HttpMessageNotWritableException (see StackOverflow reference)
+
+
+
+
+
+
+2015-11-27 09:56:19.015  WARN 1207 --- [nio-9000-exec-9] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["permissions"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+2015-11-27 09:56:19.024  WARN 1207 --- [nio-9000-exec-2] .w.s.m.s.DefaultHandlerExceptionResolver : Failed to write HTTP message: org.springframework.http.converter.HttpMessageNotWritableException: Could not write content: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"]); nested exception is com.fasterxml.jackson.databind.JsonMappingException: org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module$ProjectionResourceContentSerializer cannot be cast to com.fasterxml.jackson.databind.ser.impl.UnwrappingBeanSerializer (through reference chain: org.springframework.hateoas.PagedResources["_embedded"]-&amp;gt;java.util.UnmodifiableMap["userroles"]-&amp;gt;java.util.ArrayList[0]-&amp;gt;org.springframework.data.rest.webmvc.json.ProjectionResource["content"])
+
+
+
+
+
+</description>
+			<version>2.4.1 (Gosling SR1)</version>
+			<fixedVersion>2.4.2 (Gosling SR2), 2.5 M1 (Hopper)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntitySerializationTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">697</link>
+			<link type="Relate" description="relates to">743</link>
+		</links>
+	</bug>
+</bugrepository>

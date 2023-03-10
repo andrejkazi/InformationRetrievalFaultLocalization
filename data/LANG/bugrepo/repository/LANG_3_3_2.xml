@@ -1,0 +1,474 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="995" opendate="2014-04-11 13:12:56" fixdate="2014-04-11 13:28:59" resolution="Fixed">
+		<buginformation>
+			<summary>Fix bug with stripping spaces on last line in WordUtils.wrap() </summary>
+			<description>Via github: https://github.com/apache/commons-lang/pull/18</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.WordUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.WordUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">957</link>
+		</links>
+	</bug>
+	<bug id="1001" opendate="2014-04-30 20:15:47" fixdate="2014-04-30 21:50:38" resolution="Fixed">
+		<buginformation>
+			<summary>ISO 8601 misspelled throughout the Javadocs</summary>
+			<description>The Javadocs say: ISO8601 but the correct format is ISO 8601. Note the space.
+A patch can be provided.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.StopWatch.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1003" opendate="2014-04-30 21:02:43" fixdate="2014-05-04 08:49:49" resolution="Fixed">
+		<buginformation>
+			<summary>DurationFormatUtils are not able to handle negative durations/periods</summary>
+			<description>It spits out complete garbage.
+
+
+System.out.println(DurationFormatUtils.formatDurationHMS(-3454));
+System.out.println(DurationFormatUtils.formatPeriodISO(4000, 3000));
+
+
+
+0:00:-3.-454
+P-1Y11M30DT23H59M59.000S
+
+
+It should throw an IllegalArgumentException if duration is &amp;lt; 0 or period diff is &amp;lt; 0.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1027" opendate="2014-07-13 11:41:53" fixdate="2014-07-20 11:31:58" resolution="Fixed">
+		<buginformation>
+			<summary>org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast should return true by default</summary>
+			<description>Hi
+last [lang] release doesn&amp;amp;apos;t support java 9 (not in JavaVersion enum). However it shouldn&amp;amp;apos;t break the org.apache.commons.lang3.SystemUtils#isJavaVersionAtLeast method which should return true when java version is not known (not known = older)
+My proposal is to add UNKNOWN to the enum and override atLeast for this particular value to return true.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1068</link>
+		</links>
+	</bug>
+	<bug id="1004" opendate="2014-04-30 21:11:43" fixdate="2014-08-04 12:24:59" resolution="Fixed">
+		<buginformation>
+			<summary>DurationFormatUtils#formatDurationHMS implementation does not correspond to Javadoc and vice versa</summary>
+			<description>This method has several flaws:
+1. Javadoc says: "The format used is ISO8601-like: H:m:s.S." but the method call supplies "H:mm:ss.SSS"
+2. ISO time never omits leading zeros, so the proper pattern must be "HH:mm:ss.SSS"
+3. The method name says: "HMS" but includes the second fraction.
+Since the use of fractions is optional, the method should use "HH:mm:ss" and update the Javadoc as well.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DurationFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.StopWatchTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1035" opendate="2014-08-07 07:59:31" fixdate="2014-09-10 11:35:45" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc for EqualsBuilder.reflectionEquals() is unclear</summary>
+			<description>The Javadoc for EqualsBuilder.reflectionEquals() doesn&amp;amp;apos;t explain that .equals() is used to compare non-primitive fields in the class.
+Consequently, readers may assume the method recursively builds .equals() for all fields. We should clarify this.
+Related: LANG-1034</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.EqualsBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1000" opendate="2014-04-30 12:55:19" fixdate="2014-09-28 10:12:41" resolution="Fixed">
+		<buginformation>
+			<summary>ParseException when trying to parse UTC dates with Z as zone designator using DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT</summary>
+			<description>I have the String 2013-11-18T12:48:05Z which I want to parse into a Date using DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT. 
+According to http://en.wikipedia.org/wiki/ISO_8601#UTC the Z at the end should be a valid abbreviation for UTC+00:00 (or UTC) and so all should be fine.
+But when I am trying to do so I get the following exception:
+
+
+java.text.ParseException: Unparseable date: "2013-11-18T12:48:05Z" does not match
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1041" opendate="2014-10-01 12:20:24" fixdate="2014-10-02 10:13:10" resolution="Fixed">
+		<buginformation>
+			<summary>Fix MethodUtilsTest so it does not depend on JDK method ordering</summary>
+			<description>Placeholder for https://github.com/apache/commons-lang/pull/30.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.reflect.MethodUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1068" opendate="2014-11-19 20:39:57" fixdate="2014-11-30 18:40:36" resolution="Duplicate">
+		<buginformation>
+			<summary>SystemUtils.isJavaVersionAtLeast throws NPE under Java 9 EA</summary>
+			<description>Hello,
+Testing JMeter under Java 9 EA, it fails with NPE in SystemUtils.isJavaVersionAtLeast  due to handling of Java 9 not yet being supported.
+Thanks</description>
+			<version>3.3.2</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1027</link>
+		</links>
+	</bug>
+	<bug id="1072" opendate="2014-12-02 23:46:34" fixdate="2014-12-03 01:40:18" resolution="Fixed">
+		<buginformation>
+			<summary>Duplicated "0x" check in createBigInteger in NumberUtils</summary>
+			<description>I think there is typo in below line:
+org.apache.commons.lang3.math.NumberUtils.java
+
+ if (str.startsWith("0x", pos) || str.startsWith("0x", pos)) { // hex
+            radix = 16;
+            pos += 2;
+}
+
+
+The second "0x" should be "0X"
+org.apache.commons.lang3.math.NumberUtils.java
+
+ if (str.startsWith("0x", pos) || str.startsWith("0X", pos)) { // hex
+            radix = 16;
+            pos += 2;
+}
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1073" opendate="2014-12-03 00:01:52" fixdate="2014-12-14 18:27:28" resolution="Fixed">
+		<buginformation>
+			<summary>Read wrong component type of array in add in ArrayUtils</summary>
+			<description>org.apache.commons.lang3.ArrayUtils.java
+
+    public static &amp;lt;T&amp;gt; T[] add(final T[] array, final T element) {
+        Class&amp;lt;?&amp;gt; type;
+        if (array != null){
+            type = array.getClass();
+        } else if (element != null) {
+            type = element.getClass();
+        } else {
+            throw new IllegalArgumentException("Arguments cannot both be null");
+        }
+        .......
+    }
+
+
+I think it should be:
+org.apache.commons.lang3.ArrayUtils.java
+
+    public static &amp;lt;T&amp;gt; T[] add(final T[] array, final T element) {
+        Class&amp;lt;?&amp;gt; type;
+        if (array != null){
+            type = array.getClass().getComponentType();
+        } else if (element != null) {
+            type = element.getClass();
+        } else {
+            throw new IllegalArgumentException("Arguments cannot both be null");
+        }
+        .......
+    }
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ArrayUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1071" opendate="2014-12-02 17:53:08" fixdate="2014-12-27 16:48:49" resolution="Fixed">
+		<buginformation>
+			<summary>Fix wrong examples in JavaDoc of StringUtils.replaceEachRepeatedly(...), StringUtils.replaceEach(...)</summary>
+			<description>StringUtils.replaceEachRepeatedly(, *, *) has javadoc with examples of invokation of StringUtils.replaceEach(, *, *):
+https://svn.apache.org/viewvc/commons/proper/lang/trunk/src/main/java/org/apache/commons/lang3/StringUtils.java?revision=1639624&amp;amp;view=markup#l4588
+StringUtils.replaceEach(, *, *, *, *) has javadoc with examples of invokation of StringUtils.StringUtils.replaceEach(, *, *, *). Note different number of arguments.
+https://svn.apache.org/viewvc/commons/proper/lang/trunk/src/main/java/org/apache/commons/lang3/StringUtils.java?revision=1639624&amp;amp;view=markup#l4639
+Please fix javadoc.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1055" opendate="2014-10-22 12:59:09" fixdate="2015-01-23 08:11:43" resolution="Fixed">
+		<buginformation>
+			<summary>StrSubstitutor.replaceSystemProperties does not work consistently</summary>
+			<description>StrSubsitutor caches a references to SystemProperties statically on first class references.  This does not work properly with System.setProperties().  For example the following code:
+
+
+package test.utilities;
+
+import java.util.Properties;
+
+import org.apache.commons.lang.text.StrSubstitutor;
+
+public class TestStrSubstitutor {
+
+    public static void main(String[] args) {
+        System.out.println(StrSubstitutor.replaceSystemProperties("os.name=${os.name}"));
+        Properties testProps = new Properties();
+        testProps.put("test_key",  "test_value");
+        testProps.putAll(System.getProperties());
+        System.setProperties(testProps);
+        System.out.println(StrSubstitutor.replace("test_key=${test_key}", System.getProperties()));
+        System.out.println(StrSubstitutor.replaceSystemProperties("test_key=${test_key}"));
+    }
+
+}
+
+
+produces the following output:
+
+
+os.name=Windows 7
+test_key=test_value
+test_key=${test_key}
+
+
+The code linked here shows the static caching of the System Properties reference: http://commons.apache.org/proper/commons-lang/apidocs/src-html/org/apache/commons/lang3/text/StrLookup.html</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.StrSubstitutorTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.StrLookupTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.StrLookup.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1081" opendate="2015-01-14 16:11:18" fixdate="2015-01-23 08:28:09" resolution="Fixed">
+		<buginformation>
+			<summary>DiffBuilder.append(String, Object left, Object right) does not do a left.equals(right) check</summary>
+			<description>Only testing == without testing equals() seems wrong.
+Should an equals() test be added after determining that the parameters are not arrays?</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.DiffBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.DiffBuilderTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1061" opendate="2014-11-05 16:59:04" fixdate="2015-03-01 18:03:14" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateParser error - timezones not handled correctly</summary>
+			<description>The following code throws an exception:
+DateParser dp = FastDateFormat.getInstance("z yyyy", Locale.US);
+dp.parse("GMT+00:00 2010");
+The format works correctly with SimpleDateFormat.
+Stack:
+java.text.ParseException: Unparseable date: "GMT+00:00 2010" does not match (GMT[+\-]\d
+{0,1}
+\d
+{2}|[+\-]\d{2}
+:?\d
+{2}
+|\QAcre Time\E|\QACT\E|\QADT\E|\QAfghanistan Time\E|\QAFT\E|\QAKDT\E|\QAKST\E|\QAlaska Daylight Time\E|\QAlaska Standard Time\E|\QAlma-Ata Time\E|\QALMT\E|\QAmazon Summer Time\E|\QAmazon Time\E|\QAMST\E|\QAMT\E|\QAnadyr Time\E|\QANAT\E|\QAqtau Time\E|\QAqtobe Time\E|\QAQTT\E|\QArabia Standard Time\E|\QArgentine Time\E|\QArmenia Time\E|\QART\E|\QAST\E|\QAtlantic Daylight Time\E|\QAtlantic Standard Time\E|\QAzerbaijan Summer Time\E|\QAzerbaijan Time\E|\QAzores Summer Time\E|\QAzores Time\E|\QAZOST\E|\QAZOT\E|\QAZST\E|\QAZT\E|\QBangladesh Time\E|\QBDT\E|\QBhutan Time\E|\QBNT\E|\QBolivia Time\E|\QBOT\E|\QBrasilia Summer Time\E|\QBrasilia Time\E|\QBritish Summer Time\E|\QBRST\E|\QBRT\E|\QBrunei Time\E|\QBST\E|\QBTT\E|\QCape Verde Time\E|\QCAT\E|\QCCT\E|\QCDT\E|\QCentral African Time\E|\QCentral Daylight Time\E|\QCentral European Summer Time\E|\QCentral European Time\E|\QCentral Indonesia Time\E|\QCentral Standard Time\E|\QCentral Standard Time (Northern Territory)\E|\QCentral Standard Time (South Australia)\E|\QCentral Standard Time (South Australia/New South Wales)\E|\QCentral Summer Time (South Australia)\E|\QCentral Summer Time (South Australia/New South Wales)\E|\QCentral Western Standard Time (Australia)\E|\QCEST\E|\QCET\E|\QCHADT\E|\QChamorro Standard Time\E|\QCHAST\E|\QChatham Daylight Time\E|\QChatham Standard Time\E|\QChile Summer Time\E|\QChile Time\E|\QChina Standard Time\E|\QChoibalsan Time\E|\QCHOT\E|\QChristmas Island Time\E|\QChST\E|\QCHUT\E|\QChuuk Time\E|\QCKT\E|\QCLST\E|\QCLT\E|\QCocos Islands Time\E|\QColombia Time\E|\QCook Is. Time\E|\QCoordinated Universal Time\E|\QCOT\E|\QCST\E|\QCuba Daylight Time\E|\QCuba Standard Time\E|\QCVT\E|\QCWST\E|\QCXT\E|\QDavis Time\E|\QDAVT\E|\QDDUT\E|\QDumont-d&amp;amp;apos;Urville Time\E|\QEASST\E|\QEAST\E|\QEast Indonesia Time\E|\QEaster Is. Summer Time\E|\QEaster Is. Time\E|\QEastern African Time\E|\QEastern Daylight Time\E|\QEastern European Summer Time\E|\QEastern European Time\E|\QEastern Greenland Summer Time\E|\QEastern Greenland Time\E|\QEastern Standard Time\E|\QEastern Standard Time (New South Wales)\E|\QEastern Standard Time (Queensland)\E|\QEastern Standard Time (Tasmania)\E|\QEastern Standard Time (Victoria)\E|\QEastern Summer Time (New South Wales)\E|\QEastern Summer Time (Tasmania)\E|\QEastern Summer Time (Victoria)\E|\QEAT\E|\QECT\E|\QEcuador Time\E|\QEDT\E|\QEEST\E|\QEET\E|\QEGST\E|\QEGT\E|\QEST\E|\QFalkland Is. Time\E|\QFernando de Noronha Time\E|\QFET\E|\QFiji Summer Time\E|\QFiji Time\E|\QFJST\E|\QFJT\E|\QFKT\E|\QFNT\E|\QFrench Guiana Time\E|\QFrench Southern &amp;amp; Antarctic Lands Time\E|\QFurther-eastern European Time\E|\QGalapagos Time\E|\QGALT\E|\QGambier Time\E|\QGAMT\E|\QGeorgia Time\E|\QGET\E|\QGFT\E|\QGhana Mean Time\E|\QGilbert Is. Time\E|\QGILT\E|\QGMT\E|\QGreenwich Mean Time\E|\QGST\E|\QGulf Standard Time\E|\QGuyana Time\E|\QGYT\E|\QHADT\E|\QHAST\E|\QHawaii Standard Time\E|\QHawaii-Aleutian Daylight Time\E|\QHawaii-Aleutian Standard Time\E|\QHKT\E|\QHong Kong Time\E|\QHovd Time\E|\QHOVT\E|\QHST\E|\QICT\E|\QIDT\E|\QIndia Standard Time\E|\QIndian Ocean Territory Time\E|\QIndochina Time\E|\QIOT\E|\QIran Daylight Time\E|\QIran Standard Time\E|\QIRDT\E|\QIrish Summer Time\E|\QIRKT\E|\QIrkutsk Time\E|\QIRST\E|\QIsrael Daylight Time\E|\QIsrael Standard Time\E|\QIST\E|\QJapan Standard Time\E|\QJST\E|\QKGT\E|\QKhandyga Time\E|\QKirgizstan Time\E|\QKorea Standard Time\E|\QKosrae Time\E|\QKOST\E|\QKrasnoyarsk Time\E|\QKRAT\E|\QKST\E|\QLHST\E|\QLine Is. Time\E|\QLINT\E|\QLord Howe Standard Time\E|\QLord Howe Summer Time\E|\QMacquarie Island Time\E|\QMagadan Time\E|\QMAGT\E|\QMalaysia Time\E|\QMaldives Time\E|\QMarquesas Time\E|\QMarshall Islands Time\E|\QMART\E|\QMauritius Time\E|\QMawson Time\E|\QMAWT\E|\QMDT\E|\QMeST\E|\QMET\E|\QMetlakatla Standard Time\E|\QMHT\E|\QMiddle Europe Summer Time\E|\QMiddle Europe Time\E|\QMIST\E|\QMMT\E|\QMoscow Standard Time\E|\QMountain Daylight Time\E|\QMountain Standard Time\E|\QMSK\E|\QMST\E|\QMUT\E|\QMVT\E|\QMyanmar Time\E|\QMYT\E|\QNauru Time\E|\QNCT\E|\QNDT\E|\QNepal Time\E|\QNew Caledonia Time\E|\QNew Zealand Daylight Time\E|\QNew Zealand Standard Time\E|\QNewfoundland Daylight Time\E|\QNewfoundland Standard Time\E|\QNFT\E|\QNiue Time\E|\QNorfolk Time\E|\QNovosibirsk Time\E|\QNOVT\E|\QNPT\E|\QNRT\E|\QNST\E|\QNUT\E|\QNZDT\E|\QNZST\E|\QOmsk Time\E|\QOMST\E|\QOral Time\E|\QORAT\E|\QPacific Daylight Time\E|\QPacific Standard Time\E|\QPakistan Time\E|\QPalau Time\E|\QPapua New Guinea Time\E|\QParaguay Summer Time\E|\QParaguay Time\E|\QPDT\E|\QPeru Time\E|\QPET\E|\QPetropavlovsk-Kamchatski Time\E|\QPETT\E|\QPGT\E|\QPhilippines Time\E|\QPhoenix Is. Time\E|\QPHOT\E|\QPHT\E|\QPierre &amp;amp; Miquelon Daylight Time\E|\QPierre &amp;amp; Miquelon Standard Time\E|\QPitcairn Standard Time\E|\QPKT\E|\QPMDT\E|\QPMST\E|\QPohnpei Time\E|\QPONT\E|\QPST\E|\QPWT\E|\QPYST\E|\QPYT\E|\QQYZT\E|\QQyzylorda Time\E|\QRET\E|\QReunion Time\E|\QRothera Time\E|\QROTT\E|\QSakhalin Time\E|\QSAKT\E|\QSamara Time\E|\QSamoa Standard Time\E|\QSAMT\E|\QSAST\E|\QSBT\E|\QSCT\E|\QSeychelles Time\E|\QSGT\E|\QSingapore Time\E|\QSolomon Is. Time\E|\QSouth Africa Standard Time\E|\QSouth Georgia Standard Time\E|\QSRT\E|\QSST\E|\QSuriname Time\E|\QSYOT\E|\QSyowa Time\E|\QTahiti Time\E|\QTAHT\E|\QTajikistan Time\E|\QTFT\E|\QTimor-Leste Time\E|\QTJT\E|\QTKT\E|\QTLT\E|\QTMT\E|\QTokelau Time\E|\QTonga Time\E|\QTOT\E|\QTurkmenistan Time\E|\QTuvalu Time\E|\QTVT\E|\QUlaanbaatar Time\E|\QULAT\E|\QUruguay Summer Time\E|\QUruguay Time\E|\QUst-Nera Time\E|\QUTC\E|\QUYST\E|\QUYT\E|\QUzbekistan Time\E|\QUZT\E|\QVanuatu Time\E|\QVenezuela Time\E|\QVET\E|\QVladivostok Time\E|\QVLAT\E|\QVolgograd Time\E|\QVOLT\E|\QVOST\E|\QVostok Time\E|\QVUT\E|\QWake Time\E|\QWAKT\E|\QWallis &amp;amp; Futuna Time\E|\QWAST\E|\QWAT\E|\QWEST\E|\QWest Indonesia Time\E|\QWest Samoa Daylight Time\E|\QWest Samoa Time\E|\QWestern African Summer Time\E|\QWestern African Time\E|\QWestern European Summer Time\E|\QWestern European Time\E|\QWestern Greenland Summer Time\E|\QWestern Greenland Time\E|\QWestern Standard Time (Australia)\E|\QWET\E|\QWFT\E|\QWGST\E|\QWGT\E|\QWIB\E|\QWIT\E|\QWITA\E|\QWSDT\E|\QWST\E|\QYAKT\E|\QYakutsk Time\E|\QYekaterinburg Time\E|\QYEKT\E)\Q \E(\p
+{Nd}
+++)
+	at org.apache.commons.lang3.time.FastDateParser.parse(FastDateParser.java:289)
+	at org.apache.commons.lang3.time.FastDateFormat.parse(FastDateFormat.java:487)
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1092" opendate="2015-03-10 23:28:15" fixdate="2015-03-13 20:30:56" resolution="Fixed">
+		<buginformation>
+			<summary>Wrong formating of time zones with daylight saving time in FastDatePrinter</summary>
+			<description>At work we&amp;amp;apos;re getting build issues with Lang 3.3.2 (and any since 3.2 when the test code was introduced in LANG-818).  The test org.apache.commons.lang3.time.FastDatePrinterTest.testCalendarTimezoneRespected picks a timezone and runs a test on it. One assumes that timezones usually work, but some are not - so it depends on the order of timezones returned by TimeZone.getAvailableIDs().
+This would seem to imply a daylight savings time bug in FastDateFormat. This may be the same issue as LANG-916.
+If you adjust the for loop such that the test is within the loop and happens on every timezone, you will hit timezones that fail.  e.g.:
+
+
+Index: FastDatePrinterTest.java
+===================================================================
+--- FastDatePrinterTest.java	(revision 1665715)
++++ FastDatePrinterTest.java	(working copy)
+@@ -269,8 +269,6 @@
+         for (final String zone : availableZones) {
+             if (!zone.equals(currentZone.getID())) {
+                 anotherZone = TimeZone.getTimeZone(zone);
+-            }
+-        }
+         
+         assertNotNull("Cannot find another timezone", anotherZone);
+         
+@@ -282,6 +280,8 @@
+         final String expectedValue = sdf.format(cal.getTime());
+         final String actualValue = FastDateFormat.getInstance(pattern).format(cal);
+         assertEquals(expectedValue, actualValue);
++            }
++        }
+     }
+     
+     @Test
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">916</link>
+		</links>
+	</bug>
+	<bug id="1069" opendate="2014-11-25 12:36:57" fixdate="2015-04-11 06:09:55" resolution="Fixed">
+		<buginformation>
+			<summary>CharSet.getInstance documentation does not clearly explain how to include negation character in set</summary>
+			<description>As discussed in this Stack Overflow question, the documentation for CharSet.getInstance() don&amp;amp;apos;t explain clearly how to include the negation character (^) as a literal character.
+The two solutions suggested in the SO question are:
+
+
+// Add the &amp;amp;apos;^&amp;amp;apos; on its own
+CharSet.getInstance("^", "otherlettershere");
+
+// Add the &amp;amp;apos;^&amp;amp;apos; as the last character
+CharSet.getInstance("otherlettershere^")
+
+
+If those are the best options, we should add a line to the Javadoc to indicate this. If there is a better way, clearly that should be documented instead.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.CharSet.java</file>
+			<file type="M">org.apache.commons.lang3.CharSetTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1002" opendate="2014-04-30 20:45:25" fixdate="2015-07-08 05:51:13" resolution="Fixed">
+		<buginformation>
+			<summary>Several predefined ISO FastDateFormats in DateFormatUtils are incorrect</summary>
+			<description>Formats ISO_TIME_FORMAT, ISO_TIME_TIME_ZONE_FORMAT prepend a T but this is not correct. Sole time is never prepended by defintion. T is used only when date and time are given.
+The Javadocs of ISO_TIME_NO_T_FORMAT, ISO_TIME_NO_T_FORMAT are in correct too because they say: "This pattern does not comply with the formal ISO8601 specification as the standard requires the &amp;amp;apos;T&amp;amp;apos; prefix for times."
+You might want to read Markus Kuhn&amp;amp;apos;s reference on that.
+A solution would be remove the first two and rename the second two by dropping the NO_T in the name.</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateFormatUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1018" opendate="2014-05-27 10:24:53" fixdate="2016-06-12 11:29:48" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber(final String str)  Precision will be lost</summary>
+			<description>With commons-lang 3.2.2:
+NumberUtils.createNumber("-160952.54");
+The result is "-160952.55".
+Should not be based on the length of the decimal point number to judge whether the floating point number.
+Using the method (createFloat(str)) of dealing with the valid number greater than seven Numbers will cause accuracy loss.
+The source code is as follows:
+
+
+try {
+            if(numDecimals &amp;lt;= 7){// If number has 7 or fewer digits past the decimal point then make it a float
+                final Float f = createFloat(str);
+                if (!(f.isInfinite() || (f.floatValue() == 0.0F &amp;amp;&amp;amp; !allZeros))) {
+                    return f;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+        try {
+            if(numDecimals &amp;lt;= 16){// If number has between 8 and 16 digits past the decimal point then make it a double
+                final Double d = createDouble(str);
+                if (!(d.isInfinite() || (d.doubleValue() == 0.0D &amp;amp;&amp;amp; !allZeros))) {
+                    return d;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+
+        return createBigDecimal(str);
+    }
+
+</description>
+			<version>3.3.2</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1187</link>
+			<link type="Duplicate" description="is duplicated by">1215</link>
+		</links>
+	</bug>
+</bugrepository>

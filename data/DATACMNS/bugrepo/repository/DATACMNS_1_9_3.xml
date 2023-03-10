@@ -1,0 +1,24 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="733" opendate="2015-07-19 12:04:50" fixdate="2015-07-21 06:53:39" resolution="Fixed">
+		<buginformation>
+			<summary>PreferredConstructorDiscoverer prevents custom classloader from being garbage collected</summary>
+			<description>Hi,
+the reason for this issue is similar/related to the one described in DATACMNS-648:
+PreferredConstructorDiscoverer creates a static DefaultParameterNameDiscoverer, wich adds a LocalVariableTableParameterNameDiscoverer to parameterNameDiscoverers. This LVTPND holds a Map with a class as a key.
+As I said, I&amp;amp;apos;m using a custom classloaders for a kind of plugin-based application.
+The problem is, since entity-classes stay in the LVTPND&amp;amp;apos;s parameterNamesCache, the custom classloader who loaded the entity class can never be GC&amp;amp;apos;ed.
+Also note that MethodParameters could potentially cause the same problems because of the static DefaultParameterNameDiscoverer
+Regards
+Matthias</description>
+			<version>1.9.3 (Evans SR3)</version>
+			<fixedVersion>1.10.2 (Fowler SR2), 1.11 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.PreferredConstructorDiscoverer.java</file>
+			<file type="M">org.springframework.data.repository.query.Parameters.java</file>
+			<file type="M">org.springframework.data.repository.support.MethodParameters.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,466 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="9" master="670" duplicate="702" opendate="2015-03-30 06:01:54" fixdate="2015-11-17 13:12:10" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for Querydsl 4 QueryDSL starting from version 4.0.0 is not compatible due to package rename</summary>
+			<description> Packages of QueryDSL have been renamed from com.mysema.query.* to com.querydsl.* . QueryDslPredicateExecutor depends on the old package names, which makes latest QueryDSL unusable with Spring Data.</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.EntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslPredicateExecutor.java</file>
+			<file type="M">org.springframework.data.querydsl.QSortUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.web.config.QuerydslWebConfiguration.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.SingleValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequestUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequest.java</file>
+			<file type="M">org.springframework.data.querydsl.QSort.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapterUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactory.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.MultiValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBinderCustomizer.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBindingUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.Address.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">119</link>
+			<link type="Depend" description="is depended on by">708</link>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="is duplicated by">702</link>
+			<link type="Duplicate" description="is duplicated by">765</link>
+			<link type="Duplicate" description="is duplicated by">1238</link>
+			<link type="Duplicate" description="duplicates">670</link>
+		</links>
+	</bug>
+	<bug id="10" master="670" duplicate="705" opendate="2015-03-30 06:01:54" fixdate="2015-11-17 13:12:10" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for Querydsl 4 Port to querydsl 4.0.0</summary>
+			<description> Port to querydsl 4.0.0</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.EntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslPredicateExecutor.java</file>
+			<file type="M">org.springframework.data.querydsl.QSortUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.web.config.QuerydslWebConfiguration.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.SingleValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequestUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequest.java</file>
+			<file type="M">org.springframework.data.querydsl.QSort.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapterUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactory.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.MultiValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBinderCustomizer.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBindingUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.Address.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">119</link>
+			<link type="Depend" description="is depended on by">708</link>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="is duplicated by">702</link>
+			<link type="Duplicate" description="is duplicated by">765</link>
+			<link type="Duplicate" description="is duplicated by">1238</link>
+			<link type="Duplicate" description="duplicates">670</link>
+		</links>
+	</bug>
+	<bug id="11" master="683" duplicate="711" opendate="2015-04-13 05:31:25" fixdate="2015-06-14 02:28:40" resolution="Fixed">
+		<buginformation>
+			<summary>Enabling Spring Data web support breaks @ModelAttribute binding in Spring MVC DomainClassConverter triggered unnecessarily</summary>
+			<description>Given following Java config class
+
+
+
+
+
+
+package be.vdab.web;
+
+
+
+
+
+
+
+
+
+import org.springframework.context.annotation.ComponentScan;
+
+
+
+
+import org.springframework.context.annotation.Configuration;
+
+
+
+
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+
+
+
+
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+
+
+
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+
+
+
+
+
+
+
+
+// enkele imports
+
+
+
+
+@Configuration
+
+
+
+
+@EnableWebMvc
+
+
+
+
+@EnableSpringDataWebSupport
+
+
+
+
+@ComponentScan
+
+
+
+
+public class CreateControllerBeans extends WebMvcConfigurerAdapter {
+
+
+
+
+}
+
+
+
+
+
+
+, following Controller class
+
+
+
+
+
+
+package be.vdab.web;
+
+
+
+
+
+
+
+
+
+import org.springframework.stereotype.Controller;
+
+
+
+
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+
+
+
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+
+
+import org.springframework.web.bind.annotation.RequestMethod;
+
+
+
+
+import org.springframework.web.servlet.ModelAndView;
+
+
+
+
+
+
+
+
+
+import be.vdab.entities.Person;
+
+
+
+
+
+
+
+
+
+@Controller
+
+
+
+
+@RequestMapping(value = "/")
+
+
+
+
+public class PersonController {
+
+
+
+
+	private static final String TOEVOEGEN_VIEW = "/WEB-INF/JSP/index.jsp";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	@RequestMapping(method=RequestMethod.GET)
+
+
+
+
+	ModelAndView get() {
+
+
+
+
+		return new ModelAndView(TOEVOEGEN_VIEW).addObject(new Person());
+
+
+
+
+	}
+
+
+
+
+	
+
+
+
+
+	@RequestMapping(method = RequestMethod.POST)
+
+
+
+
+	String post(@ModelAttribute Person person) {
+
+
+
+
+	  if (person == null) {
+
+
+
+
+		  throw new IllegalArgumentException("person IS NULL");
+
+
+
+
+	  }
+
+
+
+
+	  return "redirect:/";
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+and following JSP
+
+
+
+
+
+
+&amp;lt;%@page contentType="text/html" pageEncoding="UTF-8" session="false"%&amp;gt;
+
+
+
+
+&amp;lt;%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %&amp;gt;
+
+
+
+
+&amp;lt;!doctype html&amp;gt;
+
+
+
+
+&amp;lt;html lang="nl"&amp;gt;
+
+
+
+
+&amp;lt;head&amp;gt;
+
+
+
+
+&amp;lt;title&amp;gt;Add person&amp;lt;/title&amp;gt;
+
+
+
+
+&amp;lt;/head&amp;gt;
+
+
+
+
+&amp;lt;body&amp;gt;
+
+
+
+
+&amp;lt;form:form action="" method="post" commandName="person"&amp;gt;
+
+
+
+
+&amp;lt;form:label path="name"&amp;gt;Name:&amp;lt;/form:label&amp;gt;
+
+
+
+
+&amp;lt;form:input path="name" autofocus="true"/&amp;gt;
+
+
+
+
+&amp;lt;input type="submit"&amp;gt;
+
+
+
+
+&amp;lt;/form:form&amp;gt;
+
+
+
+
+&amp;lt;/body&amp;gt;
+
+
+
+
+&amp;lt;/html&amp;gt;
+
+
+
+
+
+
+the method post in PersonController throws the InvalidArgumentException because the person parameter is null.
+Observation 1:
+This worked up to and including spring-data-jpa 1.7.2.RELEASE
+Observation 2:
+The bug disappears when @EnableSpringDataWebSupport is put in comment in CreateControllerBeans.java
+Observation 3:
+The bug disappears when @ModelAttribute is put in comment in PersonController.java
+You can clone a project that shows the bug from
+https://github.com/desmethans/springDataJpaError.git DomainClassConverter wrongfully triggers on form submits. I have a controller, which accepts a filled out Entity as a form 
+@RequestMapping(value="entity/edit", method=RequestMethod.POST)
+public String modifyEntity(@Validated(Edit.class) Entity entity){
+MVC builds a Detached Entity, and does a check if a conversion via the ConversionService must take place. The conversion goes from com.mycompany.myproject.domain.Entity to @Validated com.mycompany.myproject.domain.Entity. It goes through every registered converter to see if someone wishes to perform this conversion. So far so good.
+Now DomainClassConverter.ToIdConverter checks if it can convert Entity to @Validated Entity. It agrees that it can not, however it then reduces the source entity to its ID, and begins a brand new search by the converters to see if Entity&amp;amp;apos;s String id can be converted to Entity. Of course it finds  the DomainClassConverter.ToEntityConverter. 
+Thus the DomainClassConvert.ToIdConverter is found as a legitimate converter for Entity-&amp;gt;@Validated Entity. When it is asked to do this convertion, it doesn&amp;amp;apos;t match them as equals, being as they have different annotations, and actually invokes DomainClassConvert.ToEntityConverter which does a callback to the database etc. etc. etc.
+There are of course two problems with this. Most importantly, it discards any of the changes. Secondly, since my Entity has a collection, and the DomainClassConverter loads the Entity in its own transaction, which is commited and closed by the time the Controller is called, any work on the collection results in a org.hibernate.LazyInitializationException. 
+Basically, I am now disabling DomainClassConverter, until this is fixed. I think the way to fix it, is to do more intelligent TypeDescriptor comparisons in the convert method. Alternatively, some way to disable DomainClassConverter from activating on a specific controller, or just only focusing on IdToEntity, and never EntityToId</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.11 M1 (Gosling), 1.10.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">711</link>
+			<link type="Duplicate" description="duplicates">683</link>
+		</links>
+	</bug>
+</bugrepository>

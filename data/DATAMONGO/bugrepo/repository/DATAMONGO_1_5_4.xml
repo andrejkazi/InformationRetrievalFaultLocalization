@@ -1,0 +1,583 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1040" opendate="2014-08-28 06:37:12" fixdate="2014-09-04 07:04:49" resolution="Fixed">
+		<buginformation>
+			<summary>deleteAll repository query don&amp;apos;t use EntityMetadata collection name</summary>
+			<description>Unlike other methods, deleteAll repository queries don&amp;amp;apos;t use the collection name provided by MongoEntityMetadata. This prevents me to use multiple collection names for a same Entity.
+In AbstractMongoQuery$AbstractMongoQuery :
+
+
+
+
+
+
+		private Object deleteAndConvertResult(Query query, MongoEntityMetadata&amp;lt;?&amp;gt; metadata) {
+
+
+
+
+
+
+
+
+
+			if (method.isCollectionQuery()) {
+
+
+
+
+				return operations.findAllAndRemove(query, metadata.getJavaType());
+
+
+
+
+			}
+
+
+
+
+
+
+
+
+
+			WriteResult writeResult = operations.remove(query, metadata.getJavaType(), metadata.getCollectionName());
+
+
+
+
+			return writeResult != null ? writeResult.getN() : 0L;
+
+
+
+
+		}
+
+
+
+
+
+
+A simple change will fix that :
+
+
+
+
+
+
+			if (method.isCollectionQuery()) {
+
+
+
+
+				return operations.findAllAndRemove(query, metadata.getJavaType(), metadata.getCollectionName());
+
+
+
+
+			}
+
+
+
+
+
+
+Thanks</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.6 GA (Evans), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1070" opendate="2014-10-09 19:47:01" fixdate="2014-10-17 04:26:43" resolution="Fixed">
+		<buginformation>
+			<summary>Query annotation with $oid leads to a parse error</summary>
+			<description>When a query that uses $oid along with a parameter placeholder is written, it leads to a parse error during application load time (This used to work fine in version 1.3.2, but is broken in at least 1.5.4-1.7.x):
+(Reproducible project attached)
+
+
+
+
+
+
+@Query("{ &amp;amp;apos;organization&amp;amp;apos;: {&amp;amp;apos;$ref&amp;amp;apos;: &amp;amp;apos;organizations&amp;amp;apos;, &amp;amp;apos;$id&amp;amp;apos;: { &amp;amp;apos;$oid&amp;amp;apos;: ?0 } } }")
+
+
+
+
+List&amp;lt;Person&amp;gt; findByOrganization(String organizationId);
+
+
+
+
+
+
+
+
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: invalid ObjectId [_param_0]
+
+
+
+
+	at org.bson.types.ObjectId.&amp;lt;init&amp;gt;(ObjectId.java:181)
+
+
+
+
+	at org.bson.types.ObjectId.&amp;lt;init&amp;gt;(ObjectId.java:167)
+
+
+
+
+	at com.mongodb.util.JSONCallback.objectDone(JSONCallback.java:71)
+
+
+
+
+	at com.mongodb.util.JSONParser.parseObject(JSON.java:261)
+
+
+
+
+	at com.mongodb.util.JSONParser.parse(JSON.java:213)
+
+
+
+
+	at com.mongodb.util.JSONParser.parseObject(JSON.java:249)
+
+
+
+
+	at com.mongodb.util.JSONParser.parse(JSON.java:213)
+
+
+
+
+	at com.mongodb.util.JSONParser.parseObject(JSON.java:249)
+
+
+
+
+	at com.mongodb.util.JSONParser.parse(JSON.java:213)
+
+
+
+
+	at com.mongodb.util.JSONParser.parse(JSON.java:163)
+
+
+
+
+	at com.mongodb.util.JSON.parse(JSON.java:99)
+
+
+
+
+	at com.mongodb.util.JSON.parse(JSON.java:79)
+
+
+
+
+	at org.springframework.data.mongodb.repository.query.StringBasedMongoQuery$ParameterBindingParser.parseParameterBindingsFrom(StringBasedMongoQuery.java:214)
+
+
+
+
+	at org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.&amp;lt;init&amp;gt;(StringBasedMongoQuery.java:76)
+
+
+
+
+...
+
+
+
+
+
+</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1068" opendate="2014-10-08 19:43:32" fixdate="2014-10-21 03:27:47" resolution="Complete">
+		<buginformation>
+			<summary>elemMatch of Class Criteria fails to build special cirteria</summary>
+			<description>There is an entity like this:  
+
+
+
+
+
+
+	
+
+
+
+
+	public class Room {
+
+
+
+
+		private String name;
+
+
+
+
+		private List&amp;lt;Date&amp;gt; occupied;
+
+
+
+
+	}
+
+
+
+
+
+
+I need to issue a criteria to fetch all documents in which none of elements of occupied falls into a specified date range. The query JSON is:  
+
+
+
+
+
+
+	{
+
+
+
+
+		occupied : {
+
+
+
+
+			$not : {
+
+
+
+
+				$elemMatch : {
+
+
+
+
+					$gte : start,
+
+
+
+
+					$lte : end
+
+
+
+
+				}
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+	}
+
+
+
+
+
+
+Then, I tried on  
+
+
+
+
+
+
+	Criteria c1 = new Criteria().gte(start).lte(end);
+
+
+
+
+	Criteria c = Criteria.where("occupied").not().elemMatch(c1);
+
+
+
+
+
+
+But the serialization to JSON for c is:
+
+
+
+
+
+
+	
+
+
+
+
+{
+
+
+
+
+	occupied : {
+
+
+
+
+		$not : {
+
+
+
+
+			$elemMatch : {
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+	}
+
+
+
+
+}
+
+
+
+
+
+
+It seems that c1 will be explained to empty Map by invoking elemMatch(Criteria) because I haven&amp;amp;apos;t assign a key to it. But really no key I can assign to it.</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.Criteria.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.CriteriaTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1077" opendate="2014-10-27 06:10:06" fixdate="2014-10-30 03:08:30" resolution="Fixed">
+		<buginformation>
+			<summary>Update removes positional operator $ in key when used on DBRef property</summary>
+			<description>Ensure the following works in UpdateMapperUnitTests.
+
+
+
+
+
+
+/**
+
+
+
+
+ * @see SO-26556527
+
+
+
+
+ */
+
+
+
+
+@Test
+
+
+
+
+public void shouldNotRemovePositionalParameter() {
+
+
+
+
+
+
+
+
+
+	Update update = new Update();
+
+
+
+
+	update.unset("dbRefAnnotatedList.$");
+
+
+
+
+
+
+
+
+
+	DBObject mappedUpdate = mapper.getMappedObject(update.getUpdateObject(),
+
+
+
+
+			context.getPersistentEntity(DocumentWithDBRefCollection.class));
+
+
+
+
+
+
+
+
+
+	DBObject $unset = DBObjectTestUtils.getAsDBObject(mappedUpdate, "$unset");
+
+
+
+
+
+
+
+
+
+	assertThat($unset, equalTo(new BasicDBObjectBuilder().add("dbRefAnnotatedList.$", 1).get()));
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1080" opendate="2014-10-30 03:28:16" fixdate="2014-10-30 03:40:27" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractMongoQuery must not eagerly post-process results</summary>
+			<description>Currently using Optional with repository query methods doesn&amp;amp;apos;t work correctly as the ConversionService used in AbstractMongoQuery tries to eagerly convert the result returned by the query execution into the methods return type.</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.6.1 (Evans SR1), 1.7 M1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.AbstractMongoQueryUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Relate" description="relates to">1120</link>
+		</links>
+	</bug>
+	<bug id="1078" opendate="2014-10-28 02:23:26" fixdate="2014-11-10 07:42:07" resolution="Fixed">
+		<buginformation>
+			<summary>@Query annotated repository query fails to map complex Id structure.</summary>
+			<description>StringBasedMongoQuery converts any complex object to the according mongo type including type restrictions via _class. Therefore annotated queries like:
+
+
+
+
+
+
+@Query("{&amp;amp;apos;_id&amp;amp;apos;: {$in: ?0}}")
+
+
+
+
+List&amp;lt;User&amp;gt; findByUserIds(Collection&amp;lt;MyUserId&amp;gt; userIds);
+
+
+
+
+
+
+end up being converted to:
+
+
+
+
+
+
+{_id:  {$in: [ {_class:"com.sampleuser.MyUserId", userId:"....", sampleId:"...."}, ...
+
+
+
+
+
+
+So we need to check for the presence of typeKey when converting id properties.</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.7 M1 (Fowler), 1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.MyId.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.ComplexIdRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.UserWithComplexId.java</file>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.MappingMongoConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1088</link>
+		</links>
+	</bug>
+	<bug id="1139" opendate="2015-01-12 10:07:34" fixdate="2015-01-12 10:29:25" resolution="Fixed">
+		<buginformation>
+			<summary>MongoQueryCreator must not create $nearSphere query for neutral Distance</summary>
+			<description>MongoQueryCreator.from() compares the Distance&amp;amp;apos;s metric against null which will never result in true as {8Distance}} returns Metric.NEUTRAl by default.</description>
+			<version>1.5.4 (Dijkstra SR4)</version>
+			<fixedVersion>1.5.5 (Dijkstra SR5), 1.6.2 (Evans SR2), 1.7 RC1 (Fowler)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.StubParameterAccessor.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="28" master="2045" duplicate="3073" opendate="2012-09-06 11:28:44" fixdate="2015-08-18 09:58:33" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractAuthorizeTag cannot specify which WebInvocationPrivilegeEvaluator JSPAuthorizeTag authorizeUsingUrlCheck only compares against first WebInvocationPrivilegeEvaluator</summary>
+			<description>AbstractAuthorizeTag uses the first WebInvocationPrivilegeEvaluator which causes problems when evaluating the url attribute and having multiple &amp;lt;http&amp;gt; elements. In AbstractAuthorizeTag, authorizeUsingUrlCheck calls getPrivilegeEvaluator which on line 347 returns the first WebInvocationPrivilegeEvaluator ignoring others. 
+An application might have multiple WebInvocationPrivilegeEvaluators for instance if there is one &amp;lt;http&amp;gt; config for the main ui of the application and one for a built in REST service. 
+Example REST &amp;lt;http&amp;gt; config:
+ &amp;lt;http pattern="/api/**" create-session="stateless" use-expressions="true"&amp;gt;
+    	&amp;lt;intercept-url pattern="/api/**" access="hasRole(&amp;amp;apos;ROLE_REST&amp;amp;apos;)"/&amp;gt;
+    	&amp;lt;http-basic/&amp;gt;
+    &amp;lt;/http&amp;gt; 
+Thus a JSP authorize url check such as:
+&amp;lt;sec:authorize url="/secureAction"&amp;gt;
+will only be evaluated against the first &amp;lt;http&amp;gt; config.
+In some cases, such as when the main &amp;lt;http&amp;gt; config contains a catchall (&amp;lt;intercept-url pattern="/**" access="isAuthenticated()" /&amp;gt;), the order of the &amp;lt;http&amp;gt; configs can not be changed yielding no way to conduct url evaluations.
+It seems like all WebInvocationPrivilegeEvaluators should be considered.</description>
+			<version>3.2.8</version>
+			<fixedVersion>3.1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.WebAttributes.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AbstractAuthorizeTag.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">2101</link>
+			<link type="Duplicate" description="is duplicated by">3073</link>
+			<link type="Duplicate" description="duplicates">2045</link>
+		</links>
+	</bug>
+</bugrepository>

@@ -1,0 +1,160 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="303" opendate="2012-02-17 09:20:19" fixdate="2012-02-17 20:51:03" resolution="Fixed">
+		<buginformation>
+			<summary>TeeOutputStream does not call branch.close() when main.close() throws an exception</summary>
+			<description>TeeOutputStream.close() looks like this:
+TeeOutputStream.java
+
+    /**
+     * Closes both streams. 
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.branch.close();
+    }
+
+
+It is obvious that this.branch.close() is not executed when super.close() raises an exception. super.close() may in fact raise an IOException since ProxyOutputStream.handleIOException(IOException) is not overridden.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.output.TeeOutputStream.java</file>
+			<file type="M">org.apache.commons.io.output.TeeOutputStreamTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="302" opendate="2012-02-13 08:16:56" fixdate="2012-02-22 19:23:29" resolution="Fixed">
+		<buginformation>
+			<summary>ArrayIndexOutOfBoundsException in BOMInputStream when reading a file without BOM multiple times</summary>
+			<description>Resetting the BOMInputStream doesn&amp;amp;apos;t reset the fbLength member variable. This causes fbLength to grow bigger than the firstBytes array (when the file doesn&amp;amp;apos;t contain a BOM), which leads to an ArrayIndexOutOfBoundsException in the readFirstBytes method.
+The attached test case reveals the problem.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.BOMInputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.input.BOMInputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="304" opendate="2012-03-01 06:35:32" fixdate="2012-03-01 14:39:50" resolution="Fixed">
+		<buginformation>
+			<summary>The second constructor of Tailer  class does not pass &amp;apos;delay&amp;apos; to the third one</summary>
+			<description>Here is the second contructor of Tailer class:
+
+
+    public Tailer(File file, TailerListener listener, long delay) {
+        this(file, listener, 1000, false);
+    }
+
+</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.Tailer.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="298" opendate="2012-01-06 15:08:09" fixdate="2012-03-01 15:31:30" resolution="Fixed">
+		<buginformation>
+			<summary>Various methods of class &amp;apos;org.apache.commons.io.FileUtils&amp;apos; incorrectly suppress &amp;apos;java.io.IOException&amp;apos;s.</summary>
+			<description></description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="306" opendate="2012-03-13 17:25:50" fixdate="2012-03-13 17:42:14" resolution="Fixed">
+		<buginformation>
+			<summary>ReaderInputStream#read(byte[] b, int off, int len) should always return 0 for length == 0</summary>
+			<description>The method read(byte[] b, int off, int len) should always return 0 if the requested length == 0, even if the stream is empty or at EOF, as that is how the overridden java.io.InputStream method is documented to behave.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ReaderInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.ReaderInputStreamTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="307" opendate="2012-03-13 17:40:22" fixdate="2012-03-14 02:09:54" resolution="Fixed">
+		<buginformation>
+			<summary>ReaderInputStream#read(byte[] b, int off, int len) should check for valid parameters</summary>
+			<description>If the buffer is null, the method should throw NPE immediately (rather than letting it occur later)
+If the offset or length are &amp;lt; 0 or would overflow the buffer, then throw IndexOutOfBoundsException with details of the values.</description>
+			<version>2.1</version>
+			<fixedVersion>2.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.ReaderInputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="319" opendate="2012-03-30 23:03:51" fixdate="2012-04-16 13:07:07" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.sizeOfDirectory follows symbolic links.</summary>
+			<description>First of all Thanks tons Apache Commons folks for all the amazing work!  My first JIRA. Yayyy. I contributed B-)
+A symbolic link may create a cycle and so sizeOfDirectory crashes with an IllegalArgumentException. e.g. 
+
+$ tree test
+test
+ file
+ ravi
+     cycle -&amp;gt; ../../test
+     file
+
+
+causes FileUtils.sizeOfDirectory to crash like so
+
+java TestJAVA
+Exception in thread "main" java.lang.IllegalArgumentException: &amp;lt;somepath&amp;gt;/test/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle/ravi/cycle does not exist
+        at org.apache.commons.io.FileUtils.sizeOf(FileUtils.java:2053)
+        at org.apache.commons.io.FileUtils.sizeOfDirectory(FileUtils.java:2089)
+        at org.apache.commons.io.FileUtils.sizeOf(FileUtils.java:2057)
+        at org.apache.commons.io.FileUtils.sizeOfDirectory(FileUtils.java:2089)
+        at org.apache.commons.io.FileUtils.sizeOf(FileUtils.java:2057)
+        at org.apache.commons.io.FileUtils.sizeOfDirectory(FileUtils.java:2089)
+        at org.apache.commons.io.FileUtils.sizeOf(FileUtils.java:2057)
+        at org.apache.commons.io.FileUtils.sizeOfDirectory(FileUtils.java:2089)
+
+
+We faced the same issue in Hadoop . Checkout https://issues.apache.org/jira/browse/HADOOP-6963 for our solution</description>
+			<version>2.1</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+			<file type="M">org.apache.commons.io.FileUtilsTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="453" opendate="2014-07-17 20:43:34" fixdate="2014-07-30 23:21:07" resolution="Fixed">
+		<buginformation>
+			<summary>Regression in FileUtils.readFileToString from 2.0.1</summary>
+			<description>FileUtils.readFileToString has changed it&amp;amp;apos;s behavior to make a call from IOUtils.toByteArray(in) to IOUtils.toByteArray(in, file.length()) in FileUtils.readFileToString. This is a regression because if the file.length = 0, then it will return 0. According to the javadocs for File#length, it is possible to return 0 if it is a System dependent entities, so even though the File.length might return 0, the stream is still open and  
+Steps to reproduce (Ubuntu):
+1. Execute nohup sleep 10000 &amp;amp; in a terminal, and get the process id of the sleep command (ps -ef | grep sleep).
+2. Call FileUtils.readFileToString(new File("/proc/$PID/environ")); where $PID is the process ID from step 1.
+You will notice that in 2.0.1 it returns several elements, however in 2.1 it will return nothing.
+See nicolas de loof&amp;amp;apos;s comment in https://github.com/apache/commons-io/commit/53a40a6d9dcaaa616b404255406edc30fe2d524c.</description>
+			<version>2.1</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">486</link>
+			<link type="Reference" description="is related to">251</link>
+		</links>
+	</bug>
+</bugrepository>

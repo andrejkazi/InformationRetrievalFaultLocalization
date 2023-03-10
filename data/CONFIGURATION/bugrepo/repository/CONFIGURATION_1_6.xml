@@ -1,0 +1,867 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="CONFIGURATION">
+	<bug id="368" opendate="2009-03-07 08:42:06" fixdate="2009-03-08 19:26:40" resolution="Fixed">
+		<buginformation>
+			<summary>CombinedConfiguration: java.util.NoSuchElementException after reload of enclosed SubnodeConfiguration/XMLConfiguration</summary>
+			<description>Steps to repeat:
+
+create a XMLConfiguration based on a XML config file (xml file content e.g.:  &amp;lt;config&amp;gt;&amp;lt;foo&amp;gt;&amp;lt;bar&amp;gt;0&amp;lt;/bar&amp;gt;&amp;lt;/for&amp;gt;&amp;lt;/config&amp;gt;)
+assign file reloading strategy to the XMLConfiguration
+create a SubnodeConfiguration based on this XMLConfiguration (prefix e.g.: &amp;amp;apos;foor&amp;amp;apos;)
+create a CombinedConfiguration
+add the SubnodeConfiguration to this CombinedConfiguration
+get a configuration value from the CombinedConfiguration (e.g. &amp;amp;apos;bar&amp;amp;apos;) -&amp;gt; OK, this works
+touch the underlying xml configuration
+try to get a configuration value from the CombinedConfiguration again (e.g. &amp;amp;apos;bar&amp;amp;apos;) -&amp;gt;  java.util.NoSuchElementException
+
+See also attached TestCase.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestSubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.CombinedConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="369" opendate="2009-03-09 19:50:43" fixdate="2009-03-22 01:00:20" resolution="Fixed">
+		<buginformation>
+			<summary>SubsetConfiguration ignores local StrLookups</summary>
+			<description>For an AbstractConfiguration it is normally possible to register local StrLookup instances. These are simply ignored by the SubsetConfiguration.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.interpol.ConfigurationInterpolator.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.SubnodeConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSubsetConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.SubsetConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="385" opendate="2009-06-03 19:35:10" fixdate="2009-06-06 15:34:24" resolution="Fixed">
+		<buginformation>
+			<summary>clearProperty does not generate events in DatabaseConfiguration</summary>
+			<description>clearProperty does not generate a EVENT_CLEAR_PROPERTY event because it overrides AbstractConfiguration.clearProperty instead of AbstractConfiguration.clearPropertyDirect as recommended by the superclass.  </description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DatabaseConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestDatabaseConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="362" opendate="2009-02-02 23:25:52" fixdate="2009-06-21 17:38:14" resolution="Fixed">
+		<buginformation>
+			<summary>XMLPropertyListConfiguration doesn&amp;apos;t handle empty dictionary correctly</summary>
+			<description>Empty "dict" elements are not handled properly.   During printing of a configuration, configuration nodes that have no children and no value are assumed to be "strings" (see XMLPropertyListConfiguration.java:printValue()&amp;amp;apos;s last "else" clause).   &amp;lt;dict/&amp;gt; is parsed in such a way (see startElement() and endElement() of that same file) that it ends up creating a configuration node with no children and no value.  Thus printing out a parsed property list will print &amp;lt;string&amp;gt;null&amp;lt;/string&amp;gt; everywhere an empty dictionary was in the input.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.plist.XMLPropertyListConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.plist.TestXMLPropertyListConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="388" opendate="2009-06-22 00:56:29" fixdate="2009-06-22 03:35:37" resolution="Fixed">
+		<buginformation>
+			<summary>When updating an element or attribute that contains the list delimiter the character is escaped even if delimiting is disabled.</summary>
+			<description>When updating an attribute or element using an XMLConfiguration, if the new value contains a delimiter the delimiter will be escaped with a &amp;amp;apos;\&amp;amp;apos; even if delimiters have been disabled.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="393" opendate="2009-08-22 14:47:21" fixdate="2009-08-22 15:42:38" resolution="Fixed">
+		<buginformation>
+			<summary>BaseConfiguration.clone() does not work with list properties</summary>
+			<description>In the clone() implementation the map storing the configuration data is also cloned. For properties with multiple values this map contains lists. Because no deep clone is performed these lists are simply copied into the cloned map. So if the corresponding properties are changed on either the original or the clone, the other object is affected, too.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.BaseConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestBaseConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="396" opendate="2009-09-14 10:22:11" fixdate="2009-09-27 20:08:40" resolution="Fixed">
+		<buginformation>
+			<summary>In HierarchicalConfiguration$Node visits the ConfigurationKey  points to the parent path in visitAfterChildren call</summary>
+			<description>When visiting a child the key is aggregated to have the child node name, and a call to visitBeforeChildren and grandChildren&amp;amp;apos;s visits are made.
+However, before calling  visitAfterChildren,  the resetting of the key to that of it&amp;amp;apos;s parent&amp;amp;apos;s, seems inconsistent.
+Last lines in visit(NodeVisitor visitor, ConfigurationKey key) 
+            if (key != null)
+            {
+                key.setLength(length);
+            }
+            visitor.visitAfterChildren(this, key);</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="399" opendate="2009-10-06 04:59:14" fixdate="2009-11-08 21:15:34" resolution="Fixed">
+		<buginformation>
+			<summary>interpolator for reading environment variables</summary>
+			<description>Hello there,
+This is an extension of issue Id CONFIGURATION-284
+The "env" interpolator prefix still does not seem to work. On investigation, I noticed that we have a new java class to support reading environment variables from different OSes, but there is no interpolator class (extending StrLookup) that supports the "env" prefix.
+Could someone look into this? For the moment, I have put in a class myself locally. Will add to the repository once I find some time.. 
+Regards.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.interpol.ConfigurationInterpolator.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfigurationBasicFeatures.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="403" opendate="2010-01-14 12:35:59" fixdate="2010-01-23 16:44:50" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration isEmpty has altered behaviour between 1.4  and 1.6</summary>
+			<description>Given xml configuration file
+
+ 
+&amp;lt;?xml version="1.0" encoding="ISO-8859-1" ?&amp;gt;
+&amp;lt;empty&amp;gt;&amp;lt;/empty&amp;gt;
+
+
+
+
+XMLConfiguration xml = new XMLConfiguration(file);
+assertTrue(xml.isEmpty());
+
+
+isEmpty() returned true on version 1.4 ?, now it returns false, and the configuration contains a single empty string as key.
+Not sure if this should be considered a bug, but the documnetation reads: Checks if this configuration is empty. Empty means that there are no keys with any values, though there can be some (empty) nodes. 
+</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">6</link>
+		</links>
+	</bug>
+	<bug id="405" opendate="2010-01-15 23:48:32" fixdate="2010-01-24 16:51:10" resolution="Fixed">
+		<buginformation>
+			<summary>Using load(InputStream) on a new XMLPropertyListConfiguration results in a thrown ConfigurationException</summary>
+			<description>I&amp;amp;apos;m trying to use XMLPropertyListConfiguration to load a property-list from a byte array.  My code looks like:
+     XMLPropertyListConfiguration plist = new XMLPropertyListConfiguration();
+     //	plist.setRootNode(new PListNode());	// HACK to work around internal cast exception
+     plist.load(new ByteArrayInputStream(bytes));
+This causes a ConfigurationException caused by a class exception (reproduced below).  The exception can be avoided by uncommenting the second line.
+org.apache.commons.configuration.ConfigurationException: Unable to parse the configuration file
+	at org.apache.commons.configuration.plist.XMLPropertyListConfiguration.load(XMLPropertyListConfiguration.java:250)
+	at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration$FileConfigurationDelegate.load(AbstractHierarchicalFileConfiguration.java:449)
+	at org.apache.commons.configuration.AbstractFileConfiguration.load(AbstractFileConfiguration.java:358)
+	at org.apache.commons.configuration.AbstractFileConfiguration.load(AbstractFileConfiguration.java:324)
+	at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.load(AbstractHierarchicalFileConfiguration.java:184)
+	at testcc.TestCC.main(TestCC.java:29)
+Caused by: java.lang.ClassCastException: org.apache.commons.configuration.HierarchicalConfiguration$Node cannot be cast to org.apache.commons.configuration.plist.XMLPropertyListConfiguration$PListNode
+	at org.apache.commons.configuration.plist.XMLPropertyListConfiguration$XMLPropertyListHandler.endElement(XMLPropertyListConfiguration.java:534)
+	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:601)
+	at com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDValidator.endNamespaceScope(XMLDTDValidator.java:2077)
+	at com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDValidator.handleEndElement(XMLDTDValidator.java:2028)
+	at com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDValidator.endElement(XMLDTDValidator.java:901)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1774)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2930)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:648)
+	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:510)
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:807)
+	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:737)
+	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:107)
+	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1205)
+	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:522)
+	at org.apache.commons.configuration.plist.XMLPropertyListConfiguration.load(XMLPropertyListConfiguration.java:246)
+	... 5 more</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.plist.XMLPropertyListConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.plist.TestXMLPropertyListConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="407" opendate="2010-02-06 17:04:32" fixdate="2010-02-08 21:04:22" resolution="Fixed">
+		<buginformation>
+			<summary>HierarchicalINIConfiguration can throw an exception if the global section is accessed concurrently</summary>
+			<description>If the global section of a hierarchical INI configuration is requested, a new ViewNode is created which becomes the root node of a new configuration for the global section. Nodes representing properties of the global section are added to this ViewNode. This operation temporarily changes the parent node of these nodes which may cause problems if the method is called by multiple threads concurrently. Because access to a section is a read-only operation, this should be thread-safe.
+The probability that this error happens is pretty low IMO. Therefore it should be hard to create a unit test.
+The issue can be fixed by synchronizing the add operation to the ViewNode.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="409" opendate="2010-03-01 18:05:38" fixdate="2010-03-06 20:46:38" resolution="Fixed">
+		<buginformation>
+			<summary>Key containing escapedDelimiter does not save() properly</summary>
+			<description>It seems that a key containing the escapedDelimiter is stored without the delimiter and the escape is not recreated when saving the configuration. 
+
+test.java
+
+HierarchicalINIConfiguration inicfg = new HierarchicalINIConfiguration();
+inicfg.setProperty( "Andrew L.. Cooper.first", "Andrew" );
+inicfg.setProperty( "Andrew L.. Cooper.last", "Cooper" );
+inicfg.setProperty( "Andrew L.. Cooper.mail", "andrew.cooper@example.com" );
+inicfg.save( System.out );
+System.out.println( inicfg.get( "Andrew L..Cooper.mail" );
+
+
+Expected Output
+
+[Andrew L. Cooper]
+first = Andrew
+last = Cooper
+mail = andrew.cooper@example.com
+
+andrew.cooper@example.com
+
+
+Actual Output
+
+[Andrew L. Cooper]
+
+andrew.cooper@example.com
+
+</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="408" opendate="2010-02-11 01:01:05" fixdate="2010-03-14 14:35:48" resolution="Fixed">
+		<buginformation>
+			<summary>When I save a URL as a property value, the forward slashes are getting escaped</summary>
+			<description>When I save a URL as a property value, the forward slashes are getting escaped.
+ie: 
+foo = http:\/\/www.google.com\/
+Example Code : 
+public static void main(String[] args)
+  {
+    try
+    {
+      PropertiesConfiguration config = new PropertiesConfiguration();     
+      File newProps = new File("foo.properties");
+      config.setProperty("foo", "http://www.google.com/");     
+      config.save(newProps);
+      
+    }
+    catch (Exception e){}
+  }</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="413" opendate="2010-03-30 23:58:37" fixdate="2010-04-04 18:05:34" resolution="Fixed">
+		<buginformation>
+			<summary>Subset configuration does not support events</summary>
+			<description></description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.SubsetConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="415" opendate="2010-05-19 22:55:24" fixdate="2010-05-29 14:25:16" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationUtils.fileFromURL mangles files with &amp;apos;+&amp;apos; (plus sign) in the name</summary>
+			<description>Attached is a sample program that demonstrates the problem.  The following is the method in ConfigurationUtils in question:
+public static File fileFromURL(URL url)
+{
+...
+        return new File(URLDecoder.decode(url.getPath()));
+...
+}
+
+URLDecoder (poorly named) decodes data encoded in the application/x-www-form-urlencoded MIME format.  This format is commonly used to encode HTML form data.  It is not intended for encoding URLs, though the formats are similar.
+The operative difference is that the MIME format allows the use of the plus sign (&amp;amp;apos;+&amp;amp;apos;) to represent spaces, whereas URLs must have spaces hex encoded (&amp;amp;apos;%20&amp;amp;apos;).  Files may have plus signs in the name, and therefore, decoding the plus sign as a space produces a different path.
+See attached code demonstrating the problem.
+Reference:  http://www.w3.org/MarkUp/html-spec/html-spec_8.html#SEC8.2.1
+and http://www.ietf.org/rfc/rfc1738.txt</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestFileConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="423" opendate="2010-08-27 22:26:41" fixdate="2010-08-27 23:18:49" resolution="Fixed">
+		<buginformation>
+			<summary>TestFileChangedReloadingStrategy fails incorrectly in testFromClasspath() </summary>
+			<description>testFromClassPath() can fail when it should not because of inconsistent escaping of output from PropertiesConfiguration.getURL() and FileChangedReloadingStrategy.getFile().toURL().</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.reloading.TestFileChangedReloadingStrategy.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="428" opendate="2010-11-10 06:43:46" fixdate="2010-11-11 21:11:41" resolution="Fixed">
+		<buginformation>
+			<summary>The Windows file path cannot be saved correctly as expected in XMLConfiguration</summary>
+			<description>I want to generate a XML as:
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&amp;gt;
+&amp;lt;Test&amp;gt;
+    &amp;lt;Cluster&amp;gt;
+        &amp;lt;Server location="C:\Server92"/&amp;gt;
+    &amp;lt;/Cluster&amp;gt;
+&amp;lt;/Test&amp;gt;
+
+
+Java Code:
+Test.java
+
+XMLConfiguration config = new XMLConfiguration();
+config.setRootElementName("Test");
+config.addProperty("Cluster.Server[@location]",  "C:\\Server92");
+config.save("C:\\NEW.xml");
+
+
+BUT after running the Java Code, the generated XML looks like:
+
+
+&amp;lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&amp;gt;
+&amp;lt;Test&amp;gt;
+&amp;lt;Cluster&amp;gt;
+&amp;lt;Server location="C:\\Server92"/&amp;gt;
+&amp;lt;/Cluster&amp;gt;
+&amp;lt;/Test&amp;gt;
+
+
+You will find that the location is "C:\ \Server92", BUT what I expected is "C:\Server92".</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.PropertyConverter.java</file>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestPropertyConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="433" opendate="2011-02-06 17:28:56" fixdate="2011-02-07 20:41:24" resolution="Fixed">
+		<buginformation>
+			<summary>ConfigurationDynaBean does not work as advertised regarding indexed properties</summary>
+			<description>The Javadoc of ConfigurationDynaBean says: "Setting an indexed property always throws an exception." However, there is a reasonable implementation for setting indexed properties.
+The get() method for indexed properties tries to figure out whether a property is indexed and throws an exception if not. However, it does not discover all cases of invalid access to non-indexed properties.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.beanutils.ConfigurationDynaBean.java</file>
+			<file type="M">org.apache.commons.configuration.beanutils.TestConfigurationDynaBean.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="432" opendate="2011-02-02 00:24:09" fixdate="2011-02-07 21:07:12" resolution="Fixed">
+		<buginformation>
+			<summary>ConfugrationConverter treats properties different by type</summary>
+			<description>The ConfigurationConverter is behaving differently depending on if I added an int or a string to a configuration object.
+Consider the following code:
+01       Configuration confInt = new BaseConfiguration();
+02       Configuration confString = new BaseConfiguration();
+03       confInt.setProperty("port", 80);
+04       confString.setProperty("port", "80");
+05       assertEquals(80, confInt.getInt("port"));
+06       assertEquals(80, confString.getInt("port"));
+07
+08       Properties propString = ConfigurationConverter.getProperties(confString);
+09       assertEquals("80", propString.getProperty("port"));
+10
+11       Properties propInt = ConfigurationConverter.getProperties(confInt);
+12
+13       assertEquals("80", propInt.getProperty("port"));
+As you can see the code is basically duplicated one set uses an int the other set uses a String.  However an exception blows out of line 11.
+&amp;amp;apos;port&amp;amp;apos; doesn&amp;amp;apos;t map to a List object: 80, a java.lang.Integer
+org.apache.commons.configuration.ConversionException: &amp;amp;apos;port&amp;amp;apos; doesn&amp;amp;apos;t map to a List object: 80, a java.lang.Integer
+        at org.apache.commons.configuration.AbstractConfiguration.getList(AbstractConfiguration.java:1144)
+        at org.apache.commons.configuration.AbstractConfiguration.getList(AbstractConfiguration.java:1109)
+        at org.apache.commons.configuration.ConfigurationConverter.getProperties(ConfigurationConverter.java:116) 
+I interpreted the interface to mean that everything up to and include line 13 would pass.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestAbstractConfigurationBasicFeatures.java</file>
+			<file type="M">org.apache.commons.configuration.TestConfigurationConverter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="434" opendate="2011-02-08 10:02:18" fixdate="2011-02-09 21:16:10" resolution="Fixed">
+		<buginformation>
+			<summary>In HierarchicalINIConfiguration, after saving a property by calling setProperty() and save() methods, the contents after semicolon disappeared in the saved file.</summary>
+			<description>Hi!
+I am developing an application using Commons Configuration API.
+And I got this problem.
+In the ini file like this:
+[Environment]
+Application Type=any
+Class Path=C:\Program Files\jar\manage.jar;C:\Program Files\jar\guiLauncher.jar;C:\Program Files\jar\appStart.jar;%USERPROFILE%;
+I changed the value of &amp;amp;apos;Application Type&amp;amp;apos; from &amp;amp;apos;any&amp;amp;apos; to &amp;amp;apos;gui&amp;amp;apos; by using class HierarchicalINIConfiguration.
+The value was successfully modified, but instead the value of &amp;amp;apos;Class Path&amp;amp;apos; was cut in the middle.
+It is reduced like this :  &amp;amp;apos;Class Path=C:\Program Files\jar\manage.jar&amp;amp;apos;
+In my opinion, the Configuration System regards the contents after &amp;amp;apos;;&amp;amp;apos; as comments, which disappeared from the file.
+Is this a kind of bug? Or is there a way to show all the contents after &amp;amp;apos;;&amp;amp;apos; properly?
+I appreciate if you give comments on this.
+Thank you.
+</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="446" opendate="2011-04-15 08:46:38" fixdate="2011-04-20 20:16:24" resolution="Fixed">
+		<buginformation>
+			<summary>XMLConfiguration removes empty attributes on update</summary>
+			<description>Consider an XML configuration file config.xml containing:
+&amp;lt;configuration&amp;gt;
+&amp;lt;foo attr="aValue"&amp;gt;
+&amp;lt;/foo&amp;gt;
+&amp;lt;/configuration&amp;gt;
+Update the configuration to set an attribute to empty:
+    XMLConfiguration config = new XMLConfiguration("config.xml");
+    config.setExpressionEngine(new XPathExpressionEngine());
+    config.setProperty("foo/@attr", "");
+    config.save();
+The file has been modified as follows:
+&amp;lt;configuration&amp;gt;
+&amp;lt;foo/&amp;gt;
+&amp;lt;/configuration&amp;gt;
+The attribute shouldn&amp;amp;apos;t be removed as an empty attribute is different from a missing attribute.
+Method removing the attribute: XMLConfiguration$XMLBuilderVisitor.updateAttribute(Node node, Element elem, String name, char listDelimiter)</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestXMLConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.XMLConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="448" opendate="2011-04-28 23:12:48" fixdate="2011-05-10 05:53:26" resolution="Fixed">
+		<buginformation>
+			<summary>INI config can&amp;apos;t have = in the value when using : seperators</summary>
+			<description>If I load an INI file with these values:
+username: identity
+password: abc=123
+It actually considers the second line to have the key "password: abc" and the value "123:G". </description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="458" opendate="2011-08-01 20:02:44" fixdate="2011-08-02 20:17:14" resolution="Fixed">
+		<buginformation>
+			<summary>SubnodeConfiguration.clear() does not work correctly</summary>
+			<description>If clear() is called on a SubnodeConfiguration obtained through the configurationAt() method of HierarchicalConfiguration, the node structure of the parent configuration (outside of the area of the sub configuration) may also be manipulated. Properties added to the SubnodeConfiguration after a clear() are not visible from the parent configuration.
+The problem is caused by the implementation of the clear() method inherited from AbstractConfiguration. This will call clearProperty() for each property found in the configuration. clearProperty() in turn clears the value of nodes and recursively clears the parent node if it does not contain any data. Here the structure owned by the SubnodeConfiguration can be left so that the parent gets manipulated.
+A possible solution would be to provide a specific implementation of clear() for hierarchical configurations. This could also be more efficient than the base implementation.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="dependent" description="is depended upon by">455</link>
+		</links>
+	</bug>
+	<bug id="455" opendate="2011-07-20 15:53:27" fixdate="2011-08-03 20:27:38" resolution="Fixed">
+		<buginformation>
+			<summary>HierachicalINIConfiguration section access without dotted notation</summary>
+			<description>Setting section properties of previously non-existent Sections using getSection().setProperty() fails.
+Using a non existing filename for f, the following produces an empty file.
+ini = HierarchicalINIConfiguration(f)
+section = ini.getSection("section")
+section.setProperty("foo", "bar")
+ini.save()
+Accessing SubnodeConfigurations after clearing them fails.
+using an existing file with an existing section, produces an empty file.
+ini = new HierarchicalINIConfiguration(f);
+subnode = ini.getSection("section");
+if (! subnode.isEmpty() ) 
+{
+   subnode.clear();
+}
+subnode.setProperty("foo", "bar");
+ini.save();
+</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.HierarchicalINIConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestHierarchicalINIConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="dependent" description="depends upon">458</link>
+		</links>
+	</bug>
+	<bug id="456" opendate="2011-07-29 07:32:14" fixdate="2011-08-04 20:09:54" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractConfiguration.getKeys(String prefix) docs doesn&amp;apos;t say about the point (&amp;apos;.&amp;apos;)</summary>
+			<description>For the method org.apache.commons.configuration.AbstractConfiguration.getKeys(String prefix) the documentation doesn&amp;amp;apos;t say that to the prefix will be added a point character (&amp;amp;apos;.&amp;amp;apos;) to filter the keys list (http://commons.apache.org/configuration/apidocs/org/apache/commons/configuration/AbstractConfiguration.html#getKeys%28java.lang.String%29). I discovered it only reading the source.
+Maybe I should have known this behaviour, but I think a lot of occasional users could face this unpredictable behaviour. Specifying this would be very helpfull.
+Many thanks for your wonderful libraries!</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.HierarchicalConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.Configuration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="452" opendate="2011-06-10 18:12:42" fixdate="2011-08-04 20:12:10" resolution="Fixed">
+		<buginformation>
+			<summary>HierarchicalConfiguration with XPathExpressionEngine does not work when setting a new property</summary>
+			<description>The following code does not work as expected
+Bug.java
+
+public class Bug {
+
+	public static void main(String[] args) {
+		try {
+			XMLConfiguration config = new XMLConfiguration();
+			// works
+			config.setProperty("test.property[@attribute]", "value");
+			config.setExpressionEngine(new XPathExpressionEngine());
+			config.save(System.out);
+			// works
+			config.setProperty("test/property/@attribute", "value");
+                        // does not work
+			config.setProperty("test/property/@attribute2", "value");
+		} catch (ConfigurationException e) {
+			// @FIXME Traitement d&amp;amp;apos;exception par defaut
+			throw new RuntimeException(e);
+		}
+
+	}
+}
+
+
+hangs with the following exception:
+Exception in thread "main" java.lang.IllegalArgumentException: prepareAdd: Passed in key must contain a whitespace!
+	at org.apache.commons.configuration.tree.xpath.XPathExpressionEngine.prepareAdd(XPathExpressionEngine.java:223)
+	at org.apache.commons.configuration.HierarchicalConfiguration.addPropertyDirect(HierarchicalConfiguration.java:371)
+	at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.addPropertyDirect(AbstractHierarchicalFileConfiguration.java:140)
+	at org.apache.commons.configuration.HierarchicalConfiguration.setProperty(HierarchicalConfiguration.java:749)
+	at org.apache.commons.configuration.AbstractHierarchicalFileConfiguration.setProperty(AbstractHierarchicalFileConfiguration.java:158)
+	at Bug.main(Bug.java:29)
+the setProperty() method does not work if the property have to be added. This behavior is not really wanted, because in some generic cases, we don&amp;amp;apos;t know if the property is set or not before trying to set it.</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.tree.xpath.TestXPathExpressionEngine.java</file>
+			<file type="M">org.apache.commons.configuration.tree.xpath.XPathExpressionEngine.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="460" opendate="2011-08-11 17:59:50" fixdate="2011-08-15 20:22:32" resolution="Fixed">
+		<buginformation>
+			<summary>reloadStrategy does not work for files inside &lt;additional&gt; tag using DefaultConfigurationBuilder</summary>
+			<description>In the configuration file that DefaultConfigurationBuilder reads to build a CombinedConfiguration, it&amp;amp;apos;s possible to include configuration file either inside &amp;lt;override&amp;gt; or &amp;lt;additional&amp;gt; xml elements.
+Each such declaration, of a file, allows a realodStrategy to be specified (see example below). It appears that the reload occurs only for the files inside &amp;lt;override&amp;gt; and not for the ones inside &amp;lt;additional&amp;gt;.
+Example:
+&amp;lt;configuration&amp;gt;
+  &amp;lt;header&amp;gt;
+    &amp;lt;result forceReloadCheck="true"&amp;gt;
+      &amp;lt;expressionEngine config-class="org.apache.commons.configuration.tree.xpath.XPathExpressionEngine"/&amp;gt;
+    &amp;lt;/result&amp;gt;
+  &amp;lt;/header&amp;gt;
+  &amp;lt;override&amp;gt;
+    &amp;lt;properties fileName="user.properties" config-optional="true"&amp;gt;
+      &amp;lt;reloadingStrategy refreshDelay="100"
+                         config-class="org.apache.commons.configuration.reloading.FileChangedReloadingStrategy"/&amp;gt;
+    &amp;lt;/properties&amp;gt;
+  &amp;lt;/override&amp;gt;
+  &amp;lt;additional&amp;gt;
+    &amp;lt;properties fileName="application.properties"&amp;gt;
+      &amp;lt;reloadingStrategy refreshDelay="100"
+                         config-class="org.apache.commons.configuration.reloading.FileChangedReloadingStrategy"/&amp;gt;
+    &amp;lt;/properties&amp;gt;
+  &amp;lt;/additional&amp;gt;
+&amp;lt;/configuration&amp;gt;
+In above example, both user.properties and application.properties are supposed to reload upon change. However, as tested by the following code, one user.properties gets reloaded:
+		DefaultConfigurationBuilder dcb = new DefaultConfigurationBuilder("example.xml");
+		Configuration conf = dcb.getConfiguration();
+		System.out.println("user: " + conf.getBoolean("user"));
+		System.out.println("application: " + conf.getBoolean("application"));
+		System.out.println("Change files and then press  to continue...");
+		System.in.read();
+		System.out.println("user: " + conf.getBoolean("user"));
+		System.out.println("application: " + conf.getBoolean("application"));
+Output from above code:
+user: true
+application: true
+Change files and then press  to continue...
+0 [main] INFO org.apache.commons.configuration.PropertiesConfiguration  - Reloading configuration. URL is file:&amp;lt;snipped&amp;gt;/user.properties
+user: false
+application: true
+</description>
+			<version>1.6</version>
+			<fixedVersion>1.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.TestDefaultConfigurationBuilder.java</file>
+			<file type="M">org.apache.commons.configuration.TestCombinedConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="463" opendate="2011-09-27 19:47:52" fixdate="2012-01-20 20:37:48" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractFileConfiguration.load(String filename) returns with current directory changed</summary>
+			<description>
+
+    PropertiesConfiguration pc = new PropertiesConfiguration();
+    ...
+    for (String f : cl.getArgs())
+    {
+        pc.load(f);
+    }
+
+
+Invoked in directory /home/me/test with several relative paths, i.e. ./sub1/a.cfg ./sub2/b.cfg
+First file loads successfully. Upon return from the first invocation of pc.load(f), the current directory has been changed to the absolute path of the loaded file (/home/me/test/sub1).  Thus, subsequent paths given as relative references to the original user.dir fail to be found.
+If this is the expected behavior, it should be documented.</description>
+			<version>1.6</version>
+			<fixedVersion>1.8</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.AbstractFileConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="483" opendate="2012-03-01 03:04:14" fixdate="2012-05-30 20:18:45" resolution="Fixed">
+		<buginformation>
+			<summary>DatabaseConfiguration unclosed resultset</summary>
+			<description>An error ocurred when invoking method DatabaseConfiguration.close because the resultset is not closed.
+ERROR: [PoolConnection@19859608] close() : Got 1 unclosed ResultSets !
+	uk.org.primrose.pool.core.PoolConnection.checkAndCloseResultSets(PoolConnection.java:46)
+	uk.org.primrose.pool.core.PoolConnection.close(PoolConnection.java:133)
+	org.apache.commons.configuration.DatabaseConfiguration.close(DatabaseConfiguration.java:596)
+	org.apache.commons.configuration.DatabaseConfiguration.containsKey(DatabaseConfiguration.java:394)
+	org.apache.commons.configuration.CompositeConfiguration.getProperty(CompositeConfiguration.java:190)
+	org.apache.commons.configuration.AbstractConfiguration.resolveContainerStore(AbstractConfiguration.java:1160)
+	org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1035)
+	org.apache.commons.configuration.AbstractConfiguration.getString(AbstractConfiguration.java:1018)</description>
+			<version>1.6</version>
+			<fixedVersion>1.9</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.DatabaseConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="418" opendate="2010-05-31 14:49:18" fixdate="2013-07-13 19:48:04" resolution="Fixed">
+		<buginformation>
+			<summary>incorrect backslash parsing</summary>
+			<description>I am using Commons Configuration (PropertiesConfiguration) and some of my data are windows shares: share1 or share2. The problem is the parsing return different things depending how the keys are defined. For example, these keys
+share=\\\\share1
+share=\\\\share2
+are different than:
+share=\\\\share1, \\\\share2
+The first one returns two backslashes ("share1" and "share2") and the second returns just one ("\share1" and "\share2"). I think the problem is in PropertyConverter line 525, cos the backslash is hidden twice when multivalue parsing is done:
+if (c != delimiter &amp;amp;&amp;amp; c != LIST_ESC_CHAR) 
+                {
+                    // no, also add escape character
+                    token.append(LIST_ESC_CHAR);
+                }
+
+In my understanding the second condition produces this strange issue and it should be like this:
+
+if (c != delimiter) 
+                {
+                    // no, also add escape character
+                    token.append(LIST_ESC_CHAR);
+                }
+
+Check that cos I can be missing something...
+TIA</description>
+			<version>1.6</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.TestPropertiesConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.PropertiesConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">547</link>
+		</links>
+	</bug>
+	<bug id="570" opendate="2014-03-06 21:34:20" fixdate="2014-09-09 18:00:06" resolution="Fixed">
+		<buginformation>
+			<summary>Passing SystemConfiguration() into PropertiesConfiguration() can cause a ConcurrentModificationException</summary>
+			<description>This was encountered in a release of Accumulo. I&amp;amp;apos;m not sure if this is in the realm of commons configuration, but I figured I should put in a ticket-
+A. just in case it is or
+B. So others can be aware of this issue
+We had a piece of code which interpolates java properties (SystemConfiguration) with other variables. This code worked as follows
+
+
+      PropertiesConfiguration pconf = new PropertiesConfiguration();
+      pconf.append(new SystemConfiguration());
+      pconf.addProperty("hack_default_value", this.defaultValue);
+      String v = pconf.getString("hack_default_value");
+
+
+However, after we added a monitor thread which calls System.setProperty before this code is hit, we would occasionally get a ConcurrentModificationException.
+I traced it down to pconf.append doing an iteration over the Configuration (AbstractConfiguration, line 1233 in 1.6). The configuration being passed in, SystemConfiguration, is just a MapConfiguration from the result of System.getProperties. This is an exact copy of the map the System maintains.
+There are two accessors to that map, setProperty and setProperties in System. Set property basically just falls to Properties.setProperty, while setProperties will copy the existing properties, add new ones, and then replace the object. We are using setProperty in our code.
+Properties.setProperty is a synchronized call, so we resolved it by replacing our code with
+
+
+      PropertiesConfiguration pconf = new PropertiesConfiguration();
+      Properties systemProperties = System.getProperties();
+      synchronized (systemProperties) {
+        pconf.append(new MapConfiguration(systemProperties));
+      }
+      pconf.addProperty("hack_default_value", this.defaultValue);
+      String v = pconf.getString("hack_default_value");
+
+
+I&amp;amp;apos;m not quite sure if/how it should be handled in commons configuration. I&amp;amp;apos;m thinking if it IS in the scope of this project, then SystemConfiguration should create a snapshot of System.getProperties. Or a new Configuration/configuration flag should be added to create a snapshot of it instead of the map directly.</description>
+			<version>1.6</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration.SystemConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration.TestSystemConfiguration.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="relates to">2425</link>
+		</links>
+	</bug>
+	<bug id="427" opendate="2010-11-03 22:53:18" fixdate="2014-10-29 20:29:12" resolution="Fixed">
+		<buginformation>
+			<summary>XMLPropertyListConfiguration cannot save arrays in the correct plist form</summary>
+			<description>
+
+groovy&amp;gt; import org.apache.commons.configuration.plist.* 
+groovy&amp;gt; def config = new XMLPropertyListConfiguration() 
+groovy&amp;gt; config.addProperty("things", [&amp;amp;apos;chair&amp;amp;apos;, &amp;amp;apos;hat&amp;amp;apos;, &amp;amp;apos;door&amp;amp;apos;])  
+groovy&amp;gt; config.save(System.out) 
+
+
+results in
+
+
+&amp;lt;?xml version="1.0"?&amp;gt;
+&amp;lt;!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd"&amp;gt;
+&amp;lt;plist version="1.0"&amp;gt;
+    &amp;lt;dict&amp;gt;
+        &amp;lt;key&amp;gt;things&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;chair&amp;lt;/string&amp;gt;
+
+        &amp;lt;key&amp;gt;things&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;hat&amp;lt;/string&amp;gt;
+
+        &amp;lt;key&amp;gt;things&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;door&amp;lt;/string&amp;gt;
+    &amp;lt;/dict&amp;gt;
+&amp;lt;/plist&amp;gt;
+
+
+expecting
+
+
+&amp;lt;?xml version="1.0"?&amp;gt;
+&amp;lt;!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd"&amp;gt;
+&amp;lt;plist version="1.0"&amp;gt;
+    &amp;lt;dict&amp;gt;
+        &amp;lt;key&amp;gt;things&amp;lt;/key&amp;gt;
+        &amp;lt;array&amp;gt;
+          &amp;lt;string&amp;gt;chair&amp;lt;/string&amp;gt;
+          &amp;lt;string&amp;gt;hat&amp;lt;/string&amp;gt;
+          &amp;lt;string&amp;gt;door&amp;lt;/string&amp;gt;
+      &amp;lt;/array&amp;gt;
+    &amp;lt;/dict&amp;gt;
+&amp;lt;/plist&amp;gt;
+
+</description>
+			<version>1.6</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration2.plist.XMLPropertyListConfiguration.java</file>
+			<file type="M">org.apache.commons.configuration2.plist.TestXMLPropertyListConfiguration.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="604" opendate="2015-07-03 18:47:00" fixdate="2015-07-13 20:22:59" resolution="Fixed">
+		<buginformation>
+			<summary>combining properties which use 3+ part names discards entries as of Commons 1.6+</summary>
+			<description>When two property files are combined using commons config 1.5, the aggregate configuration returns an expected result of 6 entries. If Commons configuration 1.6 or higher is used, the resulting set drops to  which is not expected. 
+The property names include 2, 3 or 4 part names X.Y, X.Y.Z etc and it appears that as of 1.6 if the names are arranged in 2 part, then 3 part etc that the combiner returns the expected result.
+There does not appear to be any release notes etc that would suggest  that this isn&amp;amp;apos;t a defect versus an intended implementation change.
+</description>
+			<version>1.6</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.configuration2.ConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration2.TestConfigurationUtils.java</file>
+			<file type="M">org.apache.commons.configuration2.tree.TestOverrideCombiner.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

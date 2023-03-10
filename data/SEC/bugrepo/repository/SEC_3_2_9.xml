@@ -1,0 +1,208 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="3056" opendate="2015-07-28 01:18:36" fixdate="2015-08-03 10:30:19" resolution="Complete">
+		<buginformation>
+			<summary>Fix JavaDoc errors for JDK8</summary>
+			<description>Due to more strict javadoc checks in Java 8 one currently cannot build spring-security with javadoc via a plain ./gradlew install as a fallback one has to skip javadoc generation ./gradlew install -x javadoc.
+Since the JavaDoc errors are all within BCrypt.java it should be very easy to fix.
+With those javadoc tags fixed one can build the spring-security with Java 8 without any problems.
+
+
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:34: error: self-closing element not allowed
+
+
+
+
+ * String pw_hash = BCrypt.hashpw(plain_password, BCrypt.gensalt()); &amp;lt;br /&amp;gt;
+
+
+
+
+                                                                     ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:41: error: self-closing element not allowed
+
+
+
+
+ * if (BCrypt.checkpw(candidate_password, stored_hash))&amp;lt;br /&amp;gt;
+
+
+
+
+                                                       ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:42: error: self-closing element not allowed
+
+
+
+
+ * &amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;System.out.println("It matches");&amp;lt;br /&amp;gt;
+
+
+
+
+                                                            ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:43: error: self-closing element not allowed
+
+
+
+
+ * else&amp;lt;br /&amp;gt;
+
+
+
+
+       ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:44: error: self-closing element not allowed
+
+
+
+
+ * &amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;&amp;amp;nbsp;System.out.println("It does not match");&amp;lt;br /&amp;gt;
+
+
+
+
+                                                                   ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:51: error: self-closing element not allowed
+
+
+
+
+ * String strong_salt = BCrypt.gensalt(10)&amp;lt;br /&amp;gt;
+
+
+
+
+                                          ^
+
+
+
+
+D:\dev\repos\spring\spring-security\crypto\src\main\java\org\springframework\security\crypto\bcrypt\BCrypt.java:52: error: self-closing element not allowed
+
+
+
+
+ * String stronger_salt = BCrypt.gensalt(12)&amp;lt;br /&amp;gt;
+
+
+
+
+
+</description>
+			<version>3.2.9</version>
+			<fixedVersion>4.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.access.expression.SecurityExpressionOperations.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.java</file>
+			<file type="M">org.springframework.security.access.method.MapBasedMethodSecurityMetadataSource.java</file>
+			<file type="M">org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter.java</file>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl.java</file>
+			<file type="M">org.springframework.security.messaging.util.matcher.SimpDestinationMessageMatcher.java</file>
+			<file type="M">org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer.java</file>
+			<file type="M">org.springframework.security.access.vote.AbstractAccessDecisionManager.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer.java</file>
+			<file type="M">org.springframework.security.core.token.TokenService.java</file>
+			<file type="M">org.springframework.security.messaging.access.expression.ExpressionBasedMessageSecurityMetadataSourceFactory.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.ProviderManagerBuilder.java</file>
+			<file type="M">org.springframework.security.core.session.SessionRegistryImpl.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.LogoutConfigurer.java</file>
+			<file type="M">org.springframework.security.web.authentication.switchuser.SwitchUserFilter.java</file>
+			<file type="M">org.springframework.security.web.header.writers.XXssProtectionHeaderWriter.java</file>
+			<file type="M">org.springframework.security.messaging.access.intercept.ChannelSecurityInterceptor.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.HttpSecurityBuilder.java</file>
+			<file type="M">org.springframework.security.web.util.ThrowableAnalyzer.java</file>
+			<file type="M">org.springframework.security.test.web.support.WebTestUtils.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configurers.userdetails.UserDetailsServiceConfigurer.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextRunnable.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.java</file>
+			<file type="M">org.springframework.security.ldap.userdetails.NestedLdapAuthoritiesPopulator.java</file>
+			<file type="M">org.springframework.security.openid.OpenIDAuthenticationFilter.java</file>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.RegExpAllowFromStrategy.java</file>
+			<file type="M">org.springframework.security.ldap.search.LdapUserSearch.java</file>
+			<file type="M">org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.AbstractInterceptUrlConfigurer.java</file>
+			<file type="M">org.springframework.security.core.parameters.AnnotationParameterNameDiscoverer.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.JeeConfigurer.java</file>
+			<file type="M">org.springframework.security.ldap.DefaultSpringSecurityContextSource.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer.java</file>
+			<file type="M">org.springframework.security.remoting.dns.DnsResolver.java</file>
+			<file type="M">org.springframework.security.access.intercept.package-info.java</file>
+			<file type="M">org.springframework.security.web.csrf.InvalidCsrfTokenException.java</file>
+			<file type="M">org.springframework.security.authentication.encoding.ShaPasswordEncoder.java</file>
+			<file type="M">org.springframework.security.core.token.KeyBasedPersistenceTokenService.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configurers.provisioning.JdbcUserDetailsManagerConfigurer.java</file>
+			<file type="M">org.springframework.security.access.hierarchicalroles.RoleHierarchy.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.builders.HttpSecurity.java</file>
+			<file type="M">org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler.java</file>
+			<file type="M">org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy.java</file>
+			<file type="M">org.springframework.security.acls.AclEntryVoter.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.openid.OpenIDLoginConfigurer.java</file>
+			<file type="M">org.springframework.security.web.bind.support.AuthenticationPrincipalArgumentResolver.java</file>
+			<file type="M">org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity.java</file>
+			<file type="M">org.springframework.security.taglibs.authz.AbstractAuthorizeTag.java</file>
+			<file type="M">org.springframework.security.messaging.context.AuthenticationPrincipalArgumentResolver.java</file>
+			<file type="M">org.springframework.security.core.annotation.AuthenticationPrincipal.java</file>
+			<file type="M">org.springframework.security.data.repository.query.SecurityEvaluationContextExtension.java</file>
+			<file type="M">org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter.java</file>
+			<file type="M">org.springframework.security.task.DelegatingSecurityContextTaskExecutor.java</file>
+			<file type="M">org.springframework.security.web.PortMapperImpl.java</file>
+			<file type="M">org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy.java</file>
+			<file type="M">org.springframework.security.core.userdetails.memory.UserAttribute.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configurers.provisioning.UserDetailsManagerConfigurer.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer.java</file>
+			<file type="M">org.springframework.security.config.authentication.PasswordEncoderParser.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.SavedRequestAwareWrapper.java</file>
+			<file type="M">org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler.java</file>
+			<file type="M">org.springframework.security.web.access.channel.ChannelProcessingFilter.java</file>
+			<file type="M">org.springframework.security.crypto.bcrypt.BCrypt.java</file>
+			<file type="M">org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.java</file>
+			<file type="M">org.springframework.security.samples.servletapi.mvc.ServletApiController.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextExecutorService.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer.java</file>
+			<file type="M">org.springframework.security.concurrent.DelegatingSecurityContextScheduledExecutorService.java</file>
+			<file type="M">org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl.java</file>
+			<file type="M">org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder.java</file>
+			<file type="M">org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler.java</file>
+			<file type="M">org.springframework.security.config.annotation.SecurityConfigurerAdapter.java</file>
+			<file type="M">org.springframework.security.config.annotation.web.servlet.configuration.WebMvcSecurityConfiguration.java</file>
+			<file type="M">org.springframework.security.test.context.support.WithUserDetails.java</file>
+			<file type="M">org.springframework.security.authentication.jaas.JaasAuthenticationProvider.java</file>
+			<file type="M">org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

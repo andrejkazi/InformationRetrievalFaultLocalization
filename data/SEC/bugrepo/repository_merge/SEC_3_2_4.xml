@@ -1,0 +1,50 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="7" master="2697" duplicate="2727" opendate="2014-08-07 03:28:01" fixdate="2014-09-26 07:11:30" resolution="Complete">
+		<buginformation>
+			<summary>Invalid warning logged when using Spring 3.2.10.RELEASE Spring security version check reports incorrectly.</summary>
+			<description>I&amp;amp;apos;m using Spring Framework (version 3.2.10.RELEASE).
+During application startup I&amp;amp;apos;m getting following warning:
+
+org.springframework.security.core.SpringSecurityCoreVersion - **** You are advised to use Spring 3.2.8.RELEASE or later with this version. You are running: 3.2.10.RELEASE
+It seems that versions are compared using String.compareTo().
+Using this method "3.2.10.RELEASE" is lower then "3.2.8.RELEASE". When using spring core version 3.2.10 or greater the spring security version check reports a warning message about minimum version incorrectly.
+To recreate run spring core 3.2.11 with spring security 3.2.4.
+The issue is in the compare statement of:
+
+
+
+
+
+
+if (springVersion.compareTo(MIN_SPRING_VERSION) &amp;lt; 0) {
+
+
+
+
+     logger.warn("**** You are advised to use Spring " + MIN_SPRING_VERSION +  " or later with this version. You are running: " + springVersion);
+
+
+
+
+}
+
+
+
+
+
+</description>
+			<version>3.2.4</version>
+			<fixedVersion>3.2.5, 4.0.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersionTests.java</file>
+			<file type="M">org.springframework.security.core.SpringSecurityCoreVersion.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2727</link>
+			<link type="Duplicate" description="duplicates">2697</link>
+		</links>
+	</bug>
+</bugrepository>

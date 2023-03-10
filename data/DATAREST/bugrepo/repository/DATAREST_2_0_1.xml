@@ -1,0 +1,16 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="288" opendate="2014-04-10 00:23:11" fixdate="2014-04-10 03:29:24" resolution="Fixed">
+		<buginformation>
+			<summary>RepositorySchemaController must not depend on javax.validation</summary>
+			<description></description>
+			<version>2.0.1 (Codd SR1)</version>
+			<fixedVersion>2.0.2 (Codd SR2), 2.1 RC1 (Dijkstra)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.java</file>
+			<file type="M">org.springframework.data.rest.webmvc.RepositorySchemaController.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

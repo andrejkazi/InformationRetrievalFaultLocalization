@@ -1,0 +1,588 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="321" opendate="2006-07-17 06:52:32" fixdate="2006-09-03 10:22:56" resolution="Fixed">
+		<buginformation>
+			<summary>PathBasedFilterInvocationDefinitionMap ignores text after the last question mark instead of the first</summary>
+			<description>In some of our legacy code, we actually have URLs that contain successURLs as a request parameter. This means it is possible to have more than one question mark in the URL. For example,
+/Register?cmd=initial&amp;amp;Security_steps=All&amp;amp;Security_successUrl=https://localhost/appName/servletName?cmd=Start
+Check out line 89 and 90 of PathBasedFilterInvocationDefinitionMap:
+// Strip anything after a question mark symbol, as per SEC-161.
+int firstQuestionMarkIndex = url.lastIndexOf("?");
+Should this be changed to
+int firstQuestionMarkIndex = url.indexOf("?");
+so that all query parameters are ignored?</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.web.PathBasedFilterDefinitionMapTests.java</file>
+			<file type="M">org.acegisecurity.intercept.web.PathBasedFilterInvocationDefinitionMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="315" opendate="2006-07-08 04:09:46" fixdate="2006-09-14 07:46:34" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequest header names are case insensitive</summary>
+			<description>HTTP header names are case insensitive. We does not take it into account in org.acegisecurity.ui.savedrequest.SavedRequest 
+We should reduce the header names to canonical form in the beginning of addHeader and getHeaderValues methods.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.acegisecurity.ui.savedrequest.SavedCookieTest.java</file>
+			<file type="M">org.acegisecurity.ui.savedrequest.SavedRequest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">308</link>
+		</links>
+	</bug>
+	<bug id="350" opendate="2006-09-13 23:37:07" fixdate="2006-09-14 14:00:41" resolution="Duplicate">
+		<buginformation>
+			<summary>Second access to database when NullUserCache is used</summary>
+			<description>I am use DaoAuthenticationProvider.
+When user enter right login and wrong  password, AbstractUserDetailsAuthenticationProvider makes 2 queries to database.
+This happends when this class uses NullUserCache (by default) for user caching.
+In these lines we load user details from database if there is no user in the cache (and remember that in cacheWasUsed) :
+        UserDetails user = this.userCache.getUserFromCache(username);
+        if (user == null) {
+            cacheWasUsed = false;
+            try 
+{
+                user = retrieveUser(username,
+                    (UsernamePasswordAuthenticationToken) authentication);
+                    ......
+            }
+....
+        }
+But when user enter wrong password we just load user one more time:
+       // This check must come here, as we don&amp;amp;apos;t want to tell users
+        // about account status unless they presented the correct credentials
+        try 
+{
+            additionalAuthenticationChecks(user,
+                (UsernamePasswordAuthenticationToken) authentication);
+        }
+ catch (AuthenticationException exception) 
+{
+            // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+            cacheWasUsed = false;
+            user = retrieveUser(username,
+                    (UsernamePasswordAuthenticationToken) authentication);
+            additionalAuthenticationChecks(user,
+                (UsernamePasswordAuthenticationToken) authentication);
+        }</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">328</link>
+		</links>
+	</bug>
+	<bug id="290" opendate="2006-05-31 19:27:39" fixdate="2006-09-14 14:27:39" resolution="Fixed">
+		<buginformation>
+			<summary>MethodInvocationUtils.createFromClass creates wrong MethodInvocation</summary>
+			<description>The utility class MethodInvocationUtils.createFromClass  creates a SimpleMethodInvocation but uses the parameter types as the object arguments. The proper signature should be: createFromClass(Class clazz, String methodName, Class[] classArgs, Object[] args).
+Impact is low because this class is not used in critical places.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.acegisecurity.util.MethodInvocationUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="328" opendate="2006-07-27 19:49:15" fixdate="2006-09-14 14:37:09" resolution="Fixed">
+		<buginformation>
+			<summary>AbstractUserDetailsAuthenticationProvider makes two hits when no cache is used</summary>
+			<description>if you look at AbstractUserDetailsAuthenticationProvider.authenticate, you&amp;amp;apos;ll notice that in case of failure, Acegi suppose that it is due to a cache synchronization problem and make a second retrieveUser.
+But if you use no cache, your information were already up to date and retrieveUser is still called...
+I think that this snippet (l. 148-151):
+ // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+cacheWasUsed = false;
+user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+has to be changed to that :
+if(cacheWasUsed) 
+{
+            // There was a problem, so try again after checking we&amp;amp;apos;re using latest data
+            cacheWasUsed = false;
+            user = retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+            additionalAuthenticationChecks(user, (UsernamePasswordAuthenticationToken) authentication);
+ }
+ else {
+            throw exception
+}
+It&amp;amp;apos;ll avoid an useless double check...</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">350</link>
+			<link type="Duplicate" description="is duplicated by">341</link>
+		</links>
+	</bug>
+	<bug id="349" opendate="2006-09-12 22:49:56" fixdate="2006-09-14 14:42:26" resolution="Fixed">
+		<buginformation>
+			<summary>RememberMeAuthenticationToken throws IllegalArgumentException on empty authorities list</summary>
+			<description>When a user is authenticated via remember me, in RememberMeAuthenticationToken:56 (called from TokenBasedRememberMeServices:190) an IllegalArgumentException is thrown if the user object has no authorities granted. This is inconsistent with other authentication schemes which allow authentications without granted authorities. I can&amp;amp;apos;t see any reason for throwing an exception in this case, because nothing is wrong with a user who is signed in and gets no authorities granted.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.providers.rememberme.RememberMeAuthenticationTokenTests.java</file>
+			<file type="M">org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="330" opendate="2006-08-01 21:27:48" fixdate="2006-09-14 14:48:08" resolution="Fixed">
+		<buginformation>
+			<summary>UserMap should work with UserDetails, not User concrete class</summary>
+			<description>The UserMap.getUser method returns a User object, however the UserMap.addUser method takes in the UserDetails interface as a parameter.so if a user-defined class that implements the UserDetails interface is used a ClassCastException is exception is thrown since the object will not be of type Uer.
+The suggested change to the getUser method is return the UserDetails interface along with actually changing the implementation of the getUserMethod from:
+     public User getUser(String username) throws UsernameNotFoundException {
+        User result = (User) this.userMap.get(username.toLowerCase());
+        if (result == null) 
+{
+            throw new UsernameNotFoundException("Could not find user: "
+                + username);
+        }
+        return result;
+    }
+To 
+    public User getUser(String username) throws UsernameNotFoundException {
+        UserDetails result = (UserDetails) this.userMap.get(username.toLowerCase());
+        if (result == null) 
+{
+            throw new UsernameNotFoundException("Could not find user: "
+                + username);
+        }
+        return result;
+    }</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.userdetails.memory.UserMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="324" opendate="2006-07-20 06:04:33" fixdate="2006-09-14 18:56:19" resolution="Fixed">
+		<buginformation>
+			<summary>AccessDeniedHandlerImpl always throws IllegalStateException</summary>
+			<description>Response status is being set after forwarding to the error page.  Logs are being filled with java.lang.IllegalStateExceptions.
+Currently:
+ rd.forward(request, response);
+ ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+Should be?:
+((HttpServletResponse) response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+ rd.forward(request, response);
+Stack trace:
+2006-07-20 14:27:44,114 ERROR org.acegisecurity.ui.AccessDeniedHandlerImpl - Error processing org.acegisecurity.wrapper.SavedRequestAwareWrapper@52bd52bd
+java.lang.IllegalStateException: ERROR: Cannot set header. Response already committed.
+	at java.lang.Throwable.&amp;lt;init&amp;gt;(Throwable.java)
+	at java.lang.Throwable.&amp;lt;init&amp;gt;(Throwable.java)
+	at com.ibm.ws.webcontainer.srt.SRTServletResponse.setStatus(SRTServletResponse.java:931)
+	at org.acegisecurity.ui.AccessDeniedHandlerImpl.handle(AccessDeniedHandlerImpl.java)
+	at org.acegisecurity.ui.ExceptionTranslationFilter.handleException(ExceptionTranslationFilter.java:166)
+	at org.acegisecurity.ui.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:118)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.doFilter(AnonymousProcessingFilter.java:125)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.doFilter(RememberMeProcessingFilter.java:142)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.wrapper.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:81)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:217)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.ui.logout.LogoutFilter.doFilter(LogoutFilter.java:108)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:191)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:274)
+	at org.acegisecurity.util.FilterChainProxy.doFilter(FilterChainProxy.java:148)
+	at org.acegisecurity.util.FilterToBeanProxy.doFilter(FilterToBeanProxy.java:90)</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.AccessDeniedHandlerImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="338" opendate="2006-08-22 01:40:55" fixdate="2006-09-14 19:38:05" resolution="Fixed">
+		<buginformation>
+			<summary>Serialization Issues for Authentication implementations</summary>
+			<description>When used in a distributed environment, several Serialization issues have appeared. 
+1. GrantedAuthority interface does not implement serializable, thus poses a potential problem for its implementations, when being sent over the wire.
+2. Authentication implementations do not explicitly overwride the serialVersionUID, which have caused a Serialization exception when different patch versions of acegi where loaded in the VM on different ends of the wire (1.0.0 and 1.0.1).  The problem was the AnonymousAuthenticationToken object which had an extra constructor added in one and not the other, but potential exists that any future minor or patch releases of the same major could alter the structure of the class, thus preventing it to serialize to a backwards-compatable lower version.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.GrantedAuthorityImpl.java</file>
+			<file type="M">org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.cas.CasAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.userdetails.User.java</file>
+			<file type="M">org.acegisecurity.ui.switchuser.SwitchUserGrantedAuthority.java</file>
+			<file type="M">org.acegisecurity.runas.RunAsUserToken.java</file>
+			<file type="M">org.acegisecurity.providers.jaas.JaasGrantedAuthority.java</file>
+			<file type="M">org.acegisecurity.adapters.PrincipalAcegiUserToken.java</file>
+			<file type="M">org.acegisecurity.providers.x509.X509AuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.TestingAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.GrantedAuthority.java</file>
+			<file type="M">org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.adapters.jetty.JettyAcegiUserToken.java</file>
+			<file type="M">org.acegisecurity.providers.UsernamePasswordAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.providers.jaas.JaasAuthenticationToken.java</file>
+			<file type="M">org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="348" opendate="2006-09-08 05:23:12" fixdate="2006-09-28 19:43:45" resolution="Fixed">
+		<buginformation>
+			<summary>CASProvider tries to autenticate on every request</summary>
+			<description>I am using CAS provider with a httpinvoker based swing client, that sends _cas_stateless as
+username and a ST as password (obtained directly from CAS). In the server side I use 
+two filters: httpsessionintegrationFilter and basicProcessingFilter.
+In the first time the basicProcessingFilter validates the ticket against CAS, and the
+sessionIntegration filter puts the autentication in the session, as desired.
+The next time, the client sends the same jsessionId, the httpsessionintegrationfilter 
+corretly extracts the context from the previously created session but basic processing
+filter tries to autenticate again (validade CAS ST AGAIN).
+The line 138 of the class BasicProcessingFilter, it checks if it need to reauthenticate 
+by checking (among other things) if the existingAuths username (obtained from session) is 
+equals to the username that came from the HTTP Header. If they are not equal, the filter tries
+to reauthenticate. Since http headers username is always equals to "cas_stateless" and
+existingAuths username is equals to the auhtenticated user, they are never the same, and the 
+basicprocessingfilter will try to validade the ticket again. The correct behaviour would be
+to just revalidate the ticket when the session does not carry a valid authentication anymore.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.basicauth.BasicProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="depends on">53</link>
+		</links>
+	</bug>
+	<bug id="361" opendate="2006-09-24 05:21:56" fixdate="2006-11-12 07:23:16" resolution="Duplicate">
+		<buginformation>
+			<summary>&lt;auth:authorize ifNotGranted="ROLE_ANONYMOUS"&gt; doesn&amp;apos;t work sometimes</summary>
+			<description>web.xml:
+...........
+&amp;lt;error-page&amp;gt;
+  &amp;lt;error-code&amp;gt;404&amp;lt;/error-code&amp;gt;
+  &amp;lt;location&amp;gt;/common/documentnotfound.do&amp;lt;/location&amp;gt;
+&amp;lt;/error-page&amp;gt;
+...........
+If the requested page not found tomcat redirect user to the pointed url (documentnotfount.do) and in this case &amp;lt;auth:authorize ifNotGranted="ROLE_ANONYMOUS"&amp;gt; doesn&amp;amp;apos;t work.
+SecurityContextHolder.getContext() = org.acegisecurity.context.SecurityContextImpl@ffffffff: Null authentication (AuthorizeTag.java: 129)
+SecurityContextHolder.getContext().getAuthentication() = null (AuthorizeTag.java: 129)
+granted = [] (AuthorizeTag.java: 80)
+evaledIfNotGranted = ROLE_ANONYMOUS (AuthorizeTag.java: 82)
+grantedCopy = [] (AuthorizeTag.java: 86)</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">305</link>
+		</links>
+	</bug>
+	<bug id="364" opendate="2006-09-27 08:11:06" fixdate="2006-11-12 07:31:42" resolution="Fixed">
+		<buginformation>
+			<summary>TokenBasedRememberMeServices not properly using context path when setting cookie paths (SEC-206 only partially fixed) </summary>
+			<description>SEC-206 addressed an issue to ensure the context path is properly used when setting remember me cookie paths by using the code:
+cookie.setPath(request.getContextPath());
+However, http://java.sun.com/j2ee/1.4/docs/api/javax/servlet/http/HttpServletRequest.html#getContextPath() states that &amp;amp;apos;For servlets in the default (root) context, this method returns "" &amp;amp;apos;.
+An empty cookie path results in inconsistent behavior between ie and firefox: ie presumes "/" whereas firefox presumes the leading path for the current request.
+If request.getContextPath() returns "", the cookie path should be set to "/" to properly reflect a cookie set for the root context.
+This fix should be applied to both methods: makeValidCookie and makeCancelCookie of TokenBasedRememberMeServices.</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="depends on">206</link>
+		</links>
+	</bug>
+	<bug id="355" opendate="2006-09-19 11:44:19" fixdate="2006-11-12 09:00:09" resolution="Duplicate">
+		<buginformation>
+			<summary>Scheme not supported in AbstractProcessingFilter.defaultTargetUrl</summary>
+			<description>The JavaDoc for AbstractProcessingFilter states that the defaultTargetUrl supports absolute URLs by starting with a scheme name (the JavaDoc says: The &amp;lt;code&amp;gt;defaultTargetUrl&amp;lt;/code&amp;gt; will be treated as relative to the web-app&amp;amp;apos;s context path, and should include the leading &amp;lt;code&amp;gt;/&amp;lt;/code&amp;gt;. Alternatively, inclusion of a scheme name (eg http:// or https://) as the prefix will denote a fully-qualified URL and this is also supported.)
+However, the actual code that builds the redirect URL looks like:
+            targetUrl = request.getContextPath() + getDefaultTargetUrl();
+and therefore the full URL just gets appended to the contextPath.
+As an aside, it would also be useful if the code for determining the targetUrl was factored out so that it could be overridden easily. 
+Regards,
+Damien</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilter.java</file>
+			<file type="M">org.acegisecurity.ui.AbstractProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.ui.webapp.SiteminderAuthenticationProcessingFilterTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">297</link>
+		</links>
+	</bug>
+	<bug id="325" opendate="2006-07-22 01:51:05" fixdate="2006-11-12 09:14:21" resolution="Duplicate">
+		<buginformation>
+			<summary>Add support for Groups</summary>
+			<description>http://forum.springframework.org/showthread.php?p=53307
+&amp;lt;quote from="raible"&amp;gt;I attended a BOF at The Spring Experience where there was much debate about having a "Groups" concept in Acegi. Colin was for it, Ben against. However, in the end, I believe Ben said it&amp;amp;apos;d only take 10 minutes to add - so he&amp;amp;apos;d do it.&amp;lt;/quote&amp;gt;
+&amp;lt;quote from="alex"&amp;gt;It&amp;amp;apos;s a semantic thing. People who want an "administrative" / "management" interface for security would like to see groups etc. I would not modify the GrantedAuthority concept to not recognise groups - I would merely add a GROUP table which the out-of-the-box DAOs would recognise and then generate additional GrantedAuthority[]s accordingly.&amp;lt;/quote&amp;gt;</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.userdetails.GroupsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManagerTests.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImpl.java</file>
+			<file type="M">org.springframework.security.PopulatedDatabase.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImplTests.java</file>
+			<file type="M">org.acegisecurity.PopulatedDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">272</link>
+		</links>
+	</bug>
+	<bug id="359" opendate="2006-09-22 15:48:18" fixdate="2006-11-12 16:05:51" resolution="Fixed">
+		<buginformation>
+			<summary>LogoutFilter ordering</summary>
+			<description>When a user does not have a session and attempts to logout, the LogoutFilter does nothing.  The is because the Authentication object returned from the SessionContext is null
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (logger.isDebugEnabled()) 
+{
+                logger.debug("Logging out user &amp;amp;apos;" + auth + "&amp;amp;apos; and redirecting to logout page");
+            }
+
+            if (auth != null) {
+                for (int i = 0; i &amp;lt; handlers.length; i++) 
+{
+                    handlers[i].logout(httpRequest, httpResponse, auth);
+                }
+            }
+This happens because the SecurityContext was not read from the Session and the filters that make it available have not executed yet.
+By moving the logoutFilter to after the rememberMeFilter, the problem seems to be resolved:
+httpSessionContextIntegrationFilter,authenticationProcessingFilter,basicProcessingFilter,contextHolderAwareRequestFilter,rememberMeProcessingFilter,logoutFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
+Regards,
+Damien</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="356" opendate="2006-09-20 00:35:43" fixdate="2006-11-13 10:44:49" resolution="Fixed">
+		<buginformation>
+			<summary>Changes to Authentication leak into synchronous requests when using HttpSessionContextIntegrationFilter</summary>
+			<description>HttpSessionContextIntegrationFilter will read an existing SecurityContext object from the session and attach it to the Http request thread by calling: SecurityContextHolder#setContext. This means that simultaneous requests get the same SecurityContext object. If one of those threads changes the authentication attached to the context (for example, to enable some "Run As" functionality such as in org.acegisecurity.intercept.AbstractSecurityInterceptor) that authentication will be seen to change in all the request threads and may enable those threads to be able to gain access that they shouldn&amp;amp;apos;t have.
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="378" opendate="2006-10-18 18:49:01" fixdate="2006-11-13 11:56:57" resolution="Fixed">
+		<buginformation>
+			<summary>Authz taglib not working for group names with spaces</summary>
+			<description>I am evaluating Acegi and have it setup against our corporate Active Directory. Things seems to be working fine.
+But, all our groups in AD contains spaces eg. "CPHG AD ADMINS". The authz taglib does not seem to support this?
+I can use eg. request.isUserInRole("CPHG AD ADMINS") and all groups are listed if I print getAuthorities() from authentication.
+I tried creating a role with no spaces and it worked. 
+Is there any reason not to support spaces in role/group names ?</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTag.java</file>
+			<file type="M">org.acegisecurity.taglibs.authz.AuthorizeTagTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="322" opendate="2006-07-19 23:15:12" fixdate="2006-11-13 12:21:59" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequest : ClassCastException when calling parameters.get(paramName)</summary>
+			<description>If you are using WebSphere and IBM JSF, the following problem happens:
+The fact that WebSphere container puts non-string array objects into the request parameter maps such as String object
+causes ClassCastException when ExceptionTranslator instanciates a new SavedRequest instance, 
+which executes the following code in its constructor(Line #113):
+//SavedRequest class
+.
+.
+.
+// Parameters
+Map parameters = request.getParameterMap();
+Iterator paramNames = parameters.keySet().iterator();
+while (paramNames.hasNext()) {
+	String paramName = (String) paramNames.next();
+	String[] paramValues = (String[]) parameters.get(paramName);
+	this.addParameter(paramName, paramValues);
+}
+.
+.
+.
+Since it&amp;amp;apos;s happening in the constructor, I can&amp;amp;apos;t override this behavior,so 
+I have to write my own SavedRequest class that does string-array type check before casting the returned value from the parameter map.
+//Custom SavedRequest class
+.
+.
+.
+// Parameters
+Map parameters = request.getParameterMap();
+Iterator paramNames = parameters.keySet().iterator();
+while (paramNames.hasNext()) {
+	String paramName = (String) paramNames.next();
+	Object o =  parameters.get(paramName);
+	if(o instanceof String[])
+{
+		String[] paramValues = (String[])o;
+		this.addParameter(paramName, paramValues);
+	}
+	else
+{
+		//log
+		.
+		.
+		.
+	}
+}
+.
+.
+.
+The bad thing was I also had to modify other classes which referenced the original SavedRequest object.
+Do you think you can fix this issue in the next release?</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.savedrequest.SavedRequest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="444" opendate="2007-03-04 22:25:10" fixdate="2007-05-24 12:42:26" resolution="Fixed">
+		<buginformation>
+			<summary>Race condition inside ConcurrentSessionControllerImpl</summary>
+			<description>I was getting SessionAlreadyUsedException on rapid usage (by single user). The strack trace of the exception is below.
+The problem seems to be the unsynchronized sequence of commands Inside ConcurrentSessionControllerImpl.registerSuccessfulAuthentication():
+            sessionRegistry.removeSessionInformation(sessionId);
+            sessionRegistry.registerNewSession(sessionId, principal);
+The registerNewSession() will fail if an other thread registers the same session between these two commands.
+The strack trace:
+2007-03-02 16:53:46,204 DEBUG [org.acegisecurity.ui.ExceptionTranslationFilter]
+(http-0.0.0.0-8080-1 Authentication exception occurred; redirecting to
+authentication entry point
+org.acegisecurity.concurrent.SessionAlreadyUsedException: Session
+1E1B65235B4D42FF17C5F76E7287228D is already is use
+        at
+org.acegisecurity.concurrent.SessionRegistryImpl.registerNewSession(SessionRegistryImpl.java:121)
+        at
+org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.registerSuccessfulAuthentication(ConcurrentSessionControllerImpl.java:142)
+        at
+org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:191)</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="423" opendate="2007-01-04 01:40:23" fixdate="2007-05-24 12:54:29" resolution="Fixed">
+		<buginformation>
+			<summary>CLONE -SEC 356 Introduces New Bug: Changes to Authentication leak into synchronous requests when using HttpSessionContextIntegrationFilter</summary>
+			<description>HttpSessionContextIntegrationFilter will read an existing SecurityContext object from the session and attach it to the Http request thread by calling: SecurityContextHolder#setContext. This means that simultaneous requests get the same SecurityContext object. If one of those threads changes the authentication attached to the context (for example, to enable some "Run As" functionality such as in org.acegisecurity.intercept.AbstractSecurityInterceptor) that authentication will be seen to change in all the request threads and may enable those threads to be able to gain access that they shouldn&amp;amp;apos;t have.
+</description>
+			<version>1.0.1</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.context.HttpSessionContextIntegrationFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">461</link>
+		</links>
+	</bug>
+	<bug id="272" opendate="2006-05-22 22:44:38" fixdate="2008-01-14 07:57:54" resolution="Fixed">
+		<buginformation>
+			<summary>Provide user group support</summary>
+			<description>As discussed at The Spring Experience in December 2005, the community would like a way of grouping users together and assigning those groups roles. We&amp;amp;apos;ll add this feature - which will involve an extra table.</description>
+			<version>1.0.1</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="D">org.springframework.security.userdetails.GroupsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManagerTests.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcUserDetailsManager.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImpl.java</file>
+			<file type="M">org.springframework.security.PopulatedDatabase.java</file>
+			<file type="M">org.springframework.security.userdetails.jdbc.JdbcDaoImplTests.java</file>
+			<file type="M">org.acegisecurity.PopulatedDatabase.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">325</link>
+			<link type="Related" description="is related to">513</link>
+			<link type="Related" description="is related to">391</link>
+		</links>
+	</bug>
+	<bug id="335" opendate="2006-08-12 15:15:26" fixdate="2008-01-17 06:47:24" resolution="Fixed">
+		<buginformation>
+			<summary>Add Secure/InsecureChannelProcessor supporting attribute</summary>
+			<description>Most of my URLs fall into two categories: require security (REQUIRES_SECURE_CHANNEL) or require insecure (REQUIRES_INSECURE_CHANNEL). But I have a couple links which must support both HTTP/HTTPS and there is no way for me to express this exception. I recommend two new attributes:
+SUPPORTS_INSECURE_CHANNEL
+SUPPORTS_SECURE_CHANNEL
+Then I can write my bean as follows:
+&amp;lt;property name="filterInvocationDefinitionSource"&amp;gt;
+  &amp;lt;value&amp;gt;
+    CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON 
+    \A/secure/.*\Z=REQUIRES_SECURE_CHANNEL 
+    \A/myspecialcase/*\Z=SUPPORTS_SECURE_CHANNEL
+    \A.*\Z=REQUIRES_INSECURE_CHANNEL
+  &amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;</description>
+			<version>1.0.1</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImplTests.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">494</link>
+		</links>
+	</bug>
+</bugrepository>

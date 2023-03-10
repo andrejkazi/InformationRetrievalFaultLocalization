@@ -1,0 +1,336 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAREST">
+	<bug id="10" master="394" duplicate="477" opendate="2014-09-26 12:26:22" fixdate="2015-02-16 03:44:53" resolution="Fixed">
+		<buginformation>
+			<summary>Projections are not applied to collection attributes VenueProjection with List&lt;ContactProjection&gt; returns List&lt;Contact&gt; instead</summary>
+			<description>When a projection has an attribute which is a collection of another projection, Spring Data REST is not populating the collection with projections but with entities. This patch allows Spring Data REST to apply projections to collection attributes as well. I have 2 entities that are exposed by Spring Data REST: Venue and Contact. A Venue can have multiple Contacts.
+I create this projections:
+
+
+
+
+
+
+VenueDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Venue.class)
+
+
+
+
+public interface VenueDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getName();
+
+
+
+
+	//...
+
+
+
+
+    List&amp;lt;ContactDetails&amp;gt; getContacts();
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+ContactDetails.java
+
+
+
+
+
+
+@Projection(name="details", types = Contact.class)
+
+
+
+
+public interface ContactDetails {
+
+
+
+
+    int getId();
+
+
+
+
+    String getContact();
+
+
+
+
+    ContactType getContact_type();
+
+
+
+
+}
+
+
+
+
+
+
+When the client invokes http://localhost:8080/myrestservice/rest/venues/2?projection=details gets:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 2,
+
+
+
+
+  "name" : "A place in the desert",
+
+
+
+
+  "contacts" : [ {
+
+
+
+
+    "id" : 1,
+
+
+
+
+    "contact" : "555 768547",
+
+
+
+
+  }, {
+
+
+
+
+    "id" : 2,
+
+
+
+
+    "contact" : "contacts@example.org",
+
+
+
+
+  }],
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contacts" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/venues/2/contacts"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+You see that every contact misses "contact_type".
+But "contact_type" is shown when invoking http://localhost:8080/myrestservice/rest/contacts/1?projection=details:
+
+
+
+
+
+
+{
+
+
+
+
+  "id" : 1,
+
+
+
+
+  "contact" : "555 768547",
+
+
+
+
+  "contact_type" : {
+
+
+
+
+    "code" : "T",
+
+
+
+
+    "name" : "Telephone"
+
+
+
+
+  },
+
+
+
+
+  "_links" : {
+
+
+
+
+    "self" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1{?projection}",
+
+
+
+
+      "templated" : true
+
+
+
+
+    },
+
+
+
+
+    "contact_type" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/contact_type"
+
+
+
+
+    },
+
+
+
+
+    "venue" : {
+
+
+
+
+      "href" : "http://localhost:8080/myrestservice/rest/contacts/1/venue"
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+So it seems that expressing List&amp;lt;AProjectionOfALinkedObject&amp;gt; in a projection, ignores AProjectionOfALinkedObject and simply uses ALinkedObject.</description>
+			<version>2.2.1 (Evans SR1)</version>
+			<fixedVersion>2.3 M1 (Fowler), 2.1.5 (Dijkstra SR5), 2.2.2 (Evans SR2)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptor.java</file>
+			<file type="M">org.springframework.data.rest.core.projection.ProjectingMethodInterceptorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">408</link>
+			<link type="Duplicate" description="duplicates">408</link>
+		</links>
+	</bug>
+</bugrepository>

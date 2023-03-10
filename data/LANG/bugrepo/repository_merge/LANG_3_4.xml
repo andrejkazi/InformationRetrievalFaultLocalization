@@ -1,0 +1,221 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="1" master="1162" duplicate="1239" opendate="2015-08-10 21:11:38" fixdate="2016-05-27 10:04:19" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#equals fails with Index OOBE on non-Strings with identical leading prefix StringUtils.equals("",new StringBuffer("foo")) throws StringIndexOutOfBoundsException</summary>
+			<description>From the Commons User mailing list:
+
+StringUtils.equals(cs1,cs2) delegates to CharSequence.regionMatches(...) in a way that causes IndexOutOfBounds when either of cs1/cs2 isn&amp;amp;apos;t a String.
+Specifically, comparing "foo" and "foobar" for non-String CharSequences bombs due to CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length())) because regionMatches doesn&amp;amp;apos;t check for input exhaustion. </description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1207</link>
+			<link type="Duplicate" description="is duplicated by">1239</link>
+			<link type="Reference" description="relates to">1163</link>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="7" master="1112" duplicate="1181" opendate="2015-04-09 07:47:19" fixdate="2015-11-19 21:28:08" resolution="Fixed">
+		<buginformation>
+			<summary>MultilineRecursiveToStringStyle largely unusable due to being package-private MultilineRecursiveToStringStyle is not public</summary>
+			<description>The new MultilineRecursiveToStringStyle which was added under LANG-1052 is a package-private scoped class (no specific scope is specified for the class). I&amp;amp;apos;m assuming, like RecursiveToStringStyle, it should be public instead? The public access modifier is missing from the MultilineRecursiveToStringStyle class. </description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1181</link>
+			<link type="Duplicate" description="duplicates">1112</link>
+		</links>
+	</bug>
+	<bug id="8" master="1162" duplicate="1207" opendate="2015-08-10 21:11:38" fixdate="2016-02-24 14:45:03" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils#equals fails with Index OOBE on non-Strings with identical leading prefix StringUtils.equals with CharSequence - IndexOutOfBoundsException</summary>
+			<description>From the Commons User mailing list:
+
+StringUtils.equals(cs1,cs2) delegates to CharSequence.regionMatches(...) in a way that causes IndexOutOfBounds when either of cs1/cs2 isn&amp;amp;apos;t a String.
+Specifically, comparing "foo" and "foobar" for non-String CharSequences bombs due to CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length())) because regionMatches doesn&amp;amp;apos;t check for input exhaustion. Good day,
+This is my first report here, so I&amp;amp;apos;m really sorry if I did not fill in the form right .
+I just ran into a bug with the method 
+public static boolean equals(final CharSequence cs1, final CharSequence cs2).
+If one of the object is not the String object, the method use the CharSequenceUtils to check the equality. 
+The problem is that using Math.max(cs1.length(), cs2.length()) give the max length of the 2 objects. Then 1 of the object throw IndexOutOfBoundsException.
+I think it will be better to check the size before using CharSequenceUtils as the method equalsIgnoreCase.
+Maybe this code could correct the bug :
+if (cs1 == cs2) 
+{
+    return true;
+}
+ else if (cs1 == null || cs2 == null) 
+{
+    return false;
+} else if (cs1.length() != cs2.length()) {
+    return false;
+}
+ else if (cs1 instanceof String &amp;amp;&amp;amp; cs2 instanceof String) 
+{
+    return cs1.equals(cs2);
+}
+ else 
+{
+    return CharSequenceUtils.regionMatches(cs1, false, 0, cs2, 0, cs1.length());
+}
+
+Kind regards,</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+			<file type="M">org.apache.commons.lang3.StringUtilsEqualsIndexOfTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1207</link>
+			<link type="Duplicate" description="is duplicated by">1239</link>
+			<link type="Reference" description="relates to">1163</link>
+			<link type="Duplicate" description="duplicates">1162</link>
+		</links>
+	</bug>
+	<bug id="9" master="1192" duplicate="1209" opendate="2015-12-10 08:16:10" fixdate="2016-03-01 06:48:24" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat does not support the week-year component (uppercase &amp;apos;Y&amp;apos;) FastDateFormat does not support the &amp;apos;u&amp;apos; pattern element</summary>
+			<description>The Java SimpleDateFormat supports two year-components, &amp;amp;apos;y&amp;amp;apos; for normal year and &amp;amp;apos;Y&amp;amp;apos; for &amp;amp;apos;Week year&amp;amp;apos;, see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+However when we try to use FastDateFormat to parse a format which uses the week-year, it fails with an exception
+
+java.lang.IllegalArgumentException: Illegal pattern component: YYYY
+	at org.apache.commons.lang3.time.FastDatePrinter.parsePattern(FastDatePrinter.java:282)
+	at org.apache.commons.lang3.time.FastDatePrinter.init(FastDatePrinter.java:149)
+	at org.apache.commons.lang3.time.FastDatePrinter.&amp;lt;init&amp;gt;(FastDatePrinter.java:142)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:384)
+	at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:369)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:91)
+	at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:88)
+	at org.apache.commons.lang3.time.FormatCache.getInstance(FormatCache.java:82)
+	at org.apache.commons.lang3.time.FastDateFormat.getInstance(FastDateFormat.java:119)
+
+
+Simple unit test to reproduce this:
+
+
+    @Test
+    public void testCommonsLang() {
+    	Date date = new Date();
+
+    	Format dateFormat = new SimpleDateFormat("YYYY");
+		assertNotNull(dateFormat.format(date));
+
+        dateFormat = FastDateFormat.getInstance("YYYY");
+		assertNotNull(dateFormat.format(date));
+    }
+
+ java.lang.IllegalArgumentException: Illegal pattern component: u</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinter.java</file>
+			<file type="D">org.apache.commons.lang3.time.WeekYearTest.java</file>
+			<file type="D">org.apache.commons.lang3.time.CalendarReflection.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDatePrinterTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateParserTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Blocker" description="is blocked by">1194</link>
+			<link type="Duplicate" description="is duplicated by">1209</link>
+			<link type="Duplicate" description="duplicates">1192</link>
+		</links>
+	</bug>
+	<bug id="21" master="1018" duplicate="1187" opendate="2014-05-27 10:24:53" fixdate="2016-06-12 11:29:48" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils.createNumber(final String str)  Precision will be lost Method createNumber from NumberUtils doesn&amp;apos;t work for floating point numbers other than Float</summary>
+			<description>With commons-lang 3.2.2:
+NumberUtils.createNumber("-160952.54");
+The result is "-160952.55".
+Should not be based on the length of the decimal point number to judge whether the floating point number.
+Using the method (createFloat(str)) of dealing with the valid number greater than seven Numbers will cause accuracy loss.
+The source code is as follows:
+
+
+try {
+            if(numDecimals &amp;lt;= 7){// If number has 7 or fewer digits past the decimal point then make it a float
+                final Float f = createFloat(str);
+                if (!(f.isInfinite() || (f.floatValue() == 0.0F &amp;amp;&amp;amp; !allZeros))) {
+                    return f;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+        try {
+            if(numDecimals &amp;lt;= 16){// If number has between 8 and 16 digits past the decimal point then make it a double
+                final Double d = createDouble(str);
+                if (!(d.isInfinite() || (d.doubleValue() == 0.0D &amp;amp;&amp;amp; !allZeros))) {
+                    return d;
+                }
+            }
+        } catch (final NumberFormatException nfe) { // NOPMD
+            // ignore the bad number
+        }
+
+        return createBigDecimal(str);
+    }
+
+ demo:
+ Number n = org.apache.commons.lang3.math.NumberUtils.createNumber("6264583.33");
+        System.out.println("lang3_createNumber_6264583.33----&amp;gt;" + n);
+while n will be 6264583.5. not 6264583.33</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1187</link>
+			<link type="Duplicate" description="is duplicated by">1215</link>
+			<link type="Duplicate" description="duplicates">1018</link>
+		</links>
+	</bug>
+	<bug id="23" master="1197" duplicate="1264" opendate="2016-01-10 17:56:49" fixdate="2016-09-17 14:37:37" resolution="Fixed">
+		<buginformation>
+			<summary>Prepare Java 9 detection JavaVersion does not correctly handle Java 9</summary>
+			<description>In anticipation of Java 9 and JEP 223, the versioning scheme will change completely. We need to reflect that in SystemUtils, JavaVersion, etc.:
+
+SystemUtils: Deprecate IS_JAVA_1_9 and replace with IS_JAVA_9
+JavaVersion: Deprecate JAVA_1_9 in JavaVersion and replace with JAVA_9
+
+and other places in the library. See http://markmail.org/message/bgrhxr6ef2axubcf
+JavaVersion assumes that the version String for Java 9 will be "1.9".</description>
+			<version>3.4</version>
+			<fixedVersion>3.5</fixedVersion>
+			<type>Task</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.JavaVersionTest.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.JavaVersion.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1264</link>
+			<link type="Duplicate" description="duplicates">1197</link>
+		</links>
+	</bug>
+</bugrepository>

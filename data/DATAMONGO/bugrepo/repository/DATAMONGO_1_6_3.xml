@@ -1,0 +1,700 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1250" opendate="2015-07-03 21:07:44" fixdate="2015-07-04 10:10:16" resolution="Fixed">
+		<buginformation>
+			<summary>Custom converter implementation not used in updates</summary>
+			<description>There does seem to be an issue with the use of customer converters when used in mongoTemplate.update* via an Update object.
+I have a custom (de)serialiser for an enumerated type, and it works perfectly when saving and loading a @Document annotated POJO.
+It also works when building and executing a Query object.
+However when used in an Update, it is either ignored, or called in situations where it shouldn&amp;amp;apos;t.
+Please clone https://github.com/patrickherrera/converter_test.git for a full test application.
+In brief there is a POJO and for the purposes of the test it has a static enum with the desired converters:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class MyPersistantObject {
+
+
+
+
+    public Allocation allocation;
+
+
+
+
+    public BigDecimal value;
+
+
+
+
+
+
+
+
+
+    public enum Allocation {
+
+
+
+
+        AVAILABLE("V"),
+
+
+
+
+        ALLOCATED("A");
+
+
+
+
+
+
+
+
+
+        private final String code;
+
+
+
+
+
+
+
+
+
+        Allocation(String code) {
+
+
+
+
+            this.code = code;
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        public static Converter&amp;lt;Allocation, String&amp;gt; writer() {
+
+
+
+
+            return new Converter&amp;lt;Allocation, String&amp;gt;() {
+
+
+
+
+                public String convert(Allocation allocation) {
+
+
+
+
+                    return allocation.getCode();
+
+
+
+
+                }
+
+
+
+
+            };
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        public static Converter&amp;lt;String, Allocation&amp;gt; reader() {
+
+
+
+
+            return new Converter&amp;lt;String, Allocation&amp;gt;() {
+
+
+
+
+                public Allocation convert(String source) {
+
+
+
+
+                    return Allocation.getByCode(source);
+
+
+
+
+                }
+
+
+
+
+            };
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        public static Allocation getByCode(String code) {
+
+
+
+
+            switch (code) {
+
+
+
+
+                case "V":
+
+
+
+
+                    return AVAILABLE;
+
+
+
+
+                case "A":
+
+
+
+
+                    return ALLOCATED;
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+            throw new IllegalArgumentException("Unable to get Allocation from: " + code);
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        public String getCode() {
+
+
+
+
+            return code;
+
+
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+It simply converts back and forward using a short code rather than the full Enum name.
+These are registered in the Spring Boot application entry point:
+
+
+
+
+
+
+    @Bean
+
+
+
+
+    public CustomConversions customConversions() {
+
+
+
+
+        return new CustomConversions(Arrays.asList(
+
+
+
+
+                MyPersistantObject.Allocation.reader(),
+
+
+
+
+                MyPersistantObject.Allocation.writer()
+
+
+
+
+        ));
+
+
+
+
+    }
+
+
+
+
+
+
+There is a unit test that drives a few scenarios:
+
+
+
+
+
+
+@Test
+
+
+
+
+    public void testConversion() {
+
+
+
+
+        Update update;
+
+
+
+
+        Query query;
+
+
+
+
+        MyPersistantObject returned;
+
+
+
+
+        MyPersistantObject myPersistantObject = new MyPersistantObject();
+
+
+
+
+        myPersistantObject.allocation = AVAILABLE;
+
+
+
+
+        myPersistantObject.value = new BigDecimal(1234567);
+
+
+
+
+
+
+
+
+
+        mongoTemplate.save(myPersistantObject);
+
+
+
+
+
+
+
+
+
+        // Check it was saved correctly - first with invalid allocation to confirm conversion in query
+
+
+
+
+        query = query(where("allocation").is(ALLOCATED));
+
+
+
+
+        assertThat(mongoTemplate.findOne(query, MyPersistantObject.class), is(nullValue()));
+
+
+
+
+
+
+
+
+
+        // Check it was saved correctly - now with valid allocation to confirm conversion in query
+
+
+
+
+        query = query(where("allocation").is(AVAILABLE));
+
+
+
+
+        returned = mongoTemplate.findOne(query, MyPersistantObject.class);
+
+
+
+
+        assertThat(returned.allocation, is(AVAILABLE));
+
+
+
+
+        assertThat(returned.value.longValue(), is(1234567L));
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+            // Update allocation from constant - will fail
+
+
+
+
+            update = update("allocation", ALLOCATED);
+
+
+
+
+            mongoTemplate.updateMulti(query, update, MyPersistantObject.class);
+
+
+
+
+        } catch (Exception e) {
+
+
+
+
+            System.err.println("failed to convert allocation: java.lang.IllegalArgumentException: can&amp;amp;apos;t serialize class converter_test.MyPersistantObject$Allocation");
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        // Update allocation from string value - succeeds
+
+
+
+
+        update = update("allocation", ALLOCATED.getCode());
+
+
+
+
+        mongoTemplate.updateMulti(query, update, MyPersistantObject.class);
+
+
+
+
+        // Check allocation update
+
+
+
+
+        query = query(where("allocation").is(ALLOCATED));
+
+
+
+
+        returned = mongoTemplate.findOne(query, MyPersistantObject.class);
+
+
+
+
+        assertThat(returned.allocation, is(ALLOCATED));
+
+
+
+
+
+
+
+
+
+        // Update value only - will fail: Caused by: java.lang.IllegalArgumentException: Unable to get MyPersistantObject.Allocation from: 54321
+
+
+
+
+        // Tries to use MyPersistantObject.Allocation converter to String
+
+
+
+
+        update = update("value", new BigDecimal(54321));
+
+
+
+
+        mongoTemplate.updateMulti(query, update, MyPersistantObject.class);
+
+
+
+
+        // Check value update
+
+
+
+
+        returned = mongoTemplate.findAll(MyPersistantObject.class).get(0);
+
+
+
+
+        assertThat(returned.value.longValue(), is(54321L));
+
+
+
+
+    }
+
+
+
+
+
+
+Hopefully that makes sense.
+Firstly it saves and queries for the object to demonstrate that the converters are called correctly on the document.  I have confirmed that the document in the database correctly stores the Enum code rather than the name.
+By use of a positive and negative case, it appears that the converter is being called correctly when used in the Query builder.
+When it comes to an Update, the Enum is unable to be serialised correctly, and an exception is thrown to that effect.
+If I change it to use the code (a String), it works and we confirm that by Querying it back from the DB.
+So it appears that the customer converter for converting from my Enum is not called in this situation.
+Next I try and update the other value in the Document.  The BigDecimal is converted to a String by an existing converter I assume, but then my customer converter is called to try and convert the numeric String into an Allocation Enum which of course fails.
+I tried to debug the code and it seems that there is an overloaded method in CustomConversions: getCustomWriteTarget that takes one or two arguments, the second being a requestedTargetType.  That second variant never seems to be called in MappingMongoConverter, but perhaps if that type information was passed then it would not use my Allocation converter.
+Without type information it seems the default is just to use the first converter that can handle the input type, in this case a String.  It is my custom one which is picked up first but can&amp;amp;apos;t actually handle it.
+Please advise if there is something I am missing, as I can&amp;amp;apos;t find a workaround either - I have resorted to the Mongo Driver itself to do the update.
+</description>
+			<version>1.6.3 (Evans SR3)</version>
+			<fixedVersion>1.7.2 (Fowler SR2), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.UpdateMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1254" opendate="2015-07-13 13:21:28" fixdate="2015-07-27 05:19:54" resolution="Fixed">
+		<buginformation>
+			<summary>Group after Project in aggregation uses incorrect field name</summary>
+			<description>When creating an aggregation, if a new field is named in the project, the new field name is converted to something else in a group by following the projection; the name passed in the group by is ignored.  This causes the results to be incorrect. See test case for an example. </description>
+			<version>1.6.3 (Evans SR3)</version>
+			<fixedVersion>1.7.2 (Fowler SR2), 1.8 RC1 (Gosling)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.AggregationUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.aggregation.ProjectionOperation.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1263" opendate="2015-07-30 09:03:41" fixdate="2015-11-09 19:09:44" resolution="Fixed">
+		<buginformation>
+			<summary>Missing indexes in associations involving generic types</summary>
+			<description>When an association between documents involves generic types, the type information is not correctly inferred at startup time resulting in missing indexes.
+Please, see https://github.com/agustisanchez/SpringDataMongoDBBug, for code samples.
+Given:
+
+class Book with index on "ISBN" attribute
+super class AbstractProduct with index on "name" attribute
+class ProductWrapper holding attribute "content" of generic type "T extends AbstractProduct"
+
+When defining a class Catalog with a list of "wrapped" books:
+
+List&amp;lt;ProductWrapper&amp;lt;Book&amp;gt;&amp;gt; books2 = new ArrayList&amp;lt;&amp;gt;
+
+The index "name" inherited from AbstractProduct is created (book2.content.name) inside "catalog" , but the index defined on the Book class itself (isbn) is not created as Spring Data Mongo is only inferring type infromation from the ProductWrapper class definition (ProductWrapper &amp;lt;T extends AbstractProduct&amp;gt;).
+Spring Data MongoDB should be able to infer type information from the list declaration ( List&amp;lt;ProductWrapper&amp;lt;Book&amp;gt;&amp;gt; ), becoming aware that Catalog contains a list of Books, hence indexes defined on Book should be created.
+If the wrapper class is defined as ProductWrapper&amp;lt;T&amp;gt;, then no indexes are created at all on Catalog.books2.content.</description>
+			<version>1.6.3 (Evans SR3)</version>
+			<fixedVersion>1.8 RC1 (Gosling), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1297" opendate="2015-09-28 22:14:19" fixdate="2015-11-13 16:54:07" resolution="Fixed">
+		<buginformation>
+			<summary>Unique Index on DBRef</summary>
+			<description>I&amp;amp;apos;m not able to uniquely index a property if it&amp;amp;apos;s a reference.
+For example: 
+
+
+
+
+
+
+
+
+
+
+
+@DBRef
+
+
+
+
+@Indexed(unique = true) // This does not work because of @DBRef
+
+
+
+
+private User user1;
+
+
+
+
+
+
+
+
+
+@Indexed(unique = true) // This works fine
+
+
+
+
+private User user1;
+
+
+
+
+
+
+
+
+
+
+
+I know that it&amp;amp;apos;s possible to unique index a DBRef, so I&amp;amp;apos;m not sure why this doesn&amp;amp;apos;t work. It seems like a pretty important piece of functionality. </description>
+			<version>1.6.3 (Evans SR3)</version>
+			<fixedVersion>1.8.1 (Gosling SR1), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1290" opendate="2015-09-17 15:30:23" fixdate="2015-11-20 12:25:32" resolution="Fixed">
+		<buginformation>
+			<summary>@Query annotation with byte[] parameter does not work</summary>
+			<description>In a repository, these finders should be equivalent:
+
+
+
+
+
+
+Optional&amp;lt;SampleDomainObject&amp;gt; findBySampleData(byte[] sampleDate);
+
+
+
+
+
+
+
+
+
+@Query("{ &amp;amp;apos;sampleData&amp;amp;apos; : ?0 }")
+
+
+
+
+Optional&amp;lt;SampleDomainObject&amp;gt; findBySampleDateWithAnnotation(byte[] sampleData);
+
+
+
+
+
+
+... but only the first works. Please find an example project with test attached!</description>
+			<version>1.6.3 (Evans SR3)</version>
+			<fixedVersion>1.8.2 (Gosling SR2), 1.9 M1 (Hopper), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.ExpressionEvaluatingParameterBinder.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.StringBasedMongoQueryUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

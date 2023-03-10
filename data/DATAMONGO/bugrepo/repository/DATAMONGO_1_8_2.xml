@@ -1,0 +1,333 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1360" opendate="2016-01-16 07:47:34" fixdate="2016-01-20 14:42:07" resolution="Fixed">
+		<buginformation>
+			<summary>Cannot query with JSR310</summary>
+			<description>I have a MongoDb document I successfully store using Spring Data MongoDb. It looks like this:
+
+
+
+
+
+
+{
+
+
+
+
+    "_id" : "1",
+
+
+
+
+    "_class" : "SomeClass",
+
+
+
+
+    "createdDate" : ISODate("2016-01-16T07:05:45.656Z"),
+
+
+
+
+    "lastUpdate" : ISODate("2016-01-16T07:05:45.656Z")
+
+
+
+
+}
+
+
+
+
+
+
+When I create a custom Criteria query that looks like this:
+
+
+
+
+
+
+query.addCriteria(where("createdDate").lte(LocalDateTime.now()));
+
+
+
+
+
+
+The resulting MongoDb query looks like this:
+
+
+
+
+
+
+{ "createdDate" : { "$lte" : { $java : 2016-01-16T14:36:50.656 } } }
+
+
+
+
+
+
+It consequently fails with this message:
+java.lang.IllegalArgumentException: can&amp;amp;apos;t serialize class java.time.LocalDateTime
+at org.bson.BasicBSONEncoder._putObjectField(BasicBSONEncoder.java:299)
+It does not fail when I use a java.util.Date in my query even though I have stilled persisted my document with a java.time.LocalDateTime object. The query then looks slightly different like this:
+
+
+
+
+
+
+{ "createdDate" : { "$lte" : { "$date" : "2016-01-16T07:35:19.985Z"}}}
+
+
+
+
+
+
+I&amp;amp;apos;m hoping there is a way to not have to convert my LocalDateTime objects to Date objects for querying.
+Please advise.
+Cheers,
+Bjorn</description>
+			<version>1.8.2 (Gosling SR2)</version>
+			<fixedVersion>1.9 M1 (Hopper), 1.8.4 (Gosling SR4), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+			<file type="M">org.springframework.data.mongodb.core.geo.AbstractGeoSpatialTests.java</file>
+			<file type="M">org.springframework.data.mongodb.core.Venue.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1361" opendate="2016-01-17 03:38:06" fixdate="2016-01-21 11:44:28" resolution="Fixed">
+		<buginformation>
+			<summary>geoNear() queries fail when the accompanying query returns no results </summary>
+			<description>I found that if I a run a geoNear query with an accompanying search query that doesn&amp;amp;apos;t return any results, I encounter an NPE here.
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.geoNear(MongoTemplate.java:667)
+
+
+
+
+	at org.springframework.data.mongodb.core.MongoTemplate.geoNear(MongoTemplate.java:618)
+
+
+
+
+
+
+Example document:
+
+
+
+
+
+
+{
+
+
+
+
+	"id": "1",
+
+
+
+
+	"available": false,
+
+
+
+
+        "location": {
+
+
+
+
+            "type": "Point",
+
+
+
+
+            "coordinates": [
+
+
+
+
+              40.758934,
+
+
+
+
+              -73.992514
+
+
+
+
+            ]
+
+
+
+
+        }
+
+
+
+
+}
+
+
+
+
+
+
+if the query looks like this:
+
+
+
+
+
+
+NearQuery q = NearQuery.near(point).maxDistance(new Distance(maxDistance, Metrics.KILOMETERS));
+
+
+
+
+q.query(where("available").is(true));
+
+
+
+
+
+
+You get the NPE. Let me know if you need more information from me.</description>
+			<version>1.8.2 (Gosling SR2)</version>
+			<fixedVersion>1.9 M1 (Hopper), 1.8.4 (Gosling SR4), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.MongoTemplate.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="1387" opendate="2016-02-24 18:36:58" fixdate="2016-03-18 18:39:20" resolution="Fixed">
+		<buginformation>
+			<summary>BasicQuery.fields().include() doesn&amp;apos;t stick, even though Query.fields().include() does</summary>
+			<description>I am attempting to use BasicQuery with a defined list of fields. It appears that the fields list is being ignored. 
+
+
+
+
+
+
+String queryString = ... // json-formatted string
+
+
+
+
+Query query = new BasicQuery(queryString);
+
+
+
+
+query.fields().include("myField");
+
+
+
+
+final List&amp;lt;MyObject&amp;gt; results = mongoOps.find(query, MyObject.class);
+
+
+
+
+// MyObject includes all fields, not just myField
+
+
+
+
+
+
+I was digging through the source and it looks like org.springframework.data.mongodb.core.query.Query and org.springframework.data.mongodb.core.query.BasicQuery do things a little differently. Query defines fields() and BasicQuery does not, but getFieldsObject is different in the two implementations. 
+
+
+
+
+
+
+Query.getFieldsObject
+
+
+
+
+
+
+	public DBObject getFieldsObject() {
+
+
+
+
+		return this.fieldSpec == null ? null : fieldSpec.getFieldsObject();
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+BasicQuery.getFieldsObject
+
+
+
+
+
+
+	public DBObject getFieldsObject() {
+
+
+
+
+		return fieldsObject;
+
+
+
+
+	}
+
+
+
+
+
+
+It looks like when I use BasicQuery.fields() it does successfully create a fieldspec in the object. But later, when I pass that BasicQuery object into MongoOps, it calls query.getFieldsObject() and it&amp;amp;apos;s null, because I never set an explicit fieldsObject. 
+Am I using BasicQuery incorrectly? I am not clear why BasicQuery needs to override getFieldsObject as the behavior in the parent class seems to be the one that you&amp;amp;apos;d want.
+Thanks!</description>
+			<version>1.8.2 (Gosling SR2)</version>
+			<fixedVersion>1.9 RC1 (Hopper), 1.8.4 (Gosling SR4), 1.7.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.query.BasicQuery.java</file>
+			<file type="M">org.springframework.data.mongodb.core.query.BasicQueryUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

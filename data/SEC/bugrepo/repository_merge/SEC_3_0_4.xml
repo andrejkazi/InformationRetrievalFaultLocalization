@@ -1,0 +1,60 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="51" master="1608" duplicate="1614" opendate="2010-11-02 04:44:29" fixdate="2010-11-10 04:00:27" resolution="Fixed">
+		<buginformation>
+			<summary>FirewalledRequest.reset() is not called for a resource with no filters Status 404 with Apache Tiles</summary>
+			<description> We use Apache Tiles 2.1.4 to render our pages. After we&amp;amp;apos;ve upgraded to Spring Security 3.0.4 we received a "HTTP Status 404" error page from tomcat when accessing some pages.
+When we use a custom HttpFirewall and FirewalledRequest, which does nothing, the errors disappear.
+As far as I found out all pages are impacted which are "excluded" from Spring Security&amp;amp;apos;s FilterChainProxy, as our login and logout pages for example.
+I think that issue is related to SEC-1608. 
+Tiles does various forwards/includes during the rendering phase which (obviously) will change the ServletPath and PathInfo
+To track down the error, I&amp;amp;apos;ve developed a custom "RequestWrapper" which outputs the original and stripped version of the ServletPath and PathInfo:
+Constructor - StrippedServletPath: /main - StrippedPathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /main
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: /login/login.htm
+getServletPath() - stripPaths: true - strippedServletPath: /main - servletPath: /WEB-INF/layouts/plain.jsp
+As you can see at the end of the request the "strippedServletPath" and "servletPath" are different while "stripPaths" is still true. Therefore the "wrong" stripped ServletPath gets returned and Tiles fails to render the response correctly.
+getPathInfo() - stripPaths: true - strippedPathInfo: /login/login.htm - pathInfo: null</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.1.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.FilterChainProxyTests.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1838</link>
+			<link type="Duplicate" description="is duplicated by">1614</link>
+			<link type="Relate" description="is related to">1606</link>
+			<link type="Duplicate" description="duplicates">1608</link>
+		</links>
+	</bug>
+	<bug id="54" master="1608" duplicate="1838" opendate="2010-11-02 04:44:29" fixdate="2011-10-13 07:39:01" resolution="Fixed">
+		<buginformation>
+			<summary>FirewalledRequest.reset() is not called for a resource with no filters FirewalledRequest.reset() is not called if there are no matching filters</summary>
+			<description> FilterChainProxy.doFilter() determines the list of filters that have to be applied to a request. If there are filters, this method delegates to VirtualFilterChain.doFilter(), which will reset the firewall request wrapper at the end of the chain.
+The problem occurs, if there are no filters: FilterChainProxy.doFilter() is creating an instance of FirewalledRequest nevertheless, which it passes on to the original chain. But it does not call the "reset" method this FirewalledRequest object.
+This situation occurs, if you map "/" in web.xml to the Spring Security Filter Chain, but the Spring Security Filter Chain only handles "/some/" and "/thing/*". With this mapping, there are URLs like "/status" which are passed to the security chain proxy, but which are not covered by a filter list. The effect is bug is, that the servlet which is mapped to "/status" will get an invalid pathInfo and servletPath.
+The resolution should be quite simple: If FilterChainProxy.doFilter() has an empty filter list for a given URL, it must not pass the firewalled request to the original chain but the original request. The line "chain.doFilter(fwRequest, response);" should be changed into "chain.doFilter(servletRequest, response);".
+I don&amp;amp;apos;t know if Spring Security 3 is affected too, because we are using 2.0.x.</description>
+			<version>3.0.4</version>
+			<fixedVersion>3.0.5, 3.1.0.M2, 2.0.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.FilterChainProxyTests.java</file>
+			<file type="M">org.springframework.security.web.FilterChainProxy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1838</link>
+			<link type="Duplicate" description="is duplicated by">1614</link>
+			<link type="Relate" description="is related to">1606</link>
+			<link type="Duplicate" description="duplicates">1608</link>
+		</links>
+	</bug>
+</bugrepository>

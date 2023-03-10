@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="14" master="719" duplicate="593" opendate="2010-02-21 19:35:01" fixdate="2011-07-19 03:52:56" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat formats year differently than SimpleDateFormat in Java 7 Testing with JDK 1.7</summary>
+			<description>Starting with Java 7 does SimpleDateFormat format a year pattern of &amp;amp;apos;Y&amp;amp;apos; or &amp;amp;apos;YYY&amp;amp;apos; as &amp;amp;apos;2003&amp;amp;apos; instead of &amp;amp;apos;03&amp;amp;apos; as in former Java releases. According Javadoc this pattern should have been always been formatted as number, therefore the new behavior seems to be a bug fix in the JDK. FastDateFormat is adjusted to behave the same. I ran the tests for the Lang 2.5 RC2 using JDK 1.7.0-b78 and they all passed except the testFormat() in FastDateFormatTest.
+The problem seems to be that in JDK 1.7 the "yyy" and "y" patterns now cause a four digit year with SimpleDateFormat - whereas previous JDK versions resulted in a 2 digit year (as FastDateFormat does).
+JDK 1.7 hasn&amp;amp;apos;t yet been released and that may be fixed in the JDK by the time it is, but I thought it worth making a note.</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">593</link>
+			<link type="Duplicate" description="is duplicated by">719</link>
+		</links>
+	</bug>
+</bugrepository>

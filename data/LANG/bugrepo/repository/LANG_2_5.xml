@@ -1,0 +1,524 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="606" opendate="2010-03-13 20:10:02" fixdate="2010-03-20 20:17:03" resolution="Fixed">
+		<buginformation>
+			<summary>EqualsBuilder causes StackOverflowException</summary>
+			<description>EqualsBuilder causes StackOverflowException when comparing objects with cyclical object references.
+e,g.
+static class TestObjectReference {
+		@SuppressWarnings("unused")
+		private TestObjectReference reference;
+    	@SuppressWarnings("unused")
+		private TestObject one;
+    	public TestObjectReference(int one) 
+{
+			this.one = new TestObject(one);
+		}
+
+    	public void setObjectReference(
+    			TestObjectReference reference) 
+{
+			this.reference = reference;
+		}
+
+		@Override
+		public boolean equals(Object obj) 
+{
+			return EqualsBuilder.reflectionEquals(this, obj);
+		}
+    }</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.EqualsBuilder.java</file>
+			<file type="M">org.apache.commons.lang3.builder.EqualsBuilderTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="631" opendate="2010-07-05 09:29:44" fixdate="2010-07-06 07:28:05" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils JavaDoc contains erroneous examples</summary>
+			<description>For the method: static int 	lastIndexOf(String str, String searchStr) 
+@
+(v2.5): http://commons.apache.org/lang/api-release/org/apache/commons/lang/StringUtils.html#lastIndexOf(java.lang.String,%20java.lang.String)
+(v3.0): http://commons.apache.org/lang/api/org/apache/commons/lang3/StringUtils.html#lastIndexOf(java.lang.String,%20java.lang.String)
+These results are wrong:
+ StringUtils.lastIndexOf("aabaabaa", "a")  = 0
+ StringUtils.lastIndexOf("aabaabaa", "b")  = 2
+ StringUtils.lastIndexOf("aabaabaa", "ab") = 1
+Correct values:
+1st = 7
+2nd = 5
+3rd = 4</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="635" opendate="2010-07-20 10:02:24" fixdate="2010-07-20 18:11:17" resolution="Fixed">
+		<buginformation>
+			<summary>CompareToBuilder.reflectionCompare(Object lhs, Object rhs, boolean compareTransients, Class reflectUpToClass) ignores third parameter</summary>
+			<description>The parameter "compareTransients" is ignored and false is always used, as a short look in the code shows:
+
+    return reflectionCompare(lhs, rhs, false, reflectUpToClass, null);</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.builder.CompareToBuilder.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="638" opendate="2010-08-02 10:59:38" fixdate="2010-08-03 04:42:18" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils createNumber throws a StringIndexOutOfBoundsException when argument containing "e" and "E" is passed in</summary>
+			<description>NumberUtils createNumber throws a StringIndexOutOfBoundsException instead of NumberFormatException when a String containing both possible exponent indicators is passed in.
+One example of such a String is "1eE".</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="643" opendate="2010-08-13 14:52:35" fixdate="2010-08-29 22:39:13" resolution="Fixed">
+		<buginformation>
+			<summary>Javadoc StringUtils.left() claims to throw on negative len, but doesn&amp;apos;t</summary>
+			<description>The Javadoc comment for StringUtils.left() claims to throw an exception "if len is negative" (and that input argument len "must be zero or positive"):
+http://commons.apache.org/lang/api/org/apache/commons/lang3/StringUtils.html#left(java.lang.String,%20int)
+http://commons.apache.org/lang/api-2.5/org/apache/commons/lang/StringUtils.html#left(java.lang.String,%20int)
+public static String left(String str, int len)
+    Gets the leftmost len characters of a String.
+    If len characters are not available, or the String is null, the String will be returned without an exception. An exception is thrown if len is negative.
+     StringUtils.left(null, *)    = null
+     StringUtils.left(*, -ve)     = ""
+     StringUtils.left("", *)      = ""
+     StringUtils.left("abc", 0)   = ""
+     StringUtils.left("abc", 2)   = "ab"
+     StringUtils.left("abc", 4)   = "abc"
+    Parameters:
+        str - the String to get the leftmost characters from, may be null
+        len - the length of the required String, must be zero or positive
+    Returns:
+        the leftmost characters, null if null String input
+But it  doesn&amp;amp;apos;t. (Luckily and preferably anyway .)
+Instead an empty string will be returned. (Which is good.) As is seen from the implementation code ...
+
+........
+        if (len &amp;lt; 0) {
+            return EMPTY;
+        }
+        ...
+
+..., and by example, too:
+
+$ cat StringUtilsTest.java
+import org.apache.commons.lang.StringUtils;
+
+public final class StringUtilsTest {
+    public static void main(final String[] args) {
+        final String result = StringUtils.left("foobar", -42);
+        System.out.println("&amp;gt;" + result + "&amp;lt;");
+    }
+}
+
+$ javac -classpath commons-lang.jar StringUtilsTest.java
+
+$ java -classpath .:commons-lang.jar StringUtilsTest
+&amp;gt;&amp;lt;
+
+The Javadoc comment should be updated.
+Same issue for right() and mid(), by the way.
+Volker Glave</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="596" opendate="2010-03-01 12:17:48" fixdate="2010-08-29 22:54:57" resolution="Fixed">
+		<buginformation>
+			<summary>StrSubstitutor should also handle the default properties of a java.util.Properties class</summary>
+			<description>The following program show a problem with a shortcoming of the java.util.Properties class. 
+The default properties are not substituted by the StrSubstitutor.
+StrSubstTest.java
+
+import org.apache.commons.lang.text.StrSubstitutor;
+
+public class StrSubstTest
+{
+    public static void main(String[] args)
+    {
+        String org = "${doesnotwork}";
+        System.setProperty("doesnotwork", "It work&amp;amp;apos;s!");
+
+        // create a new Poperties object with the System.getProperties as default
+        Properties props = new Properties(System.getProperties());
+
+        String subst = StrSubstitutor.replace(org, props);
+        // is ${doesnotwork} substituted?
+        System.out.println(subst);
+
+    }
+}
+
+
+The following method could be added to the StrSubstitutor class to fix this problem in an easy way:
+
+
+    /**
+     * Replaces all the occurrences of variables in the given source object with their matching
+     * values from the properties.
+     * 
+     * @param source the source text containing the variables to substitute, null returns null
+     * @param properties the properties with values, may be null
+     * @return the result of the replace operation
+     */
+    public static String replace(Object source, Properties valueProperties)
+    {
+        if (valueProperties == null) {
+            return source;
+        }
+        Map valueMap = new HashMap();
+        Enumeration propNames = valueProperties.propertyNames();
+        while (propNames.hasMoreElements())
+        {
+            String propName = (String)propNames.nextElement();
+            String propValue = valueProperties.getProperty(propName);
+            valueMap.put(propName, propValue);
+        }
+        return StrSubstitutor.replace(source, valueMap);
+    }
+
+</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.StrSubstitutorTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.StrSubstitutor.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="645" opendate="2010-08-20 14:11:08" fixdate="2010-09-08 06:10:03" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat.format() outputs incorrect week of year because locale isn&amp;apos;t respected</summary>
+			<description>FastDateFormat apparently doesn&amp;amp;apos;t respect the locale it was sent on creation when outputting week in year (e.g. "ww") in format(). It seems to use the settings of the system locale for firstDayOfWeek and minimalDaysInFirstWeek, which (depending on the year) may result in the incorrect week number being output.
+Here is a simple test program to demonstrate the problem by comparing with SimpleDateFormat, which gets the week number right:
+
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.text.SimpleDateFormat;
+
+import org.apache.commons.lang.time.FastDateFormat;
+
+public class FastDateFormatWeekBugDemo {
+    public static void main(String[] args) {
+        Locale.setDefault(new Locale("en", "US"));
+        Locale locale = new Locale("sv", "SE");
+
+        Calendar cal = Calendar.getInstance(); // setting locale here doesn&amp;amp;apos;t change outcome
+        cal.set(2010, 0, 1, 12, 0, 0);
+        Date d = cal.getTime();
+        System.out.println("Target date: " + d);
+
+        FastDateFormat fdf = FastDateFormat.getInstance("EEEE&amp;amp;apos;, week &amp;amp;apos;ww", locale);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE&amp;amp;apos;, week &amp;amp;apos;ww", locale);
+        System.out.println("FastDateFormat:   " + fdf.format(d)); // will output "FastDateFormat:   fredag, week 01"
+        System.out.println("SimpleDateFormat: " + sdf.format(d)); // will output "SimpleDateFormat: fredag, week 53"
+    }
+}
+
+
+If sv/SE is passed to Locale.setDefault() instead of en/US, both FastDateFormat and SimpleDateFormat output the correct week number.</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="656" opendate="2010-11-08 08:55:37" fixdate="2010-11-08 15:20:11" resolution="Fixed">
+		<buginformation>
+			<summary>Example StringUtils.indexOfAnyBut("zzabyycdxx", &amp;apos;&amp;apos;) = 0 incorrect</summary>
+			<description>I recognized the following example in class StringUtils:
+
+
+      StringUtils.indexOfAnyBut("zzabyycdxx", &amp;amp;apos;&amp;amp;apos;) = 0
+
+
+According to Niall Pembertons answer on the user mailing list (Oct, 27th 2010) I should report an issue on this.
+He suggested the following replacement:
+
+      StringUtils.indexOfAnyBut("zzabyycdxx", "")   = -1
+
+
+Regards,
+Dirk</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="646" opendate="2010-08-22 17:46:02" fixdate="2011-01-17 05:35:23" resolution="Fixed">
+		<buginformation>
+			<summary>StringEscapeUtils.unescapeJava doesn&amp;apos;t handle octal escapes and Unicode with extra u</summary>
+			<description>CODE TO REPRODUCE BUG:
+
+System.out.println("\45");
+// %
+System.out.println(StringEscapeUtils.unescapeJava("\\45"));
+// 45, should be %
+
+System.out.println("\uu0030");
+// 0
+System.out.println(StringEscapeUtils.unescapeJava("\\uu0030"));
+// throws NestableRuntimeException:
+
+
+This is not compliant with the JLS, which allows both [OctalEscape] and extraneous u for [UnicodeMarker] in Java string literal.
+REFERENCES:
+3.10.6 Escape Sequences for Character and String Literals
+http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#3.10.6
+3.3 Unicode Escapes
+http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#3.3
+EXTERNAL LINKS:
+http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java/</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringEscapeUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="672" opendate="2011-01-17 15:29:32" fixdate="2011-01-23 05:25:34" resolution="Fixed">
+		<buginformation>
+			<summary>Doc bug in DateUtils#ceiling</summary>
+			<description>
+For example, if you had the datetime of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 13:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Mar 2002 0:00:00.000. 
+
+Looks like copy-paste from truncate. (the dates are incorrect)</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.DateUtils.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Cloners" description="is cloned by">800</link>
+		</links>
+	</bug>
+	<bug id="624" opendate="2010-05-27 21:09:29" fixdate="2011-02-01 16:31:42" resolution="Fixed">
+		<buginformation>
+			<summary>SystemUtils.getJavaVersionAsFloat throws StringIndexOutOfBoundsException on Android runtime/Dalvik VM</summary>
+			<description>Can be replicated in the Android emulator quite easily.
+Stack trace:
+
+
+at org.apache.commons.lang.builder.ToStringBuilder.&amp;lt;clinit&amp;gt;(ToStringBuilder.java:98)
+E/AndroidRuntime( 1681): 	... 17 more
+E/AndroidRuntime( 1681): Caused by: java.lang.ExceptionInInitializerError
+E/AndroidRuntime( 1681): 	at org.apache.commons.lang.builder.ToStringStyle$MultiLineToStringStyle.&amp;lt;init&amp;gt;(ToStringStyle.java:2276)
+E/AndroidRuntime( 1681): 	at org.apache.commons.lang.builder.ToStringStyle.&amp;lt;clinit&amp;gt;(ToStringStyle.java:94)
+E/AndroidRuntime( 1681): 	... 18 more
+E/AndroidRuntime( 1681): Caused by: java.lang.StringIndexOutOfBoundsException
+E/AndroidRuntime( 1681): 	at java.lang.String.substring(String.java:1571)
+E/AndroidRuntime( 1681): 	at org.apache.commons.lang.SystemUtils.getJavaVersionAsFloat(SystemUtils.java:1153)
+E/AndroidRuntime( 1681): 	at org.apache.commons.lang.SystemUtils.&amp;lt;clinit&amp;gt;(SystemUtils.java:818)
+
+</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.SystemUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.ClassUtils.java</file>
+			<file type="M">org.apache.commons.lang3.text.ExtendedMessageFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.DateUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.ClassUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.SystemUtils.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.LocaleUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.CharEncodingTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="719" opendate="2011-07-13 17:00:52" fixdate="2011-07-13 17:02:13" resolution="Fixed">
+		<buginformation>
+			<summary>FastDateFormat formats year differently than SimpleDateFormat in Java 7</summary>
+			<description>Starting with Java 7 does SimpleDateFormat format a year pattern of &amp;amp;apos;Y&amp;amp;apos; or &amp;amp;apos;YYY&amp;amp;apos; as &amp;amp;apos;2003&amp;amp;apos; instead of &amp;amp;apos;03&amp;amp;apos; as in former Java releases. According Javadoc this pattern should have been always been formatted as number, therefore the new behavior seems to be a bug fix in the JDK. FastDateFormat is adjusted to behave the same.</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">593</link>
+		</links>
+	</bug>
+	<bug id="593" opendate="2010-02-21 19:35:01" fixdate="2011-07-19 03:52:56" resolution="Fixed">
+		<buginformation>
+			<summary>Testing with JDK 1.7</summary>
+			<description>I ran the tests for the Lang 2.5 RC2 using JDK 1.7.0-b78 and they all passed except the testFormat() in FastDateFormatTest.
+The problem seems to be that in JDK 1.7 the "yyy" and "y" patterns now cause a four digit year with SimpleDateFormat - whereas previous JDK versions resulted in a 2 digit year (as FastDateFormat does).
+JDK 1.7 hasn&amp;amp;apos;t yet been released and that may be fixed in the JDK by the time it is, but I thought it worth making a note.</description>
+			<version>2.5</version>
+			<fixedVersion>3.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormat.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">719</link>
+		</links>
+	</bug>
+	<bug id="805" opendate="2012-06-09 13:46:34" fixdate="2012-06-09 15:06:42" resolution="Fixed">
+		<buginformation>
+			<summary>RandomStringUtils.random(count, 0, 0, false, false, universe, random) always throws java.lang.ArrayIndexOutOfBoundsException</summary>
+			<description>In commons-lang 2.6 line 250 :
+
+ch = chars[random.nextInt(gap) + start];
+
+This line of code takes a random int to fetch a char in the chars array regardless of its size.
+(Besides start is useless here)
+Fixed version would be :
+
+//ch = chars[random.nextInt(gap)%chars.length];
+
+When user pass 0 as end or when the array is not null but empty this line ends up with an exception</description>
+			<version>2.5</version>
+			<fixedVersion>3.2, 2.7</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.RandomStringUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.RandomStringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="754" opendate="2011-09-19 12:46:07" fixdate="2013-04-20 15:18:47" resolution="Fixed">
+		<buginformation>
+			<summary>embedded objects are not toString-ed like top-level objects</summary>
+			<description>I have a simple class &amp;amp;apos;A&amp;amp;apos; defined as follows:
+======================================
+public class A 
+{
+  int p1;
+  String p2;
+  B b;
+}
+======================================
+While I execute the following instructions:
+ToStringBuilder builder = new ReflectionToStringBuilder(a);
+System.out.println(builder.toString());
+The output is:
+A@3ea981ca[p1=0,p2=&amp;lt;null&amp;gt;,b=B@1ee7b241]
+that&amp;amp;apos;s normal, without recursion
+So, I defined my own style, for recursive toString-ing display:
+======================================
+class MyStyle extends ToStringStyle {
+  private final static ToStringStyle instance = new MyStyle();
+  public MyStyle() 
+{
+    setArrayContentDetail(true);
+    setUseShortClassName(true);
+    setUseClassName(true);
+    setUseIdentityHashCode(true);
+    setFieldSeparator(", ");
+  }
+
+  public static ToStringStyle getInstance() 
+{
+    return instance;
+  }
+;
+  @Override
+  public void appendDetail(final StringBuffer buffer, final String fieldName, final Object value) {
+    if (!value.getClass().getName().startsWith("java")) 
+{
+      buffer.append(ReflectionToStringBuilder.toString(value, instance));
+    }
+ else 
+{
+      super.appendDetail(buffer, fieldName, value);
+    }
+  }
+  @Override
+  public void appendDetail(final StringBuffer buffer, final String fieldName, final Collection value) 
+{
+    appendDetail(buffer, fieldName, value.toArray());
+  }
+
+}
+======================================
+When I use my custom MyStyle:
+String s = ReflectionToStringBuilder.toString(a, MyStyle.getInstance());
+System.out.println(s);
+The output is:
+A@3ea981ca[p1=0, p2=&amp;lt;null&amp;gt;, b=byte@1ee7b241[p4=234]]
+So, the name of the class &amp;amp;apos;B&amp;amp;apos; is not displayed.
+I expected something like: b=B@1ee7b241[p4=234]
+Instead, the name of the class &amp;amp;apos;B&amp;amp;apos; is replaced with &amp;amp;apos;byte&amp;amp;apos;.
+I don&amp;amp;apos;t know why.</description>
+			<version>2.5</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.ClassUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="917" opendate="2013-09-17 07:32:52" fixdate="2013-10-24 20:54:48" resolution="Fixed">
+		<buginformation>
+			<summary>Exception when combining custom and choice format in ExtendedMessageFormat</summary>
+			<description>When using a custom format registered and a choice format with an inner format is used in the same message format, an IndexOutOfBoundsException occurs in the custructor of ExtendedMessageFormat:
+
+new ExtendedMessageFormat("Hi {0,test,any}, got {1,choice,0#none|1#one|1&amp;lt;{1,number}}", Collections.singletonMap("test", new TestFormatFactory()));
+
+
+java.lang.IndexOutOfBoundsException: Index: 2, Size: 2
+	at java.util.ArrayList.rangeCheck(ArrayList.java:604)
+	at java.util.ArrayList.get(ArrayList.java:382)
+	at org.apache.commons.lang.text.ExtendedMessageFormat.insertFormats(ExtendedMessageFormat.java:364)
+	at org.apache.commons.lang.text.ExtendedMessageFormat.applyPattern(ExtendedMessageFormat.java:192)
+	at org.apache.commons.lang.text.ExtendedMessageFormat.&amp;lt;init&amp;gt;(ExtendedMessageFormat.java:127)
+
+
+The problem occurs at the start of {1,number}.
+As a workaround i registered the TestFormatFactory also for "choice" and then returning new ChoiceFormat(arguments), but that is not the idea.
+I also checked the change logs, but there seems no change on this problem. I have not tester, but I think the bug still is present in the current release.</description>
+			<version>2.5</version>
+			<fixedVersion>3.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.ExtendedMessageFormat.java</file>
+			<file type="M">org.apache.commons.lang3.text.ExtendedMessageFormatTest.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

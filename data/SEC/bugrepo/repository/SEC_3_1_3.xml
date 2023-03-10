@@ -1,0 +1,441 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="2067" opendate="2012-10-19 06:51:45" fixdate="2012-10-19 07:49:38" resolution="Duplicate">
+		<buginformation>
+			<summary>Security context incorrectly removed from session when asynchronous servlet used</summary>
+			<description>Take the following sample servlet:
+
+
+
+
+
+
+@Override
+
+
+
+
+protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+
+
+
+
+	req.startAsync();
+
+
+
+
+	new Thread("AsyncThread") {
+
+
+
+
+		@Override
+
+
+
+
+		public void run() {
+
+
+
+
+			try {
+
+
+
+
+				TimeUnit.SECONDS.sleep(1);
+
+
+
+
+				resp.getOutputStream().flush();
+
+
+
+
+			} catch (Exception e) {
+
+
+
+
+				e.printStackTrace();
+
+
+
+
+			}
+
+
+
+
+		}
+
+
+
+
+	}.start();
+
+
+
+
+}
+
+
+
+
+
+
+As you can see it does nothing except flushing after one second in a separate thread. However this servlet is secured by Spring Security so the resp.getOutputStream() stream is actually an instance of org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.SaveContextServletOutputStream.
+This class calls org.springframework.security.web.context.HttpSessionSecurityContextRepository.SaveToSessionResponseWrapper.saveContext() on flush(). That&amp;amp;apos;s where the bug is  This method under certain conditions removes security context from session:
+
+
+
+
+
+
+httpSession.removeAttribute(springSecurityContextKey)
+
+
+
+
+
+
+This method was heavily rewritten lately (see: See SEC-776, SEC-1587 and SEC-1735) so I can&amp;amp;apos;t tell where the actually bug lies. All I see is that since it can&amp;amp;apos;t find security context in thread local holder (we are flushing from a different thread), it removes the context from the session as well. Basically asynchronous servlet logs me out from the application.
+I extracted the error and prepared sample, simplistic application exposing that bug (attached). I actually run into it when using Atmosphere Comet library together with Spring Security, but this application shows exact same error.
+Extract and call mvn tomcat7:run. Only one Java class, browse to localhost:8080, login using admin/admin and follow instructions to reproduce.</description>
+			<version>3.1.3</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.HttpServlet3RequestFactory.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.web.FilterInvocation.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilterTests.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptor.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptorTests.java</file>
+			<file type="M">org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.java</file>
+			<file type="M">org.springframework.security.config.http.SecurityFilters.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequest.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServicesTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">1998</link>
+		</links>
+	</bug>
+	<bug id="1998" opendate="2012-07-08 20:35:03" fixdate="2012-12-03 09:37:58" resolution="Complete">
+		<buginformation>
+			<summary>Support for Servlet 3.0/3.1 asynchronous request processing</summary>
+			<description>Similar to SPR-8517 Spring Security should support Asynch Servlet request processing
+Note: SEC-2067 has a sample application that should be validated against when fixing this issue</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.2.0.M1</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.servletapi.HttpServlet3RequestFactory.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilterTests.java</file>
+			<file type="M">org.springframework.security.web.FilterInvocation.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilterTests.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptor.java</file>
+			<file type="M">org.springframework.security.web.context.request.async.SecurityContextCallableProcessingInterceptorTests.java</file>
+			<file type="M">org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper.java</file>
+			<file type="M">org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.java</file>
+			<file type="M">org.springframework.security.config.http.SecurityFilters.java</file>
+			<file type="M">org.springframework.security.web.savedrequest.DefaultSavedRequest.java</file>
+			<file type="M">org.springframework.security.web.authentication.rememberme.AbstractRememberMeServicesTests.java</file>
+			<file type="M">org.springframework.security.config.http.HttpConfigurationBuilder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="depends on">2077</link>
+			<link type="Duplicate" description="is duplicated by">2067</link>
+			<link type="Relate" description="is related to">2111</link>
+		</links>
+	</bug>
+	<bug id="2084" opendate="2012-11-25 14:29:58" fixdate="2012-12-03 13:19:42" resolution="Complete">
+		<buginformation>
+			<summary>NullPointerException for intercept-url without specified method</summary>
+			<description>There is a NullPointerException when Spring Security attempts to find which Http methods that are allowed for a resource whose intercept-url does not have any specific method. 
+
+Unzip the provided project
+Execute "mvn jetty:run"
+Navigate to http://localhost:8080/application.wadl in a browser
+Enter the credentials "user" / "secret"
+
+Expected result:
+A generated wadl file such as the provided application.3.0.7.wadl (see the root folder of the attached .zip file).
+Actual result:
+java.lang.NullPointerException: Name is null
+	at java.lang.Enum.valueOf(Enum.java:235)
+	at org.springframework.http.HttpMethod.valueOf(HttpMethod.java:1)
+	at org.springframework.security.web.util.AntPathRequestMatcher.matches(AntPathRequestMatcher.java:83)
+	at org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource.getAttributes(DefaultFilterInvocationSecurityMetadataSource.java:86)
+	at org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator.isAllowed(DefaultWebInvocationPrivilegeEvaluator.java:90)
+	at org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator.isAllowed(DefaultWebInvocationPrivilegeEvaluator.java:67)
+	at com.jayway.security.WADLGenerator.createResource(WADLGenerator.java:39)
+	at com.sun.jersey.server.wadl.WadlBuilder.generateResource(WadlBuilder.java:330)
+	at com.sun.jersey.server.wadl.WadlBuilder.generateResource(WadlBuilder.java:326)
+	at com.sun.jersey.server.wadl.WadlBuilder.generate(WadlBuilder.java:108)
+	at com.sun.jersey.server.impl.wadl.WadlApplicationContextImpl.getApplication(WadlApplicationContextImpl.java:111)
+	at com.sun.jersey.server.impl.wadl.WadlApplicationContextInjectionProxy.getApplication(WadlApplicationContextInjectionProxy.java:63)
+	at com.sun.jersey.server.impl.wadl.WadlResource.getWadl(WadlResource.java:95)
+[...]
+Note:
+The above steps work in the 3.0.7 version of Spring Security. Simply
+
+Change the org.springframework.security.version in the pom.xml to 3.0.7.RELEASE
+Update the spring security schema location in the securityContext.xml to http://www.springframework.org/schema/security/spring-security-3.0.4.xsd
+Visit http://localhost:8080/application.wadl (log in using the credentials above)
+The result is the application.3.0.7.wadl file in the root folder of the attached zip file
+
+The NPE may (or may not) be another manifestation of the issue that was reported in https://jira.springsource.org/browse/SEC-1836 ?</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.1.4, 3.2.0.M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.util.AntPathRequestMatcher.java</file>
+			<file type="M">org.springframework.security.web.util.AntPathRequestMatcherTests.java</file>
+			<file type="M">org.springframework.security.web.util.RegexRequestMatcherTests.java</file>
+			<file type="M">org.springframework.security.web.util.RegexRequestMatcher.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2136" opendate="2013-02-25 06:00:52" fixdate="2013-02-28 09:09:20" resolution="Fixed">
+		<buginformation>
+			<summary>Injecting Bean in a class used in custom PermissionEvaluator leads to NoSuchBeanDefinitionException</summary>
+			<description>Autowiring a bean in a class used in a custom PermissionEvaluator leads to NoSuchBeanDefinitionException. If the @Autowire annotation is commented in code, the context loads correctly (but tests obviously then fail).
+This is similar to referenced post in spring forums.
+
+
+
+
+
+
+
+
+
+
+
+public class TestEntityPermission extends AbstractPermission {
+
+
+
+
+
+
+
+
+
+    @Autowired // comment this and context loads
+
+
+
+
+    private TestEntityService testEntityService;
+
+
+
+
+    
+
+
+
+
+    public boolean isAllowed(Authentication authentication, Object targetDomainObject,
+
+
+
+
+            String permissionType) {
+
+
+
+
+        //...
+
+
+
+
+    }
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+public class DefaultPermissionEvaluator implements PermissionEvaluator {
+
+
+
+
+
+
+
+
+
+    private Map&amp;lt;String, Permission&amp;gt; permissionNameToPermissionMap = new HashMap&amp;lt;&amp;gt;();
+
+
+
+
+
+
+
+
+
+	private boolean checkPermissionByDomainObject(Authentication authentication,
+
+
+
+
+            Object targetDomainObject, String permissionValue) {
+
+
+
+
+        String permissionType = getPermissionType(permissionValue);
+
+
+
+
+        String permissionName = getPermissionTarget(permissionValue);
+
+
+
+
+        verifyPermissionIsDefined(permissionName);
+
+
+
+
+        Permission permission = permissionNameToPermissionMap.get(permissionName);
+
+
+
+
+        return permission.isAllowed(authentication, targetDomainObject, permissionType);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+Attached is a sample App (maven) with the according test case.</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.2.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.access.expression.method.ExpressionBasedAnnotationAttributeFactory.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">292</link>
+			<link type="Relate" description="relates to">10353</link>
+		</links>
+	</bug>
+	<bug id="2140" opendate="2013-02-28 09:56:15" fixdate="2013-02-28 10:04:39" resolution="Fixed">
+		<buginformation>
+			<summary>AclAuthorizationStrategyImpl javadoc should list actions in correct order</summary>
+			<description></description>
+			<version>3.1.3</version>
+			<fixedVersion>3.2.0.M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.domain.AclAuthorizationStrategyImpl.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2087" opendate="2012-11-28 14:57:49" fixdate="2013-04-25 07:00:00" resolution="Fixed">
+		<buginformation>
+			<summary>GlobalMethodSecurityBeanDefinitionParser.AuthenticationManagerDelegator attempts to get a bean using the concrete implementation</summary>
+			<description>In the authenticate method of the AuthenticationManagerDelegator inner class, it is attempted to get a bean of class org.springframework.security.authentication.ProviderManager.
+In the Eclipse Virgo container when the AuthenticationManager is referenced as a service, the ProviderManager will be wrapped inside a Proxy class and the following Exception will be thrown:
+Failed to call secure method org.springframework.beans.factory.BeanNotOfRequiredTypeException: Bean named &amp;amp;apos;authenticationManager&amp;amp;apos; must be of type [org.springframework.security.authentication.ProviderManager], but was actually of type [$Proxy94]
+at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:360)
+at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197)
+at org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser$AuthenticationManagerDelegator.authenticate(GlobalMethodSecurityBeanDefinitionParser.java:386)
+The bean should be looked up by the org.springframework.security.authentication.AuthenticationManager interface.
+The following change works properly for the described scenario.
+Original code (at line 386):
+try {
+   delegate = beanFactory.getBean(authMgrBean, ProviderManager.class);
+} catch (NoSuchBeanDefinitionException e) {
+Changed to:
+try {
+   delegate = beanFactory.getBean(authMgrBean, AuthenticationManager.class);
+} catch (NoSuchBeanDefinitionException e) {</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.1.4, 3.2.0</fixedVersion>
+			<type>Defect</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.config.method.GlobalMethodSecurityBeanDefinitionParserTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="2078" opendate="2012-11-09 01:12:03" fixdate="2015-02-24 14:45:28" resolution="Complete">
+		<buginformation>
+			<summary>Pre-authentication fails when using check for principal change and using non String principals</summary>
+			<description>The problem occurs when using pre-authentication with "check for principal change" set and the class there extends org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter using non String principals but e.g. java.security.Principal.
+The problem is that the authentication manager will always authenticate even the principal has no changed, this can give problems with the authentication provider, and performance in the code.
+The error is in line 145 in the AbstractPreAuthenticatedProcessingFilter class, the code:
+  if (currentUser.getName().equals(principal)) 
+{
+    return false;
+  }
+
+should be changed to something like:
+  if (principal instanceof Principal) 
+{
+    return !currentUser.getName().equals(((Principal)principal).getName());
+  }
+  else 
+{
+    return !currentUser.getName().equals(principal.toString());
+  }
+
+The original code will only function when the passed principal parameter is of the type String. The code suggested will function for all type of objects there either implements the java.security.Principal interface or override the toString method.</description>
+			<version>3.1.3</version>
+			<fixedVersion>3.2.6, 4.0.0.RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilterTests.java</file>
+			<file type="M">org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">2497</link>
+			<link type="Duplicate" description="is duplicated by">2751</link>
+			<link type="Duplicate" description="is duplicated by">2794</link>
+			<link type="Relate" description="is related to">3051</link>
+		</links>
+	</bug>
+</bugrepository>

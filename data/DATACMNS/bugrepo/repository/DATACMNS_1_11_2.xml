@@ -1,0 +1,17 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="804" opendate="2016-01-20 17:02:18" fixdate="2016-01-21 09:25:04" resolution="Fixed">
+		<buginformation>
+			<summary>IndexOutOfBoundException in ParametersParameterAccessor iterator when non-bindable parameter(s) used</summary>
+			<description>When using a ParametersParameterAccessor on a method with, say, a Pageable (which is non-bindable), attempting to iterate over the accessor throws an IndexOutOfBoundException.
+This is because BindableParameterIterator.hasNext() checks values.length, which includes non-bindable parameters, whereas next() calls getBindableValue.</description>
+			<version>1.11.2 (Gosling SR2)</version>
+			<fixedVersion>1.12 M1 (Hopper), 1.11.4 (Gosling SR4), 1.10.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.query.ParametersParameterAccessorUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.query.ParametersParameterAccessor.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

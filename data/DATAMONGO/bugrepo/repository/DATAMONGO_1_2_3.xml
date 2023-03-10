@@ -1,0 +1,56 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="752" opendate="2013-09-10 03:48:06" fixdate="2013-10-13 04:53:00" resolution="Fixed">
+		<buginformation>
+			<summary>QueryMapper prevents searching for values that start with a $ [dollarsign]</summary>
+			<description>When querying for values that start with a dollar sign the QueryMapper.Keyword#isKeyword recognizes this as a keyword, resulting in a ClassCastException (QueryMapper.java:311)
+The following snippet demonstrates this behaviour:
+
+
+
+
+
+
+mongoTemplate.find(query(where("myvalue").is("$334")), My.class);
+
+
+
+
+
+
+The mongo keywords (&amp;amp;apos;$gt&amp;amp;apos; etc.) would usually be provided with the associated methods (.gt() etc.). A is() query should either not try to recognize keywords or at least be more specific (not only check for a leading &amp;amp;apos;$&amp;amp;apos;).
+How could a query for a value that starts with a dollar sign be written otherwise, using the Spring MongoTemplate?</description>
+			<version>1.2.3</version>
+			<fixedVersion>1.3.2 (Babbage SR1), 1.4 M1 (Codd)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapper.java</file>
+			<file type="M">org.springframework.data.mongodb.core.convert.QueryMapperUnitTests.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="745" opendate="2013-09-03 02:15:08" fixdate="2014-06-17 22:51:44" resolution="Fixed">
+		<buginformation>
+			<summary>@Query($in) and Pageable in result Page total = 0</summary>
+			<description>Hi If I used MongoRepository and anotation Quary and Pageable in response I get true result but getTotalElements == 0
+@Query("{&amp;amp;apos;snapshotId&amp;amp;apos; : ?0 ,&amp;amp;apos;defects.id&amp;amp;apos;:{ $in:?1}}")
+Page&amp;lt;Test&amp;gt; findBySnapshotIdAndDefects(ObjectId snapshotId, List&amp;lt;Integer&amp;gt; defectIds, Pageable pageable);
+Base Struct
+{5225a5ece4b0a01629fce9c6={ "_id" : 
+{ "$oid" : "5225a5ece4b0a01629fce9c6"}
+ , "snapshotId" : 
+{ "$oid" : "5225a5ece4b0a01629fce9c5"}
+ , "defects" : [ 
+{ "_id" : 1 }
+]}</description>
+			<version>1.2.3</version>
+			<fixedVersion>1.4.3 (Codd SR3), 1.5.1 (Dijkstra SR1), 1.6 M1 (Evans)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.Person.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.AbstractPersonRepositoryIntegrationTests.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.PersonRepository.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

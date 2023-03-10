@@ -1,0 +1,103 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATAMONGO">
+	<bug id="1" master="469" duplicate="481" opendate="2012-06-25 12:57:40" fixdate="2012-08-31 01:39:48" resolution="Fixed">
+		<buginformation>
+			<summary>Query creation from method names using AND criteria does not work anymore After upgrading to 1.0.2 IsTrue does not work properly in query method</summary>
+			<description>When migrating from 1.0.1 to 1.0.2, one of my test failed.
+
+
+
+
+
+
+@Test
+
+
+
+
+public void testFindByPseudoAndPassword_wrongPseudo() {
+
+
+
+
+    Member member = new Member("pseudo");
+
+
+
+
+    member.setPassword("password");
+
+
+
+
+
+
+
+
+
+    memberRepository.save(member);
+
+
+
+
+
+
+
+
+
+    Member findMember = memberRepository.findByPseudoAndPassword("wrong-pseudo", "password");
+
+
+
+
+    assertThat(findMember).isNull(); // FAILS HERE because the query retrieve the member with password equals "password" and miss the pseudo value
+
+
+
+
+}
+
+
+
+
+
+
+and the log is : 
+
+
+
+
+
+ DEBUG [MongoTemplate] findOne using query: { "password" : "password" , "$and" : [ { "password" : "password"}]} 
+
+
+
+
+
+
+I saw that in https://github.com/SpringSource/spring-data-mongodb/blob/1.0.x/spring-data-mongodb/src/test/java/org/springframework/data/mongodb/repository/query/MongoQueryCreatorUnitTests.java there is no assertion for the test #createsQueryCorrectly which test the Criteria AND case.
+May be it is due to https://github.com/SpringSource/spring-data-mongodb/commit/c8bb46ffb3b2ffa5456417a199ffa0d3b977bf0b For such created query:
+Account findByUsernameAndConfirmedIsTrue(String username);
+I see following in logs:
+Created query Query: { "confirmed" : true , "$and" : [ 
+{ "confirmed" : true}
+]}, Fields: null, Sort: null
+And the query does not return proper value.
+In previous release (1.0.1.RELEASE) the same code produces valid query:
+Created query 
+{ "username" : "me" , "confirmed" : true}</description>
+			<version>1.0.2</version>
+			<fixedVersion>1.0.3, 1.1 M2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreator.java</file>
+			<file type="M">org.springframework.data.mongodb.repository.query.MongoQueryCreatorUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">481</link>
+			<link type="Relate" description="relates to">547</link>
+			<link type="Duplicate" description="duplicates">469</link>
+		</links>
+	</bug>
+</bugrepository>

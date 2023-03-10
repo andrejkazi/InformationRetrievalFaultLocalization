@@ -1,0 +1,247 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="329" opendate="2012-05-28 12:11:59" fixdate="2012-05-28 13:43:31" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.writeLines uses unbuffered IO</summary>
+			<description>FileUtils.writeLines looks like next:
+ out = openOutputStream(file, append);
+ IOUtils.writeLines(lines, lineEnding, out, encoding);
+openOutputStream opens plain FileOutputStream without any buffering and IOUtils.writeLines does not add abyt buffering. This means each line require 2 write syscalls (one for the line and one for line separator). This makes call very slow, especially for short lines</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="331" opendate="2012-06-01 04:20:09" fixdate="2012-06-05 14:48:40" resolution="Fixed">
+		<buginformation>
+			<summary>BOMInputStream wrongly detects UTF-32LE_BOM files as UTF-16LE_BOM files in method getBOM()</summary>
+			<description>Hi,
+The BOMInputStream works great for most UTF encoded files when detecting Byte Order Marks. However, if a file is UTF-32LE encoded with BOM the class takes it as UTF-16LE instead. This is not expected behavior.
+The problem comes from method getBOM(). And the first two bytes for UTF-16LE and UTF-32LE are the same, which might be the root cause of the problem.
+The following lists the bytes for UTF encodings for reference. The content is a BOM followed by letter &amp;amp;apos;t&amp;amp;apos;.
+
+
+Encoding
+Byte 1
+Byte 2
+Byte 3
+Byte 4
+
+
+
+
+
+
+UTF8
+EF
+BB
+BF
+74
+
+
+
+
+
+
+UTF16-LE
+FF
+FE
+74
+00
+
+
+
+
+
+
+UTF16-BE
+FE
+FF
+00
+74
+
+
+
+
+
+
+UTF32-LE
+FF
+FE
+00
+00
+74
+00
+00
+00
+
+
+UTF32-BE
+00
+00
+FE
+FF
+00
+00
+00
+74
+
+
+I personally used the following code to work around this problem at the moment. Hope it helps.
+
+
+	private void detectBOM(InputStream in) throws IOException{
+		List&amp;lt;ByteOrderMark&amp;gt; all=availableBOMs();
+		int max=0;
+        for (ByteOrderMark bom : all) {
+            max = Math.max(max, bom.length());
+        }
+		byte[] firstBytes=new byte[max];
+		for (int i = 0; i &amp;lt; max; i++) {
+			firstBytes[i]=(byte) in.read();
+			System.out.print(Integer.toHexString(firstBytes[i] &amp;amp; 0xff).toUpperCase()+" ");
+		}
+		
+		boolean found=false;
+		for (int j = max; j &amp;gt;1; j--) {
+			byte[] _copy=Arrays.copyOf(firstBytes, j);
+			for (ByteOrderMark mark : all) {
+				found=Arrays.equals(_copy, mark.getBytes());
+				if (found) {
+					System.out.println("\nBOM is: "+mark.getCharsetName());
+					break;
+				}
+			}
+			if (found) break;
+		}
+	}
+	
+	private static List&amp;lt;ByteOrderMark&amp;gt; availableBOMs(){
+		List&amp;lt;ByteOrderMark&amp;gt; all=new ArrayList&amp;lt;ByteOrderMark&amp;gt;();
+		all.add(ByteOrderMark.UTF_8);
+		all.add(ByteOrderMark.UTF_16BE);
+		all.add(ByteOrderMark.UTF_16LE);
+		all.add(ByteOrderMark.UTF_32BE);
+		all.add(ByteOrderMark.UTF_32LE);
+		return all;
+	}
+
+</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.compatibility.XmlStreamReaderUtilitiesCompatibilityTest.java</file>
+			<file type="M">org.apache.commons.io.input.BOMInputStream.java</file>
+			<file type="M">org.apache.commons.io.input.XmlStreamReaderUtilitiesTest.java</file>
+			<file type="M">org.apache.commons.io.input.XmlStreamReaderTest.java</file>
+			<file type="M">org.apache.commons.io.input.XmlStreamReader.java</file>
+			<file type="M">org.apache.commons.io.input.compatibility.XmlStreamReader.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="336" opendate="2012-06-12 20:27:11" fixdate="2012-06-12 20:39:51" resolution="Fixed">
+		<buginformation>
+			<summary>Yottabyte (YB) incorrectly defined in FileUtils</summary>
+			<description>In FileUtils, a yottabyte is currently defined as follows:
+public static final BigInteger ONE_YB = ONE_ZB.multiply(BigInteger.valueOf(ONE_EB));
+I believe this should be:
+public static final BigInteger ONE_YB = ONE_ZB.multiply(BigInteger.valueOf(ONE_KB));</description>
+			<version>2.3</version>
+			<fixedVersion>2.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="355" opendate="2012-10-31 16:25:24" fixdate="2013-04-16 20:51:05" resolution="Fixed">
+		<buginformation>
+			<summary>IOUtils copyLarge() and skip() methods are performance hogs</summary>
+			<description>IOUtils.skip(InputStream, long) and IOUtils.skip(Reader, long) have the worst possible performance as they always use read() on the input instead of using skip(). In many cases, using skip() from a subclass of InputStream is much faster than read(), as the skip() can be implemented via a disk seek.
+The IOUtils.skip() methods are also used in the copyLarge() methods that involve a skip.
+Case in point: I have observed this performance degradation with Java 7 on Windows 7. A series of consecutive copyLarge() invocations on a large file on disk that involved skips changed my performance from 30 secs as my baseline to 10 minutes after starting to use IOUtils.copyLarge().</description>
+			<version>2.3</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="323" opendate="2012-04-16 13:09:58" fixdate="2013-04-16 22:09:24" resolution="Fixed">
+		<buginformation>
+			<summary>What should happen in FileUtils.sizeOf[Directory] when an overflow takes place?</summary>
+			<description>FileUtils.sizeOf[Directory] adds longs. What should happen when an overflow happens?</description>
+			<version>2.3</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="354" opendate="2012-10-27 00:08:26" fixdate="2013-05-16 13:33:57" resolution="Fixed">
+		<buginformation>
+			<summary>Commons IO Tailer does not respect UTF-8 Charset</summary>
+			<description>I just realized there is a defect in the source code of "org.apache.commons.io.input.Tailer.java". Basically, the current implementation does not work for multi-byte encoded files. See the following snippet,
+448    private long readLines(RandomAccessFile reader) throws IOException {
+449        StringBuilder sb = new StringBuilder();
+450
+451        long pos = reader.getFilePointer();
+452        long rePos = pos; // position to re-read
+453
+454        int num;
+455        boolean seenCR = false;
+456        while (run &amp;amp;&amp;amp; ((num = reader.read(inbuf)) != -1)) {
+457            for (int i = 0; i &amp;lt; num; i++) {
+458                byte ch = inbuf[i];
+459                switch (ch) {
+460                case &amp;amp;apos;\n&amp;amp;apos;:
+461                    seenCR = false; // swallow CR before LF
+462                    listener.handle(sb.toString());
+463                    sb.setLength(0);
+464                    rePos = pos + i + 1;
+465                    break;
+466                case &amp;amp;apos;\r&amp;amp;apos;:
+467                    if (seenCR) 
+{
+468                        sb.append(&amp;amp;apos;\r&amp;amp;apos;);
+469                    }
+470                    seenCR = true;
+471                    break;
+472                default:
+473                    if (seenCR) 
+{
+474                        seenCR = false; // swallow final CR
+475                        listener.handle(sb.toString());
+476                        sb.setLength(0);
+477                        rePos = pos + i + 1;
+478                    }
+479                    sb.append((char) ch); // add character, not its ascii value
+480                }
+481            }
+482
+483            pos = reader.getFilePointer();
+484        }
+485
+486        reader.seek(rePos); // Ensure we can re-read if necessary
+487        return rePos;
+488    }
+At line 479, the conversion of byte to char type breaks the encoding.</description>
+			<version>2.3</version>
+			<fixedVersion>2.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.input.TailerTest.java</file>
+			<file type="M">org.apache.commons.io.input.Tailer.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">377</link>
+		</links>
+	</bug>
+</bugrepository>

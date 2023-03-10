@@ -1,0 +1,1746 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="DATACMNS">
+	<bug id="1" master="117" duplicate="238" opendate="2011-12-21 07:33:22" fixdate="2013-02-12 08:42:47" resolution="Fixed">
+		<buginformation>
+			<summary>Add HandlerMethodArgumentResolver alternative to the PageableArgumentResolver Re-write PageableArgumentResolver (WebArgumentResolver) as HandlerMethodArgumentResolver</summary>
+			<description>It is recommended to re-implement WebArgumentResolver types as HandlerMethodArgumentResolver in Spring 3.1. Although a WebArgumentResolver is adapted transparently to the new contract, as the javadoc for AbstractWebArgumentResolverAdapter indicates, a HandlerMethodArgumentResolver.supportsParameter(MethodParameter) method can only be implemented by actually calling WebArgumentResolver.resolve() and checking if the return value is UNRESOLVED. If an exception occurs during that check, it isn&amp;amp;apos;t clear if the failure is because the parameter can not be supported or whether there was some other real failure. As a result the exception has to be absorbed and other resolvers given a chance instead. To align better with Spring&amp;amp;apos;s transition from WebArgumentResolver to HandlerMethodArgumentResolver (Spring 3.1) it&amp;amp;apos;s recommended to re-write existing WebArgumentResolvers.
+Now a ServletWebArgumentResolverAdapter is needed to add the Pageable argument rsolver. In Java config:
+
+
+
+
+
+
+@Override
+
+
+
+
+public void addArgumentResolvers(List&amp;lt;HandlerMethodArgumentResolver&amp;gt; argumentResolvers) {
+
+
+
+
+	argumentResolvers.add(new ServletWebArgumentResolverAdapter(new PageableArgumentResolver()));
+
+
+
+
+}
+
+
+
+
+
+
+Quoted from this ServletWebArgumentResolverAdapter javadocs:
+Note: This class is provided for backwards compatibility. However it is recommended to re-write a WebArgumentResolver as HandlerMethodArgumentResolver. For more details see javadoc of AbstractWebArgumentResolverAdapter.</description>
+			<version>1.2 RC1</version>
+			<fixedVersion>1.6 M1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableDefaults.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="D">org.springframework.data.web.PageableHandlerArgumentResolverUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">238</link>
+			<link type="Relate" description="relates to">330</link>
+			<link type="Duplicate" description="duplicates">117</link>
+		</links>
+	</bug>
+	<bug id="2" master="139" duplicate="158" opendate="2012-03-26 14:28:55" fixdate="2012-04-23 10:11:01" resolution="Fixed">
+		<buginformation>
+			<summary>StackOverflowError from infinite recursion in PropertyPath.create:326 Stack overflow caused by digits in unknown property names</summary>
+			<description>Using the mapper from Spring Data MongoDB, I get a stack overflow exception when I make a call to findOne using a simple .is() criteria. I tested with spring-data-commons-core 1.2.1.RELEASE and 1.2.2.BUILD-SNAPSHOT.
+I was able to reproduce the error using data common&amp;amp;apos;s PropertyPath stand-alone; putting following line in a test causes the same exception:
+
+
+
+
+
+
+PropertyPath pp = PropertyPath.from("_id", CardInteraction.class);
+
+
+
+
+
+
+where CardInteraction is defined with the @Id annotation:
+
+
+
+
+
+
+@Document
+
+
+
+
+public class CardInteraction {
+
+
+
+
+@Id private String interactionId;
+
+
+
+
+...
+
+
+
+
+}
+
+
+
+
+
+
+The infinite recursion converges with the arguments PropertyPath.create:326(source="_", type=..., addTail="id") When org.springframework.data.mapping.PropertyPath tries to find a non-existent property that contains any digit (e.g. when a finder method with a mistyped property name and a digit has been added to repository interface) PropertyPath.create() method goes into a long recursion which causes StackOverflowError.
+Removing digits from the finder method causes IllegalArgumentException with a helpful error message (property not found etc.) as expected.
+Attaching stack-trace and a sample test project that uses a JPA repository.</description>
+			<version>1.2.1</version>
+			<fixedVersion>1.3 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.PropertyPath.java</file>
+			<file type="M">org.springframework.data.mapping.PropertyUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">158</link>
+			<link type="Relate" description="relates to">179</link>
+			<link type="Duplicate" description="duplicates">139</link>
+		</links>
+	</bug>
+	<bug id="3" master="789" duplicate="906" opendate="2015-11-23 16:13:06" fixdate="2016-08-31 11:58:06" resolution="Fixed">
+		<buginformation>
+			<summary>Fix typo in JavaDoc of Page Typo in Javadoc of Page.getTotalPages()</summary>
+			<description> In the javadoc of org.springframework.data.domain.Page, method getTotalPages, the word total is not written correctly in @return. Thank&amp;amp;apos;s </description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.11.2 (Gosling SR2), 1.12 M1 (Hopper), 1.10.3 (Fowler SR3)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.domain.Page.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">906</link>
+			<link type="Duplicate" description="duplicates">789</link>
+		</links>
+	</bug>
+	<bug id="4" master="154" duplicate="160" opendate="2012-04-17 06:02:43" fixdate="2012-04-26 09:13:19" resolution="Fixed">
+		<buginformation>
+			<summary>Overwriting of delete(T entity) saveAndFlush(T entity); does not work anymore Regression of Repository instances with only delete* methods</summary>
+			<description>During initialization of the following repository an exception occurs for these two methods.
+
+
+
+
+
+
+public interface UserRepository extends JpaRepository&amp;lt;User, Long&amp;gt;,
+
+
+
+
+		PagingAndSortingRepository&amp;lt;User, Long&amp;gt; {
+
+
+
+
+
+
+
+
+
+	public User saveAndFlush(User entity);
+
+
+
+
+
+
+
+
+
+	public void delete(User entity);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;userRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract entities.User repositories.UserRepository.saveAndFlush(entities.User)!
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1442)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:248)
+
+
+
+
+        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:848)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:790)
+
+
+
+
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:707)
+
+
+
+
+        at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:478)
+
+
+
+
+        ... 41 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract entities.User repositories.UserRepository.saveAndFlush(entities.User)!
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:95)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:164)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:269)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:142)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:114)
+
+
+
+
+        at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:38)
+
+
+
+
+        at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+        ... 49 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property save found for type class entities.User
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:319)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:301)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:265)
+
+
+
+
+        at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+
+
+
+
+        at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:70)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+        at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:68)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:57)
+
+
+
+
+        at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:93)
+
+
+
+
+        ... 56 more
+
+
+
+
+
+
+
+
+
+
+
+The same code works with snapshot before weekend (13.04.2012).
+So  A repository which only defines delete methods is not created by the Spring Data code with the exception:
+
+
+
+
+
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;treeEntityDeleteRepository&amp;amp;apos;: FactoryBean threw exception on object creation; nested exception is java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract void example.data.DeleteOnlyRepository.delete(java.lang.Object)!
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:149)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.getObjectFromFactoryBean(FactoryBeanRegistrySupport.java:102)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getObjectForBeanInstance(AbstractBeanFactory.java:1441)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:305)
+
+
+
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:193)
+
+
+
+
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:585)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:913)
+
+
+
+
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:464)
+
+
+
+
+	at org.springframework.context.support.ClassPathXmlApplicationContext.&amp;lt;init&amp;gt;(ClassPathXmlApplicationContext.java:139)
+
+
+
+
+	at org.springframework.context.support.ClassPathXmlApplicationContext.&amp;lt;init&amp;gt;(ClassPathXmlApplicationContext.java:83)
+
+
+
+
+	at example.data.RepositoryTest.testExample(RepositoryTest.java:10)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+
+
+
+
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+
+
+
+
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+
+
+
+	at java.lang.reflect.Method.invoke(Method.java:601)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+
+
+
+
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+
+
+
+
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+
+
+
+
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:20)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runNotIgnored(BlockJUnit4ClassRunner.java:79)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:71)
+
+
+
+
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:49)
+
+
+
+
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)
+
+
+
+
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)
+
+
+
+
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)
+
+
+
+
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)
+
+
+
+
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)
+
+
+
+
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+
+
+
+
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+
+
+
+
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: Could not create query metamodel for method public abstract void example.data.DeleteOnlyRepository.delete(java.lang.Object)!
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:95)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateIfNotFoundQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:164)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$AbstractQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:71)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$QueryExecutorMethodInterceptor.&amp;lt;init&amp;gt;(RepositoryFactorySupport.java:269)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport.getRepository(RepositoryFactorySupport.java:142)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:114)
+
+
+
+
+	at org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport.getObject(RepositoryFactoryBeanSupport.java:38)
+
+
+
+
+	at org.springframework.beans.factory.support.FactoryBeanRegistrySupport.doGetObjectFromFactoryBean(FactoryBeanRegistrySupport.java:142)
+
+
+
+
+	... 33 more
+
+
+
+
+Caused by: java.lang.IllegalArgumentException: No property delete found for type class example.data.TreeEntity
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:73)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.&amp;lt;init&amp;gt;(PropertyPath.java:92)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:319)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.create(PropertyPath.java:301)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:265)
+
+
+
+
+	at org.springframework.data.mapping.PropertyPath.from(PropertyPath.java:239)
+
+
+
+
+	at org.springframework.data.repository.query.parser.Part.&amp;lt;init&amp;gt;(Part.java:70)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$OrPart.&amp;lt;init&amp;gt;(PartTree.java:180)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.buildTree(PartTree.java:260)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree$Predicate.&amp;lt;init&amp;gt;(PartTree.java:240)
+
+
+
+
+	at org.springframework.data.repository.query.parser.PartTree.&amp;lt;init&amp;gt;(PartTree.java:68)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.PartTreeJpaQuery.&amp;lt;init&amp;gt;(PartTreeJpaQuery.java:57)
+
+
+
+
+	at org.springframework.data.jpa.repository.query.JpaQueryLookupStrategy$CreateQueryLookupStrategy.resolveQuery(JpaQueryLookupStrategy.java:93)
+
+
+
+
+	... 40 more
+
+
+
+
+
+
+caused by a repository which extends:
+
+
+
+
+
+
+public interface DeleteOnlyRepository&amp;lt;T, ID extends Serializable&amp;gt; extends Repository&amp;lt;T, ID&amp;gt;{
+
+
+
+
+
+
+
+
+
+    public void delete(ID paramID);
+
+
+
+
+
+
+
+
+
+    public void delete(T paramT);
+
+
+
+
+
+
+
+
+
+    public void delete(Iterable&amp;lt;? extends T&amp;gt; paramIterable);
+
+
+
+
+
+
+
+
+
+    public void deleteAll();
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+This appears to be a regression following the upgrade to Spring Data Commons 1.3.0 RC1, as it&amp;amp;apos;s not present when using Spring Data JPA 1.1.0.RC1, only when using the build snapshots. I realise that the bug is most likely in the data commons package, but I wasn&amp;amp;apos;t sure how to reproduce it without using the JPA component, so I&amp;amp;apos;m reporting here for the mo - hope that&amp;amp;apos;s OK.
+I attach a sample Maven project to reproduce the issue
+The reason for wanting such a repository is to prevent clients from performing CRU operations on a child object without the use of the parent, but I do need to offer the ability to delete it.</description>
+			<version>1.3 RC1</version>
+			<fixedVersion>1.3 RC2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformationUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.core.support.DefaultRepositoryInformation.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">160</link>
+			<link type="Duplicate" description="duplicates">154</link>
+		</links>
+	</bug>
+	<bug id="5" master="951" duplicate="848" opendate="2016-04-21 10:56:08" fixdate="2016-12-05 15:35:07" resolution="Fixed">
+		<buginformation>
+			<summary>Add Converters for JSR-310 Duration and Period Support JSR-310 Duration and Period (to and from String)</summary>
+			<description> The current Jsr310Converters.java doesn&amp;amp;apos;t support convertion to and from String representations of java.time.Duration and java.time.Period.
+MongoTemplate should understand how to deserialize for instance "PT3M" to a java.time.Duration (by Duration#parse</description>
+			<version>1.12.1 (Hopper SR1)</version>
+			<fixedVersion>1.13 RC1 (Ingalls), 2.0 M2 (Kay)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.Jsr310Converters.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310ConvertersUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">848</link>
+			<link type="Duplicate" description="duplicates">951</link>
+		</links>
+	</bug>
+	<bug id="6" master="883" duplicate="882" opendate="2016-07-15 07:42:08" fixdate="2016-07-25 18:13:29" resolution="Fixed">
+		<buginformation>
+			<summary>NullPointerException for Querydsl bindings referring to collection element attributes Allow to filter value inside list of object via query URL</summary>
+			<description>Assume you have a domain model like this:
+
+
+
+
+
+
+class User {
+
+
+
+
+  List&amp;lt;Address&amp;gt; addresses;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+class Address {
+
+
+
+
+  String street;
+
+
+
+
+}
+
+
+
+
+
+
+Referring to the property addresses.street via Querydsl-backed web requests doesn&amp;amp;apos;t work as we&amp;amp;apos;re inspecting the properties in the Querydsl generated classes, and the ListPath generated for addresses needs a dedicated any() lookup to get back to the EntityPath for the element predicates.
+Manually specifying a binding, doesn&amp;amp;apos;t help either as the translation into a PropertyPath fails, as we currently rely on the toString() representation of the PathMetadata, which in case of the usage of any() returns any(user.addresses).street.
+We need to fix the to-dot-path translation in that step and should add the implicit call to any() for derived path expressions in case we encounter a Path that points to a collection. Create a support for query inside list of object, see issue in this link.
+I&amp;amp;apos;m trying to implement by myself, see code here but I also hit a roadblock with issue of querydsl itself (here issue).
+If you think that the issue of querydsl is not important, I can improve code quality and then create a pull request to your repo.
+I think my code quality is not as good as yours, please give me an advice.</description>
+			<version>1.11.4 (Gosling SR4)</version>
+			<fixedVersion>1.13 M1 (Ingalls), 1.12.3 (Hopper SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">882</link>
+			<link type="Duplicate" description="duplicates">883</link>
+		</links>
+	</bug>
+	<bug id="7" master="773" duplicate="772" opendate="2015-09-25 04:43:18" fixdate="2015-10-05 16:46:04" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for persisting ZoneId instances out of the box Add converter for ZoneId to String and vice versa</summary>
+			<description>The JSR-310 mapping support can read a simple string (e.g., "US/Central") into a ZoneId field, but when it&amp;amp;apos;s saved, it&amp;amp;apos;s saved as a complex serialized object, with _class: "java.time.ZoneRegion" and all the internal state.
+However, the mapper can&amp;amp;apos;t read this saved object, presumably because of the lack of a cooperative constructor; the exception message is
+
+
+
+
+
+
+org.springframework.data.mapping.model.MappingException: No property null found on entity class java.time.ZoneRegion to bind constructor parameter to!
+
+
+
+
+
+
+I suggest that the ZoneId should be saved as the simple string identifier. </description>
+			<version>1.11 GA (Gosling)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.convert.ThreeTenBackPortConvertersUnitTests.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310Converters.java</file>
+			<file type="M">org.springframework.data.convert.ThreeTenBackPortConverters.java</file>
+			<file type="M">org.springframework.data.convert.Jsr310ConvertersUnitTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">772</link>
+			<link type="Duplicate" description="duplicates">773</link>
+		</links>
+	</bug>
+	<bug id="8" master="304" duplicate="359" opendate="2013-03-27 03:33:58" fixdate="2013-08-21 23:41:04" resolution="Fixed">
+		<buginformation>
+			<summary>Misleading documentation of page parameter resolved by PageableArgumentResolver Incorrect deprecation message in PageableArgumentResolver</summary>
+			<description>PageableArgumentResolver is not resolving page parameter. To use pagination, you will have to use page.page
+So either table 1.1. needs an update or PageableArgumentResolver has to be changed to use the documented parameter
+ PageableArgumentResolver is deprecated in 1.6.RC1 to favor PageableWebHandlerArgumentResolver. However the class PageableWebHandlerArgumentResolver does not exist. I believe the new class to be used now should be PageableHandlerMethodArgumentResolver i.e. without Web after Pageable.</description>
+			<version>1.6 RC1</version>
+			<fixedVersion>1.6 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableArgumentResolver.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">359</link>
+			<link type="Duplicate" description="duplicates">304</link>
+		</links>
+	</bug>
+	<bug id="9" master="670" duplicate="702" opendate="2015-03-30 06:01:54" fixdate="2015-11-17 13:12:10" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for Querydsl 4 QueryDSL starting from version 4.0.0 is not compatible due to package rename</summary>
+			<description> Packages of QueryDSL have been renamed from com.mysema.query.* to com.querydsl.* . QueryDslPredicateExecutor depends on the old package names, which makes latest QueryDSL unusable with Spring Data.</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.EntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslPredicateExecutor.java</file>
+			<file type="M">org.springframework.data.querydsl.QSortUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.web.config.QuerydslWebConfiguration.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.SingleValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequestUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequest.java</file>
+			<file type="M">org.springframework.data.querydsl.QSort.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapterUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactory.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.MultiValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBinderCustomizer.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBindingUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.Address.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">119</link>
+			<link type="Depend" description="is depended on by">708</link>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="is duplicated by">702</link>
+			<link type="Duplicate" description="is duplicated by">765</link>
+			<link type="Duplicate" description="is duplicated by">1238</link>
+			<link type="Duplicate" description="duplicates">670</link>
+		</links>
+	</bug>
+	<bug id="10" master="670" duplicate="705" opendate="2015-03-30 06:01:54" fixdate="2015-11-17 13:12:10" resolution="Fixed">
+		<buginformation>
+			<summary>Add support for Querydsl 4 Port to querydsl 4.0.0</summary>
+			<description> Port to querydsl 4.0.0</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.12 M1 (Hopper)</fixedVersion>
+			<type>New Feature</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.SimpleEntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslUtils.java</file>
+			<file type="M">org.springframework.data.querydsl.User.java</file>
+			<file type="M">org.springframework.data.querydsl.EntityPathResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactoryUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QueryDslPredicateExecutor.java</file>
+			<file type="M">org.springframework.data.querydsl.QSortUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilder.java</file>
+			<file type="M">org.springframework.data.web.config.QuerydslWebConfiguration.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.SingleValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslPredicateBuilderUnitTests.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequestUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindings.java</file>
+			<file type="M">org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver.java</file>
+			<file type="M">org.springframework.data.querydsl.QPageRequest.java</file>
+			<file type="M">org.springframework.data.querydsl.QSort.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter.java</file>
+			<file type="M">org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapterUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBindingsFactory.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.MultiValueBinding.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslBinderCustomizer.java</file>
+			<file type="M">org.springframework.data.querydsl.binding.QuerydslDefaultBindingUnitTests.java</file>
+			<file type="M">org.springframework.data.querydsl.Address.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depend" description="is depended on by">119</link>
+			<link type="Depend" description="is depended on by">708</link>
+			<link type="Duplicate" description="is duplicated by">705</link>
+			<link type="Duplicate" description="is duplicated by">702</link>
+			<link type="Duplicate" description="is duplicated by">765</link>
+			<link type="Duplicate" description="is duplicated by">1238</link>
+			<link type="Duplicate" description="duplicates">670</link>
+		</links>
+	</bug>
+	<bug id="11" master="683" duplicate="711" opendate="2015-04-13 05:31:25" fixdate="2015-06-14 02:28:40" resolution="Fixed">
+		<buginformation>
+			<summary>Enabling Spring Data web support breaks @ModelAttribute binding in Spring MVC DomainClassConverter triggered unnecessarily</summary>
+			<description>Given following Java config class
+
+
+
+
+
+
+package be.vdab.web;
+
+
+
+
+
+
+
+
+
+import org.springframework.context.annotation.ComponentScan;
+
+
+
+
+import org.springframework.context.annotation.Configuration;
+
+
+
+
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+
+
+
+
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+
+
+
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+
+
+
+
+
+
+
+
+// enkele imports
+
+
+
+
+@Configuration
+
+
+
+
+@EnableWebMvc
+
+
+
+
+@EnableSpringDataWebSupport
+
+
+
+
+@ComponentScan
+
+
+
+
+public class CreateControllerBeans extends WebMvcConfigurerAdapter {
+
+
+
+
+}
+
+
+
+
+
+
+, following Controller class
+
+
+
+
+
+
+package be.vdab.web;
+
+
+
+
+
+
+
+
+
+import org.springframework.stereotype.Controller;
+
+
+
+
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+
+
+
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+
+
+import org.springframework.web.bind.annotation.RequestMethod;
+
+
+
+
+import org.springframework.web.servlet.ModelAndView;
+
+
+
+
+
+
+
+
+
+import be.vdab.entities.Person;
+
+
+
+
+
+
+
+
+
+@Controller
+
+
+
+
+@RequestMapping(value = "/")
+
+
+
+
+public class PersonController {
+
+
+
+
+	private static final String TOEVOEGEN_VIEW = "/WEB-INF/JSP/index.jsp";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	@RequestMapping(method=RequestMethod.GET)
+
+
+
+
+	ModelAndView get() {
+
+
+
+
+		return new ModelAndView(TOEVOEGEN_VIEW).addObject(new Person());
+
+
+
+
+	}
+
+
+
+
+	
+
+
+
+
+	@RequestMapping(method = RequestMethod.POST)
+
+
+
+
+	String post(@ModelAttribute Person person) {
+
+
+
+
+	  if (person == null) {
+
+
+
+
+		  throw new IllegalArgumentException("person IS NULL");
+
+
+
+
+	  }
+
+
+
+
+	  return "redirect:/";
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+and following JSP
+
+
+
+
+
+
+&amp;lt;%@page contentType="text/html" pageEncoding="UTF-8" session="false"%&amp;gt;
+
+
+
+
+&amp;lt;%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %&amp;gt;
+
+
+
+
+&amp;lt;!doctype html&amp;gt;
+
+
+
+
+&amp;lt;html lang="nl"&amp;gt;
+
+
+
+
+&amp;lt;head&amp;gt;
+
+
+
+
+&amp;lt;title&amp;gt;Add person&amp;lt;/title&amp;gt;
+
+
+
+
+&amp;lt;/head&amp;gt;
+
+
+
+
+&amp;lt;body&amp;gt;
+
+
+
+
+&amp;lt;form:form action="" method="post" commandName="person"&amp;gt;
+
+
+
+
+&amp;lt;form:label path="name"&amp;gt;Name:&amp;lt;/form:label&amp;gt;
+
+
+
+
+&amp;lt;form:input path="name" autofocus="true"/&amp;gt;
+
+
+
+
+&amp;lt;input type="submit"&amp;gt;
+
+
+
+
+&amp;lt;/form:form&amp;gt;
+
+
+
+
+&amp;lt;/body&amp;gt;
+
+
+
+
+&amp;lt;/html&amp;gt;
+
+
+
+
+
+
+the method post in PersonController throws the InvalidArgumentException because the person parameter is null.
+Observation 1:
+This worked up to and including spring-data-jpa 1.7.2.RELEASE
+Observation 2:
+The bug disappears when @EnableSpringDataWebSupport is put in comment in CreateControllerBeans.java
+Observation 3:
+The bug disappears when @ModelAttribute is put in comment in PersonController.java
+You can clone a project that shows the bug from
+https://github.com/desmethans/springDataJpaError.git DomainClassConverter wrongfully triggers on form submits. I have a controller, which accepts a filled out Entity as a form 
+@RequestMapping(value="entity/edit", method=RequestMethod.POST)
+public String modifyEntity(@Validated(Edit.class) Entity entity){
+MVC builds a Detached Entity, and does a check if a conversion via the ConversionService must take place. The conversion goes from com.mycompany.myproject.domain.Entity to @Validated com.mycompany.myproject.domain.Entity. It goes through every registered converter to see if someone wishes to perform this conversion. So far so good.
+Now DomainClassConverter.ToIdConverter checks if it can convert Entity to @Validated Entity. It agrees that it can not, however it then reduces the source entity to its ID, and begins a brand new search by the converters to see if Entity&amp;amp;apos;s String id can be converted to Entity. Of course it finds  the DomainClassConverter.ToEntityConverter. 
+Thus the DomainClassConvert.ToIdConverter is found as a legitimate converter for Entity-&amp;gt;@Validated Entity. When it is asked to do this convertion, it doesn&amp;amp;apos;t match them as equals, being as they have different annotations, and actually invokes DomainClassConvert.ToEntityConverter which does a callback to the database etc. etc. etc.
+There are of course two problems with this. Most importantly, it discards any of the changes. Secondly, since my Entity has a collection, and the DomainClassConverter loads the Entity in its own transaction, which is commited and closed by the time the Controller is called, any work on the collection results in a org.hibernate.LazyInitializationException. 
+Basically, I am now disabling DomainClassConverter, until this is fixed. I think the way to fix it, is to do more intelligent TypeDescriptor comparisons in the convert method. Alternatively, some way to disable DomainClassConverter from activating on a specific controller, or just only focusing on IdToEntity, and never EntityToId</description>
+			<version>1.10 GA (Fowler)</version>
+			<fixedVersion>1.11 M1 (Gosling), 1.10.1 (Fowler SR1)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverterUnitTests.java</file>
+			<file type="M">org.springframework.data.repository.support.DomainClassConverter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">711</link>
+			<link type="Duplicate" description="duplicates">683</link>
+		</links>
+	</bug>
+	<bug id="12" master="271" duplicate="272" opendate="2013-01-28 05:10:37" fixdate="2013-01-28 07:28:43" resolution="Fixed">
+		<buginformation>
+			<summary>AnnotationBasedPersistentProperty should cache annotation lookups Cache Annotations in AnnotationBasedPersistentProperty</summary>
+			<description> Looking up annotations every time from Java reflection is prohibitively expensive.
+So please cache them.
+Read annotations from getters, setters and the field and store them in a map with the same precendence rules as findAnnotation(type)
+use that cache in isAnnotationPresent() and findAnnotation().
+Also provide a getAnnotations() method that returns all annotations on that property. This collection would be used for Bean-Validation (JSR-303) and other methods that have to check meta-annotations.</description>
+			<version>1.4 Final</version>
+			<fixedVersion>1.5 Final</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.mapping.model.AnnotationBasedPersistentProperty.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">272</link>
+			<link type="Duplicate" description="duplicates">271</link>
+		</links>
+	</bug>
+	<bug id="13" master="69" duplicate="70" opendate="2011-08-30 02:50:32" fixdate="2011-09-07 03:13:57" resolution="Fixed">
+		<buginformation>
+			<summary>Performance issues with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional RepositoryInterfaceAwareBeanPostProcessor predicting a wrong bean type</summary>
+			<description>There is a major performance issue with RepositoryInterfaceAwareBeanPostProcessor when using @Transactional support in application&amp;amp;apos;s service classes. The problem is that the method RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) is relatively slow due to a usage of ClassUtils.resolveClassName(...). The actual problem is that the method in question is called whenever someone calls BeanFactoryUtils.beansOfTypeIncludingAncestors(...) and that someone happens to be TransactionAspectUtils.getTransactionManager(...) method, which is called before a call of any method annotated with @Transactional annotation. These calls happens because RepositoryInterfaceAwareBeanPostProcessor implements SmartInstantiationAwareBeanPostProcessor.
+Can RepositoryInterfaceAwareBeanPostProcessor.predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) method be optimized? I have two repositories
+
+
+
+
+
+
+
+
+
+
+
+public interface UserRepository extends MongoRepository&amp;lt;User, ObjectId&amp;gt; {
+
+
+
+
+    public User findByUsername(String username);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public interface FeedbackRepository extends MongoRepository&amp;lt;Feedback, ObjectId&amp;gt; {
+
+
+
+
+    public Feedback findById(ObjectId id);
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+which I inject into a service class
+
+
+
+
+
+
+@Service("myService")
+
+
+
+
+public class MyService  {
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private FeedbackRepository feedbackRepository;
+
+
+
+
+
+
+
+
+
+    @Inject
+
+
+
+
+    private UserRepository userRepository;
+
+
+
+
+    ...
+
+
+
+
+}
+
+
+
+
+
+
+My application fails to start throwing 
+"Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No matching bean of type [com.space.repository.mongo.FeedbackRepository]"
+When I debugged further I noticed RepositoryInterfaceAwareBeanPostProcessor.predictBeanType() returning a cached bean type of UserRepository for FeedbackRepository
+
+
+
+
+
+
+RepositoryInterfaceAwareBeanPostProcessor.java
+
+
+
+
+
+
+public Class&amp;lt;?&amp;gt; predictBeanType(Class&amp;lt;?&amp;gt; beanClass, String beanName) {
+
+
+
+
+
+
+
+
+
+		if (null == context || !REPOSITORY_TYPE.isAssignableFrom(beanClass)) {
+
+
+
+
+			return null;
+
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+		BeanDefinition definition = context.getBeanDefinition(beanName);
+
+
+
+
+		PropertyValue value =
+
+
+
+
+				definition.getPropertyValues().getPropertyValue(
+
+
+
+
+						"repositoryInterface");
+
+
+
+
+		
+
+
+
+
+		if (cache.containsKey(beanClass)) {
+
+
+
+
+			return cache.get(beanClass);
+
+
+
+
+		}
+
+
+
+
+		
+
+
+
+
+		Class&amp;lt;?&amp;gt; resolvedBeanClass = getClassForPropertyValue(value);
+
+
+
+
+		cache.put(beanClass, resolvedBeanClass);
+
+
+
+
+
+
+
+
+
+		return resolvedBeanClass;
+
+
+
+
+	}
+
+
+
+
+
+
+In the above code predicting the bean type a cache is being maintained with beanClass as the key.
+For all repository instances  "MongoRepositoryFactoryBean" is the bean class and hence for feedbackRepository bean predictBeanType is picking up a cached userRepository as the type.</description>
+			<version>1.1 Final</version>
+			<fixedVersion>1.2 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.core.support.RepositoryInterfaceAwareBeanPostProcessor.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">70</link>
+			<link type="Duplicate" description="duplicates">69</link>
+		</links>
+	</bug>
+	<bug id="14" master="843" duplicate="690" opendate="2015-05-07 12:31:58" fixdate="2016-05-31 16:33:20" resolution="Fixed">
+		<buginformation>
+			<summary>Raise log level of repositories that get dropped in strict configuration mode to INFO Multi-store silently ignores repository creation failures</summary>
+			<description> Basic use case is presented here
+https://github.com/spring-projects/spring-data-examples/tree/master/multi-store
+In my use case we did not put @Document on mongo annotations. Therefore, when I migrated our application to the latest version of spring boot (hence the latest version of spring data), my repositories were not created in the context.
+It was very hard to guess that this happened as this is notified on a DEBUG level.
+Fyi, we have a @Enable*Repositories which points to separate packages to avoid confusion on repository creation, therefore, it is was not trivial to understand the existence of this "strict" mode.</description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.10.3 (Fowler SR3), 1.11.5 (Gosling SR5), 1.12.2 (Hopper SR2), 1.13 M1 (Ingalls)</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.repository.config.RepositoryConfigurationDelegate.java</file>
+			<file type="M">org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">690</link>
+			<link type="Relate" description="relates to">1413</link>
+			<link type="Duplicate" description="duplicates">843</link>
+		</links>
+	</bug>
+	<bug id="15" master="761" duplicate="799" opendate="2015-09-02 14:08:24" fixdate="2015-12-29 12:41:26" resolution="Fixed">
+		<buginformation>
+			<summary>PageableHandlerMethodArgumentResolver reduces page size by one if on-indexed parameters are used Pageable&amp;apos;s size should not be dependent on 1-based or 0-based paging.</summary>
+			<description> In this controller :
+
+
+
+
+
+
+@RequestMapping("/list")
+
+
+
+
+public String list(Model model , Pageable pageable) {
+
+
+
+
+  logger.info("pageable = {}" , pageable);
+
+
+
+
+  // ... skipped
+
+
+
+
+}
+
+
+
+
+
+
+My goal : I want Spring automatically build this pageable object from page and size parameter of URL , which page starts from 1.
+The solution is here : http://stackoverflow.com/questions/34459658
+First , I feel the API design of `addArgumentResolvers` is problematic . It has to call super.addArgumentResolvers(argumentResolvers) at the end of the method.
+It should be able to designed to just add the resolver to argumentResolvers and make it work.
+And here is the point : resolver.setOneIndexedParameters(true) will also change the meaning of size , it is very counter-intuitive.
+In most people&amp;amp;apos;s intuition , no matter page starts from 1 or 0 , size should not be dependent on that value.
+But when I code : 
+
+
+
+
+
+
+resolver.setMaxPageSize(10);
+
+
+
+
+resolver.setOneIndexedParameters(true);
+
+
+
+
+
+
+And pass ?page=1&amp;amp;size=10 in the URL . The receiving size becomes 9 . It should be fixed.</description>
+			<version>1.10.2 (Fowler SR2)</version>
+			<fixedVersion>1.11.1 (Gosling SR1), 1.12 M1 (Hopper), 1.10.3 (Fowler SR3)</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolverUnitTests.java</file>
+			<file type="M">org.springframework.data.web.PageableHandlerMethodArgumentResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">799</link>
+			<link type="Duplicate" description="duplicates">761</link>
+		</links>
+	</bug>
+</bugrepository>

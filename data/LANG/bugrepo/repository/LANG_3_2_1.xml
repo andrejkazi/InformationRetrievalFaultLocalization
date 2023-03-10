@@ -1,0 +1,201 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="LANG">
+	<bug id="954" opendate="2014-01-19 10:21:56" fixdate="2014-01-24 17:14:01" resolution="Fixed">
+		<buginformation>
+			<summary>uncaught PatternSyntaxException in FastDateFormat on Android</summary>
+			<description>When updating from lang 3.1.0 to 3.2.1 FastDateFormat stopped working on an Android project of mine, throwing uncaught regular expression exceptions for simple formats like "yyyy-MM-dd&amp;amp;apos;T&amp;amp;apos;".
+
+
+Caused by: java.util.regex.PatternSyntaxException: U_ILLEGAL_ARGUMENT_ERROR
+(\p{IsNd}++)\Q-\E(\p{IsNd}++)\Q-\E(\p{IsNd}++)\QT\E
+at java.util.regex.Pattern.compileImpl(Native Method)
+at java.util.regex.Pattern.compile(Pattern.java:400)
+at java.util.regex.Pattern.&amp;lt;init&amp;gt;(Pattern.java:383)
+at java.util.regex.Pattern.compile(Pattern.java:374)
+at org.apache.commons.lang3.time.FastDateParser.init(FastDateParser.java:148)
+at org.apache.commons.lang3.time.FastDateParser.&amp;lt;init&amp;gt;(FastDateParser.java:104)
+at org.apache.commons.lang3.time.FastDateFormat.&amp;lt;init&amp;gt;(FastDateFormat.java:370)
+at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:91)
+at org.apache.commons.lang3.time.FastDateFormat$1.createInstance(FastDateFormat.java:88)
+at org.apache.commons.lang3.time.FormatCache.getInstance(FormatCache.java:82)
+at org.apache.commons.lang3.time.FastDateFormat.getInstance(FastDateFormat.java:148)
+
+
+more stack traces in this Jenkins output: http://ci.cgeo.org/job/c-geo/1686/console</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.time.FastDateParser.java</file>
+			<file type="M">org.apache.commons.lang3.time.FastDateFormatTest.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Regression" description="is broken by">462</link>
+		</links>
+	</bug>
+	<bug id="946" opendate="2014-01-08 18:45:06" fixdate="2014-02-01 10:47:00" resolution="Fixed">
+		<buginformation>
+			<summary>ConstantInitializerTest fails when building with IBM JDK 7</summary>
+			<description>Found by Jrg Schaible during the vote for 3.2.1 RC1 [1]:
+
+
+========================== %&amp;lt; ====================
+Failed tests:
+  ConstantInitializerTest.testToString:122 Wrong string:
+ConstantInitializer@-669671219 [ object = 42 ]
+========================== %&amp;lt; ====================
+
+
+[1] http://markmail.org/message/7exdutk2cktec2yy</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.concurrent.ConstantInitializerTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="969" opendate="2014-02-07 22:02:06" fixdate="2014-02-10 02:06:29" resolution="Fixed">
+		<buginformation>
+			<summary>StringUtils.toEncodedString(byte[], Charset) needlessly throws UnsupportedEncodingException</summary>
+			<description>This new method throws UnsupportedEncodingException when passed in a Charset object. Why?
+new String(byte[], Charset) does not throw this exception.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="972" opendate="2014-02-11 02:31:03" fixdate="2014-02-11 02:39:41" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils#isNumber does not allow for hex 0XABCD</summary>
+			<description>isNumber() does not allow for 0XABCD whereas createNumber() allows for both 0xABCD and 0XABCD</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">997</link>
+		</links>
+	</bug>
+	<bug id="971" opendate="2014-02-10 08:17:25" fixdate="2014-02-11 02:54:03" resolution="Fixed">
+		<buginformation>
+			<summary>NumberUtils#isNumber(String) fails to reject invalid Octal numbers</summary>
+			<description>When trying to convert "0085" with NumberUtils.createInteger(String) an NumberFormatException is thrown. 
+This is because the leading 0 causes the String to be evaluated as an Octal, 8 is not a valid octal.
+However NumberUtils#isNumber(String) evaluates to true, even so it cannot be converted.  
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.math.NumberUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.math.NumberUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Regression" description="breaks">992</link>
+			<link type="Regression" description="breaks">997</link>
+		</links>
+	</bug>
+	<bug id="977" opendate="2014-02-14 19:57:39" fixdate="2014-02-15 10:36:25" resolution="Fixed">
+		<buginformation>
+			<summary>NumericEntityEscaper incorrectly encodes supplementary characters</summary>
+			<description>NumericEntityEscaper will incorrectly encode supplementary unicode characters depending on the char length of the first code point in the string.
+To reproduce, run:
+
+
+String escaped = NumericEntityEscaper.between(0x7f, Integer.MAX_VALUE).translate("a \uD83D\uDC14 \uD83D\uDCA9");
+
+
+Expected:
+
+
+escaped == "a &amp;amp;#128020; &amp;amp;#128169;"
+
+
+Actual:
+
+
+escaped == "a &amp;amp;#128020;&amp;amp;#56340; &amp;amp;#128169;&amp;amp;#56489;"
+
+
+The issue lies in CharSequenceTranslator.translate() and the way it checks code points to figure out how many characters it needs to consume.  Specifically, the issue is on line 95:
+
+
+// contract with translators is that they have to understand codepoints 
+// and they just took care of a surrogate pair
+for (int pt = 0; pt &amp;lt; consumed; pt++) {
+    pos += Character.charCount(Character.codePointAt(input, pt));
+}
+
+
+The point of this code is to check the charCount of the character that was just translated and move ahead by that many characters in the input string.  The bug is that it&amp;amp;apos;s indexing into the string using &amp;amp;apos;pt&amp;amp;apos;, which is always 0 at the beginning of the loop.  It&amp;amp;apos;s effetively checking the charCount of first character in the string every time.
+A patch is attached that fixes the issue and includes supporting unit tests.  Fixing this issue in CharSequenceTranslator uncovered an issue in CsvEscaper/CsvUnescaper caused by the fact that it wasn&amp;amp;apos;t respecting the "code point contract" described in CharSequenceTranslator.translate.  The fix there was to have the translate methods return the string&amp;amp;apos;s code point count rather than character count.</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.StringEscapeUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.StringEscapeUtils.java</file>
+			<file type="M">org.apache.commons.lang3.text.translate.CharSequenceTranslator.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="957" opendate="2014-01-24 15:14:30" fixdate="2014-05-03 19:27:35" resolution="Duplicate">
+		<buginformation>
+			<summary>WordUtils.wrap(String, int) doesn&amp;apos;t behave according to JavaDoc</summary>
+			<description>The JavaDoc of WordUtils.wrap(String, int) says that leading white spaces on new lines are stripped from the result. However the following test will fail, since the leading spaces of the second line are not stripped from the resultL
+
+
+@Test
+public void testWordUtils_StringInt_LeadingWhitespaces {
+        input = "spaces                               spaces";
+        expected = "spaces              " + systemNewLine + "spaces";
+        assertEquals(expected, WordUtils.wrap(input, 20));
+}
+
+</description>
+			<version>3.2.1</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.WordUtilsTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.WordUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">995</link>
+		</links>
+	</bug>
+	<bug id="1276" opendate="2016-10-19 10:17:36" fixdate="2016-10-23 15:07:01" resolution="Fixed">
+		<buginformation>
+			<summary>StrBuilder#replaceAll ArrayIndexOutOfBoundsException</summary>
+			<description>There is a bug in replace for StrBuilder, seems the use of nonupdated buffer and character count is off.
+new StrBuilder("Dear X, hello X.").replaceAll(StrMatcher.stringMatcher("X"), "012345678901234567");
+yields
+
+java.lang.ArrayIndexOutOfBoundsException: 49
+	at org.apache.commons.lang3.text.StrMatcher$StringMatcher.isMatch(StrMatcher.java:372)
+	at org.apache.commons.lang3.text.StrBuilder.replaceImpl(StrBuilder.java:2115)
+	at org.apache.commons.lang3.text.StrBuilder.replace(StrBuilder.java:2088)
+	at org.apache.commons.lang3.text.StrBuilder.replaceAll(StrBuilder.java:2049)
+
+</description>
+			<version>3.2.1</version>
+			<fixedVersion>3.6</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.lang3.text.StrBuilderTest.java</file>
+			<file type="M">org.apache.commons.lang3.text.StrBuilder.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

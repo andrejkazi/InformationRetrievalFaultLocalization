@@ -1,0 +1,377 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="IO">
+	<bug id="83" opendate="2006-07-12 13:50:05" fixdate="2006-08-25 21:44:03" resolution="Fixed">
+		<buginformation>
+			<summary>Bug with &amp;apos;df&amp;apos; command on AIX 5.3</summary>
+			<description>Reported via commons-owner@
+--------------------------------------------
+From: James Urie
+Sent: Tuesday, July 11, 2006 8:51 AM
+To: &amp;amp;apos;commons-dev-subscribe@jakarta.apache.org&amp;amp;apos;
+Subject: New AIX fix?
+Hello,
+I had to change the "commons-io" code to allow for usage on AIX 5.3.
+Attached is the file with changes.
+The long and short of the change is that the "df" command used in the
+File System Utils classes requires
+A "P" to be added to the switch to enable "POSIX" capability.
+James Urie</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Reference" description="is related to">109</link>
+			<link type="Reference" description="is related to">110</link>
+		</links>
+	</bug>
+	<bug id="90" opendate="2006-08-02 17:13:47" fixdate="2006-08-26 00:06:22" resolution="Fixed">
+		<buginformation>
+			<summary>Infinite loop in FileSystemUtils.freeSpaceWindows if share directory empty</summary>
+			<description>When using FileSystemUtils.freeSpaceWindows in an empty share directory, the line containing the free space does not exist which causes an infinite loop (the outerloop doesn&amp;amp;apos;t decrease the i index).
+In fact to deal with all possible errors, I propose to test the exitCode of the dir command.
+Here is a proposed new code for this function :
+    /**
+
+Find free space on the Windows platform using the &amp;amp;apos;dir&amp;amp;apos; command.
+     *
+@param path  the path to get free space for, including the colon
+@return the amount of free drive space on the drive
+@throws IOException if an error occurs
+     */
+    long freeSpaceWindows(String path) throws IOException {
+        path = FilenameUtils.normalize(path);
+        if (path.length() &amp;gt; 2 &amp;amp;&amp;amp; path.charAt(1) == &amp;amp;apos;:&amp;amp;apos;) 
+{
+            path = path.substring(0, 2);  // seems to make it work
+        }
+
+        // build and run the &amp;amp;apos;dir&amp;amp;apos; command
+        String[] cmdAttrbs = new String[] 
+{"cmd.exe", "/C", "dir /-c " + path}
+;
+        // read in the output of the command to an ArrayList
+        BufferedReader in = null;
+        String line = null;
+        ArrayList lines = new ArrayList();
+        int errorLevel = 0;
+        try {
+            Process proc = Runtime.getRuntime().exec(cmdAttrbs);
+            in = new BufferedReader(
+                new InputStreamReader(proc.getInputStream()));
+            line = in.readLine();
+            while (line != null) 
+{
+                line = line.toLowerCase().trim();
+                lines.add(line);
+                line = in.readLine();
+            }
+
+            proc.waitFor();
+            errorLevel = proc.exitValue();
+        } finally 
+{
+            IOUtils.closeQuietly(in);
+        }
+
+        if (lines.size() == 0) 
+{
+            // unknown problem, throw exception
+            throw new IOException(
+                    "Command line &amp;amp;apos;dir /-c&amp;amp;apos; did not return any info " +
+                    "for command &amp;amp;apos;" + cmdAttrbs[2] + "&amp;amp;apos;");
+        }
+
+        if (errorLevel != 0) {
+            if (errorLevel == 2) 
+{
+                // Empty directory : unable to calculate the freeSpace
+                return Integer.MAX_VALUE; // ???
+            }
+ else 
+{
+                // unknown problem, throw exception
+                throw new IOException(
+                        "Command line &amp;amp;apos;dir /-c&amp;amp;apos; error [" + errorLevel +
+                        "] for command &amp;amp;apos;" + cmdAttrbs[2] + "&amp;amp;apos;");
+            }
+        }
+        // now iterate over the lines we just read and find the LAST
+        // non-empty line (the free space bytes should be in the last element
+        // of the ArrayList anyway, but this will ensure it works even if it&amp;amp;apos;s
+        // not, still assuming it is on the last non-blank line)
+        long bytes = -1;
+        int i = lines.size() - 1;
+        int bytesStart = 0;
+        int bytesEnd = 0;
+        outerLoop: while (i &amp;gt; 0) {
+            line = (String) lines.get;
+            if (line.length() &amp;gt; 0) {
+                // found it, so now read from the end of the line to find the
+                // last numeric character on the line, then continue until we
+                // find the first non-numeric character, and everything between
+                // that and the last numeric character inclusive is our free
+                // space bytes count
+                int j = line.length() - 1;
+                innerLoop1: while (j &amp;gt;= 0) {
+                    char c = line.charAt(j);
+                    if (Character.isDigit(c)) 
+{
+                      // found the last numeric character, this is the end of
+                      // the free space bytes count
+                      bytesEnd = j + 1;
+                      break innerLoop1;
+                    }
+                    j--;
+                }
+                innerLoop2: while (j &amp;gt;= 0) {
+                    char c = line.charAt(j);
+                    if (!Character.isDigit(c) &amp;amp;&amp;amp; c != &amp;amp;apos;,&amp;amp;apos; &amp;amp;&amp;amp; c != &amp;amp;apos;.&amp;amp;apos;) 
+{
+                      // found the next non-numeric character, this is the
+                      // beginning of the free space bytes count
+                      bytesStart = j + 1;
+                      break innerLoop2;
+                    }
+                    j--;
+                }
+                break outerLoop;
+            } else 
+{
+                // If the last line is empty we are unable to parse the freeSpace
+                throw new IOException(
+                        "Command line &amp;amp;apos;dir /-c&amp;amp;apos; did not return valid info " +
+                        "for command &amp;amp;apos;" + cmdAttrbs[2] + "&amp;amp;apos;");
+            }
+        }
+        // remove commas and dots in the bytes count
+        StringBuffer buf = new StringBuffer(line.substring(bytesStart, bytesEnd));
+        for (int k = 0; k &amp;lt; buf.length(); k++) {
+            if (buf.charAt(k) == &amp;amp;apos;,&amp;amp;apos; || buf.charAt(k) == &amp;amp;apos;.&amp;amp;apos;) 
+{
+                buf.deleteCharAt(k--);
+            }
+        }
+        bytes = Long.parseLong(buf.toString());
+        return bytes;
+    }</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="91" opendate="2006-08-03 07:12:33" fixdate="2006-08-29 20:52:38" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils.freeSpace does not work on Sun Solaris</summary>
+			<description>The method FileSystemUtils.freeSpace does not work on Sun Solaris.
+ [junit] Testcase: testGetFreeSpace_String took 0.216 sec
+[junit] 	Caused an ERROR
+[junit] Command line &amp;amp;apos;df&amp;amp;apos; did not return info as expected for path &amp;amp;apos;/&amp;amp;apos;- response on first line was &amp;amp;apos;/                  (/dev/dsk/c0t0d0s0 ):41676304 block  3133314 filer&amp;amp;apos;
+[junit] java.io.IOException: Command line &amp;amp;apos;df&amp;amp;apos; did not return info as expected for path &amp;amp;apos;/&amp;amp;apos;- response on first line was &amp;amp;apos;/                  (/dev/dsk/c0t0d0s0 ):41676304 block  3133314 filer&amp;amp;apos;
+[junit] 	at org.apache.commons.io.FileSystemUtils.freeSpaceUnix(FileSystemUtils.java:315)
+[junit] 	at org.apache.commons.io.FileSystemUtils.freeSpaceOS(FileSystemUtils.java:179)
+[junit] 	at org.apache.commons.io.FileSystemUtils.freeSpace(FileSystemUtils.java:126)
+[junit] 	at org.apache.commons.io.FileSystemUtilsTestCase.testGetFreeSpace_String(FileSystemUtilsTestCase.java:90)
+This is because on Solaris the df command work different if the flag -k is used or not:
+$ df /
+/                  (/dev/dsk/c0t1d0s0 ): 1070402 blocks   294205 files
+$ df -k /
+Filesystem            kbytes    used   avail capacity  Mounted on
+/dev/dsk/c0t1d0s0    1350955  815754  481163    63%    /
+I haven&amp;amp;apos;t found any flag that makes it output GNU format even when -k is omitted.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="93" opendate="2006-09-19 01:47:37" fixdate="2006-10-07 11:59:33" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils needs to call Process.destroy() on exec&amp;apos;d processes</summary>
+			<description>Calling the FileSystemUtils.getFreeSpace() method multiple times (~3000) will generate an IOException with the following text: "Too many open files". Documentation from Sun says this problem is due to not destroying the java.lang.Process object returned from the System.exec() call.
+Some sample code I wrote confirms that calling destroy prevents this error from occurring.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtilsTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="96" opendate="2006-10-11 16:22:58" fixdate="2006-10-11 16:30:49" resolution="Fixed">
+		<buginformation>
+			<summary>Test case misuses read(byte[]) and read(char[])</summary>
+			<description>Message to mailing list from Anthony Green
+http://www.mail-archive.com/commons-dev@jakarta.apache.org/msg82127.html
+-----------------------------------------
+This support routine from the commons-io project test code assumed that
+FileReader.read(byte[]) would always read the entire file.  There&amp;amp;apos;s no
+such guarantee, and some tests were failing on GNU Classpath based VMs
+because of this.
+Thanks,
+AG
+ src/test/org/apache/commons/io/testtools/FileBasedTestCase.java~	2006-07-13 23:44:13.000000000 -0700
++++ src/test/org/apache/commons/io/testtools/FileBasedTestCase.java	2006-07-13 23:44:20.000000000 -0700
+@@ -167,18 +171,22 @@
+         throws IOException
+     {
+         Reader ir = new java.io.FileReader( file );
+
+try 
+{
+-            char[] c1 = new char[ c0.length ];
+-            int numRead = ir.read( c1 );
+-            assertTrue( "Different number of bytes", numRead == c0.length );
+-            for( int i = 0;
+-                 i &amp;lt; numRead;
+-                 assertTrue( "Byte " + i + " differs (" + c0[ i ] + " != " + c1[ i ] + ")", 
+-                    c0[ i ] == c1[ i ] ), i++
+-                );
+-        }
+ finally 
+{
+-            ir.close();
+-        }
++	int count = 0, numRead = 0;
++	char[] c1 = new char[ c0.length ];
++	try 
+Unknown macro: {+	  while (count &amp;lt; c0.length)+	    {
++	      numRead = ir.read( c1, count, c0.length);
++	      for( int i = count;
++		   i &amp;lt; count+numRead;
++		   assertTrue( "Byte " + i + " differs (" + c0[ i ] + " != " + c1[ i ] + ")", 
++			       c0[ i ] == c1[ i ] ), i++
++		   );
++	      count += numRead;
++	    }+	} 
+ finally 
+{
++	  ir.close();
++	}
+     }
+
+     protected void checkWrite(OutputStream output) throws Exception {</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.testtools.FileBasedTestCase.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="84" opendate="2006-07-14 16:31:49" fixdate="2006-10-13 04:55:09" resolution="Fixed">
+		<buginformation>
+			<summary>Many classes are limited to length of stream &lt; 2 GB, and behave incorrectly on larger streams</summary>
+			<description>java int.MAX_VALUE is 2 GB. Classes that handle streams larger than 2 GB will behave incorrectly.
+For example, see 
+http://svn.apache.org/viewvc/jakarta/commons/proper/io/trunk/src/java/org/apache/commons/io/IOUtils.java?view=markup
+Method: int copy(InputStream input, OutputStream output).
+The correct method would be: long copy(InputStream input, OutputStream output).
+This issue may affect many classes and routines.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.IOUtils.java</file>
+			<file type="M">org.apache.commons.io.IOUtilsCopyTestCase.java</file>
+			<file type="M">org.apache.commons.io.input.CountingInputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.output.CountingOutputStreamTest.java</file>
+			<file type="M">org.apache.commons.io.input.CountingInputStream.java</file>
+			<file type="M">org.apache.commons.io.output.CountingOutputStream.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="100" opendate="2006-11-28 15:01:00" fixdate="2006-12-04 23:36:44" resolution="Fixed">
+		<buginformation>
+			<summary>FileUtils.touch should raise an IOException if I may not modify the file</summary>
+			<description>The documentation states, that FileUtils.touch implements the UNIX-touch command. However I may successfully FileUtils.touch files like /etc/passwd, which is not allowed on the shell as normal user. 
+Looking at the implementation, you should propably raise an IOException if the returnvalue of `file.setLastModified(System.currentTimeMillis());` is `false`.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileUtils.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="101" opendate="2006-12-04 20:49:18" fixdate="2006-12-09 00:32:26" resolution="Fixed">
+		<buginformation>
+			<summary>The method EndianUtils.writeSwappedDouble() and EndianUtils.readSwappedDouble() do not match!</summary>
+			<description>Code:
+public static void main(String[] args) {
+		double[] tests = new double[] 
+{34.345, -345.5645, 545.12, 10.043, 7.123456789123}
+;
+		for (int i = 0; i&amp;lt; tests.length ;i++) 
+{
+			byte[] buffer = new byte[8];			
+			EndianUtils.writeSwappedDouble(buffer, 0, tests[i]);
+			double val = EndianUtils.readSwappedDouble(buffer, 0);
+			System.out.println(val);	
+		}
+
+}
+Result:
+34.344969482421874
+-345.5645
+545.11951171875
+10.043
+7.123456789123
+Note:
+In my opinion the values shouldn&amp;amp;apos;t be changed at all.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.EndianUtils.java</file>
+			<file type="M">org.apache.commons.io.EndianUtilsTest.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="99" opendate="2006-11-16 18:11:09" fixdate="2006-12-29 13:12:17" resolution="Fixed">
+		<buginformation>
+			<summary>FileCleaner thread never ends and cause memory leak in AS</summary>
+			<description>FileCleaner opens a thread and no solution is given to the user to end it. So when an application is undeployed
+in an Application Server, a thread is still alive. The WebApp can&amp;amp;apos;t be undeployed and this results in a classloader
+leak that will cause an OutOfMemoryError.
+I think the API should be extended so that a user can end the thread. A better way would be to provide a class that
+cleans everything for commons IO.</description>
+			<version>1.2</version>
+			<fixedVersion>1.3</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileCleanerTestCase.java</file>
+			<file type="M">org.apache.commons.io.FileCleaner.java</file>
+		</fixedFiles>
+		<links>
+			<link type="dependent" description="is depended upon by">120</link>
+		</links>
+	</bug>
+	<bug id="187" opendate="2008-12-15 16:19:26" fixdate="2010-03-06 01:59:21" resolution="Fixed">
+		<buginformation>
+			<summary>FileSystemUtils.freeSpaceKb doesn&amp;apos;t work with relative paths on Linux</summary>
+			<description>Calling FileSystemUtils.freeSpaceKb with ".", "./", "../", "../foo" etc. will result in an empty string being passed to df.
+freeSpaceKb calls FileNameUtils.normalize on the path which destroys relative paths.
+I don&amp;amp;apos;t see any need to normalize the path so the fix is simply to remove that call.</description>
+			<version>1.2</version>
+			<fixedVersion>2.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.apache.commons.io.FileSystemUtils.java</file>
+		</fixedFiles>
+	</bug>
+</bugrepository>

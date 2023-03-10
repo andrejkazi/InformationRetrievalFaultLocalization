@@ -1,0 +1,384 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="424" opendate="2007-01-09 04:39:23" fixdate="2007-05-21 19:35:46" resolution="Duplicate">
+		<buginformation>
+			<summary>MethodDefinitionMap - Can&amp;apos;t access inherited methods</summary>
+			<description>See : http://forum.springframework.org/showthread.php?p=94634
+The MethodDefinitionMap can&amp;amp;apos;t secure any inherited method. Line 123 of the java file has to be modified as follows :
+
+
+
+
+
+Eclipse Workspace Patch 1.0
+#P acegisecurity
+Index: core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java
+===================================================================
+RCS file: /cvsroot/acegisecurity/acegisecurity/core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java,v
+retrieving revision 1.6
+diff -u -r1.6 MethodDefinitionMap.java
+
+
+core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java	17 Nov 2005 00:56:09 -0000	1.6
++++ core/src/main/java/org/acegisecurity/intercept/method/MethodDefinitionMap.java	9 Jan 2007 14:45:34 -0000
+@@ -165,7 +165,7 @@
+                 + "] with attributes [" + attr + "]");
+         }
+
+
+
+
+
+
+Method[] methods = clazz.getDeclaredMethods();
++        Method[] methods = clazz.getMethods();
+         List matchingMethods = new ArrayList();
+
+         for (int i = 0; i &amp;lt; methods.length; i++) {</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.4</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditorTests.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.intercept.method.MethodDefinitionMap.java</file>
+			<file type="M">org.springframework.security.util.SimpleMethodInvocation.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodInvocationPrivilegeEvaluatorTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributesTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSourceEditor.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisor.java</file>
+			<file type="M">org.springframework.security.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.intercept.method.MockMethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.OtherTargetObject.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodDefinitionSourceAdvisorTests.java</file>
+			<file type="M">org.springframework.security.config.InterceptMethodsBeanDefinitionDecorator.java</file>
+			<file type="M">org.springframework.security.ConfigAttributeDefinition.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionSource.java</file>
+			<file type="M">org.springframework.security.intercept.method.aspectj.AspectJSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.context.rmi.ContextPropagatingRemoteInvocationTests.java</file>
+			<file type="M">org.springframework.security.annotation.MethodDefinitionSourceEditorTigerTests.java</file>
+			<file type="M">org.springframework.security.intercept.method.aopalliance.MethodSecurityInterceptorTests.java</file>
+			<file type="M">org.springframework.security.MockJoinPoint.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributes.java</file>
+			<file type="D">org.springframework.security.annotation.SecurityAnnotationAttributesTests.java</file>
+			<file type="M">org.springframework.security.util.MethodInvocationUtils.java</file>
+			<file type="M">org.springframework.security.intercept.method.MethodDefinitionAttributes.java</file>
+			<file type="M">org.springframework.security.vote.BasicAclEntryVoterTests.java</file>
+			<file type="M">org.springframework.security.config.BeanIds.java</file>
+			<file type="D">org.springframework.security.annotation.Jsr250SecurityAnnotationAttributesTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">99</link>
+		</links>
+	</bug>
+	<bug id="522" opendate="2007-08-08 20:18:30" fixdate="2007-08-27 04:15:14" resolution="Fixed">
+		<buginformation>
+			<summary>LogoutFilter do not exclude query parameters in the matching test</summary>
+			<description>protected boolean requiresLogout(HttpServletRequest request, HttpServletResponse response) 
+{
+        String uri = request.getRequestURI();
+        int pathParamIndex = uri.indexOf(&amp;amp;apos;;&amp;amp;apos;);
+//////////////////////////////////////
+replace with :
+int pathParamIndex = uri.indexOf(&amp;amp;apos;?&amp;amp;apos;);
+or find the min of the index of &amp;amp;apos;?&amp;amp;apos;, &amp;amp;apos;=&amp;amp;apos;, ....
+////////////////////////////////////// 
+        if (pathParamIndex &amp;gt; 0) 
+{
+            // strip everything after the first semi-colon
+            uri = uri.substring(0, pathParamIndex);
+        }
+
+        if ("".equals(request.getContextPath())) 
+{
+        	return uri.endsWith(filterProcessesUrl);
+        }
+
+        return uri.endsWith(request.getContextPath() + filterProcessesUrl);
+}
+</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="518" opendate="2007-08-06 02:48:28" fixdate="2007-08-27 10:47:22" resolution="Fixed">
+		<buginformation>
+			<summary>ehcache support should depend on net.sf.ehcache.Ehcache interface instead of concrete implementation net.sf.ehcache.Cache</summary>
+			<description>EhCacheBasedUserCache (org.acegisecurity.providers.dao.cache) has a dependency of type net.sf.ehcache.Cache.
+In the presence of an proper interface type (net.sf.ehcache.Ehcache) this is bad usage of IoC: it limits users to a concrete type, disallowing alternative implementations or decorators.
+Since acegi is quite often used in a spring IoC context, this inflexibility is very easy to demonstrate:
+------------------
+  &amp;lt;bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"/&amp;gt;
+  &amp;lt;bean id="userCacheBackend" class="org.springframework.cache.ehcache.EhCacheFactoryBean"&amp;gt;
+    &amp;lt;property name="cacheManager" ref="cacheManager"/&amp;gt;
+    &amp;lt;property name="cacheName" value="userCache"/&amp;gt;
+    &amp;lt;property name="blocking" value="true"/&amp;gt;
+  &amp;lt;/bean&amp;gt;
+  &amp;lt;bean id="cache" class="org.acegisecurity.providers.dao.cache.EhCacheBasedUserCache"&amp;gt;
+    &amp;lt;property name="cache" ref="userCacheBackend"/&amp;gt;
+  &amp;lt;/bean&amp;gt;
+------------------
+Note that the "blocking" property is set on bean "userCacheBackend", triggering the creation of a decorator for the backing cache.
+Instantiating above context (using spring 2.1m3, acegi 1.0.4 and ehcache 1.2.3) will (of course) fail:
+------------------
+Exception in thread "main" org.springframework.beans.factory.BeanCreationException: Error creating bean with name &amp;amp;apos;cache&amp;amp;apos; defined in class path resource [factories.xml]: Error setting property values; nested exception is org.springframework.beans.PropertyBatchUpdateException; nested PropertyAccessExceptions (1) are:
+PropertyAccessException 1: org.springframework.beans.TypeMismatchException: Failed to convert property value of type [net.sf.ehcache.constructs.blocking.BlockingCache] to required type [net.sf.ehcache.Cache] for property &amp;amp;apos;cache&amp;amp;apos;; nested exception is java.lang.IllegalArgumentException: Cannot convert value of type [net.sf.ehcache.constructs.blocking.BlockingCache] to required type [net.sf.ehcache.Cache] for property &amp;amp;apos;cache&amp;amp;apos;: no matching editors or conversion strategy found
+------------------
+I&amp;amp;apos;m not familiar with acegi source, but it seems that there&amp;amp;apos;s actually no need at all to use the concrete Cache class: no specific implementation details of that type seem to be used.
+Especially considering the endless "interface based dependencies" preaching by Rod (et al), this seems a bit strange for a "spring" project.</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.acl.basic.cache.EhCacheBasedAclEntryCache.java</file>
+			<file type="M">org.acegisecurity.providers.cas.cache.EhCacheBasedTicketCache.java</file>
+			<file type="M">org.acegisecurity.providers.x509.cache.EhCacheBasedX509UserCacheTests.java</file>
+			<file type="M">org.acegisecurity.acl.basic.cache.EhCacheBasedAclEntryCacheTests.java</file>
+			<file type="M">org.acegisecurity.providers.x509.cache.EhCacheBasedX509UserCache.java</file>
+			<file type="M">org.acegisecurity.providers.cas.cache.EhCacheBasedTicketCacheTests.java</file>
+			<file type="M">org.acegisecurity.providers.dao.cache.EhCacheBasedUserCacheTests.java</file>
+			<file type="M">org.acegisecurity.acls.jdbc.EhCacheBasedAclCache.java</file>
+			<file type="M">org.acegisecurity.providers.dao.cache.EhCacheBasedUserCache.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="506" opendate="2007-07-18 11:13:34" fixdate="2007-08-27 11:32:04" resolution="Fixed">
+		<buginformation>
+			<summary>DigestProcessingFilter improperly parsing Authorization request header when individual values contain commas</summary>
+			<description>DigestProcessingFilter improperly parses the Authorization request header. It converts the header to an array of strings based on the assumption that the individual values don&amp;amp;apos;t contain comma.
+I ran into the problem when the query string of a URL contained commas. RFC 1738 has the following to say about commas:
+    Thus, only alphanumerics, the special characters "$-_.+!*&amp;amp;apos;(),", and
+    reserved characters used for their reserved purposes may be used
+    unencoded within a URL.
+As you can see, the comma is in the list of "special characters" that may be used unencoded.
+DigestProcessingFilter works correctly when I URL encode the commas but I should not be expected to encode the commas according to the RFC. Also, what about the other pieces of the Authorization header such as username, realm, etc? DigestProcessingFilter should properly handle the case when they contain commas.</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.digestauth.DigestProcessingFilterTests.java</file>
+			<file type="M">org.acegisecurity.util.StringSplitUtils.java</file>
+			<file type="M">org.acegisecurity.util.StringSplitUtilsTests.java</file>
+			<file type="M">org.acegisecurity.ui.digestauth.DigestProcessingFilter.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="501" opendate="2007-07-05 01:15:18" fixdate="2007-08-28 04:02:11" resolution="Fixed">
+		<buginformation>
+			<summary>convertUrlToLowercaseBeforeComparison in PathBasedFilterInvocationDefinitionMap  is not consistent</summary>
+			<description>if convertUrlToLowercaseBeforeComparison is true the url is converted to lower case before URL comparison but the pathMatcher still use the URL defined in the configurations without using toLowerCase and this may lead insorrect result 
+see this forum for more details http://forum.springframework.org/showthread.php?t=39492</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.intercept.web.PathBasedFilterDefinitionMapTests.java</file>
+			<file type="M">org.acegisecurity.intercept.web.PathBasedFilterInvocationDefinitionMap.java</file>
+		</fixedFiles>
+	</bug>
+	<bug id="500" opendate="2007-06-28 21:11:26" fixdate="2007-08-28 23:35:59" resolution="Duplicate">
+		<buginformation>
+			<summary>Provide a getFilterProcessesUrl (protected or public) method in org.acegisecurity.ui.logout.LogoutFilter so that subclasses can access this parameter</summary>
+			<description>Provide a getFilterProcessesUrl (protected or public) method in org.acegisecurity.ui.logout.LogoutFilter so that subclasses can access this parameter.</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.ui.logout.LogoutFilter.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="depends on">408</link>
+			<link type="Duplicate" description="duplicates">408</link>
+		</links>
+	</bug>
+	<bug id="484" opendate="2007-05-27 12:42:57" fixdate="2007-08-30 06:29:16" resolution="Fixed">
+		<buginformation>
+			<summary>SessionRegistryImpl.getAllSessions()  Bug?</summary>
+			<description>
+####&amp;lt;2007-5-25 084749 CST&amp;gt; &amp;lt;Error&amp;gt; &amp;lt;HTTP&amp;gt; &amp;lt;win200310834&amp;gt; &amp;lt;myserver&amp;gt; &amp;lt;ExecuteThread: &amp;amp;apos;35&amp;amp;apos; for queue: &amp;amp;apos;weblogic.kernel.Default&amp;amp;apos;&amp;gt; &amp;lt;&amp;lt;WLS Kernel&amp;gt;&amp;gt; &amp;lt;&amp;gt; &amp;lt;BEA-101020&amp;gt; &amp;lt;[ServletContext(id=18816403,name=WebContent,context-path=/ride)] Servlet failed with Exception
+java.lang.Throwable
+	at java.util.HashMap$HashIterator.nextEntry()Ljava.util.HashMap$Entry;(Optimized Method)
+	at java.util.HashMap$KeyIterator.next()Ljava.lang.Object;(Optimized Method)
+	at org.acegisecurity.concurrent.SessionRegistryImpl.getAllSessions(Ljava.lang.Object;Z)[Lorg.acegisecurity.concurrent.SessionInformation;(SessionRegistryImpl.java:80)
+	at org.acegisecurity.concurrent.ConcurrentSessionControllerImpl.checkAuthenticationAllowed(Lorg.acegisecurity.Authentication;)V(ConcurrentSessionControllerImpl.java:94)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(Lorg.acegisecurity.Authentication;)Lorg.acegisecurity.Authentication;(ProviderManager.java:196)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(Lorg.acegisecurity.Authentication;)Lorg.acegisecurity.Authentication;(AbstractAuthenticationManager.java:45)
+	at cn.ccb.ride.admin.util.auth.SecurityAuthenticationProcessingFilter.attemptAuthentication(Ljavax.servlet.http.HttpServletRequest;)Lorg.acegisecurity.Authentication;(SecurityAuthenticationProcessingFilter.java:125)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;)V(Optimized Method)
+	at org.acegisecurity.ui.logout.LogoutFilter.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;)V(Optimized Method)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;)V(Optimized Method)
+	at org.acegisecurity.concurrent.ConcurrentSessionFilter.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at org.acegisecurity.util.FilterChainProxy$VirtualFilterChain.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;)V(Optimized Method)
+	at org.acegisecurity.util.FilterChainProxy.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at org.acegisecurity.util.FilterToBeanProxy.doFilter(Ljavax.servlet.ServletRequest;Ljavax.servlet.ServletResponse;Ljavax.servlet.FilterChain;)V(Optimized Method)
+	at weblogic.servlet.internal.WebAppServletContext$ServletInvocationAction.run()Ljava.lang.Object;(Optimized Method)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(Lweblogic.security.subject.AbstractSubject;Ljava.security.PrivilegedAction;)Ljava.lang.Object;(Optimized Method)
+	at weblogic.security.service.SecurityManager.runAs(Lweblogic.security.acl.internal.AuthenticatedSubject;Lweblogic.security.acl.internal.AuthenticatedSubject;Ljava.security.PrivilegedAction;)Ljava.lang.Object;(Optimized Method)
+	at weblogic.servlet.internal.WebAppServletContext.invokeServlet(Lweblogic.servlet.internal.ServletRequestImpl;Lweblogic.servlet.internal.ServletResponseImpl;)V(Optimized Method)
+	at weblogic.servlet.internal.ServletRequestImpl.execute(Lweblogic.kernel.ExecuteThread;)V(Optimized Method)
+	at weblogic.kernel.ExecuteThread.execute(Lweblogic.kernel.ExecuteRequest;)V(Optimized Method)
+	at weblogic.kernel.ExecuteThread.run()V(ExecuteThread.java:178)
+	at java.lang.Thread.startThreadFromVM(Ljava.lang.Thread;)V(Unknown Source)
+&amp;gt; 
+At the same time, getAllSessions() as followed.
+    public SessionInformation[] getAllSessions(Object principal,
+        boolean includeExpiredSessions) {
+        Set sessionsUsedByPrincipal = (Set) principals.get(principal);
+        if (sessionsUsedByPrincipal == null) 
+{
+            return null;
+        }
+
+        List list = new ArrayList();
+        Iterator iter = sessionsUsedByPrincipal.iterator();
+        while (iter.hasNext()) {
+            synchronized (sessionsUsedByPrincipal) {
+                String sessionId = (String) iter.next();
+                SessionInformation sessionInformation = getSessionInformation(sessionId);
+                if (includeExpiredSessions || !sessionInformation.isExpired()) 
+{
+                    list.add(sessionInformation);
+                }
+            }
+        }
+        return (SessionInformation[]) list.toArray(new SessionInformation[] {});
+    }
+</description>
+			<version>1.0.4</version>
+			<fixedVersion>1.0.5</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImpl.java</file>
+			<file type="M">org.acegisecurity.concurrent.SessionRegistryImplTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">543</link>
+		</links>
+	</bug>
+	<bug id="494" opendate="2007-06-12 20:54:54" fixdate="2008-01-17 06:29:43" resolution="Duplicate">
+		<buginformation>
+			<summary>Add IgnoredChannelProcessor for org.acegisecurity.securechannel.ChannelDecisionManagerImpl</summary>
+			<description>when use ajax,switch http and https may cause cross domain exception.
+I need:
+in page  https://localhost:8443/account/login,dwr is https://localhost:8443/dwr/
+in page http://localhost:8080/index,dwr is http://localhost:8080/dwr/
+so I add a IgnoredChannelProcessor with key &amp;amp;apos;IGNORED_CHANNEL&amp;amp;apos;
+CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+\A/struts/.*\Z=IGNORED_CHANNEL
+\A/dwr/.*\Z=IGNORED_CHANNEL
+\A/account/.*\Z=REQUIRES_SECURE_CHANNEL
+\A/.*\Z=REQUIRES_INSECURE_CHANNEL
+</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0 M2</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImplTests.java</file>
+			<file type="M">org.springframework.security.config.HttpSecurityBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.security.securechannel.ChannelDecisionManagerImpl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">335</link>
+		</links>
+	</bug>
+	<bug id="530" opendate="2007-08-22 03:40:13" fixdate="2008-04-05 07:45:06" resolution="Fixed">
+		<buginformation>
+			<summary>ACLs: No way to insert an ACE at the first position in the ACE list</summary>
+			<description>The new Acl interface specifies the method:
+void insertAce(Serializable afterAceId, Permission permission, Sid sid, boolean granting)
+        throws NotFoundException;
+but doesn&amp;amp;apos;t specify what happens if the afterAceId is null. In fact the AclImpl adds it to the end of the list. This means there are two ways to add to the end of the list and no way to add to the start of the list. Either the null behaviour should be changed to add to the start of the list , or beforeAceIds should be used. Changing the behaviour of null seems preferable and requires only the one line change in the insertAce method of AclImpl:
+this.aces.add(ace)
+to
+this.aces.add(0, ace);
+This is vital functionality as we are intending to use the ordering to implement the order of precedence in an acl ie user denies, user grants, role denies, role grants then check parent.</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">samples.dms.src.main.java.sample.dms.secured.SecureDocumentDaoImpl.java</file>
+			<file type="M">org.springframework.security.acls.MutableAcl.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.AclPermissionInheritanceTests.java</file>
+			<file type="M">samples.contacts.src.main.java.sample.contact.DataSourcePopulator.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclServiceTests.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplementationSecurityCheckTests.java</file>
+			<file type="M">org.springframework.security.acls.AuditableAcl.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImplTests.java</file>
+			<file type="M">samples.contacts.src.main.java.sample.contact.ContactManagerBackend.java</file>
+			<file type="M">samples.dms.src.main.java.sample.dms.secured.SecureDataSourcePopulator.java</file>
+			<file type="M">org.springframework.security.acls.domain.AclImpl.java</file>
+			<file type="M">org.springframework.security.acls.Acl.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Depends" description="is depended on by">532</link>
+		</links>
+	</bug>
+	<bug id="422" opendate="2007-01-02 22:02:11" fixdate="2008-04-05 09:17:29" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy - computeRepeatingSql contains bad SQL</summary>
+			<description>The line
++ "ACL_OBJECT_IDENTITY,ENTRIES_INHERITING, "
+should be
++ "ACL_OBJECT_IDENTITY.ENTRIES_INHERITING, " (notice the dot instead of comma)</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.0</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">467</link>
+		</links>
+	</bug>
+	<bug id="830" opendate="2008-05-13 08:58:38" fixdate="2008-05-25 10:04:27" resolution="Fixed">
+		<buginformation>
+			<summary>SavedRequestAwareWrapper and ParameterMethodNameResolver</summary>
+			<description>This is a very simple use case, Its strange how this was ignored. I will try to create a sample war file and get it. in the mean while..
+Spring : 2.5.1 (code in 2.0)
+Acegi : 1.0.4
+lest say we have Acegi security and a multi action controller method resolved on "action" parameter.
+lets say, we try to access
+/mod/order.html?action=view
+and acegi saves the request into SavedRequestAwareWrapper and forwards to /login.html
+After login, it goes to OrderController.view() method and forwards to view.jsp
+similarly
+/mod/order.html?action=viewDetail (This has more logic and data building)
+to OrderController.viewDetail() to viewdetail.jsp
+This is fine so far
+but I have a condition in view.jsp (say for certain cust)
+if (cust priv &amp;gt; ordinary) 
+ &amp;lt;jsp:include page="/mod/order.html?action=viewDetail" /&amp;gt;
+now, if i add this jsp include, and access this page with a customer satisfying the condition, a new request to
+/mod/order.html?action=view
+keeps looping after login and there is a stack over flow.
+Reason:
+After Login, the request /mod/order.html?action=view goes to call the 
+OrderController.view(), once it dispatches to jsp, the jsp include is kicked off, and the method resolver tries to get the parameter action from the request. However, the SavedRequestAwareWrapper.getParameter returns it from the savedRequest which is "/mod/order.html?action=view" .. it keeps looping there. 
+I am eager to find out how you would solve this.</description>
+			<version>1.0.4</version>
+			<fixedVersion>2.0.2</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.wrapper.SavedRequestAwareWrapper.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Related" description="is related to">875</link>
+		</links>
+	</bug>
+</bugrepository>

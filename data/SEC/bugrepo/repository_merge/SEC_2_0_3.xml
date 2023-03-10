@@ -1,0 +1,24 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SEC">
+	<bug id="3" master="925" duplicate="1224" opendate="2008-07-16 05:43:27" fixdate="2009-09-30 05:32:23" resolution="Fixed">
+		<buginformation>
+			<summary>BasicLookupStrategy - support for schema qualifier BasicLookupStrategy, JdbcAclService, and JdbcMutableAclService should support Catalog and Schema</summary>
+			<description>The current impl of this class works great - I would like to avoid writing my own custom strategy wherever possible.  The JavaDocs for BasicLookupStrategy state that it&amp;amp;apos;s not design for extension which I understand.
+It would be great, however, if a property could be set in the bean config that would allow the referenced tables in the SQL to be qualified by a schema.  Projects often run into such requirements based on the conventions used by a DBA group.  In our particular case, we&amp;amp;apos;re using DB2 and the ACL tables are being created in a schema that is not the default schema. Some systems may have security objects and normal application objects seperated in to different domains, and those domains may be defined in different database catalogs and/or schemas.
+The BasicLookupStrategy, JdbcAclService, and JdbcMutableAclService classes should account for a database catalog and schema.  A developer and/or integrator should be able to specify the catalog and schema for said classes when defining the beans in their context configurations.</description>
+			<version>2.0.3</version>
+			<fixedVersion>3.0.0 RC1</fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.JdbcMutableAclService.java</file>
+			<file type="M">org.springframework.security.acls.jdbc.BasicLookupStrategy.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">1224</link>
+			<link type="Duplicate" description="is duplicated by">1308</link>
+			<link type="Duplicate" description="duplicates">925</link>
+		</links>
+	</bug>
+</bugrepository>

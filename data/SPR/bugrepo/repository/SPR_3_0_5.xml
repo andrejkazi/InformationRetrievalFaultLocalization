@@ -1,0 +1,493 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<bugrepository name="SPR">
+	<bug id="7688" opendate="2010-10-26 13:43:02" fixdate="2010-12-16 12:20:44" resolution="Duplicate">
+		<buginformation>
+			<summary>NullPointerException could be thrown on  synchronized (pvs) in InjectionMetadata.checkPropertySkipping</summary>
+			<description>IBM JVM does not allow synchronized on "null"</description>
+			<version>3.0.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.annotation.InjectionMetadata.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7686</link>
+		</links>
+	</bug>
+	<bug id="7706" opendate="2010-11-01 14:32:23" fixdate="2010-12-20 08:36:59" resolution="Fixed">
+		<buginformation>
+			<summary>304 responses should not have non-0 Content-Length</summary>
+			<description>ServletWebRequest#checkNotModified will set a 304 response code, but doesn&amp;amp;apos;t set the Content-Length header to 0. This leads to exception on WebLogic, which gets all worked up about the fact that there&amp;amp;apos;s no response body even though the Content-Length headers claims there is:
+&amp;lt;Error&amp;gt; &amp;lt;HTTP&amp;gt; &amp;lt;BEA-101104&amp;gt; &amp;lt;Servlet execution in servlet context "ServletContext@26118573[app:MP24MotorPrototype module:MP24 path:/MP24 spec-version:2.5]" failed, java.net.ProtocolException: Didn&amp;amp;apos;t meet stated Content-Length, wrote: &amp;amp;apos;0&amp;amp;apos; bytes instead of stated: &amp;amp;apos;3291&amp;amp;apos; bytes.. 
+java.net.ProtocolException: Didn&amp;amp;apos;t meet stated Content-Length, wrote: &amp;amp;apos;0&amp;amp;apos; bytes instead of stated: &amp;amp;apos;3291&amp;amp;apos; bytes. 
+        at weblogic.servlet.internal.ServletOutputStreamImpl.ensureContentLength(ServletOutputStreamImpl.java:425) 
+        at weblogic.servlet.internal.ServletResponseImpl.ensureContentLength(ServletResponseImpl.java:1451) 
+        at weblogic.servlet.internal.ServletResponseImpl.send(ServletResponseImpl.java:1494) 
+        at weblogic.servlet.internal.ServletRequestImpl.run(ServletRequestImpl.java:1441) 
+        at weblogic.work.ExecuteThread.execute(ExecuteThread.java:201)</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.filter.ShallowEtagHeaderFilterTests.java</file>
+			<file type="M">org.springframework.web.filter.ShallowEtagHeaderFilter.java</file>
+			<file type="M">org.springframework.web.servlet.resource.ResourceHttpRequestHandler.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">8013</link>
+		</links>
+	</bug>
+	<bug id="7686" opendate="2010-10-26 07:41:27" fixdate="2011-01-05 08:50:00" resolution="Complete">
+		<buginformation>
+			<summary>NullPointerException in InjectionMetadata</summary>
+			<description>When using SpringBeanAutowiringSupport.processInjectionBasedOnServletContext() 
+a NullPointerException is raised in 
+InjectionMetadata.checkPropertySkipping(PropertyValues pvs)
+
+
+
+
+
+
+protected boolean checkPropertySkipping(PropertyValues pvs) {
+
+
+
+
+  if (this.skip == null) {
+
+
+
+
+    synchronized (pvs) { // &amp;lt;-- NullPointerException
+
+
+
+
+      if (this.skip == null) {
+
+
+
+
+
+
+in AutowiredAnnotationBeanPostProcessor.processInjection(Object bean)
+metadata inject is called with null for PropertyValues
+
+
+
+
+
+
+public void processInjection(Object bean) throws BeansException {
+
+
+
+
+  Class&amp;lt;?&amp;gt; clazz = bean.getClass();
+
+
+
+
+  InjectionMetadata metadata = findAutowiringMetadata(clazz);
+
+
+
+
+  try {
+
+
+
+
+    metadata.inject(bean, null, null); // &amp;lt;-- pvs is null
+
+
+
+
+  }
+
+
+
+
+  catch (Throwable ex) {
+
+
+
+
+    throw new BeanCreationException("Injection of autowired dependencies failed for class [" + clazz + "]", ex);
+
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+Here is the stack trace:
+
+
+
+
+
+
+java.lang.NullPointerException
+
+
+
+
+ 	at org.springframework.beans.factory.annotation.InjectionMetadata$InjectedElement.checkPropertySkipping(InjectionMetadata.java:171)
+
+
+
+
+ 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredMethodElement.inject(AutowiredAnnotationBeanPostProcessor.java:526)
+
+
+
+
+ 	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:84)
+
+
+
+
+ 	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.processInjection(AutowiredAnnotationBeanPostProcessor.java:300)
+
+
+
+
+ 	at org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(SpringBeanAutowiringSupport.java:110)
+
+
+
+
+
+</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1 M1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.factory.annotation.InjectionMetadata.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">7688</link>
+			<link type="Relate" description="is related to">7635</link>
+		</links>
+	</bug>
+	<bug id="7820" opendate="2010-12-15 02:54:52" fixdate="2011-01-12 01:34:46" resolution="Duplicate">
+		<buginformation>
+			<summary>Add support for @Request-/@ResponseBody to @ExceptionHandler methods</summary>
+			<description>During a consultancy gig this came up: customer wants to be able to throw a custom exception from @Controller methods where the exception will contain an object that needs to be marshalled back to the client as JSON, since these methods respond to AJAX requests and thus the response will not be rendered directly by the browser.
+I tried to do this by adding a method to an abstract parent class of the relevant controllers that looked like this:
+
+
+
+
+
+
+@ExceptionHandler(MyCustomValidationErrorsException.class)
+
+
+
+
+@ResponseBody
+
+
+
+
+public MyCustomValidationErrors handleValidationErrors(MyCustomValidationErrorsException e) {
+
+
+
+
+    return e.getValidationErrors();
+
+
+
+
+}
+
+
+
+
+
+
+This prevents regular methods from having to specify Object as the return type, since they would otherwise need to return either a regular domain object or a MyCustomValidationErrors instance in the case of validation errors.
+However, at the moment @ResponseBody is not supported for @ExceptionHandler methods, so this will simply ignore the annotation and render a view using the default view name resolution algorithm. I think this would be a very useful addition for the sketched use case, so I was wondering if this support could be added to the framework. 
+I understand that there are other ways to achieve the desired functionality, but AFAICT it would require a relatively large amount of custom code that would duplicate much of the Spring MVC-provided functionality.</description>
+			<version>3.0.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Improvement</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser.java</file>
+			<file type="M">org.springframework.web.servlet.config.MvcNamespaceTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolverTests.java</file>
+			<file type="M">org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">6902</link>
+		</links>
+	</bug>
+	<bug id="8375" opendate="2011-05-25 06:21:35" fixdate="2011-06-13 17:23:28" resolution="Duplicate">
+		<buginformation>
+			<summary>Can make an OutOfMemoryException by sending a modified form list property with an high index</summary>
+			<description>How to reproduce the problem
+With a ModelAttribute such as :
+
+
+
+
+
+
+class Model {
+
+
+
+
+    List&amp;lt;String&amp;gt; getItems();
+
+
+
+
+}
+
+
+
+
+
+
+With a JSP such as :
+
+
+
+
+
+
+&amp;lt;form:input path="items[0]" /&amp;gt;
+
+
+
+
+
+
+within an HTML form.
+POST the form with modified items attribute :
+
+
+
+
+
+
+items[100000000]=foo
+
+
+
+
+
+
+and wait, wait, wait until the OutOfMemoryException.
+Incriminated code
+org.springframework.validation.DataBinder.autoGrowNestedPaths is default true, it should be false instead.
+Workarounds
+In a controller : 
+
+
+
+
+
+
+@InitBinder
+
+
+
+
+public void initBinder(WebDataBinder binder) {
+
+
+
+
+    binder.setAutoGrowNestedPaths(false);
+
+
+
+
+}
+
+
+
+
+
+
+or using an implementation of WebBindingInitializer :
+
+
+
+
+
+
+public void initBinder(WebDataBinder binder, WebRequest request) {
+
+
+
+
+    binder.setAutoGrowNestedPaths(false);
+
+
+
+
+}
+
+
+
+
+
+
+</description>
+			<version>3.0.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.BeanWrapper.java</file>
+			<file type="M">org.springframework.beans.BeanWrapperAutoGrowingTests.java</file>
+			<file type="M">org.springframework.beans.BeanWrapperImpl.java</file>
+			<file type="M">org.springframework.validation.BeanPropertyBindingResult.java</file>
+			<file type="M">org.springframework.validation.DataBinder.java</file>
+			<file type="M">org.springframework.validation.DataBinderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7842</link>
+		</links>
+	</bug>
+	<bug id="8040" opendate="2011-03-12 03:02:40" fixdate="2011-06-28 03:40:45" resolution="Duplicate">
+		<buginformation>
+			<summary>ServletRequestDataBinder.bind should also consider wrapped ServletRequests when checking for Multipart,  to comply with HiddenHttpMethodFilter.</summary>
+			<description>When using HiddenHttpMethodFilter, like for example Spring Roo generated apps do, the ServletRequest is wrappd into a HttpMethodRequestWrapper (at least in cases, where wrapping is necessary, for example for PUT requests emulated with POST and httpMethod parameter).
+Later, when it comes to data binding the ServletRequestDataBinder.bind method checks for multipart requests:
+
+
+
+
+
+
+MutablePropertyValues mpvs = new ServletRequestParameterPropertyValues(request);
+
+
+
+
+		if (request instanceof MultipartRequest) {
+
+
+
+
+			MultipartRequest multipartRequest = (MultipartRequest) request;
+
+
+
+
+			bindMultipart(multipartRequest.getMultiFileMap(), mpvs);
+
+
+
+
+		}
+
+
+
+
+		doBind(mpvs);
+
+
+
+
+
+
+But if the multipart request has been wrapped into a HttpMethodRequestWrapper , this won&amp;amp;apos;t work anymore, since it is not an instance of MultipartRequest. Thus, no databinding for the Multipart files occurs.
+NOTE: My setup ist the following:
+
+I am using a MultipartFilter in front of the WebMethodFilter, as suggested in bold letters in  the Javadoc of HiddenHttpMethodFilter
+I am using binding for the uploaded files, instead of "injecting" them as parameters in the controller mehtods. For this, I register an according converter / bean editor from MultipartFile to byte array
+For POST request, this setup works fine. For PUT (emulated by POST and httpMethod parameter), the problem described above arises.
+
+</description>
+			<version>3.0.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.context.request.ServletWebRequest.java</file>
+			<file type="M">org.springframework.web.portlet.context.PortletWebRequest.java</file>
+			<file type="M">org.springframework.web.portlet.util.PortletUtils.java</file>
+			<file type="M">org.springframework.web.util.WebUtils.java</file>
+			<file type="M">org.springframework.web.portlet.bind.PortletRequestDataBinder.java</file>
+			<file type="M">org.springframework.web.bind.ServletRequestDataBinder.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7795</link>
+		</links>
+	</bug>
+	<bug id="7842" opendate="2010-12-28 11:14:33" fixdate="2011-07-03 12:24:33" resolution="Complete">
+		<buginformation>
+			<summary>DataBinder should be able to define a different strategy for BeanWrapperImpl how autogrowing should handle gaps in collection properties</summary>
+			<description>DataBinder which is used by WebRequestDataBinder and ServletRequestDataBinder grows automatically collections when "autoGrowNestedPaths" is on (AFAIK this is the default for the DataBinder).
+The behaviour of DataBinder when "autoGrowNestedPaths" is that a property with a given index N will result in growing a collection to size N if the collection is not large enough. Collection elements with index &amp;lt; N will be initialized with default objects of the collection&amp;amp;apos;s type.
+Based on WebRequestDataBinder it&amp;amp;apos;s therefore easily possible to DoS a web application if it&amp;amp;apos;s allowed to bind against a collection property and the client POSTs a single property using a very large index.
+Sending a single request containing a parameter for a collection property with index 99999999 caused an OOM on a JVM on MacOsX with default memory settings (64MB?). The list type in this case contained 7 String properties and 2 Longs.
+I think there are several things to follow-up:
+1) It would be safer to set autoGrowNestedPaths to false by default. Use of DataBinder and autoGrowNestedPaths then would be more restrictive by default and require explicit action to enable autoGrowing.
+2) The creation of "default" values in BeanWrapperImpl should be more flexible. A strategy for creating default values would allow clients to define how such default values should be created. In the case of WebRequestDataBinder creating empty (null) collection elements instead of default objects is certainly safer to fill the gaps in the collection - especially for exposed applications to the public. Furthermore this does not expose unwanted restrictions like a maximum allowed index limitation etc.
+3) Presumably this could be solved with CustomPropertyEditors. However the majority of developers probably tries to stick with what is available out-of-the box and as the DataBinding in general for "standard" use-cases works fine dealing with the described issue is not obvious and could lead to wide-spread holes.</description>
+			<version>3.0.5</version>
+			<fixedVersion>3.0.6, 3.1 RC1</fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.beans.BeanWrapper.java</file>
+			<file type="M">org.springframework.beans.BeanWrapperAutoGrowingTests.java</file>
+			<file type="M">org.springframework.beans.BeanWrapperImpl.java</file>
+			<file type="M">org.springframework.validation.BeanPropertyBindingResult.java</file>
+			<file type="M">org.springframework.validation.DataBinder.java</file>
+			<file type="M">org.springframework.validation.DataBinderTests.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="is duplicated by">8375</link>
+			<link type="Relate" description="is related to">6033</link>
+			<link type="Relate" description="is related to">10229</link>
+		</links>
+	</bug>
+	<bug id="8013" opendate="2011-03-02 05:40:09" fixdate="2011-12-06 14:33:50" resolution="Duplicate">
+		<buginformation>
+			<summary>ResourceHttpRequestHandler status code 304 setting Content-Length header</summary>
+			<description>I&amp;amp;apos;ve been debugging an issue while using the Jetty ProxyServlet to proxy all requests to a backend server which uses the mvc:resources namespace element. I finally tracked the issue down to Jetty&amp;amp;apos;s ProxyServlet hanging while waiting for content from the backend server. Originally I thought this was a Jetty issue, but as I look at the HTTP headers, I think it is an issue with ResourceHttpRequestHandler.
+ResourceHttpRequestHandler, at line 124 always sets the HTTP headers of Content-Length and Content-Type. Immediately after this call, at line 125, the response is returned if it is found that the resource hasn&amp;amp;apos;t changed and a 304 can be returned. What this means is that a "304 Not Modified" status is returned but the Content-Length header is also set.
+I&amp;amp;apos;ve found conflicting reports as to who is in the wrong here, but RFC 2616 section 10.3.5 says,
+"If the conditional GET used a strong cache validator (see section 13.3.3), the response SHOULD NOT include other entity-headers. Otherwise (i.e., the conditional GET used a weak validator), the response MUST NOT include other entity-headers; this prevents inconsistencies between cached entity-bodies and updated headers."
+of course, RFC 2616 section 4.4 says,
+"Any response message which "MUST NOT" include a message-body (such as the 1xx, 204, and 304 responses and any response to a HEAD request) is always terminated by the first empty line after the header fields, regardless of the entity-header fields present in the message."
+So, in either case (strong or weak validators), it seems like the ResourceHttpRequestHandler should not be setting a Content-Length header because clients could hang waiting for the content. However, clients should be smart enough to ignore content-length header on a 304. This is probably something that should be fixed on both sides!
+The forum thread contains a simple workaround where the content length is reset to 0 if a 304 status is set.</description>
+			<version>3.0.5</version>
+			<fixedVersion></fixedVersion>
+			<type>Bug</type>
+		</buginformation>
+		<fixedFiles>
+			<file type="M">org.springframework.web.filter.ShallowEtagHeaderFilterTests.java</file>
+			<file type="M">org.springframework.web.filter.ShallowEtagHeaderFilter.java</file>
+			<file type="M">org.springframework.web.servlet.resource.ResourceHttpRequestHandler.java</file>
+		</fixedFiles>
+		<links>
+			<link type="Duplicate" description="duplicates">7706</link>
+		</links>
+	</bug>
+</bugrepository>
